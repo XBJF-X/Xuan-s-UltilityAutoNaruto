@@ -221,7 +221,7 @@ if __name__ == "__main__":
     # 只打印输出的前500个字符（避免大量输出）
     print(result['full_output'][:500] + ('...' if len(result['full_output']) > 500 else ''))
 
-    # 设置控制台编码为 UTF-8 (等效于 chcp 65001)
-    os.system("chcp 65001 > nul")
-    from _version import __version__
-    main(__version__)
+    # # 设置控制台编码为 UTF-8 (等效于 chcp 65001)
+    # os.system("chcp 65001 > nul")
+    # from _version import __version__
+    # main(__version__)
