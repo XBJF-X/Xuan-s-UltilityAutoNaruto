@@ -1,0 +1,158 @@
+import ctypes
+import os
+import sys
+from datetime import datetime
+
+import cv2
+import numpy as np
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap, QPainter, QPainterPath
+
+
+def resource_path(relative_path):
+    """
+    获取程序解压到的临时目录的文件的位置
+    """
+    try:
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.abspath(".")
+
+    # 强制转换为长路径（仅限Windows）
+    if sys.platform.startswith('win'):
+        from ctypes import windll, create_unicode_buffer
+        try:
+            buf = create_unicode_buffer(512)
+            windll.kernel32.GetLongPathNameW(base_path, buf, 512)
+            base_path = buf.value
+        except Exception:
+            pass
+    # print(base_path)
+    full_path = os.path.normpath(os.path.join(base_path, relative_path))
+    return full_path
+
+
+def get_real_path(relative_path=""):
+    """
+    获取基于可执行文件位置的绝对路径
+
+    参数:
+        relative_path: 相对于可执行文件的相对路径，默认为空字符串（即返回可执行文件所在目录）
+
+    返回:
+        基于可执行文件位置的绝对路径
+    """
+    if getattr(sys, 'frozen', False):
+        # 如果是打包后的可执行文件
+        if sys.platform == 'win32':
+            # Windows平台获取可执行文件路径
+            buf = ctypes.create_unicode_buffer(1024)
+            ctypes.windll.kernel32.GetModuleFileNameW(None, buf, 1024)
+            exe_dir = os.path.dirname(os.path.abspath(buf.value))
+        else:
+            # 其他平台获取可执行文件路径
+            exe_dir = os.path.dirname(os.path.realpath(sys.argv[0]))
+    else:
+        # 如果是普通Python脚本运行
+        exe_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # 组合路径并规范化
+    return os.path.normpath(os.path.join(exe_dir, relative_path))
+
+
+def cv_save(image_path, image_array):
+    """
+    image_array:图像数组；image_path:图像的保存全路径
+    """
+    cv2.imencode('.png', image_array)[1].tofile(image_path)
+
+
+def extract_diamond_region(image):
+    """
+    截取图像中的正菱形区域，其他区域置为0
+
+    :param image: 输入的BGR图像或灰度图像
+    :return: 只保留正菱形区域的图像（与输入图像通道数相同）
+    """
+    # 获取图像尺寸
+    height, width = image.shape[:2]
+    # 检查图像是否为单通道（灰度图像）
+    is_gray = len(image.shape) == 2
+
+    # 创建与图像相同大小的单通道黑色掩膜
+    mask = np.zeros((height, width), dtype=np.uint8)
+
+    # 计算菱形的四个顶点坐标
+    # 菱形中心点
+    center_x, center_y = width // 2, height // 2
+
+    # 计算菱形的半径（取宽高中较小值的一半）
+    radius = min(width, height) // 2
+
+    # 菱形的四个顶点（上、右、下、左）
+    top = (center_x, center_y - radius)
+    right = (center_x + radius, center_y)
+    bottom = (center_x, center_y + radius)
+    left = (center_x - radius, center_y)
+
+    # 创建菱形轮廓
+    diamond_pts = np.array([top, right, bottom, left], dtype=np.int32)
+
+    # 在掩膜上绘制填充的菱形
+    cv2.fillPoly(mask, [diamond_pts], color=255)
+
+    if is_gray:
+        # 对于灰度图像，直接使用单通道掩膜进行按位与操作
+        result = cv2.bitwise_and(image, mask)
+    else:
+        # 对于BGR图像，将掩膜转换为三通道，以便与BGR图像进行按位与操作
+        mask_bgr = cv2.merge([mask, mask, mask])
+        result = cv2.bitwise_and(image, mask_bgr)
+
+    # 保存处理后的图像（可根据需要注释掉）
+    # cv2.imwrite(f"F:/PyProject/ImageMatch/temp/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S.%f')}.png", result)
+    return result
+
+
+def create_rounded_pixmap(pixmap: QPixmap, radius: int) -> QPixmap:
+    """带圆角的 QPixmap"""
+    if pixmap.isNull():  # 不处理空数据或者错误数据
+        return pixmap
+
+    # 获取图片原始尺寸
+    original_width = pixmap.width()
+    original_height = pixmap.height()
+
+    # 创建与目标尺寸一致的 QPixmap
+    dest_image = QPixmap(radius, radius)
+    dest_image.fill(Qt.transparent)
+
+    painter = QPainter(dest_image)
+    painter.setRenderHint(QPainter.Antialiasing)  # 抗锯齿
+    painter.setRenderHint(QPainter.SmoothPixmapTransform)  # 平滑处理
+
+    # 裁剪成圆形
+    path = QPainterPath()
+    path.addEllipse(0, 0, radius, radius)
+    painter.setClipPath(path)
+
+    # 计算缩放比例，保证图片显示区域完整
+    scale_width = radius / original_width
+    scale_height = radius / original_height
+    scale = min(scale_width, scale_height)
+
+    # 计算缩放后的尺寸
+    scaled_width = int(original_width * scale)
+    scaled_height = int(original_height * scale)
+
+    # 绘制图片，居中显示在圆形区域内
+    painter.drawPixmap(
+        (radius - scaled_width) // 2,
+        (radius - scaled_height) // 2,
+        scaled_width,
+        scaled_height,
+        pixmap
+    )
+
+    painter.end()
+    return dest_image
