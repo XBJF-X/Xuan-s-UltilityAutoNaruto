@@ -224,4 +224,5 @@ if __name__ == "__main__":
     # 设置控制台编码为 UTF-8 (等效于 chcp 65001)
     os.system("chcp 65001 > nul")
     from _version import __version__
-    main(__version__)
+    print(__version__)
+    # main(__version__)

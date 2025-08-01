@@ -4,6 +4,8 @@ tag_format = "v$version"
 version_files = [
     "_version.py:__version__"
 ]
+version_provider = "commitizen"
 version_scheme = "semver"
-version = "0.0.2"
-update_changelog_on_bump = true
+version = "0.1.0"
+update_changelog_on_bump = false
+major_version_zero = true
