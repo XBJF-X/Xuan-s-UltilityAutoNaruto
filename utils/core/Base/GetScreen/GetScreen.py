@@ -2,7 +2,7 @@ import enum
 import logging
 
 import cv2
-from PyQt5.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QMessageBox
 
 from utils.core.Base.GetScreen.Commom import Common
 from utils.core.Base.GetScreen.LD import LD

@@ -6,17 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1158</width>
+    <width>1320</width>
     <height>598</height>
    </rect>
   </property>
   <property name="font">
    <font>
-    <family>仓耳今楷02-6763 W05</family>
+    <family>仓耳今楷02-6763</family>
    </font>
   </property>
   <property name="windowTitle">
    <string>日常助手</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true"/>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="font">
@@ -51,13 +54,13 @@
       </property>
       <property name="minimumSize">
        <size>
-        <width>210</width>
+        <width>230</width>
         <height>0</height>
        </size>
       </property>
       <property name="maximumSize">
        <size>
-        <width>210</width>
+        <width>230</width>
         <height>16777215</height>
        </size>
       </property>
@@ -163,10 +166,7 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_5">
        <property name="spacing">
-        <number>10</number>
-       </property>
-       <property name="sizeConstraint">
-        <enum>QLayout::SetDefaultConstraint</enum>
+        <number>0</number>
        </property>
        <property name="leftMargin">
         <number>0</number>
@@ -181,137 +181,391 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QPushButton" name="overview_panel_button">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>40</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>仓耳今楷02-6763 W05</family>
-           <pointsize>14</pointsize>
-           <weight>50</weight>
-           <italic>false</italic>
-           <bold>false</bold>
-          </font>
-         </property>
-         <property name="layoutDirection">
-          <enum>Qt::LeftToRight</enum>
-         </property>
+        <widget class="QWidget" name="widget_9" native="true">
          <property name="styleSheet">
-          <string notr="true">border: 2px solid #333;  /* 2px宽的深灰色实线边框 */
+          <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_8">
+          <item>
+           <widget class="QPushButton" name="overview_panel_button">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>40</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>仓耳今楷02-6763</family>
+              <pointsize>15</pointsize>
+              <italic>false</italic>
+              <bold>false</bold>
+             </font>
+            </property>
+            <property name="layoutDirection">
+             <enum>Qt::LayoutDirection::LeftToRight</enum>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">border: 2px solid #b5b5b5;  /* 2px宽的深灰色实线边框 */
 background-color: rgb(255, 255, 255);
-font: 14pt &quot;仓耳今楷02-6763 W05&quot;;
-hover {
-  color: #FF0000;
-}</string>
-         </property>
-         <property name="text">
-          <string>总览面板</string>
-         </property>
-         <property name="autoExclusive">
-          <bool>false</bool>
-         </property>
-         <property name="autoDefault">
-          <bool>false</bool>
-         </property>
-         <property name="default">
-          <bool>false</bool>
-         </property>
-         <property name="flat">
-          <bool>true</bool>
-         </property>
+border-radius:10px;</string>
+            </property>
+            <property name="text">
+             <string>总览面板</string>
+            </property>
+            <property name="autoExclusive">
+             <bool>false</bool>
+            </property>
+            <property name="autoDefault">
+             <bool>false</bool>
+            </property>
+            <property name="default">
+             <bool>false</bool>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
-        <widget class="QTreeWidget" name="treeWidget">
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>16777215</height>
-          </size>
-         </property>
-         <property name="font">
-          <font>
-           <family>仓耳今楷02-6763 W05</family>
-           <pointsize>14</pointsize>
-          </font>
-         </property>
-         <property name="frameShape">
-          <enum>QFrame::NoFrame</enum>
-         </property>
-         <property name="autoScrollMargin">
-          <number>16</number>
-         </property>
-         <property name="indentation">
-          <number>30</number>
-         </property>
-         <property name="rootIsDecorated">
-          <bool>true</bool>
-         </property>
-         <property name="uniformRowHeights">
-          <bool>false</bool>
-         </property>
-         <property name="sortingEnabled">
-          <bool>false</bool>
-         </property>
-         <property name="animated">
-          <bool>true</bool>
-         </property>
-         <property name="headerHidden">
-          <bool>true</bool>
-         </property>
-         <attribute name="headerVisible">
-          <bool>false</bool>
-         </attribute>
-         <column>
-          <property name="text">
-           <string>配置</string>
+        <widget class="QWidget" name="widget_11" native="true">
+         <layout class="QVBoxLayout" name="verticalLayout_9">
+          <property name="leftMargin">
+           <number>0</number>
           </property>
-         </column>
-         <item>
-          <property name="text">
-           <string>日常助手</string>
+          <property name="topMargin">
+           <number>0</number>
           </property>
           <item>
-           <property name="text">
-            <string>日常助手设置</string>
-           </property>
+           <widget class="QTreeWidget" name="treeWidget">
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
+            <property name="font">
+             <font>
+              <family>仓耳今楷02-6763</family>
+              <pointsize>-1</pointsize>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QTreeWidget {
+	background-color:#f5f5f5;
+	margin-left:10px;
+	background: #F9F9F9;
+	border-right: 1px solid #D3D6DD;
+	outline: none;
+	font-size: 20px;
+}
+QTreeWidget::item {
+	height: 28px;
+	font-weight: 400;
+	color: #0f322f;
+	padding-left:10px;
+	padding-top:0px;
+	padding-bottom:0px;
+	margin-top:5px;
+	margin-bottom:5px;
+	outline: 0px;
+	font-size: 10px;
+}
+QTreeWidget::item:hover {
+	border: 0px;
+	outline: 0px;
+	border-left: 3px solid #39C5BB;
+    color: #39C5BB;
+}
+QTreeWidget::item:selected{
+    border: 0px;
+	outline: 0px;
+	border-left: 3px solid #39C5BB;
+    color: #39C5BB;
+}
+QTreeWidget::item:selected:active{
+    border: 0px;
+	outline: 0px;
+	border-left: 3px solid #39C5BB;
+    color: #39C5BB;
+}
+ 
+QTreeWidget::item:selected:!active {
+    border: 0px;
+	outline: 0px;
+	border-left: 3px solid #39C5BB;
+    color: #39C5BB;
+}
+QTreeWidget::branch {
+	height: 28px;
+	width: 28px;
+}
+ 
+QTreeWidget::indicator {
+	height: 20px;
+	width: 20px;
+}
+QTreeWidget QScrollBar:vertical {
+    background-color: #ffffff;
+    width: 7px;
+    margin: 0px;
+    border-radius: 4px;
+}
+QTreeWidget QScrollBar::handle:vertical {
+    background-color: #8b8b8b;
+    border-radius: 3px;
+    margin: 3 0px 6 0px;
+    min-height: 30px;
+}
+QTreeWidget QScrollBar::handle:vertical:hover,
+QTreeWidget QScrollBar::handle:vertical:pressed {
+    background-color: #3c3f41;
+    border-radius: 3px;
+    margin: 0 0px 0 0px;
+}
+QTreeWidget QScrollBar::sub-line:vertical,
+QTreeWidget QScrollBar::add-line:vertical {
+    border: none;
+    height: 0px;
+}</string>
+            </property>
+            <property name="frameShape">
+             <enum>QFrame::Shape::NoFrame</enum>
+            </property>
+            <property name="autoScrollMargin">
+             <number>16</number>
+            </property>
+            <property name="indentation">
+             <number>19</number>
+            </property>
+            <property name="rootIsDecorated">
+             <bool>true</bool>
+            </property>
+            <property name="uniformRowHeights">
+             <bool>false</bool>
+            </property>
+            <property name="sortingEnabled">
+             <bool>false</bool>
+            </property>
+            <property name="animated">
+             <bool>true</bool>
+            </property>
+            <property name="headerHidden">
+             <bool>true</bool>
+            </property>
+            <attribute name="headerVisible">
+             <bool>false</bool>
+            </attribute>
+            <column>
+             <property name="text">
+              <string>配置</string>
+             </property>
+            </column>
+            <item>
+             <property name="text">
+              <string>每日任务</string>
+             </property>
+             <item>
+              <property name="text">
+               <string>登录奖励</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>排行榜点赞</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>每月签到</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>购买体力</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>金币招财</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>小队突袭</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>组织祈福</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>好友体力</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>普通忍者招募</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>每日分享</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>丰饶之间</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>任务集会所</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>一乐外卖</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>每日胜场</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>生存挑战</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>秘境探险</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>情报站</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>冒险副本</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>活跃度奖励</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>清空邮件</string>
+              </property>
+             </item>
+            </item>
+            <item>
+             <property name="text">
+              <string>每周任务</string>
+             </property>
+             <item>
+              <property name="text">
+               <string>修行之路</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>忍法帖点赞分享</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>团本</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>要塞争夺战</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>叛忍来袭</string>
+              </property>
+             </item>
+            </item>
+            <item>
+             <property name="text">
+              <string>每月任务</string>
+             </property>
+             <item>
+              <property name="text">
+               <string>跨服争霸赛</string>
+              </property>
+             </item>
+            </item>
+            <item>
+             <property name="text">
+              <string>周期任务</string>
+             </property>
+             <item>
+              <property name="text">
+               <string>高级忍者招募</string>
+              </property>
+             </item>
+            </item>
+            <item>
+             <property name="text">
+              <string>临时任务</string>
+             </property>
+             <item>
+              <property name="text">
+               <string>每周胜场</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>赛季胜场</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>更多玩法</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>重启游戏</string>
+              </property>
+             </item>
+            </item>
+            <item>
+             <property name="text">
+              <string>活动任务</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>助手设置</string>
+             </property>
+            </item>
+           </widget>
           </item>
-          <item>
-           <property name="text">
-            <string>通用设置</string>
-           </property>
-          </item>
-         </item>
-         <item>
-          <property name="text">
-           <string>每日日常</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>每周日常</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>活动</string>
-          </property>
-         </item>
+         </layout>
         </widget>
        </item>
       </layout>
-      <zorder>treeWidget</zorder>
-      <zorder>overview_panel_button</zorder>
      </widget>
     </item>
     <item>
@@ -398,23 +652,29 @@ hover {
        </property>
        <item>
         <widget class="QStackedWidget" name="stackedWidget">
-         <widget class="QWidget" name="overview_panel_widget">
+         <widget class="QWidget" name="Overview_Panel_widget">
           <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1">
            <item>
             <widget class="QWidget" name="widget_2" native="true">
              <property name="minimumSize">
               <size>
-               <width>260</width>
+               <width>270</width>
                <height>0</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>260</width>
+               <width>270</width>
                <height>16777215</height>
               </size>
              </property>
+             <property name="styleSheet">
+              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;</string>
+             </property>
              <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,0,4,4">
+              <property name="spacing">
+               <number>9</number>
+              </property>
               <property name="leftMargin">
                <number>7</number>
               </property>
@@ -432,68 +692,104 @@ hover {
                 <property name="palette">
                  <palette>
                   <active>
+                   <colorrole role="Button">
+                    <brush brushstyle="SolidPattern">
+                     <color alpha="255">
+                      <red>222</red>
+                      <green>222</green>
+                      <blue>222</blue>
+                     </color>
+                    </brush>
+                   </colorrole>
                    <colorrole role="Base">
                     <brush brushstyle="SolidPattern">
                      <color alpha="255">
-                      <red>241</red>
-                      <green>241</green>
-                      <blue>241</blue>
+                      <red>222</red>
+                      <green>222</green>
+                      <blue>222</blue>
                      </color>
                     </brush>
                    </colorrole>
                    <colorrole role="Window">
                     <brush brushstyle="SolidPattern">
                      <color alpha="255">
-                      <red>244</red>
-                      <green>244</green>
-                      <blue>244</blue>
+                      <red>222</red>
+                      <green>222</green>
+                      <blue>222</blue>
                      </color>
                     </brush>
                    </colorrole>
                   </active>
                   <inactive>
+                   <colorrole role="Button">
+                    <brush brushstyle="SolidPattern">
+                     <color alpha="255">
+                      <red>222</red>
+                      <green>222</green>
+                      <blue>222</blue>
+                     </color>
+                    </brush>
+                   </colorrole>
                    <colorrole role="Base">
                     <brush brushstyle="SolidPattern">
                      <color alpha="255">
-                      <red>241</red>
-                      <green>241</green>
-                      <blue>241</blue>
+                      <red>222</red>
+                      <green>222</green>
+                      <blue>222</blue>
                      </color>
                     </brush>
                    </colorrole>
                    <colorrole role="Window">
                     <brush brushstyle="SolidPattern">
                      <color alpha="255">
-                      <red>244</red>
-                      <green>244</green>
-                      <blue>244</blue>
+                      <red>222</red>
+                      <green>222</green>
+                      <blue>222</blue>
                      </color>
                     </brush>
                    </colorrole>
                   </inactive>
                   <disabled>
+                   <colorrole role="Button">
+                    <brush brushstyle="SolidPattern">
+                     <color alpha="255">
+                      <red>222</red>
+                      <green>222</green>
+                      <blue>222</blue>
+                     </color>
+                    </brush>
+                   </colorrole>
                    <colorrole role="Base">
                     <brush brushstyle="SolidPattern">
                      <color alpha="255">
-                      <red>244</red>
-                      <green>244</green>
-                      <blue>244</blue>
+                      <red>222</red>
+                      <green>222</green>
+                      <blue>222</blue>
                      </color>
                     </brush>
                    </colorrole>
                    <colorrole role="Window">
                     <brush brushstyle="SolidPattern">
                      <color alpha="255">
-                      <red>244</red>
-                      <green>244</green>
-                      <blue>244</blue>
+                      <red>222</red>
+                      <green>222</green>
+                      <blue>222</blue>
                      </color>
                     </brush>
                    </colorrole>
                   </disabled>
                  </palette>
                 </property>
+                <property name="styleSheet">
+                 <string notr="true">#widget_4 {  /* 仅匹配 objectName 为 myWidget 的控件 */
+    background-color: rgb(222, 222, 222);
+border-radius: 10px;
+}</string>
+                </property>
                 <layout class="QHBoxLayout" name="horizontalLayout_3">
+                 <property name="spacing">
+                  <number>0</number>
+                 </property>
                  <property name="leftMargin">
                   <number>0</number>
                  </property>
@@ -508,13 +804,31 @@ hover {
                  </property>
                  <item>
                   <widget class="QLabel" name="label">
+                   <property name="styleSheet">
+                    <string notr="true">font-size:23px;
+margin-top:0px;
+margin-bottom:0px;</string>
+                   </property>
                    <property name="text">
                     <string>调度器</string>
+                   </property>
+                   <property name="alignment">
+                    <set>Qt::AlignmentFlag::AlignCenter</set>
+                   </property>
+                   <property name="indent">
+                    <number>0</number>
                    </property>
                   </widget>
                  </item>
                  <item>
                   <widget class="QPushButton" name="start_schedule_button">
+                   <property name="styleSheet">
+                    <string notr="true">QPushBotton:{
+border-radius: 10px;
+border: none;
+border-bottom:0px;
+}</string>
+                   </property>
                    <property name="text">
                     <string>启动</string>
                    </property>
@@ -525,21 +839,36 @@ hover {
               </item>
               <item>
                <widget class="QWidget" name="widget_5" native="true">
+                <property name="styleSheet">
+                 <string notr="true">#widget_5 {  /* 仅匹配 objectName 为 myWidget 的控件 */
+    background-color: rgb(222, 222, 222);
+border-radius: 10px;
+}</string>
+                </property>
                 <layout class="QVBoxLayout" name="verticalLayout">
+                 <property name="spacing">
+                  <number>3</number>
+                 </property>
                  <property name="leftMargin">
-                  <number>0</number>
+                  <number>5</number>
                  </property>
                  <property name="topMargin">
                   <number>0</number>
                  </property>
                  <property name="rightMargin">
-                  <number>0</number>
+                  <number>5</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>0</number>
+                  <number>5</number>
                  </property>
                  <item>
                   <widget class="QLabel" name="label_2">
+                   <property name="styleSheet">
+                    <string notr="true">
+margin-top:3px;
+margin-bottom:0px;
+</string>
+                   </property>
                    <property name="text">
                     <string>运行队列</string>
                    </property>
@@ -588,16 +917,31 @@ hover {
                     <number>2</number>
                    </property>
                    <property name="orientation">
-                    <enum>Qt::Vertical</enum>
+                    <enum>Qt::Orientation::Vertical</enum>
                    </property>
                   </widget>
                  </item>
                  <item>
                   <widget class="QScrollArea" name="scrollArea">
                    <property name="styleSheet">
-                    <string notr="true">        /* 垂直滚动条整体 */
+                    <string notr="true">QScrollArea {
+    /* 主边框：灰色实线，2px宽，圆角5px */
+    border: 2px solid rgb(209, 209, 209);
+    border-radius: 5px;
+    /* 内边距，避免内容紧贴边框 */
+    padding-right: 3px;
+    /* 背景色 */
+    background-color: #e7e7e7;
+}
+
+/* 滚动区域的内容区域（QScrollArea的视口） */
+QScrollArea &gt; QWidget &gt; QWidget {
+    /* 内容区域背景色 */
+    background-color: #e2e2e2;
+}
+        /* 垂直滚动条整体 */
         QScrollBar:vertical {
-            background-color: #f5f5f5;
+            background-color: #e2e2e2;
             width: 6px;
             margin: 0px;
             border-radius: 4px;
@@ -624,10 +968,10 @@ hover {
         }</string>
                    </property>
                    <property name="verticalScrollBarPolicy">
-                    <enum>Qt::ScrollBarAlwaysOn</enum>
+                    <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOn</enum>
                    </property>
                    <property name="horizontalScrollBarPolicy">
-                    <enum>Qt::ScrollBarAlwaysOff</enum>
+                    <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
                    </property>
                    <property name="widgetResizable">
                     <bool>true</bool>
@@ -637,8 +981,8 @@ hover {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>238</width>
-                      <height>68</height>
+                      <width>230</width>
+                      <height>63</height>
                      </rect>
                     </property>
                    </widget>
@@ -655,21 +999,34 @@ hover {
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="styleSheet">
+                 <string notr="true">#widget_6 {  /* 仅匹配 objectName 为 myWidget 的控件 */
+    background-color: rgb(222, 222, 222);
+border-radius: 10px;
+}</string>
+                </property>
                 <layout class="QVBoxLayout" name="verticalLayout_6">
+                 <property name="spacing">
+                  <number>3</number>
+                 </property>
                  <property name="leftMargin">
-                  <number>0</number>
+                  <number>5</number>
                  </property>
                  <property name="topMargin">
                   <number>0</number>
                  </property>
                  <property name="rightMargin">
-                  <number>0</number>
+                  <number>5</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>0</number>
+                  <number>5</number>
                  </property>
                  <item>
                   <widget class="QLabel" name="label_3">
+                   <property name="styleSheet">
+                    <string notr="true">margin-top:3px;
+margin-bottom:0px;</string>
+                   </property>
                    <property name="text">
                     <string>就绪队列</string>
                    </property>
@@ -718,16 +1075,31 @@ hover {
                     <number>2</number>
                    </property>
                    <property name="orientation">
-                    <enum>Qt::Vertical</enum>
+                    <enum>Qt::Orientation::Vertical</enum>
                    </property>
                   </widget>
                  </item>
                  <item>
                   <widget class="QScrollArea" name="scrollArea_2">
                    <property name="styleSheet">
-                    <string notr="true">        /* 垂直滚动条整体 */
+                    <string notr="true">QScrollArea {
+    /* 主边框：灰色实线，2px宽，圆角5px */
+    border: 2px solid rgb(209, 209, 209);
+    border-radius: 5px;
+    /* 内边距，避免内容紧贴边框 */
+    padding-right: 3px;
+    /* 背景色 */
+    background-color: #e7e7e7;
+}
+
+/* 滚动区域的内容区域（QScrollArea的视口） */
+QScrollArea &gt; QWidget &gt; QWidget {
+    /* 内容区域背景色 */
+    background-color: #e2e2e2;
+}
+        /* 垂直滚动条整体 */
         QScrollBar:vertical {
-            background-color: #f5f5f5;
+            background-color: #e2e2e2;
             width: 6px;
             margin: 0px;
             border-radius: 4px;
@@ -754,10 +1126,10 @@ hover {
         }</string>
                    </property>
                    <property name="verticalScrollBarPolicy">
-                    <enum>Qt::ScrollBarAlwaysOn</enum>
+                    <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOn</enum>
                    </property>
                    <property name="horizontalScrollBarPolicy">
-                    <enum>Qt::ScrollBarAlwaysOff</enum>
+                    <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
                    </property>
                    <property name="widgetResizable">
                     <bool>true</bool>
@@ -767,8 +1139,8 @@ hover {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>238</width>
-                      <height>163</height>
+                      <width>230</width>
+                      <height>147</height>
                      </rect>
                     </property>
                    </widget>
@@ -779,21 +1151,35 @@ hover {
               </item>
               <item>
                <widget class="QWidget" name="widget_7" native="true">
+                <property name="styleSheet">
+                 <string notr="true">#widget_7 {  /* 仅匹配 objectName 为 myWidget 的控件 */
+    background-color: rgb(222, 222, 222);
+border-radius: 10px;
+}</string>
+                </property>
                 <layout class="QVBoxLayout" name="verticalLayout_7">
+                 <property name="spacing">
+                  <number>3</number>
+                 </property>
                  <property name="leftMargin">
-                  <number>0</number>
+                  <number>5</number>
                  </property>
                  <property name="topMargin">
                   <number>0</number>
                  </property>
                  <property name="rightMargin">
-                  <number>0</number>
+                  <number>5</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>0</number>
+                  <number>5</number>
                  </property>
                  <item>
                   <widget class="QLabel" name="label_4">
+                   <property name="styleSheet">
+                    <string notr="true">
+margin-top:3px;
+margin-bottom:0px;</string>
+                   </property>
                    <property name="text">
                     <string>等待队列</string>
                    </property>
@@ -842,16 +1228,31 @@ hover {
                     <number>2</number>
                    </property>
                    <property name="orientation">
-                    <enum>Qt::Vertical</enum>
+                    <enum>Qt::Orientation::Vertical</enum>
                    </property>
                   </widget>
                  </item>
                  <item>
                   <widget class="QScrollArea" name="scrollArea_3">
                    <property name="styleSheet">
-                    <string notr="true">        /* 垂直滚动条整体 */
+                    <string notr="true">QScrollArea {
+    /* 主边框：灰色实线，2px宽，圆角5px */
+    border: 2px solid rgb(209, 209, 209);
+    border-radius: 5px;
+    /* 内边距，避免内容紧贴边框 */
+    padding-right: 3px;
+    /* 背景色 */
+    background-color: #e7e7e7;
+}
+
+/* 滚动区域的内容区域（QScrollArea的视口） */
+QScrollArea &gt; QWidget &gt; QWidget {
+    /* 内容区域背景色 */
+    background-color: #e2e2e2;
+}
+        /* 垂直滚动条整体 */
         QScrollBar:vertical {
-            background-color: #f5f5f5;
+            background-color: #e2e2e2;
             width: 6px;
             margin: 0px;
             border-radius: 4px;
@@ -878,10 +1279,10 @@ hover {
         }</string>
                    </property>
                    <property name="verticalScrollBarPolicy">
-                    <enum>Qt::ScrollBarAlwaysOn</enum>
+                    <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOn</enum>
                    </property>
                    <property name="horizontalScrollBarPolicy">
-                    <enum>Qt::ScrollBarAlwaysOff</enum>
+                    <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
                    </property>
                    <property name="widgetResizable">
                     <bool>true</bool>
@@ -891,8 +1292,8 @@ hover {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>238</width>
-                      <height>163</height>
+                      <width>230</width>
+                      <height>147</height>
                      </rect>
                     </property>
                    </widget>
@@ -924,31 +1325,64 @@ hover {
               </property>
               <item>
                <widget class="QWidget" name="widget_8" native="true">
-                <layout class="QHBoxLayout" name="horizontalLayout_4">
+                <property name="styleSheet">
+                 <string notr="true"/>
+                </property>
+                <layout class="QVBoxLayout" name="verticalLayout_10">
                  <property name="leftMargin">
-                  <number>9</number>
+                  <number>7</number>
                  </property>
                  <property name="topMargin">
                   <number>0</number>
                  </property>
                  <property name="rightMargin">
-                  <number>9</number>
+                  <number>0</number>
                  </property>
                  <property name="bottomMargin">
                   <number>0</number>
                  </property>
                  <item>
-                  <widget class="QLabel" name="label_5">
-                   <property name="text">
-                    <string>日志</string>
+                  <widget class="QWidget" name="widget_12" native="true">
+                   <property name="styleSheet">
+                    <string notr="true">#widget_12 {  /* 仅匹配 objectName 为 myWidget 的控件 */
+    background-color: rgb(222, 222, 222);
+border-radius: 10px;
+font: 15pt &quot;仓耳今楷02-6763&quot;;
+}</string>
                    </property>
-                  </widget>
-                 </item>
-                 <item>
-                  <widget class="QCheckBox" name="bool_save_img">
-                   <property name="text">
-                    <string>保存图像（Debug）</string>
-                   </property>
+                   <layout class="QHBoxLayout" name="horizontalLayout_4">
+                    <item>
+                     <widget class="QLabel" name="label_5">
+                      <property name="font">
+                       <font>
+                        <family>仓耳今楷02-6763</family>
+                        <pointsize>-1</pointsize>
+                        <italic>false</italic>
+                        <bold>false</bold>
+                       </font>
+                      </property>
+                      <property name="styleSheet">
+                       <string notr="true">font-size:25px;</string>
+                      </property>
+                      <property name="text">
+                       <string>日志</string>
+                      </property>
+                      <property name="indent">
+                       <number>10</number>
+                      </property>
+                     </widget>
+                    </item>
+                    <item alignment="Qt::AlignmentFlag::AlignRight">
+                     <widget class="QCheckBox" name="bool_save_img">
+                      <property name="styleSheet">
+                       <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;</string>
+                      </property>
+                      <property name="text">
+                       <string>保存图像（Debug用）</string>
+                      </property>
+                     </widget>
+                    </item>
+                   </layout>
                   </widget>
                  </item>
                 </layout>
@@ -957,7 +1391,10 @@ hover {
               <item>
                <widget class="QWidget" name="logs_container" native="true">
                 <property name="layoutDirection">
-                 <enum>Qt::LeftToRight</enum>
+                 <enum>Qt::LayoutDirection::LeftToRight</enum>
+                </property>
+                <property name="styleSheet">
+                 <string notr="true"/>
                 </property>
                </widget>
               </item>
@@ -966,11 +1403,38 @@ hover {
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="DQH_settings_widget"/>
-         <widget class="QWidget" name="general_settings_widget"/>
-         <widget class="QWidget" name="daily_quests_widget"/>
-         <widget class="QWidget" name="weekly_quests_widget"/>
-         <widget class="QWidget" name="activities_widget"/>
+         <widget class="QWidget" name="DengLuJiangLi_widget"/>
+         <widget class="QWidget" name="PaiHangBangDianZan_widget"/>
+         <widget class="QWidget" name="MeiYueQianDao_widget"/>
+         <widget class="QWidget" name="GouMaiTiLi_widget"/>
+         <widget class="QWidget" name="JinBiZhaoCai_widget"/>
+         <widget class="QWidget" name="XiaoDuiTuXi_widget"/>
+         <widget class="QWidget" name="ZuZhiQiFu_widget"/>
+         <widget class="QWidget" name="HaoYouTiLi_widget"/>
+         <widget class="QWidget" name="PuTongRenZheZhaoMu_widget"/>
+         <widget class="QWidget" name="MeiRiFenXiang_widget"/>
+         <widget class="QWidget" name="FengRaoZhiJian_widget"/>
+         <widget class="QWidget" name="RenWuJiHuiSuo_widget"/>
+         <widget class="QWidget" name="YiLeWaiMai_widget"/>
+         <widget class="QWidget" name="MeiRiShengChang_widget"/>
+         <widget class="QWidget" name="ShengCunTiaoZhan_widget"/>
+         <widget class="QWidget" name="MiJingTanXian_widget"/>
+         <widget class="QWidget" name="QingBaoZhan_widget"/>
+         <widget class="QWidget" name="MaoXianFuBen_widget"/>
+         <widget class="QWidget" name="HuoYueDuJiangLi_widget"/>
+         <widget class="QWidget" name="QingKongYouJian_widget"/>
+         <widget class="QWidget" name="XiuXingZhiLu_widget"/>
+         <widget class="QWidget" name="RenFaTieDianZanFenXiang_widget"/>
+         <widget class="QWidget" name="TuanBen_widget"/>
+         <widget class="QWidget" name="YaoSaiZhengDuoZhan_widget"/>
+         <widget class="QWidget" name="PanRenLaiXi_widget"/>
+         <widget class="QWidget" name="KuaFuZhengBaSai_widget"/>
+         <widget class="QWidget" name="GaoJiRenZheZhaoMu_widget"/>
+         <widget class="QWidget" name="MeiZhouShengChang_widget"/>
+         <widget class="QWidget" name="SaiJiShengChang_widget"/>
+         <widget class="QWidget" name="GengDuoWanFa_widget"/>
+         <widget class="QWidget" name="ChongQiYouXi_widget"/>
+         <widget class="QWidget" name="DQH_Settings_widget"/>
         </widget>
        </item>
       </layout>

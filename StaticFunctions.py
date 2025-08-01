@@ -5,8 +5,8 @@ from datetime import datetime
 
 import cv2
 import numpy as np
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPixmap, QPainter, QPainterPath
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPixmap, QPainter, QPainterPath
 
 
 def resource_path(relative_path):

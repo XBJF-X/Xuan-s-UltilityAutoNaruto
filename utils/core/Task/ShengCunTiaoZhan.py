@@ -1,4 +1,7 @@
+import time
+
 from utils.core.Task.BaseTask import BaseTask
+
 
 class ShengCunTiaoZhan(BaseTask):
 
@@ -59,7 +62,8 @@ class ShengCunTiaoZhan(BaseTask):
             if self.detect_and_wait({
                 'type': "ELEMENT",
                 'name': "生存挑战-没有可以出战的忍者"
-            }, max_time=2):
+            }, max_time=2
+            ):
                 self.logger.debug("没有可出战的忍者，将进行重置")
                 if self.click_and_wait({
                     'type': "ELEMENT",
@@ -89,25 +93,25 @@ class ShengCunTiaoZhan(BaseTask):
                 if not self.click_and_wait({
                     'type': "ELEMENT",
                     'name': "生存挑战-准备就绪-确定"
-                }):
+                }, wait_time=3):
                     raise self.StepFailedError("第一次点击确定失败，提前退出执行")
                 # 点击确定
                 if not self.click_and_wait({
                     'type': "ELEMENT",
                     'name': "生存挑战-准备就绪-确定-确定"
-                }):
+                }, wait_time=3):
                     raise self.StepFailedError("第二次点击确定失败，提前退出执行")
                 self.logger.debug("系统开始自动扫荡")
 
                 # 等待生存挑战-已通过所有关卡出现
                 while not self.detect_and_search(
-                    [
-                        {'type': "ELEMENT", 'name': "生存挑战-已通过所有关卡"}
-                        # {'type': "ELEMENT",'name': "生存挑战-可出战的忍者不足"},
-                    ],
-                    [],
-                    1,
-                    0
+                        [
+                            {'type': "ELEMENT", 'name': "生存挑战-已通过所有关卡"}
+                            # {'type': "ELEMENT",'name': "生存挑战-可出战的忍者不足"},
+                        ],
+                        [],
+                        1,
+                        0
                 ):
                     continue
                 self.logger.debug("系统自动扫荡结束")

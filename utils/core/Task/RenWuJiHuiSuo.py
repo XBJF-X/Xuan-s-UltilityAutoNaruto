@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from utils.core.Task.BaseTask import BaseTask
 
+
 class RenWuJiHuiSuo(BaseTask):
 
     def _execute(self):
@@ -38,6 +39,7 @@ class RenWuJiHuiSuo(BaseTask):
                     ],
                     2
             ):
+                self._update_next_execute_time()
                 raise self.EndEarly("跳转至[任务集会所]失败，可能已经完成")
             # 确认任务集会所界面出现
             self.detect_and_wait({
@@ -91,6 +93,7 @@ class RenWuJiHuiSuo(BaseTask):
                 'type': "ELEMENT",
                 'name': "任务集会所-今天所有任务已经领完"
             }):
+                self._update_next_execute_time()
                 raise self.EndEarly("今日任务已经领完，提前退出执行")
 
             task_sum = 0
@@ -132,6 +135,7 @@ class RenWuJiHuiSuo(BaseTask):
                             [],
                             3
                     ):
+                        self._update_next_execute_time(delta=timedelta(hours=2))
                         raise self.EndEarly("任务栏已满/今日任务已经领完")
                     else:
                         task_sum += 1
@@ -143,12 +147,12 @@ class RenWuJiHuiSuo(BaseTask):
                     self.logger.debug("刷新任务列表")
                 else:
                     # 能接取的都接了，无法刷新，可以退出执行了
+                    self._update_next_execute_time(delta=timedelta(hours=2))
                     raise self.EndEarly("无法刷新，提前退出执行")
             self._update_next_execute_time(delta=timedelta(hours=2))
         except self.StepFailedError as e:
             self.logger.error(e)
         except self.EndEarly as e:
-            self._update_next_execute_time(delta=timedelta(hours=2))
             self.logger.warning(e)
         finally:
             self.home()

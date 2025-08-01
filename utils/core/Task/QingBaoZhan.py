@@ -163,8 +163,7 @@ class QingBaoZhan(BaseTask):
 
             # 一段时间后，直接输入返回指令（因为竖屏不好识别）
             self.logger.debug("返回福利站")
-            self.press("back")
-            time.sleep(7)
+            self.press("back",wait_time=7)
             self.logger.debug("领取活跃度奖励")
             # 点击所有的领取按钮
             while self.click_and_wait({

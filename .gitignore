@@ -168,3 +168,4 @@ log/
 /test_position/
 /confidence_heat/
 /raw_src/
+/output.py

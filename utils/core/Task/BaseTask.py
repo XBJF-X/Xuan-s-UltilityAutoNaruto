@@ -7,6 +7,8 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Callable
 from zoneinfo import ZoneInfo
 
+from PySide6.QtCore import QTime, QThread
+
 from utils.core.Base.Clicker import Clicker
 from utils.core.Base.Detecter import Detecter
 from utils.core.Base.Swiper import Swiper
@@ -116,18 +118,18 @@ class BaseTask:
         start_time = time.perf_counter()
         while time.perf_counter() - start_time < max_time:
             if self.detecter.detect(params):
-                time.sleep(wait_time)
+                QThread.msleep(int(wait_time*1000))
                 return True
         return False
 
-    def click_and_wait(self, params, wait_time=1, max_time=2.0, click_times=1):
+    def click_and_wait(self, params, wait_time=1.5, max_time=2.0, click_times=1):
         """
         点击并等待一段时间
         """
         start_time = time.perf_counter()
         while time.perf_counter() - start_time < max_time:
             if self.clicker.click(params, self.resolution, times=click_times):
-                time.sleep(wait_time)
+                QThread.msleep(int(wait_time*1000))
                 return True
         return False
 
@@ -184,7 +186,7 @@ class BaseTask:
                                     self.logger.debug(f"判定条件成立，点击停止")
                                     stop_event.set()
                                     return
-                time.sleep(0.01)  # 避免CPU占用过高
+                QThread.msleep(10)
 
         # 点击工作函数
         def click_worker(coord):
@@ -341,7 +343,7 @@ class BaseTask:
                     0,
                     max_time=0.3
             ):
-                time.sleep(1)
+                QThread.msleep(1000)
                 return True
         return False
 
@@ -378,7 +380,7 @@ class BaseTask:
         """
         self.controller.device.press(key)
         if wait_time:
-            time.sleep(wait_time)
+            QThread.msleep(int(wait_time*1000))
 
     def restart(self):
         """
@@ -399,7 +401,7 @@ class BaseTask:
         current_time = datetime.now(china_tz)
 
         if delta is not None:
-            self.next_execute_time += delta
+            self.next_execute_time = current_time + delta
             return
         if self.cycle_type == CycleType.DAILY:
             next_day = current_time + timedelta(days=1)

@@ -2,6 +2,7 @@ import logging
 import time
 
 import uiautomator2 as u2
+from PySide6.QtCore import QThread
 
 from utils.core.Base.GetScreen.GetScreen import GetScreen
 from utils.core.Config import Config
@@ -42,7 +43,7 @@ class Controller:
             self.device.swipe(
                 int(scale * start_coordinate[0]), int(scale * start_coordinate[1]),
                 int(scale * end_coordinate[0]), int(scale * end_coordinate[1]), duration)
-            time.sleep(duration)
+            QThread.msleep(int(duration*1000))
 
     def restart(self):
         # 停止应用

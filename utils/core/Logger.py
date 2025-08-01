@@ -2,10 +2,9 @@ import logging
 import os.path
 from logging.handlers import RotatingFileHandler
 
-from PyQt5.QtCore import pyqtSignal, QObject
-from PyQt5.QtGui import QTextCursor, QFont
-from PyQt5.QtWidgets import (QTextEdit, QVBoxLayout,
-                             QWidget)
+from PySide6.QtCore import Signal, QObject
+from PySide6.QtGui import QTextCursor, QFont
+from PySide6.QtWidgets import (QTextEdit, QVBoxLayout, QWidget)
 
 from StaticFunctions import get_real_path
 from utils.core.Config import Config
@@ -13,7 +12,7 @@ from utils.core.Config import Config
 
 # 自定义信号类，用于在日志处理器和UI之间传递消息
 class LogSignal(QObject):
-    log_received = pyqtSignal(str)  # 传递格式化后的日志字符串
+    log_received = Signal(str)  # 传递格式化后的日志字符串
 
 
 class QtLogHandler(logging.Handler):
@@ -53,12 +52,19 @@ class LogWindow(QWidget):
         layout = QVBoxLayout(self)
         # 日志输出区域（只读）
         self.log_text = QTextEdit()
+        doc = self.log_text.document()
+        # 设置全局样式表（对所有文本生效）
+        doc.setDefaultStyleSheet("""
+            p {
+                line-height: 1.1;  /* 行距：1.8倍 */
+            }
+        """)
         self.log_text.setReadOnly(True)
         self.log_text.setAcceptRichText(True)  # 支持富文本（彩色、字体等）
-        self.log_text.setFont(QFont("Consolas, WenQuanYi Micro Hei", 10))
-        # 设置文本编辑框的样式
+        self.log_text.setFont(QFont("Consolas, 微软雅黑", 10))
         self.log_text.setStyleSheet("""
             QTextEdit {
+                font-size:10pt;
                 background-color: #f5f5f5;
                 border: 1px solid gray;
                 padding: 7px;
@@ -95,7 +101,7 @@ class LogWindow(QWidget):
               border: none;
               height: 0px;
             }
-        """)
+            """)
         # self.log_text.verticalScrollBar().valueChanged.connect(self.on_scroll_changed)
         layout.addWidget(self.log_text)
 

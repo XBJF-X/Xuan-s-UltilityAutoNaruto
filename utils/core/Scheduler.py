@@ -10,12 +10,13 @@ from zoneinfo import ZoneInfo
 
 import cv2
 import numpy as np
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import QThread, pyqtSignal, QMutex, QWaitCondition, pyqtSlot, Qt, QObject
-from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QLayout
+
+from PySide6 import QtWidgets
+from PySide6.QtCore import QThread, Signal, QMutex, QWaitCondition,  Qt, QObject,Slot
+from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout, QLayout
 
 from StaticFunctions import get_real_path, cv_save
-from ui.DailyQuestsHelper import Ui_DailyQuestsHelper
+from ui.DailyQuestsHelper_ui import Ui_DailyQuestsHelper
 from utils.core.Base.Clicker import Clicker
 from utils.core.Base.Detecter import Detecter
 from utils.core.Base.Recognizer import Recognizer
@@ -126,7 +127,7 @@ class TaskWidgetList(Generic[W]):
 
 class TimerThread(QThread):
     """被动触发的定时器线程，用于延时后发送信号"""
-    timeout = pyqtSignal(object)  # 携带数据的超时信号
+    timeout = Signal(object)  # 携带数据的超时信号
 
     def __init__(self):
         super().__init__()
@@ -137,7 +138,7 @@ class TimerThread(QThread):
         self._is_triggered = False
         self._is_running = True
 
-    @pyqtSlot(int, object)
+    @Slot(int, object)
     def trigger(self, delay_ms, data=None):
         """触发定时器，设置延时时间和数据"""
         self.mutex.lock()
@@ -166,7 +167,7 @@ class TimerThread(QThread):
 
             # 执行延时
             if delay_ms > 0:
-                time.sleep(delay_ms / 1000.0)
+                QThread.msleep(delay_ms)
                 # 延时结束后发送信号
                 self.timeout.emit(data)
 
@@ -180,8 +181,8 @@ class TimerThread(QThread):
 
 
 class Scheduler(QObject):
-    add_task_ui_signal = pyqtSignal(BaseTask, int)
-    remove_task_ui_signal = pyqtSignal(BaseTask, int)
+    add_task_ui_signal = Signal(BaseTask, int)
+    remove_task_ui_signal = Signal(BaseTask, int)
 
     def __init__(self, ui: Ui_DailyQuestsHelper, controller: Controller, config: Config):
         super().__init__()
@@ -239,7 +240,8 @@ class Scheduler(QObject):
         self.timer_thread.timeout.connect(self.scan)
         # 启动调度器开始扫描
         self.timer_thread.start()  # 启动线程，线程会进入等待状态
-
+        # tracemalloc.start()
+        # self.snapshot1 = tracemalloc.take_snapshot()
         self.logger.debug("初始化完成...")
 
     def preprocess_templates(self, info_path) -> Dict:
@@ -386,6 +388,11 @@ class Scheduler(QObject):
 
         if self.running:
             # 继续下一次扫描
+            # snapshot2 = tracemalloc.take_snapshot()
+            # top_stats = snapshot2.compare_to(self.snapshot1, 'lineno')
+            # print("[内存增长统计]")
+            # for stat in top_stats[:10]:  # 打印前10个增长最多的项
+            #     print(stat)
             self.timer_thread.trigger(1000)  # 每秒扫描一次
 
     def _execute_done_callback(self, task: BaseTask):
