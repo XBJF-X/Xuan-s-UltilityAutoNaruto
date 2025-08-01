@@ -1,6 +1,9 @@
 [tool.commitizen]
 name = "cz_conventional_commits"
 tag_format = "v$version"
+version_files = [
+    { path = "_version.py", regex = '__version__ = ".*?"', replace = '__version__ = "{version}"' }
+]
 version_scheme = "semver"
 version = "0.0.2"
 update_changelog_on_bump = true
