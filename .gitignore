@@ -9,7 +9,6 @@ src/img/Fight/Time/
 *.bat
 test.py
 SkillsEditor.py
-.name
 打包命令.txt
 Ocr识别双方忍者名.py
 Ocr识别双技能冷却时间.py
