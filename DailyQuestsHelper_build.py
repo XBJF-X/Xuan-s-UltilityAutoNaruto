@@ -7,7 +7,7 @@ import time
 from StaticFunctions import get_real_path
 
 
-def change_version(new_version, file_path=get_real_path("bin/NarutoHelper.nsi")):
+def change_version(new_version, file_path=get_real_path("bin/DailyQuestsHelper.nsi")):
     """
         更新文本文件中 PRODUCT_VERSION 定义
         :param file_path: 文本文件路径
@@ -82,7 +82,7 @@ def main(version):
             str(venv_python),
             "-m", "PyInstaller",
             "--upx-dir", str(upx_dir),
-            str(py_project / "NarutoHelper.spec")
+            str(py_project / "DailyQuestsHelper.spec")
         ]
 
         print(f"执行命令: {' '.join(pyinstaller_cmd)}")
@@ -95,7 +95,7 @@ def main(version):
         change_version(version)
 
         # 直接使用makensis命令（假设已在PATH中）
-        nsis_cmd = [get_real_path("bin/NSIS/Bin/makensis.exe"), str(nsis_project / "NarutoHelper.nsi")]
+        nsis_cmd = [get_real_path("bin/NSIS/Bin/makensis.exe"), str(nsis_project / "DailyQuestsHelper.nsi")]
         print(f"执行命令: {' '.join(nsis_cmd)}")
 
         # 在NSIS项目目录执行命令
@@ -106,7 +106,7 @@ def main(version):
         print("\n" + "=" * 50)
         print("步骤 3: 移动安装程序到发布目录")
 
-        installer_src = nsis_project / "NarutoHelperSetup.exe"
+        installer_src = nsis_project / "DailyQuestsHelperSetup.exe"
         if not installer_src.exists():
             raise FileNotFoundError(f"安装程序未生成: {installer_src}")
 
@@ -114,7 +114,7 @@ def main(version):
         release_dir = py_project / "release"
         release_dir.mkdir(parents=True, exist_ok=True)
 
-        installer_dest = release_dir / f"NarutoHelperSetup_V{version}.exe"
+        installer_dest = release_dir / f"DailyQuestsHelperSetup_V{version}.exe"
 
         # 移动文件
         shutil.move(str(installer_src), str(installer_dest))
@@ -221,7 +221,7 @@ if __name__ == "__main__":
     # 只打印输出的前500个字符（避免大量输出）
     print(result['full_output'][:500] + ('...' if len(result['full_output']) > 500 else ''))
 
-    # # 设置控制台编码为 UTF-8 (等效于 chcp 65001)
-    # os.system("chcp 65001 > nul")
-    # from _version import __version__
-    # main(__version__)
+    # 设置控制台编码为 UTF-8 (等效于 chcp 65001)
+    os.system("chcp 65001 > nul")
+    from _version import __version__
+    main(__version__)

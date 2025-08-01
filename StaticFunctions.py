@@ -60,11 +60,21 @@ def get_real_path(relative_path=""):
     return os.path.normpath(os.path.join(exe_dir, relative_path))
 
 
-def cv_save(image_path, image_array):
+def cv_save(image_path, image_array, params=None):
     """
     image_array:图像数组；image_path:图像的保存全路径
     """
-    cv2.imencode('.png', image_array)[1].tofile(image_path)
+    if params is None:
+        params = [
+            cv2.IMWRITE_PNG_COMPRESSION,
+            0  # 压缩等级0-9
+        ]
+    cv2.imencode('.png', image_array,params)[1].tofile(image_path)
+
+
+def cv_imread(file_path):
+    cv_img = cv2.imdecode(np.fromfile(file_path, dtype=np.uint8), -1)
+    return cv_img
 
 
 def extract_diamond_region(image):

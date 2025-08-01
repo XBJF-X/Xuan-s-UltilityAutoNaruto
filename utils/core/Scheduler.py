@@ -183,7 +183,7 @@ class Scheduler(QObject):
     add_task_ui_signal = pyqtSignal(BaseTask, int)
     remove_task_ui_signal = pyqtSignal(BaseTask, int)
 
-    def __init__(self, ui:Ui_DailyQuestsHelper, controller: Controller, config: Config):
+    def __init__(self, ui: Ui_DailyQuestsHelper, controller: Controller, config: Config):
         super().__init__()
         self.logger = logging.getLogger("调度器")
         self.running = False
@@ -251,19 +251,21 @@ class Scheduler(QObject):
 
         for key, template in templates.items():
             try:
-                template_path = get_real_path(f"{template['path']}{key}.png")
+                gray_path = get_real_path(os.path.join(template['path'], "Gray", f"{key}.png"))
+                alpha_path = get_real_path(os.path.join(template['path'], "Alpha", f"{key}.png"))
                 # self.logger.debug("模板路径：%s", template_path)
-                with open(template_path, 'rb') as f:
-                    img_array = np.frombuffer(f.read(), dtype=np.uint8)
-                    img = cv2.imdecode(img_array, cv2.IMREAD_UNCHANGED)
-                    if img is None:
-                        raise FileNotFoundError(f"文件存在但无法读取: {template_path}")
-                    template['BGRA'] = img
-                    # 提取Alpha通道作为掩码
-                    alpha = img[:, :, 3]
-                    template['GRAY'] = cv2.cvtColor(img[:, :, :3], cv2.COLOR_BGR2GRAY).astype(np.uint8)
-                    template["MASK"] = alpha.copy().astype(np.uint8) if len(alpha.shape) == 2 else alpha[
-                    :, :, 0]
+                with open(gray_path, 'rb') as f:
+                    gray_array = np.frombuffer(f.read(), dtype=np.uint8)
+                    gray = cv2.imdecode(gray_array, cv2.IMREAD_GRAYSCALE)
+                    if gray is None:
+                        raise FileNotFoundError(f"文件存在但无法读取: {gray_path}")
+                    template['GRAY'] = gray.astype(np.uint8)
+                with open(alpha_path, 'rb') as f:
+                    alpha_array = np.frombuffer(f.read(), dtype=np.uint8)
+                    alpha = cv2.imdecode(alpha_array, cv2.IMREAD_GRAYSCALE)
+                    if alpha is None:
+                        raise FileNotFoundError(f"文件存在但无法读取: {alpha_path}")
+                    template['MASK'] = alpha.astype(np.uint8)
 
                 templates_dic[key] = template
             except Exception as e:
@@ -447,7 +449,7 @@ class Scheduler(QObject):
     def save_screen(self):
         """保存截图到文件"""
         try:
-            screen=self.controller.screen_cap()
+            screen = self.controller.screen_cap()
             if screen is None or screen.size == 0:
                 self.logger.warning("图像数据为空，无法保存")
                 return
