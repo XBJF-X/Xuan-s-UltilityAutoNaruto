@@ -16,6 +16,8 @@ class Config:
 
         # 移除所有threading.Lock相关代码
         self.setting_dics: Dict[str, Any] = {
+            "串口": "127.0.0.1:5555",
+            "控制模式": 0,
             "截图模式": 1,
             "查找窗口": ['Qt5156QWindowIcon', 'LDPlayerMainFrame'],
             "默认分辨率": "1600x900",
@@ -32,7 +34,7 @@ class Config:
 
             # 雷电模拟器截图实例可能用到的参数
             "雷电安装路径": r"D:\Program Files (x86)\leidian\LDPlayer9",
-            "雷电实例索引":  0,
+            "雷电实例索引": 0,
         }
         # 加载配置
         self._load_config()

@@ -1,8 +1,12 @@
 import ctypes
+import json
 import logging
 import os
 import sys
+from typing import Dict
+
 import cv2
+import numpy as np
 import win32gui
 
 from PySide6.QtCore import Qt, QFile, QTextStream
@@ -11,10 +15,12 @@ from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QApplication
 
 from ui.DailyQuestsHelper_ui import Ui_DailyQuestsHelper
 from StaticFunctions import resource_path, get_real_path
-from utils.core.Controller import Controller
+from utils.core.Base.Recognizer import Recognizer
+from utils.core.Device import Device
 from utils.core.Logger import LogWindow
 from utils.core.Scheduler import Scheduler
 from utils.core.Config import Config
+from utils.core.Task import TREE_INDEX_DIC
 
 
 class DailyQuestsHelper(QMainWindow):
@@ -29,9 +35,11 @@ class DailyQuestsHelper(QMainWindow):
         # self.load_style_sheet()
         self.alloc_ui_ref_map()
         self.connect_ui2function()
-        # self.controller = Controller(self.config, "127.0.0.1:16416")
-        self.controller = Controller(self.config, "127.0.0.1:5555")
-        self.scheduler = Scheduler(self.UI, self.controller, self.config)
+        self.scene_templates = self.preprocess_templates("src/SceneInfo.json")
+        self.element_templates = self.preprocess_templates("src/ElementInfo.json")
+        self.recognizer = Recognizer(self.scene_templates, self.element_templates)
+        self.device = Device(self.config, self.recognizer)
+        self.scheduler = Scheduler(self.UI, self.device, self.config)
 
         self.logger.debug("初始化完成...")
 
@@ -77,11 +85,42 @@ class DailyQuestsHelper(QMainWindow):
         layout = QVBoxLayout(self.UI.logs_container)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.log_window)
+        self.UI.stackedWidget.setCurrentIndex(0)
 
     def connect_ui2function(self):
         self.UI.start_schedule_button.clicked.connect(self._on_start_schedule_button_clicked)
         self.UI.overview_panel_button.clicked.connect(lambda _: self.UI.stackedWidget.setCurrentIndex(0))
         self.UI.treeWidget.itemClicked.connect(self._on_tree_item_clicked)
+
+    def preprocess_templates(self, info_path) -> Dict:
+        """预处理模板图像"""
+        # self.logger.debug("预处理模版图像：")
+        templates_dic = {}
+        with open(get_real_path(info_path), "r", encoding='utf-8') as f:
+            templates = json.load(f)
+
+        for key, template in templates.items():
+            try:
+                gray_path = get_real_path(os.path.join(template['path'], "Gray", f"{key}.png"))
+                alpha_path = get_real_path(os.path.join(template['path'], "Alpha", f"{key}.png"))
+                # self.logger.debug("模板路径：%s", template_path)
+                with open(gray_path, 'rb') as f:
+                    gray_array = np.frombuffer(f.read(), dtype=np.uint8)
+                    gray = cv2.imdecode(gray_array, cv2.IMREAD_GRAYSCALE)
+                    if gray is None:
+                        raise FileNotFoundError(f"文件存在但无法读取: {gray_path}")
+                    template['GRAY'] = gray.astype(np.uint8)
+                with open(alpha_path, 'rb') as f:
+                    alpha_array = np.frombuffer(f.read(), dtype=np.uint8)
+                    alpha = cv2.imdecode(alpha_array, cv2.IMREAD_GRAYSCALE)
+                    if alpha is None:
+                        raise FileNotFoundError(f"文件存在但无法读取: {alpha_path}")
+                    template['MASK'] = alpha.astype(np.uint8)
+
+                templates_dic[key] = template
+            except Exception as e:
+                self.logger.error("模板预处理失败: %s", f"{template['path']}{key}.png")
+        return templates_dic
 
     def _on_start_schedule_button_clicked(self):
         if not self.scheduler.running:
@@ -96,16 +135,9 @@ class DailyQuestsHelper(QMainWindow):
             self.logger.debug("[调度器]已暂停")
 
     def _on_tree_item_clicked(self, item, column):
-        tree_index_dic = {
-            '日常助手设置': 1,
-            '通用设置': 2,
-            '每日日常': 3,
-            '每周日常': 4,
-            '活动': 5,
-        }
         text = item.text(column)
-        if tree_index_dic.get(text, 0):
-            self.UI.stackedWidget.setCurrentIndex(tree_index_dic[text])
+        if TREE_INDEX_DIC.get(text, 0):
+            self.UI.stackedWidget.setCurrentIndex(TREE_INDEX_DIC[text])
 
 
 if __name__ == "__main__":

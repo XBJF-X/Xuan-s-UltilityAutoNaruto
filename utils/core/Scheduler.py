@@ -12,17 +12,13 @@ import cv2
 import numpy as np
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import QThread, Signal, QMutex, QWaitCondition,  Qt, QObject,Slot
-from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout, QLayout
+from PySide6.QtCore import QThread, Signal, QMutex, QWaitCondition, Qt, QObject, Slot
+from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout, QLayout, QBoxLayout
 
 from StaticFunctions import get_real_path, cv_save
 from ui.DailyQuestsHelper_ui import Ui_DailyQuestsHelper
-from utils.core.Base.Clicker import Clicker
-from utils.core.Base.Detecter import Detecter
-from utils.core.Base.Recognizer import Recognizer
-from utils.core.Base.Swiper import Swiper
 from utils.core.Config import Config
-from utils.core.Controller import Controller
+from utils.core.Device import Device
 from utils.core.Task import TASK_TYPE_MAP
 from utils.core.Task.BaseTask import BaseTask, CycleType
 
@@ -49,7 +45,7 @@ class PriorityQueue(Generic[T]):
 
 
 class TaskWidgetList(Generic[W]):
-    def __init__(self, layout: QLayout):
+    def __init__(self, layout: QBoxLayout):
         self.widgets: List[W] = []  # 存储QWidget的列表
         self.tasks: Dict[str, BaseTask] = {}  # 任务名到任务对象的映射
         self.layout = layout  # 关联的布局
@@ -184,19 +180,13 @@ class Scheduler(QObject):
     add_task_ui_signal = Signal(BaseTask, int)
     remove_task_ui_signal = Signal(BaseTask, int)
 
-    def __init__(self, ui: Ui_DailyQuestsHelper, controller: Controller, config: Config):
+    def __init__(self, ui: Ui_DailyQuestsHelper, device: Device, config: Config):
         super().__init__()
         self.logger = logging.getLogger("调度器")
         self.running = False
         self.UI = ui
         self.config = config
-        self.scene_templates = self.preprocess_templates("src/SceneInfo.json")
-        self.element_templates = self.preprocess_templates("src/ElementInfo.json")
-        self.controller = controller
-        self.recognizer = Recognizer(self.scene_templates, self.element_templates)
-        self.detecter = Detecter(self.recognizer, self.controller)
-        self.clicker = Clicker(self.recognizer, self.controller, self.element_templates)
-        self.swiper = Swiper(self.controller)
+        self.device = device
         self.running_queue = PriorityQueue[BaseTask]()  # 执行队列
         self.ready_queue = PriorityQueue[BaseTask]()  # 就绪队列
         self.waiting_queue = PriorityQueue[BaseTask]()  # 等待队列
@@ -227,10 +217,7 @@ class Scheduler(QObject):
                 continue
             task_instance = task_class(
                 task_info,
-                self.controller,
-                self.detecter,
-                self.clicker,
-                self.swiper,
+                self.device,
                 self._execute_done_callback
             )
             self.waiting_queue.enqueue(task_instance)
@@ -244,51 +231,21 @@ class Scheduler(QObject):
         # self.snapshot1 = tracemalloc.take_snapshot()
         self.logger.debug("初始化完成...")
 
-    def preprocess_templates(self, info_path) -> Dict:
-        """预处理模板图像"""
-        # self.logger.debug("预处理模版图像：")
-        templates_dic = {}
-        with open(get_real_path(info_path), "r", encoding='utf-8') as f:
-            templates = json.load(f)
-
-        for key, template in templates.items():
-            try:
-                gray_path = get_real_path(os.path.join(template['path'], "Gray", f"{key}.png"))
-                alpha_path = get_real_path(os.path.join(template['path'], "Alpha", f"{key}.png"))
-                # self.logger.debug("模板路径：%s", template_path)
-                with open(gray_path, 'rb') as f:
-                    gray_array = np.frombuffer(f.read(), dtype=np.uint8)
-                    gray = cv2.imdecode(gray_array, cv2.IMREAD_GRAYSCALE)
-                    if gray is None:
-                        raise FileNotFoundError(f"文件存在但无法读取: {gray_path}")
-                    template['GRAY'] = gray.astype(np.uint8)
-                with open(alpha_path, 'rb') as f:
-                    alpha_array = np.frombuffer(f.read(), dtype=np.uint8)
-                    alpha = cv2.imdecode(alpha_array, cv2.IMREAD_GRAYSCALE)
-                    if alpha is None:
-                        raise FileNotFoundError(f"文件存在但无法读取: {alpha_path}")
-                    template['MASK'] = alpha.astype(np.uint8)
-
-                templates_dic[key] = template
-            except Exception as e:
-                self.logger.error("模板预处理失败: %s", f"{template['path']}{key}.png")
-        return templates_dic
-
     def init_scroll_area_layouts(self):
         """初始化三个滚动区域的布局"""
         # 运行队列区域布局
         self.running_layout = QtWidgets.QVBoxLayout(self.UI.scroll_area_running_content)
-        self.running_layout.setAlignment(Qt.AlignTop)
+        self.running_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.running_layout.setSpacing(5)
 
         # 就绪队列区域布局
         self.ready_layout = QtWidgets.QVBoxLayout(self.UI.scroll_area_ready_content)
-        self.ready_layout.setAlignment(Qt.AlignTop)
+        self.ready_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.ready_layout.setSpacing(5)
 
         # 等待队列区域布局
         self.waiting_layout = QtWidgets.QVBoxLayout(self.UI.scroll_area_wait_content)
-        self.waiting_layout.setAlignment(Qt.AlignTop)
+        self.waiting_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.waiting_layout.setSpacing(5)
 
     def create_task_ui(self, task: BaseTask, status):
@@ -437,7 +394,7 @@ class Scheduler(QObject):
         # 创建水平布局并设置为居中对齐
         item_layout = QHBoxLayout(item_widget)
         item_layout.setContentsMargins(10, 0, 10, 0)
-        item_layout.setAlignment(Qt.AlignCenter)
+        item_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # 倒计时时间标签
         time_label = QLabel(f"{task.task_name}\n下次执行:{task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
@@ -456,7 +413,7 @@ class Scheduler(QObject):
     def save_screen(self):
         """保存截图到文件"""
         try:
-            screen = self.controller.screen_cap()
+            screen = self.device.screen_cap()
             if screen is None or screen.size == 0:
                 self.logger.warning("图像数据为空，无法保存")
                 return

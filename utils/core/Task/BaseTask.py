@@ -8,11 +8,7 @@ from typing import Dict, List, Callable
 from zoneinfo import ZoneInfo
 
 from PySide6.QtCore import QTime, QThread
-
-from utils.core.Base.Clicker import Clicker
-from utils.core.Base.Detecter import Detecter
-from utils.core.Base.Swiper import Swiper
-from utils.core.Controller import Controller
+from utils.core.Device import Device
 
 
 class CycleType(enum.IntEnum):
@@ -40,10 +36,7 @@ class BaseTask:
     def __init__(
         self,
         data: Dict,
-        controller: Controller,
-        detecter: Detecter,
-        clicker: Clicker,
-        swiper: Swiper,
+        device: Device,
         callback: Callable
     ):
         # 任务信息
@@ -67,10 +60,7 @@ class BaseTask:
             # 从时间戳转换为datetime对象（指定UTC时区避免歧义）
             self.next_execute_time = datetime.fromtimestamp(next_exec_ts, tz=ZoneInfo("Asia/Shanghai"))
         # 任务执行需要的组件
-        self.controller = controller
-        self.detecter = detecter
-        self.clicker = clicker
-        self.swiper = swiper
+        self.device = device
         self.callback = callback
 
     def __lt__(self, other):
@@ -117,7 +107,7 @@ class BaseTask:
         """
         start_time = time.perf_counter()
         while time.perf_counter() - start_time < max_time:
-            if self.detecter.detect(params):
+            if self.device.detect(params):
                 QThread.msleep(int(wait_time*1000))
                 return True
         return False
@@ -128,7 +118,7 @@ class BaseTask:
         """
         start_time = time.perf_counter()
         while time.perf_counter() - start_time < max_time:
-            if self.clicker.click(params, self.resolution, times=click_times):
+            if self.device.click(params, self.resolution, times=click_times):
                 QThread.msleep(int(wait_time*1000))
                 return True
         return False
@@ -191,7 +181,7 @@ class BaseTask:
         # 点击工作函数
         def click_worker(coord):
             x, y = coord
-            self.controller.click_position((x, y), resolution=self.resolution, times=2)
+            self.device.click_position((x, y), resolution=self.resolution, times=2)
             return x, y
 
         # 如果设置了停止条件，启动判定线程
@@ -255,7 +245,7 @@ class BaseTask:
                 if "click" in action:
                     self.click_and_wait(action['click'])
                 elif "swipe" in action:
-                    self.swiper.swipe(action['swipe'], self.resolution)
+                    self.device.swipe(action['swipe'], self.resolution)
         return False
 
     def detect_and_search(self, params_list, search_actions, search_times, once_max_time=0.1, wait_time=1):
@@ -289,7 +279,7 @@ class BaseTask:
                 if "click" in action:
                     self.click_and_wait(action['click'], max_time=1)
                 elif "swipe" in action:
-                    self.swiper.swipe(action['swipe'], self.resolution)
+                    self.device.swipe(action['swipe'], self.resolution)
         return False
 
     def click_and_input(self, input_edit_params, input_text):
@@ -297,7 +287,7 @@ class BaseTask:
         第一个参数为需要点击的输入框的参数，第二个为要输入的文字
         """
         if self.click_and_wait(input_edit_params):
-            self.controller.device.shell(f"input text {input_text}")
+            self.device.input(input_text)
             self.click_and_wait(input_edit_params)
             return True
         return False
@@ -356,7 +346,7 @@ class BaseTask:
         self.logger.debug(f"回退至[{home_name}]")
         attempt = 0
         start = time.perf_counter()
-        while not self.detecter.detect({
+        while not self.device.detect({
             'type': "SCENE",
             'name': home_name
         }):
@@ -378,7 +368,7 @@ class BaseTask:
         """
         模拟设备按键，输入key即为按键名称，调用u2的内置函数，定义自查
         """
-        self.controller.device.press(key)
+        self.device.press(key)
         if wait_time:
             QThread.msleep(int(wait_time*1000))
 
@@ -386,7 +376,7 @@ class BaseTask:
         """
         重启火影忍者
         """
-        self.controller.restart()
+        self.device.restart()
 
     def _update_next_execute_time(self,
                                   time_offset: timedelta = timedelta(hours=5),

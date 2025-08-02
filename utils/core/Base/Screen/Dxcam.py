@@ -3,14 +3,13 @@ import dxcam
 from utils.core.Config import Config
 
 
-class Common:
+class Dxcam:
     """
     通用的截图方案，使用Dxcam库截取全屏，特点：
     1.速度快（单次约5-10ms）
     2.模拟器窗口必须要在屏幕内，不能有任何边界超出
     3.模拟器窗口大小不能变动
     """
-
     def __init__(self, config: Config):
         self.logger = logging.getLogger(self.__class__.__name__)
         self.config = config
