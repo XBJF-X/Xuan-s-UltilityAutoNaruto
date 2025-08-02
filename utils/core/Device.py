@@ -16,9 +16,9 @@ class Device:
         self.logger = logging.getLogger(self.__class__.__name__)
         self.package_name = "com.tencent.KiHan"
         self.controller = Control(config, initial=True)
-        self.screen_size = self.controller.control_instance.screen_size
         self.screener = Screen(config, initial=True)
         self.recognizer = recognizer
+        self.screen_size = self.controller.control_instance.screen_size
         self.logger.debug("初始化完成...")
 
     def screen_cap(self):
@@ -73,11 +73,9 @@ class Device:
 
     def input(self, input_text):
         self.controller.input(input_text)
-        pass
 
     def press(self, key):
         self.controller.press(key)
-        pass
 
     def detect(self, params: Dict) -> bool:
         """
