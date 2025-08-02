@@ -71,7 +71,7 @@ class Control:
 
     def click(self, x, y):
         if self.control_instance_ready:
-            self.control_instance.swipe(x, y)
+            self.control_instance.click(x, y)
             return True
         else:
             self.logger.warning("控制实例未初始化或切换未完成")
@@ -79,7 +79,7 @@ class Control:
 
     def swipe(self, start_coordinate, end_coordinate, duration=0.5):
         if self.control_instance_ready:
-            self.control_instance.swipe(start_coordinate, end_coordinate, duration=0.5)
+            self.control_instance.swipe(start_coordinate, end_coordinate, duration=duration)
             return True
         else:
             self.logger.warning("控制实例未初始化或切换未完成")
@@ -88,7 +88,6 @@ class Control:
     def app_stop(self, package_name):
         if self.control_instance_ready:
             self.control_instance.app_stop(package_name)
-            screen = self.control_instance.screencap()
             return True
         else:
             self.logger.warning("控制实例未初始化或切换未完成")
@@ -104,5 +103,6 @@ class Control:
 
     def input(self, input_text):
         self.control_instance.input(input_text)
+
     def press(self, key):
         self.control_instance.press(key)

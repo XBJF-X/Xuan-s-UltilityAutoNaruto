@@ -157,4 +157,5 @@ class RenWuJiHuiSuo(BaseTask):
         finally:
             self.home()
             self.logger.debug(f"执行完毕")
+            self.logger.debug(f"下次执行时间为：{self.next_execute_time}")
             self.callback(self)

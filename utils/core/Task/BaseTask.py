@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Callable
 from zoneinfo import ZoneInfo
 
-from PySide6.QtCore import QTime, QThread
+from PySide6.QtCore import QThread
 from utils.core.Device import Device
 
 
@@ -387,7 +387,7 @@ class BaseTask:
         传入timedelta对象可以自定义延迟，即当前时间后多久再次执行
         """
         # 明确指定中国时区（带时区的当前时间）
-        china_tz = ZoneInfo("Asia/Shanghai")  # 或 pytz.timezone("Asia/Shanghai")
+        china_tz = ZoneInfo("Asia/Shanghai")
         current_time = datetime.now(china_tz)
 
         if delta is not None:
@@ -408,7 +408,7 @@ class BaseTask:
             next_monday = current_time + timedelta(days=days_ahead)
             self.next_execute_time = datetime(
                 next_monday.year, next_monday.month, next_monday.day, 0, 0,
-                tzinfo=china_tz  # 关键：添加时区信息
+                tzinfo=china_tz
             ) + time_offset
 
         elif self.cycle_type == CycleType.MONTHLY:
@@ -421,3 +421,5 @@ class BaseTask:
                 year, month, 1, 0, 0,
                 tzinfo=china_tz  # 关键：添加时区信息
             ) + time_offset
+        else:
+            self.logger.debug(f"{CycleType(self.cycle_type)}任务")
