@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from utils.core.Task.BaseTask import BaseTask
+
 
 class PaiHangBangDianZan(BaseTask):
 
@@ -53,12 +56,12 @@ class PaiHangBangDianZan(BaseTask):
                 raise self.StepFailedError("点赞未成功，可能是已经点赞过了")
             else:
                 self.logger.debug("点赞成功")
-            self._update_next_execute_time()
+            self._update_next_execute_time(time_offset=timedelta(hours=11))
 
         except self.StepFailedError as e:
             self.logger.error(e)
         except self.EndEarly as e:
-            self._update_next_execute_time()
+            self._update_next_execute_time(time_offset=timedelta(hours=11))
             self.logger.warning(e)
         finally:
             self.home()

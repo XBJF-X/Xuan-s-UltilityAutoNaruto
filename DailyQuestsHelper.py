@@ -32,7 +32,6 @@ class DailyQuestsHelper(QMainWindow):
         self.log_window = LogWindow(self.config)
         self.logger = logging.getLogger("日常助手")
         self.init_environment()
-        # self.load_style_sheet()
         self.alloc_ui_ref_map()
         self.connect_ui2function()
         self.scene_templates = self.preprocess_templates("src/SceneInfo.json")
@@ -67,18 +66,8 @@ class DailyQuestsHelper(QMainWindow):
 
         cv2.ocl.setUseOpenCL(True)
         self.setWindowIcon(QIcon(resource_path("src/ASDS.ico")))
+        self.resize(1400, 600)
         # self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
-
-    def load_style_sheet(self):
-        """加载全局QSS样式"""
-        file = QFile(get_real_path("ui/Global.qss"))  # QSS文件路径
-        if file.open(QFile.ReadOnly | QFile.Text):
-            stream = QTextStream(file)
-            style_sheet = stream.readAll()
-            QApplication.instance().setStyleSheet(style_sheet)  # 应用到整个应用
-            file.close()
-        else:
-            print(f"无法加载QSS文件: {file.errorString()}")
 
     def alloc_ui_ref_map(self):
         # 假设你在 UI 文件中有一个 QWidget 用于放置日志窗口，这里命名为 logs_container
