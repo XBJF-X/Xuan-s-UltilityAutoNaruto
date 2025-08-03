@@ -26,17 +26,22 @@ class Ui_DailyQuestsHelper(object):
     def setupUi(self, DailyQuestsHelper):
         if not DailyQuestsHelper.objectName():
             DailyQuestsHelper.setObjectName(u"DailyQuestsHelper")
-        DailyQuestsHelper.resize(962, 716)
+        DailyQuestsHelper.resize(1179, 607)
         font = QFont()
-        font.setFamilies([u"\u4ed3\u8033\u4eca\u697702-6763"])
+        font.setFamilies([u"\u9ed1\u4f53"])
+        font.setPointSize(15)
+        font.setBold(False)
+        font.setItalic(False)
         DailyQuestsHelper.setFont(font)
-        DailyQuestsHelper.setStyleSheet(u"")
+        DailyQuestsHelper.setStyleSheet(u"/*\n"
+"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
+"font: 15pt \"Microsoft YaHei UI\";\n"
+"*/\n"
+"font: 15pt \"\u9ed1\u4f53\";\n"
+"")
         self.centralwidget = QWidget(DailyQuestsHelper)
         self.centralwidget.setObjectName(u"centralwidget")
-        font1 = QFont()
-        font1.setFamilies([u"\u4ed3\u8033\u4eca\u697702-6763"])
-        font1.setPointSize(15)
-        self.centralwidget.setFont(font1)
+        self.centralwidget.setFont(font)
         self.horizontalLayout = QHBoxLayout(self.centralwidget)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.widget_10 = QWidget(self.centralwidget)
@@ -61,7 +66,7 @@ class Ui_DailyQuestsHelper(object):
         palette.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush)
         palette.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush)
         self.widget_10.setPalette(palette)
-        self.widget_10.setFont(font1)
+        self.widget_10.setFont(font)
         self.widget_10.setStyleSheet(u"background-color: white;")
         self.verticalLayout_5 = QVBoxLayout(self.widget_10)
         self.verticalLayout_5.setSpacing(0)
@@ -69,7 +74,7 @@ class Ui_DailyQuestsHelper(object):
         self.verticalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.widget_9 = QWidget(self.widget_10)
         self.widget_9.setObjectName(u"widget_9")
-        self.widget_9.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";")
+        self.widget_9.setStyleSheet(u"")
         self.verticalLayout_8 = QVBoxLayout(self.widget_9)
         self.verticalLayout_8.setObjectName(u"verticalLayout_8")
         self.overview_panel_button = QPushButton(self.widget_9)
@@ -80,12 +85,7 @@ class Ui_DailyQuestsHelper(object):
         sizePolicy1.setHeightForWidth(self.overview_panel_button.sizePolicy().hasHeightForWidth())
         self.overview_panel_button.setSizePolicy(sizePolicy1)
         self.overview_panel_button.setMinimumSize(QSize(0, 40))
-        font2 = QFont()
-        font2.setFamilies([u"\u4ed3\u8033\u4eca\u697702-6763"])
-        font2.setPointSize(15)
-        font2.setBold(False)
-        font2.setItalic(False)
-        self.overview_panel_button.setFont(font2)
+        self.overview_panel_button.setFont(font)
         self.overview_panel_button.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
         self.overview_panel_button.setStyleSheet(u"QPushButton{\n"
 "border: 2px solid #b5b5b5;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
@@ -160,7 +160,11 @@ class Ui_DailyQuestsHelper(object):
         QTreeWidgetItem(self.treeWidget)
         self.treeWidget.setObjectName(u"treeWidget")
         self.treeWidget.setMaximumSize(QSize(16777215, 16777215))
-        self.treeWidget.setFont(font)
+        font1 = QFont()
+        font1.setFamilies([u"\u9ed1\u4f53"])
+        font1.setBold(False)
+        font1.setItalic(False)
+        self.treeWidget.setFont(font1)
         self.treeWidget.setStyleSheet(u"QTreeWidget {\n"
 "	background-color:#f5f5f5;\n"
 "	margin-left:10px;\n"
@@ -283,14 +287,14 @@ class Ui_DailyQuestsHelper(object):
         self.stackedWidget.setObjectName(u"stackedWidget")
         self.Overview_Panel_widget = QWidget()
         self.Overview_Panel_widget.setObjectName(u"Overview_Panel_widget")
+        self.Overview_Panel_widget.setEnabled(True)
         self.horizontalLayout_2 = QHBoxLayout(self.Overview_Panel_widget)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.widget_2 = QWidget(self.Overview_Panel_widget)
         self.widget_2.setObjectName(u"widget_2")
         self.widget_2.setMinimumSize(QSize(270, 0))
         self.widget_2.setMaximumSize(QSize(270, 16777215))
-        self.widget_2.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_2.setStyleSheet(u"")
         self.verticalLayout_3 = QVBoxLayout(self.widget_2)
         self.verticalLayout_3.setSpacing(9)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
@@ -352,24 +356,30 @@ class Ui_DailyQuestsHelper(object):
 
         self.start_schedule_button = QPushButton(self.widget_4)
         self.start_schedule_button.setObjectName(u"start_schedule_button")
+        self.start_schedule_button.setEnabled(True)
         self.start_schedule_button.setStyleSheet(u"QPushButton{\n"
 "border: 2px solid #b5b5b5;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
 "background-color: rgb(255, 255, 255);\n"
 "border-radius:10px;\n"
 "outline:none;\n"
 "color:#0f322f;\n"
-"padding-top:2px;\n"
-"padding-bottom:2px;\n"
+"padding-top:5px;\n"
+"padding-bottom:5px;\n"
 "}\n"
 "QPushButton::hover {\n"
 "border: 2px solid #39C5BB;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
 "background-color: rgb(255, 255, 255);\n"
 "border-radius:10px;\n"
 "outline:none;\n"
-"padding-top:2px;\n"
+"padding-top:5px;\n"
 "color:#39C5BB;\n"
-"padding-bottom:2px;\n"
-"}")
+"padding-bottom:5px;\n"
+"}\n"
+"QPushButton:disabled {\n"
+"        background-color: #dedede;  /* \u80cc\u666f\u8272 */\n"
+"        color: #b5b5b5;             /* \u6587\u5b57\u989c\u8272 */\n"
+"        border: 2px solid #b5b5b5;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
+"    }")
 
         self.horizontalLayout_3.addWidget(self.start_schedule_button)
 
@@ -585,7 +595,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_2.setWidgetResizable(True)
         self.scroll_area_ready_content = QWidget()
         self.scroll_area_ready_content.setObjectName(u"scroll_area_ready_content")
-        self.scroll_area_ready_content.setGeometry(QRect(0, 0, 230, 192))
+        self.scroll_area_ready_content.setGeometry(QRect(0, 0, 230, 150))
         self.scrollArea_2.setWidget(self.scroll_area_ready_content)
 
         self.verticalLayout_6.addWidget(self.scrollArea_2)
@@ -689,7 +699,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_3.setWidgetResizable(True)
         self.scroll_area_wait_content = QWidget()
         self.scroll_area_wait_content.setObjectName(u"scroll_area_wait_content")
-        self.scroll_area_wait_content.setGeometry(QRect(0, 0, 230, 191))
+        self.scroll_area_wait_content.setGeometry(QRect(0, 0, 230, 150))
         self.scrollArea_3.setWidget(self.scroll_area_wait_content)
 
         self.verticalLayout_7.addWidget(self.scrollArea_3)
@@ -722,9 +732,8 @@ class Ui_DailyQuestsHelper(object):
 "				border-radius:10px;\n"
 "            }\n"
 "QLabel{color:#0f322f;}\n"
-"\n"
 "/* \u8c03\u6574\u52fe\u9009\u6846\u7684\u5927\u5c0f */\n"
-"QCheckBox::indicator {margin-top:2px;\n"
+"QCheckBox::indicator {\n"
 "color:#0f322f;\n"
 "	width: 14px;      /* \u52fe\u9009\u6846\u5bbd\u5ea6 */\n"
 "	height: 14px;     /* \u52fe\u9009\u6846\u9ad8\u5ea6 */\n"
@@ -750,8 +759,8 @@ class Ui_DailyQuestsHelper(object):
 "	border-color: #cccccc;\n"
 "}\n"
 "/* 1. \u672a\u9009\u4e2d\uff08\u9ed8\u8ba4\uff09\u72b6\u6001\u7684\u4e0b\u8fb9\u6846 */\n"
-""
-                        "            QLineEdit {\n"
+"            QLine"
+                        "Edit {\n"
 "                /* \u6e05\u9664\u9ed8\u8ba4\u8fb9\u6846\uff0c\u53ea\u4fdd\u7559\u4e0b\u8fb9\u6846 */\n"
 "                border: none;\n"
 "                border-bottom: 3px solid #969696;  /* \u7070\u8272\u4e0b\u8fb9\u6846 */\n"
@@ -766,32 +775,35 @@ class Ui_DailyQuestsHelper(object):
 "                outline: none;  /* \u53bb\u9664\u7cfb\u7edf\u9ed8\u8ba4\u7684\u805a\u7126\u5916\u8fb9\u6846 */\n"
 "            }\n"
 "            \n"
-"           "
-                        " /* 3. \u9f20\u6807\u7565\u8fc7\uff08\u60ac\u505c\uff09\u72b6\u6001\u7684\u4e0b\u8fb9\u6846 */\n"
+"            /* 3. \u9f20\u6807"
+                        "\u7565\u8fc7\uff08\u60ac\u505c\uff09\u72b6\u6001\u7684\u4e0b\u8fb9\u6846 */\n"
 "            QLineEdit:hover {\n"
 "                border-bottom: 4px solid #0f322f;  /* \u6df1\u7070\u8272\u4e0b\u8fb9\u6846\uff08\u4e2d\u95f4\u72b6\u6001\uff09 */\n"
 "            }")
         self.horizontalLayout_4 = QHBoxLayout(self.widget_12)
+        self.horizontalLayout_4.setSpacing(15)
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.label_5 = QLabel(self.widget_12)
         self.label_5.setObjectName(u"label_5")
-        font3 = QFont()
-        font3.setFamilies([u"\u4ed3\u8033\u4eca\u697702-6763"])
-        font3.setBold(False)
-        font3.setItalic(False)
-        self.label_5.setFont(font3)
+        self.label_5.setFont(font1)
         self.label_5.setStyleSheet(u"font-size:25px;\n"
 "")
         self.label_5.setIndent(10)
 
-        self.horizontalLayout_4.addWidget(self.label_5)
+        self.horizontalLayout_4.addWidget(self.label_5, 0, Qt.AlignmentFlag.AlignLeft)
+
+        self.bool_debug = QCheckBox(self.widget_12)
+        self.bool_debug.setObjectName(u"bool_debug")
+
+        self.horizontalLayout_4.addWidget(self.bool_debug, 0, Qt.AlignmentFlag.AlignRight)
 
         self.bool_save_img = QCheckBox(self.widget_12)
         self.bool_save_img.setObjectName(u"bool_save_img")
-        self.bool_save_img.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";")
+        self.bool_save_img.setStyleSheet(u"")
 
         self.horizontalLayout_4.addWidget(self.bool_save_img, 0, Qt.AlignmentFlag.AlignRight)
 
+        self.horizontalLayout_4.setStretch(0, 1)
 
         self.verticalLayout_10.addWidget(self.widget_12)
 
@@ -800,6 +812,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.logs_container = QWidget(self.widget_3)
         self.logs_container.setObjectName(u"logs_container")
+        self.logs_container.setEnabled(True)
         self.logs_container.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
         self.logs_container.setStyleSheet(u"")
 
@@ -818,8 +831,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_25.setObjectName(u"horizontalLayout_25")
         self.widget_44 = QWidget(self.DengLuJiangLi_widget)
         self.widget_44.setObjectName(u"widget_44")
-        self.widget_44.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_44.setStyleSheet(u"")
         self.horizontalLayout_24 = QHBoxLayout(self.widget_44)
         self.horizontalLayout_24.setObjectName(u"horizontalLayout_24")
         self.horizontalSpacer_23 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -833,7 +845,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_15.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_12 = QWidget()
         self.scrollAreaWidgetContents_12.setObjectName(u"scrollAreaWidgetContents_12")
-        self.scrollAreaWidgetContents_12.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_12.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_73 = QVBoxLayout(self.scrollAreaWidgetContents_12)
         self.verticalLayout_73.setSpacing(20)
         self.verticalLayout_73.setObjectName(u"verticalLayout_73")
@@ -924,7 +936,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_75 = QLabel(self.widget_45)
         self.label_75.setObjectName(u"label_75")
         self.label_75.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_75.addWidget(self.label_75)
@@ -932,11 +944,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_24.addLayout(self.verticalLayout_75, 0, 0, 1, 1)
 
-        self.checkBox_16 = QCheckBox(self.widget_45)
-        self.checkBox_16.setObjectName(u"checkBox_16")
-        self.checkBox_16.setStyleSheet(u"")
+        self.DengLuJiangLi_Enable = QCheckBox(self.widget_45)
+        self.DengLuJiangLi_Enable.setObjectName(u"DengLuJiangLi_Enable")
+        self.DengLuJiangLi_Enable.setStyleSheet(u"")
 
-        self.gridLayout_24.addWidget(self.checkBox_16, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_24.addWidget(self.DengLuJiangLi_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_76 = QVBoxLayout()
         self.verticalLayout_76.setObjectName(u"verticalLayout_76")
@@ -948,7 +960,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_133 = QLabel(self.widget_45)
         self.label_133.setObjectName(u"label_133")
         self.label_133.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_76.addWidget(self.label_133)
@@ -956,11 +968,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_24.addLayout(self.verticalLayout_76, 1, 0, 1, 1)
 
-        self.lineEdit_20 = QLineEdit(self.widget_45)
-        self.lineEdit_20.setObjectName(u"lineEdit_20")
-        self.lineEdit_20.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.DengLuJiangLi_next_execute_time = QLineEdit(self.widget_45)
+        self.DengLuJiangLi_next_execute_time.setObjectName(u"DengLuJiangLi_next_execute_time")
+        self.DengLuJiangLi_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.DengLuJiangLi_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_24.addWidget(self.lineEdit_20, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_24.addWidget(self.DengLuJiangLi_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_24.setColumnStretch(0, 5)
         self.gridLayout_24.setColumnStretch(1, 2)
@@ -995,8 +1008,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_32.setObjectName(u"horizontalLayout_32")
         self.widget_52 = QWidget(self.PaiHangBangDianZan_widget)
         self.widget_52.setObjectName(u"widget_52")
-        self.widget_52.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_52.setStyleSheet(u";")
         self.horizontalLayout_31 = QHBoxLayout(self.widget_52)
         self.horizontalLayout_31.setObjectName(u"horizontalLayout_31")
         self.horizontalSpacer_31 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -1010,7 +1022,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_19.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_16 = QWidget()
         self.scrollAreaWidgetContents_16.setObjectName(u"scrollAreaWidgetContents_16")
-        self.scrollAreaWidgetContents_16.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_16.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_89 = QVBoxLayout(self.scrollAreaWidgetContents_16)
         self.verticalLayout_89.setSpacing(20)
         self.verticalLayout_89.setObjectName(u"verticalLayout_89")
@@ -1101,7 +1113,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_87 = QLabel(self.widget_53)
         self.label_87.setObjectName(u"label_87")
         self.label_87.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_91.addWidget(self.label_87)
@@ -1109,11 +1121,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_28.addLayout(self.verticalLayout_91, 0, 0, 1, 1)
 
-        self.checkBox_20 = QCheckBox(self.widget_53)
-        self.checkBox_20.setObjectName(u"checkBox_20")
-        self.checkBox_20.setStyleSheet(u"")
+        self.PaiHangBangDianZan_Enable = QCheckBox(self.widget_53)
+        self.PaiHangBangDianZan_Enable.setObjectName(u"PaiHangBangDianZan_Enable")
+        self.PaiHangBangDianZan_Enable.setStyleSheet(u"")
 
-        self.gridLayout_28.addWidget(self.checkBox_20, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_28.addWidget(self.PaiHangBangDianZan_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_92 = QVBoxLayout()
         self.verticalLayout_92.setObjectName(u"verticalLayout_92")
@@ -1125,7 +1137,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_141 = QLabel(self.widget_53)
         self.label_141.setObjectName(u"label_141")
         self.label_141.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_92.addWidget(self.label_141)
@@ -1133,11 +1145,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_28.addLayout(self.verticalLayout_92, 1, 0, 1, 1)
 
-        self.lineEdit_24 = QLineEdit(self.widget_53)
-        self.lineEdit_24.setObjectName(u"lineEdit_24")
-        self.lineEdit_24.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.PaiHangBangDianZan_next_execute_time = QLineEdit(self.widget_53)
+        self.PaiHangBangDianZan_next_execute_time.setObjectName(u"PaiHangBangDianZan_next_execute_time")
+        self.PaiHangBangDianZan_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.PaiHangBangDianZan_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_28.addWidget(self.lineEdit_24, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_28.addWidget(self.PaiHangBangDianZan_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_28.setColumnStretch(0, 5)
         self.gridLayout_28.setColumnStretch(1, 2)
@@ -1172,8 +1185,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_34.setObjectName(u"horizontalLayout_34")
         self.widget_54 = QWidget(self.MeiYueQianDao_widget)
         self.widget_54.setObjectName(u"widget_54")
-        self.widget_54.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_54.setStyleSheet(u"")
         self.horizontalLayout_33 = QHBoxLayout(self.widget_54)
         self.horizontalLayout_33.setObjectName(u"horizontalLayout_33")
         self.horizontalSpacer_33 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -1187,7 +1199,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_20.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_17 = QWidget()
         self.scrollAreaWidgetContents_17.setObjectName(u"scrollAreaWidgetContents_17")
-        self.scrollAreaWidgetContents_17.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_17.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_93 = QVBoxLayout(self.scrollAreaWidgetContents_17)
         self.verticalLayout_93.setSpacing(20)
         self.verticalLayout_93.setObjectName(u"verticalLayout_93")
@@ -1278,7 +1290,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_90 = QLabel(self.widget_55)
         self.label_90.setObjectName(u"label_90")
         self.label_90.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_95.addWidget(self.label_90)
@@ -1286,11 +1298,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_29.addLayout(self.verticalLayout_95, 0, 0, 1, 1)
 
-        self.checkBox_21 = QCheckBox(self.widget_55)
-        self.checkBox_21.setObjectName(u"checkBox_21")
-        self.checkBox_21.setStyleSheet(u"")
+        self.MeiYueQianDao_Enable = QCheckBox(self.widget_55)
+        self.MeiYueQianDao_Enable.setObjectName(u"MeiYueQianDao_Enable")
+        self.MeiYueQianDao_Enable.setStyleSheet(u"")
 
-        self.gridLayout_29.addWidget(self.checkBox_21, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_29.addWidget(self.MeiYueQianDao_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_96 = QVBoxLayout()
         self.verticalLayout_96.setObjectName(u"verticalLayout_96")
@@ -1302,7 +1314,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_143 = QLabel(self.widget_55)
         self.label_143.setObjectName(u"label_143")
         self.label_143.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_96.addWidget(self.label_143)
@@ -1310,11 +1322,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_29.addLayout(self.verticalLayout_96, 1, 0, 1, 1)
 
-        self.lineEdit_25 = QLineEdit(self.widget_55)
-        self.lineEdit_25.setObjectName(u"lineEdit_25")
-        self.lineEdit_25.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.MeiYueQianDao_next_execute_time = QLineEdit(self.widget_55)
+        self.MeiYueQianDao_next_execute_time.setObjectName(u"MeiYueQianDao_next_execute_time")
+        self.MeiYueQianDao_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.MeiYueQianDao_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_29.addWidget(self.lineEdit_25, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_29.addWidget(self.MeiYueQianDao_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_29.setColumnStretch(0, 5)
         self.gridLayout_29.setColumnStretch(1, 2)
@@ -1349,8 +1362,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_14.setObjectName(u"horizontalLayout_14")
         self.widget_24 = QWidget(self.GouMaiTiLi_widget)
         self.widget_24.setObjectName(u"widget_24")
-        self.widget_24.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_24.setStyleSheet(u"")
         self.horizontalLayout_13 = QHBoxLayout(self.widget_24)
         self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
         self.horizontalSpacer_11 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -1364,7 +1376,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_9.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_6 = QWidget()
         self.scrollAreaWidgetContents_6.setObjectName(u"scrollAreaWidgetContents_6")
-        self.scrollAreaWidgetContents_6.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_6.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_46 = QVBoxLayout(self.scrollAreaWidgetContents_6)
         self.verticalLayout_46.setSpacing(20)
         self.verticalLayout_46.setObjectName(u"verticalLayout_46")
@@ -1455,7 +1467,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_57 = QLabel(self.widget_30)
         self.label_57.setObjectName(u"label_57")
         self.label_57.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_54.addWidget(self.label_57)
@@ -1463,11 +1475,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_18.addLayout(self.verticalLayout_54, 0, 0, 1, 1)
 
-        self.checkBox_10 = QCheckBox(self.widget_30)
-        self.checkBox_10.setObjectName(u"checkBox_10")
-        self.checkBox_10.setStyleSheet(u"")
+        self.GouMaiTiLi_Enable = QCheckBox(self.widget_30)
+        self.GouMaiTiLi_Enable.setObjectName(u"GouMaiTiLi_Enable")
+        self.GouMaiTiLi_Enable.setStyleSheet(u"")
 
-        self.gridLayout_18.addWidget(self.checkBox_10, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_18.addWidget(self.GouMaiTiLi_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_55 = QVBoxLayout()
         self.verticalLayout_55.setObjectName(u"verticalLayout_55")
@@ -1479,7 +1491,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_121 = QLabel(self.widget_30)
         self.label_121.setObjectName(u"label_121")
         self.label_121.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_55.addWidget(self.label_121)
@@ -1487,11 +1499,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_18.addLayout(self.verticalLayout_55, 1, 0, 1, 1)
 
-        self.lineEdit_14 = QLineEdit(self.widget_30)
-        self.lineEdit_14.setObjectName(u"lineEdit_14")
-        self.lineEdit_14.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.GouMaiTiLi_next_execute_time = QLineEdit(self.widget_30)
+        self.GouMaiTiLi_next_execute_time.setObjectName(u"GouMaiTiLi_next_execute_time")
+        self.GouMaiTiLi_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.GouMaiTiLi_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_18.addWidget(self.lineEdit_14, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_18.addWidget(self.GouMaiTiLi_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_18.setColumnStretch(0, 5)
         self.gridLayout_18.setColumnStretch(1, 2)
@@ -1691,7 +1704,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_43 = QLabel(self.widget_32)
         self.label_43.setObjectName(u"label_43")
         self.label_43.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
         self.label_43.setTextFormat(Qt.TextFormat.AutoText)
         self.label_43.setWordWrap(True)
@@ -1701,15 +1714,15 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_13.addWidget(self.widget_32, 0, 0, 1, 1)
 
-        self.spinBox_4 = QSpinBox(self.widget_26)
-        self.spinBox_4.setObjectName(u"spinBox_4")
-        self.spinBox_4.setMaximumSize(QSize(80, 35))
-        self.spinBox_4.setWrapping(False)
-        self.spinBox_4.setFrame(True)
-        self.spinBox_4.setMaximum(20)
-        self.spinBox_4.setValue(0)
+        self.GouMaiTiLi_times = QSpinBox(self.widget_26)
+        self.GouMaiTiLi_times.setObjectName(u"GouMaiTiLi_times")
+        self.GouMaiTiLi_times.setMaximumSize(QSize(80, 35))
+        self.GouMaiTiLi_times.setWrapping(False)
+        self.GouMaiTiLi_times.setFrame(True)
+        self.GouMaiTiLi_times.setMaximum(20)
+        self.GouMaiTiLi_times.setValue(0)
 
-        self.gridLayout_13.addWidget(self.spinBox_4, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_13.addWidget(self.GouMaiTiLi_times, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
 
         self.gridLayout_13.setColumnStretch(0, 5)
         self.gridLayout_13.setColumnStretch(1, 2)
@@ -1744,8 +1757,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
         self.widget_27 = QWidget(self.JinBiZhaoCai_widget)
         self.widget_27.setObjectName(u"widget_27")
-        self.widget_27.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_27.setStyleSheet(u"")
         self.horizontalLayout_15 = QHBoxLayout(self.widget_27)
         self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
         self.horizontalSpacer_13 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -1759,7 +1771,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_10.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_7 = QWidget()
         self.scrollAreaWidgetContents_7.setObjectName(u"scrollAreaWidgetContents_7")
-        self.scrollAreaWidgetContents_7.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_7.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_47 = QVBoxLayout(self.scrollAreaWidgetContents_7)
         self.verticalLayout_47.setSpacing(20)
         self.verticalLayout_47.setObjectName(u"verticalLayout_47")
@@ -1850,7 +1862,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_60 = QLabel(self.widget_33)
         self.label_60.setObjectName(u"label_60")
         self.label_60.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_56.addWidget(self.label_60)
@@ -1858,11 +1870,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_19.addLayout(self.verticalLayout_56, 0, 0, 1, 1)
 
-        self.checkBox_11 = QCheckBox(self.widget_33)
-        self.checkBox_11.setObjectName(u"checkBox_11")
-        self.checkBox_11.setStyleSheet(u"")
+        self.JinBiZhaoCai_Enable = QCheckBox(self.widget_33)
+        self.JinBiZhaoCai_Enable.setObjectName(u"JinBiZhaoCai_Enable")
+        self.JinBiZhaoCai_Enable.setStyleSheet(u"")
 
-        self.gridLayout_19.addWidget(self.checkBox_11, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_19.addWidget(self.JinBiZhaoCai_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_57 = QVBoxLayout()
         self.verticalLayout_57.setObjectName(u"verticalLayout_57")
@@ -1874,7 +1886,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_123 = QLabel(self.widget_33)
         self.label_123.setObjectName(u"label_123")
         self.label_123.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_57.addWidget(self.label_123)
@@ -1882,11 +1894,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_19.addLayout(self.verticalLayout_57, 1, 0, 1, 1)
 
-        self.lineEdit_15 = QLineEdit(self.widget_33)
-        self.lineEdit_15.setObjectName(u"lineEdit_15")
-        self.lineEdit_15.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.JinBiZhaoCai_next_execute_time = QLineEdit(self.widget_33)
+        self.JinBiZhaoCai_next_execute_time.setObjectName(u"JinBiZhaoCai_next_execute_time")
+        self.JinBiZhaoCai_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.JinBiZhaoCai_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_19.addWidget(self.lineEdit_15, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_19.addWidget(self.JinBiZhaoCai_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_19.setColumnStretch(0, 5)
         self.gridLayout_19.setColumnStretch(1, 2)
@@ -2089,7 +2102,7 @@ class Ui_DailyQuestsHelper(object):
         sizePolicy2.setHeightForWidth(self.label_46.sizePolicy().hasHeightForWidth())
         self.label_46.setSizePolicy(sizePolicy2)
         self.label_46.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
         self.label_46.setTextFormat(Qt.TextFormat.AutoText)
         self.label_46.setWordWrap(True)
@@ -2100,15 +2113,15 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_14.addWidget(self.widget_34, 0, 0, 1, 1)
 
-        self.spinBox_5 = QSpinBox(self.widget_28)
-        self.spinBox_5.setObjectName(u"spinBox_5")
-        self.spinBox_5.setMaximumSize(QSize(80, 35))
-        self.spinBox_5.setWrapping(False)
-        self.spinBox_5.setFrame(True)
-        self.spinBox_5.setMaximum(20)
-        self.spinBox_5.setValue(0)
+        self.JinBiZhaoCai_times = QSpinBox(self.widget_28)
+        self.JinBiZhaoCai_times.setObjectName(u"JinBiZhaoCai_times")
+        self.JinBiZhaoCai_times.setMaximumSize(QSize(80, 35))
+        self.JinBiZhaoCai_times.setWrapping(False)
+        self.JinBiZhaoCai_times.setFrame(True)
+        self.JinBiZhaoCai_times.setMaximum(20)
+        self.JinBiZhaoCai_times.setValue(0)
 
-        self.gridLayout_14.addWidget(self.spinBox_5, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_14.addWidget(self.JinBiZhaoCai_times, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
 
         self.gridLayout_14.setColumnStretch(0, 5)
         self.gridLayout_14.setColumnStretch(1, 2)
@@ -2143,8 +2156,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_17.setObjectName(u"horizontalLayout_17")
         self.widget_29 = QWidget(self.XiaoDuiTuXi_widget)
         self.widget_29.setObjectName(u"widget_29")
-        self.widget_29.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_29.setStyleSheet(u"")
         self.horizontalLayout_16 = QHBoxLayout(self.widget_29)
         self.horizontalLayout_16.setObjectName(u"horizontalLayout_16")
         self.horizontalSpacer_15 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -2158,7 +2170,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_11.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_8 = QWidget()
         self.scrollAreaWidgetContents_8.setObjectName(u"scrollAreaWidgetContents_8")
-        self.scrollAreaWidgetContents_8.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_8.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_51 = QVBoxLayout(self.scrollAreaWidgetContents_8)
         self.verticalLayout_51.setSpacing(20)
         self.verticalLayout_51.setObjectName(u"verticalLayout_51")
@@ -2249,7 +2261,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_63 = QLabel(self.widget_35)
         self.label_63.setObjectName(u"label_63")
         self.label_63.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_58.addWidget(self.label_63)
@@ -2257,11 +2269,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_20.addLayout(self.verticalLayout_58, 0, 0, 1, 1)
 
-        self.checkBox_12 = QCheckBox(self.widget_35)
-        self.checkBox_12.setObjectName(u"checkBox_12")
-        self.checkBox_12.setStyleSheet(u"")
+        self.XiaoDuiTuXi_Enable = QCheckBox(self.widget_35)
+        self.XiaoDuiTuXi_Enable.setObjectName(u"XiaoDuiTuXi_Enable")
+        self.XiaoDuiTuXi_Enable.setStyleSheet(u"")
 
-        self.gridLayout_20.addWidget(self.checkBox_12, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_20.addWidget(self.XiaoDuiTuXi_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_59 = QVBoxLayout()
         self.verticalLayout_59.setObjectName(u"verticalLayout_59")
@@ -2273,7 +2285,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_125 = QLabel(self.widget_35)
         self.label_125.setObjectName(u"label_125")
         self.label_125.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_59.addWidget(self.label_125)
@@ -2281,11 +2293,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_20.addLayout(self.verticalLayout_59, 1, 0, 1, 1)
 
-        self.lineEdit_16 = QLineEdit(self.widget_35)
-        self.lineEdit_16.setObjectName(u"lineEdit_16")
-        self.lineEdit_16.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.XiaoDuiTuXi_next_execute_time = QLineEdit(self.widget_35)
+        self.XiaoDuiTuXi_next_execute_time.setObjectName(u"XiaoDuiTuXi_next_execute_time")
+        self.XiaoDuiTuXi_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.XiaoDuiTuXi_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_20.addWidget(self.lineEdit_16, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_20.addWidget(self.XiaoDuiTuXi_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_20.setColumnStretch(0, 5)
         self.gridLayout_20.setColumnStretch(1, 2)
@@ -2488,15 +2501,15 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_15.addWidget(self.widget_37, 1, 0, 1, 1)
 
-        self.spinBox_6 = QSpinBox(self.widget_36)
-        self.spinBox_6.setObjectName(u"spinBox_6")
-        self.spinBox_6.setMaximumSize(QSize(80, 35))
-        self.spinBox_6.setWrapping(False)
-        self.spinBox_6.setFrame(True)
-        self.spinBox_6.setMaximum(20)
-        self.spinBox_6.setValue(0)
+        self.XiaoDuiTuXi_4rewards_times = QSpinBox(self.widget_36)
+        self.XiaoDuiTuXi_4rewards_times.setObjectName(u"XiaoDuiTuXi_4rewards_times")
+        self.XiaoDuiTuXi_4rewards_times.setMaximumSize(QSize(80, 35))
+        self.XiaoDuiTuXi_4rewards_times.setWrapping(False)
+        self.XiaoDuiTuXi_4rewards_times.setFrame(True)
+        self.XiaoDuiTuXi_4rewards_times.setMaximum(20)
+        self.XiaoDuiTuXi_4rewards_times.setValue(0)
 
-        self.gridLayout_15.addWidget(self.spinBox_6, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_15.addWidget(self.XiaoDuiTuXi_4rewards_times, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
 
         self.widget_16 = QWidget(self.widget_36)
         self.widget_16.setObjectName(u"widget_16")
@@ -2511,7 +2524,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_12 = QLabel(self.widget_16)
         self.label_12.setObjectName(u"label_12")
         self.label_12.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_12.addWidget(self.label_12)
@@ -2519,10 +2532,10 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_15.addWidget(self.widget_16, 0, 0, 1, 1)
 
-        self.checkBox = QCheckBox(self.widget_36)
-        self.checkBox.setObjectName(u"checkBox")
+        self.XiaoDuiTuXi_4rewards_Enable = QCheckBox(self.widget_36)
+        self.XiaoDuiTuXi_4rewards_Enable.setObjectName(u"XiaoDuiTuXi_4rewards_Enable")
 
-        self.gridLayout_15.addWidget(self.checkBox, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_15.addWidget(self.XiaoDuiTuXi_4rewards_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
 
         self.gridLayout_15.setColumnStretch(0, 5)
         self.gridLayout_15.setColumnStretch(1, 2)
@@ -2557,8 +2570,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
         self.widget_80 = QWidget(self.ZuZhiQiFu_widget)
         self.widget_80.setObjectName(u"widget_80")
-        self.widget_80.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_80.setStyleSheet(u"")
         self.horizontalLayout_62 = QHBoxLayout(self.widget_80)
         self.horizontalLayout_62.setObjectName(u"horizontalLayout_62")
         self.horizontalSpacer_59 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -2572,7 +2584,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_33.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_30 = QWidget()
         self.scrollAreaWidgetContents_30.setObjectName(u"scrollAreaWidgetContents_30")
-        self.scrollAreaWidgetContents_30.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_30.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_145 = QVBoxLayout(self.scrollAreaWidgetContents_30)
         self.verticalLayout_145.setSpacing(20)
         self.verticalLayout_145.setObjectName(u"verticalLayout_145")
@@ -2663,7 +2675,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_189 = QLabel(self.widget_81)
         self.label_189.setObjectName(u"label_189")
         self.label_189.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_147.addWidget(self.label_189)
@@ -2671,11 +2683,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_42.addLayout(self.verticalLayout_147, 0, 0, 1, 1)
 
-        self.checkBox_34 = QCheckBox(self.widget_81)
-        self.checkBox_34.setObjectName(u"checkBox_34")
-        self.checkBox_34.setStyleSheet(u"")
+        self.ZuZhiQiFu_Enable = QCheckBox(self.widget_81)
+        self.ZuZhiQiFu_Enable.setObjectName(u"ZuZhiQiFu_Enable")
+        self.ZuZhiQiFu_Enable.setStyleSheet(u"")
 
-        self.gridLayout_42.addWidget(self.checkBox_34, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_42.addWidget(self.ZuZhiQiFu_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_148 = QVBoxLayout()
         self.verticalLayout_148.setObjectName(u"verticalLayout_148")
@@ -2687,7 +2699,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_191 = QLabel(self.widget_81)
         self.label_191.setObjectName(u"label_191")
         self.label_191.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_148.addWidget(self.label_191)
@@ -2695,11 +2707,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_42.addLayout(self.verticalLayout_148, 1, 0, 1, 1)
 
-        self.lineEdit_38 = QLineEdit(self.widget_81)
-        self.lineEdit_38.setObjectName(u"lineEdit_38")
-        self.lineEdit_38.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.ZuZhiQiFu_next_execute_time = QLineEdit(self.widget_81)
+        self.ZuZhiQiFu_next_execute_time.setObjectName(u"ZuZhiQiFu_next_execute_time")
+        self.ZuZhiQiFu_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.ZuZhiQiFu_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_42.addWidget(self.lineEdit_38, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_42.addWidget(self.ZuZhiQiFu_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_42.setColumnStretch(0, 5)
         self.gridLayout_42.setColumnStretch(1, 2)
@@ -2734,8 +2747,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
         self.widget_50 = QWidget(self.HaoYouTiLi_widget)
         self.widget_50.setObjectName(u"widget_50")
-        self.widget_50.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_50.setStyleSheet(u"")
         self.horizontalLayout_30 = QHBoxLayout(self.widget_50)
         self.horizontalLayout_30.setObjectName(u"horizontalLayout_30")
         self.horizontalSpacer_29 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -2749,7 +2761,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_18.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_15 = QWidget()
         self.scrollAreaWidgetContents_15.setObjectName(u"scrollAreaWidgetContents_15")
-        self.scrollAreaWidgetContents_15.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_15.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_85 = QVBoxLayout(self.scrollAreaWidgetContents_15)
         self.verticalLayout_85.setSpacing(20)
         self.verticalLayout_85.setObjectName(u"verticalLayout_85")
@@ -2840,7 +2852,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_84 = QLabel(self.widget_51)
         self.label_84.setObjectName(u"label_84")
         self.label_84.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_87.addWidget(self.label_84)
@@ -2848,11 +2860,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_27.addLayout(self.verticalLayout_87, 0, 0, 1, 1)
 
-        self.checkBox_19 = QCheckBox(self.widget_51)
-        self.checkBox_19.setObjectName(u"checkBox_19")
-        self.checkBox_19.setStyleSheet(u"")
+        self.HaoYouTiLi_Enable = QCheckBox(self.widget_51)
+        self.HaoYouTiLi_Enable.setObjectName(u"HaoYouTiLi_Enable")
+        self.HaoYouTiLi_Enable.setStyleSheet(u"")
 
-        self.gridLayout_27.addWidget(self.checkBox_19, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_27.addWidget(self.HaoYouTiLi_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_88 = QVBoxLayout()
         self.verticalLayout_88.setObjectName(u"verticalLayout_88")
@@ -2864,7 +2876,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_139 = QLabel(self.widget_51)
         self.label_139.setObjectName(u"label_139")
         self.label_139.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_88.addWidget(self.label_139)
@@ -2872,11 +2884,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_27.addLayout(self.verticalLayout_88, 1, 0, 1, 1)
 
-        self.lineEdit_23 = QLineEdit(self.widget_51)
-        self.lineEdit_23.setObjectName(u"lineEdit_23")
-        self.lineEdit_23.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.HaoYouTiLi_next_execute_time = QLineEdit(self.widget_51)
+        self.HaoYouTiLi_next_execute_time.setObjectName(u"HaoYouTiLi_next_execute_time")
+        self.HaoYouTiLi_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.HaoYouTiLi_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_27.addWidget(self.lineEdit_23, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_27.addWidget(self.HaoYouTiLi_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_27.setColumnStretch(0, 5)
         self.gridLayout_27.setColumnStretch(1, 2)
@@ -2911,8 +2924,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
         self.widget_66 = QWidget(self.PuTongRenZheZhaoMu_widget)
         self.widget_66.setObjectName(u"widget_66")
-        self.widget_66.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_66.setStyleSheet(u"")
         self.horizontalLayout_48 = QHBoxLayout(self.widget_66)
         self.horizontalLayout_48.setObjectName(u"horizontalLayout_48")
         self.horizontalSpacer_45 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -2926,7 +2938,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_26.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_23 = QWidget()
         self.scrollAreaWidgetContents_23.setObjectName(u"scrollAreaWidgetContents_23")
-        self.scrollAreaWidgetContents_23.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_23.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_117 = QVBoxLayout(self.scrollAreaWidgetContents_23)
         self.verticalLayout_117.setSpacing(20)
         self.verticalLayout_117.setObjectName(u"verticalLayout_117")
@@ -3017,7 +3029,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_154 = QLabel(self.widget_67)
         self.label_154.setObjectName(u"label_154")
         self.label_154.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_119.addWidget(self.label_154)
@@ -3025,11 +3037,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_35.addLayout(self.verticalLayout_119, 0, 0, 1, 1)
 
-        self.checkBox_27 = QCheckBox(self.widget_67)
-        self.checkBox_27.setObjectName(u"checkBox_27")
-        self.checkBox_27.setStyleSheet(u"")
+        self.PuTongRenZheZhaoMu_Enable = QCheckBox(self.widget_67)
+        self.PuTongRenZheZhaoMu_Enable.setObjectName(u"PuTongRenZheZhaoMu_Enable")
+        self.PuTongRenZheZhaoMu_Enable.setStyleSheet(u"")
 
-        self.gridLayout_35.addWidget(self.checkBox_27, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_35.addWidget(self.PuTongRenZheZhaoMu_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_120 = QVBoxLayout()
         self.verticalLayout_120.setObjectName(u"verticalLayout_120")
@@ -3041,7 +3053,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_156 = QLabel(self.widget_67)
         self.label_156.setObjectName(u"label_156")
         self.label_156.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_120.addWidget(self.label_156)
@@ -3049,11 +3061,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_35.addLayout(self.verticalLayout_120, 1, 0, 1, 1)
 
-        self.lineEdit_31 = QLineEdit(self.widget_67)
-        self.lineEdit_31.setObjectName(u"lineEdit_31")
-        self.lineEdit_31.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.PuTongRenZheZhaoMu_next_execute_time = QLineEdit(self.widget_67)
+        self.PuTongRenZheZhaoMu_next_execute_time.setObjectName(u"PuTongRenZheZhaoMu_next_execute_time")
+        self.PuTongRenZheZhaoMu_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.PuTongRenZheZhaoMu_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_35.addWidget(self.lineEdit_31, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_35.addWidget(self.PuTongRenZheZhaoMu_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_35.setColumnStretch(0, 5)
         self.gridLayout_35.setColumnStretch(1, 2)
@@ -3088,8 +3101,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_38.setObjectName(u"horizontalLayout_38")
         self.widget_58 = QWidget(self.MeiRiFenXiang_widget)
         self.widget_58.setObjectName(u"widget_58")
-        self.widget_58.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_58.setStyleSheet(u"")
         self.horizontalLayout_37 = QHBoxLayout(self.widget_58)
         self.horizontalLayout_37.setObjectName(u"horizontalLayout_37")
         self.horizontalSpacer_37 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -3103,7 +3115,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_22.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_19 = QWidget()
         self.scrollAreaWidgetContents_19.setObjectName(u"scrollAreaWidgetContents_19")
-        self.scrollAreaWidgetContents_19.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_19.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_101 = QVBoxLayout(self.scrollAreaWidgetContents_19)
         self.verticalLayout_101.setSpacing(20)
         self.verticalLayout_101.setObjectName(u"verticalLayout_101")
@@ -3173,7 +3185,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_38 = QLabel(self.widget_59)
         self.label_38.setObjectName(u"label_38")
         self.label_38.setStyleSheet(u"font-size:13pt;\n"
-"color:#39C5BB;\n"
+"color:rgba(255, 0, 0, 100);\n"
 "margin-left:18px;")
 
         self.verticalLayout_102.addWidget(self.label_38)
@@ -3202,7 +3214,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_96 = QLabel(self.widget_59)
         self.label_96.setObjectName(u"label_96")
         self.label_96.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_103.addWidget(self.label_96)
@@ -3210,11 +3222,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_31.addLayout(self.verticalLayout_103, 0, 0, 1, 1)
 
-        self.checkBox_23 = QCheckBox(self.widget_59)
-        self.checkBox_23.setObjectName(u"checkBox_23")
-        self.checkBox_23.setStyleSheet(u"")
+        self.MeiRiFenXiang_Enable = QCheckBox(self.widget_59)
+        self.MeiRiFenXiang_Enable.setObjectName(u"MeiRiFenXiang_Enable")
+        self.MeiRiFenXiang_Enable.setStyleSheet(u"")
 
-        self.gridLayout_31.addWidget(self.checkBox_23, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_31.addWidget(self.MeiRiFenXiang_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_104 = QVBoxLayout()
         self.verticalLayout_104.setObjectName(u"verticalLayout_104")
@@ -3226,7 +3238,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_147 = QLabel(self.widget_59)
         self.label_147.setObjectName(u"label_147")
         self.label_147.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_104.addWidget(self.label_147)
@@ -3234,11 +3246,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_31.addLayout(self.verticalLayout_104, 1, 0, 1, 1)
 
-        self.lineEdit_27 = QLineEdit(self.widget_59)
-        self.lineEdit_27.setObjectName(u"lineEdit_27")
-        self.lineEdit_27.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.MeiRiFenXiang_next_execute_time = QLineEdit(self.widget_59)
+        self.MeiRiFenXiang_next_execute_time.setObjectName(u"MeiRiFenXiang_next_execute_time")
+        self.MeiRiFenXiang_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.MeiRiFenXiang_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_31.addWidget(self.lineEdit_27, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_31.addWidget(self.MeiRiFenXiang_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_31.setColumnStretch(0, 5)
         self.gridLayout_31.setColumnStretch(1, 2)
@@ -3273,8 +3286,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_27.setObjectName(u"horizontalLayout_27")
         self.widget_46 = QWidget(self.FengRaoZhiJian_widget)
         self.widget_46.setObjectName(u"widget_46")
-        self.widget_46.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_46.setStyleSheet(u"")
         self.horizontalLayout_26 = QHBoxLayout(self.widget_46)
         self.horizontalLayout_26.setObjectName(u"horizontalLayout_26")
         self.horizontalSpacer_25 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -3288,7 +3300,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_16.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_13 = QWidget()
         self.scrollAreaWidgetContents_13.setObjectName(u"scrollAreaWidgetContents_13")
-        self.scrollAreaWidgetContents_13.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_13.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_77 = QVBoxLayout(self.scrollAreaWidgetContents_13)
         self.verticalLayout_77.setSpacing(20)
         self.verticalLayout_77.setObjectName(u"verticalLayout_77")
@@ -3358,7 +3370,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_226 = QLabel(self.widget_47)
         self.label_226.setObjectName(u"label_226")
         self.label_226.setStyleSheet(u"font-size:13pt;\n"
-"color:#39C5BB;\n"
+"color:rgba(255, 0, 0, 100);\n"
 "margin-left:18px;")
 
         self.verticalLayout_78.addWidget(self.label_226)
@@ -3387,7 +3399,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_78 = QLabel(self.widget_47)
         self.label_78.setObjectName(u"label_78")
         self.label_78.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_79.addWidget(self.label_78)
@@ -3395,11 +3407,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_25.addLayout(self.verticalLayout_79, 0, 0, 1, 1)
 
-        self.checkBox_17 = QCheckBox(self.widget_47)
-        self.checkBox_17.setObjectName(u"checkBox_17")
-        self.checkBox_17.setStyleSheet(u"")
+        self.FengRaoZhiJian_Enable = QCheckBox(self.widget_47)
+        self.FengRaoZhiJian_Enable.setObjectName(u"FengRaoZhiJian_Enable")
+        self.FengRaoZhiJian_Enable.setStyleSheet(u"")
 
-        self.gridLayout_25.addWidget(self.checkBox_17, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_25.addWidget(self.FengRaoZhiJian_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_80 = QVBoxLayout()
         self.verticalLayout_80.setObjectName(u"verticalLayout_80")
@@ -3411,7 +3423,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_135 = QLabel(self.widget_47)
         self.label_135.setObjectName(u"label_135")
         self.label_135.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_80.addWidget(self.label_135)
@@ -3419,11 +3431,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_25.addLayout(self.verticalLayout_80, 1, 0, 1, 1)
 
-        self.lineEdit_21 = QLineEdit(self.widget_47)
-        self.lineEdit_21.setObjectName(u"lineEdit_21")
-        self.lineEdit_21.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.FengRaoZhiJian_next_execute_time = QLineEdit(self.widget_47)
+        self.FengRaoZhiJian_next_execute_time.setObjectName(u"FengRaoZhiJian_next_execute_time")
+        self.FengRaoZhiJian_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.FengRaoZhiJian_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_25.addWidget(self.lineEdit_21, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_25.addWidget(self.FengRaoZhiJian_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_25.setColumnStretch(0, 5)
         self.gridLayout_25.setColumnStretch(1, 2)
@@ -3458,8 +3471,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_44.setObjectName(u"horizontalLayout_44")
         self.widget_74 = QWidget(self.RenWuJiHuiSuo_widget)
         self.widget_74.setObjectName(u"widget_74")
-        self.widget_74.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_74.setStyleSheet(u"")
         self.horizontalLayout_59 = QHBoxLayout(self.widget_74)
         self.horizontalLayout_59.setObjectName(u"horizontalLayout_59")
         self.horizontalSpacer_53 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -3473,7 +3485,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_30.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_27 = QWidget()
         self.scrollAreaWidgetContents_27.setObjectName(u"scrollAreaWidgetContents_27")
-        self.scrollAreaWidgetContents_27.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_27.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_133 = QVBoxLayout(self.scrollAreaWidgetContents_27)
         self.verticalLayout_133.setSpacing(20)
         self.verticalLayout_133.setObjectName(u"verticalLayout_133")
@@ -3543,7 +3555,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_49 = QLabel(self.widget_75)
         self.label_49.setObjectName(u"label_49")
         self.label_49.setStyleSheet(u"font-size:13pt;\n"
-"color:#39C5BB;\n"
+"color:rgba(255, 0, 0, 100);\n"
 "margin-left:18px;")
 
         self.verticalLayout_134.addWidget(self.label_49)
@@ -3572,7 +3584,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_174 = QLabel(self.widget_75)
         self.label_174.setObjectName(u"label_174")
         self.label_174.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_135.addWidget(self.label_174)
@@ -3580,11 +3592,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_39.addLayout(self.verticalLayout_135, 0, 0, 1, 1)
 
-        self.checkBox_31 = QCheckBox(self.widget_75)
-        self.checkBox_31.setObjectName(u"checkBox_31")
-        self.checkBox_31.setStyleSheet(u"")
+        self.RenWuJiHuiSuo_Enable = QCheckBox(self.widget_75)
+        self.RenWuJiHuiSuo_Enable.setObjectName(u"RenWuJiHuiSuo_Enable")
+        self.RenWuJiHuiSuo_Enable.setStyleSheet(u"")
 
-        self.gridLayout_39.addWidget(self.checkBox_31, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_39.addWidget(self.RenWuJiHuiSuo_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_136 = QVBoxLayout()
         self.verticalLayout_136.setObjectName(u"verticalLayout_136")
@@ -3596,7 +3608,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_176 = QLabel(self.widget_75)
         self.label_176.setObjectName(u"label_176")
         self.label_176.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_136.addWidget(self.label_176)
@@ -3604,11 +3616,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_39.addLayout(self.verticalLayout_136, 1, 0, 1, 1)
 
-        self.lineEdit_35 = QLineEdit(self.widget_75)
-        self.lineEdit_35.setObjectName(u"lineEdit_35")
-        self.lineEdit_35.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.RenWuJiHuiSuo_next_execute_time = QLineEdit(self.widget_75)
+        self.RenWuJiHuiSuo_next_execute_time.setObjectName(u"RenWuJiHuiSuo_next_execute_time")
+        self.RenWuJiHuiSuo_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.RenWuJiHuiSuo_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_39.addWidget(self.lineEdit_35, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_39.addWidget(self.RenWuJiHuiSuo_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_39.setColumnStretch(0, 5)
         self.gridLayout_39.setColumnStretch(1, 2)
@@ -3643,8 +3656,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_45.setObjectName(u"horizontalLayout_45")
         self.widget_78 = QWidget(self.YiLeWaiMai_widget)
         self.widget_78.setObjectName(u"widget_78")
-        self.widget_78.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_78.setStyleSheet(u"")
         self.horizontalLayout_61 = QHBoxLayout(self.widget_78)
         self.horizontalLayout_61.setObjectName(u"horizontalLayout_61")
         self.horizontalSpacer_57 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -3658,7 +3670,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_32.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_29 = QWidget()
         self.scrollAreaWidgetContents_29.setObjectName(u"scrollAreaWidgetContents_29")
-        self.scrollAreaWidgetContents_29.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_29.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_141 = QVBoxLayout(self.scrollAreaWidgetContents_29)
         self.verticalLayout_141.setSpacing(20)
         self.verticalLayout_141.setObjectName(u"verticalLayout_141")
@@ -3749,7 +3761,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_184 = QLabel(self.widget_79)
         self.label_184.setObjectName(u"label_184")
         self.label_184.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_143.addWidget(self.label_184)
@@ -3757,11 +3769,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_41.addLayout(self.verticalLayout_143, 0, 0, 1, 1)
 
-        self.checkBox_33 = QCheckBox(self.widget_79)
-        self.checkBox_33.setObjectName(u"checkBox_33")
-        self.checkBox_33.setStyleSheet(u"")
+        self.YiLeWaiMai_Enable = QCheckBox(self.widget_79)
+        self.YiLeWaiMai_Enable.setObjectName(u"YiLeWaiMai_Enable")
+        self.YiLeWaiMai_Enable.setStyleSheet(u"")
 
-        self.gridLayout_41.addWidget(self.checkBox_33, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_41.addWidget(self.YiLeWaiMai_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_144 = QVBoxLayout()
         self.verticalLayout_144.setObjectName(u"verticalLayout_144")
@@ -3773,7 +3785,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_186 = QLabel(self.widget_79)
         self.label_186.setObjectName(u"label_186")
         self.label_186.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_144.addWidget(self.label_186)
@@ -3781,11 +3793,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_41.addLayout(self.verticalLayout_144, 1, 0, 1, 1)
 
-        self.lineEdit_37 = QLineEdit(self.widget_79)
-        self.lineEdit_37.setObjectName(u"lineEdit_37")
-        self.lineEdit_37.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.YiLeWaiMai_next_execute_time = QLineEdit(self.widget_79)
+        self.YiLeWaiMai_next_execute_time.setObjectName(u"YiLeWaiMai_next_execute_time")
+        self.YiLeWaiMai_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.YiLeWaiMai_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_41.addWidget(self.lineEdit_37, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_41.addWidget(self.YiLeWaiMai_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_41.setColumnStretch(0, 5)
         self.gridLayout_41.setColumnStretch(1, 2)
@@ -3820,8 +3833,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_36.setObjectName(u"horizontalLayout_36")
         self.widget_56 = QWidget(self.MeiRiShengChang_widget)
         self.widget_56.setObjectName(u"widget_56")
-        self.widget_56.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_56.setStyleSheet(u"")
         self.horizontalLayout_35 = QHBoxLayout(self.widget_56)
         self.horizontalLayout_35.setObjectName(u"horizontalLayout_35")
         self.horizontalSpacer_35 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -3835,7 +3847,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_21.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_18 = QWidget()
         self.scrollAreaWidgetContents_18.setObjectName(u"scrollAreaWidgetContents_18")
-        self.scrollAreaWidgetContents_18.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_18.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_97 = QVBoxLayout(self.scrollAreaWidgetContents_18)
         self.verticalLayout_97.setSpacing(20)
         self.verticalLayout_97.setObjectName(u"verticalLayout_97")
@@ -3905,7 +3917,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_14 = QLabel(self.widget_57)
         self.label_14.setObjectName(u"label_14")
         self.label_14.setStyleSheet(u"font-size:13pt;\n"
-"color:#39C5BB;\n"
+"color:rgba(255, 0, 0, 100);\n"
 "margin-left:18px;")
 
         self.verticalLayout_98.addWidget(self.label_14)
@@ -3934,7 +3946,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_93 = QLabel(self.widget_57)
         self.label_93.setObjectName(u"label_93")
         self.label_93.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_99.addWidget(self.label_93)
@@ -3942,11 +3954,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_30.addLayout(self.verticalLayout_99, 0, 0, 1, 1)
 
-        self.checkBox_22 = QCheckBox(self.widget_57)
-        self.checkBox_22.setObjectName(u"checkBox_22")
-        self.checkBox_22.setStyleSheet(u"")
+        self.MeiRiShengChang_Enable = QCheckBox(self.widget_57)
+        self.MeiRiShengChang_Enable.setObjectName(u"MeiRiShengChang_Enable")
+        self.MeiRiShengChang_Enable.setStyleSheet(u"")
 
-        self.gridLayout_30.addWidget(self.checkBox_22, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_30.addWidget(self.MeiRiShengChang_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_100 = QVBoxLayout()
         self.verticalLayout_100.setObjectName(u"verticalLayout_100")
@@ -3958,7 +3970,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_145 = QLabel(self.widget_57)
         self.label_145.setObjectName(u"label_145")
         self.label_145.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_100.addWidget(self.label_145)
@@ -3966,11 +3978,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_30.addLayout(self.verticalLayout_100, 1, 0, 1, 1)
 
-        self.lineEdit_26 = QLineEdit(self.widget_57)
-        self.lineEdit_26.setObjectName(u"lineEdit_26")
-        self.lineEdit_26.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.MeiRiShengChang_next_execute_time = QLineEdit(self.widget_57)
+        self.MeiRiShengChang_next_execute_time.setObjectName(u"MeiRiShengChang_next_execute_time")
+        self.MeiRiShengChang_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.MeiRiShengChang_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_30.addWidget(self.lineEdit_26, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_30.addWidget(self.MeiRiShengChang_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_30.setColumnStretch(0, 5)
         self.gridLayout_30.setColumnStretch(1, 2)
@@ -4005,8 +4018,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_47.setObjectName(u"horizontalLayout_47")
         self.widget_82 = QWidget(self.ShengCunTiaoZhan_widget)
         self.widget_82.setObjectName(u"widget_82")
-        self.widget_82.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_82.setStyleSheet(u"")
         self.horizontalLayout_63 = QHBoxLayout(self.widget_82)
         self.horizontalLayout_63.setObjectName(u"horizontalLayout_63")
         self.horizontalSpacer_61 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -4020,7 +4032,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_34.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_31 = QWidget()
         self.scrollAreaWidgetContents_31.setObjectName(u"scrollAreaWidgetContents_31")
-        self.scrollAreaWidgetContents_31.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_31.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_149 = QVBoxLayout(self.scrollAreaWidgetContents_31)
         self.verticalLayout_149.setSpacing(20)
         self.verticalLayout_149.setObjectName(u"verticalLayout_149")
@@ -4090,7 +4102,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_50 = QLabel(self.widget_83)
         self.label_50.setObjectName(u"label_50")
         self.label_50.setStyleSheet(u"font-size:13pt;\n"
-"color:#39C5BB;\n"
+"color:rgba(255, 0, 0, 100);\n"
 "margin-left:18px;")
 
         self.verticalLayout_150.addWidget(self.label_50)
@@ -4119,7 +4131,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_194 = QLabel(self.widget_83)
         self.label_194.setObjectName(u"label_194")
         self.label_194.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_151.addWidget(self.label_194)
@@ -4127,11 +4139,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_43.addLayout(self.verticalLayout_151, 0, 0, 1, 1)
 
-        self.checkBox_35 = QCheckBox(self.widget_83)
-        self.checkBox_35.setObjectName(u"checkBox_35")
-        self.checkBox_35.setStyleSheet(u"")
+        self.ShengCunTiaoZhan_Enable = QCheckBox(self.widget_83)
+        self.ShengCunTiaoZhan_Enable.setObjectName(u"ShengCunTiaoZhan_Enable")
+        self.ShengCunTiaoZhan_Enable.setStyleSheet(u"")
 
-        self.gridLayout_43.addWidget(self.checkBox_35, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_43.addWidget(self.ShengCunTiaoZhan_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_152 = QVBoxLayout()
         self.verticalLayout_152.setObjectName(u"verticalLayout_152")
@@ -4143,7 +4155,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_196 = QLabel(self.widget_83)
         self.label_196.setObjectName(u"label_196")
         self.label_196.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_152.addWidget(self.label_196)
@@ -4151,11 +4163,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_43.addLayout(self.verticalLayout_152, 1, 0, 1, 1)
 
-        self.lineEdit_39 = QLineEdit(self.widget_83)
-        self.lineEdit_39.setObjectName(u"lineEdit_39")
-        self.lineEdit_39.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.ShengCunTiaoZhan_next_execute_time = QLineEdit(self.widget_83)
+        self.ShengCunTiaoZhan_next_execute_time.setObjectName(u"ShengCunTiaoZhan_next_execute_time")
+        self.ShengCunTiaoZhan_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.ShengCunTiaoZhan_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_43.addWidget(self.lineEdit_39, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_43.addWidget(self.ShengCunTiaoZhan_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_43.setColumnStretch(0, 5)
         self.gridLayout_43.setColumnStretch(1, 2)
@@ -4190,8 +4203,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_65.setObjectName(u"horizontalLayout_65")
         self.widget_84 = QWidget(self.MiJingTanXian_widget)
         self.widget_84.setObjectName(u"widget_84")
-        self.widget_84.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_84.setStyleSheet(u"")
         self.horizontalLayout_64 = QHBoxLayout(self.widget_84)
         self.horizontalLayout_64.setObjectName(u"horizontalLayout_64")
         self.horizontalSpacer_63 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -4205,7 +4217,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_35.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_32 = QWidget()
         self.scrollAreaWidgetContents_32.setObjectName(u"scrollAreaWidgetContents_32")
-        self.scrollAreaWidgetContents_32.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_32.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_153 = QVBoxLayout(self.scrollAreaWidgetContents_32)
         self.verticalLayout_153.setSpacing(20)
         self.verticalLayout_153.setObjectName(u"verticalLayout_153")
@@ -4274,8 +4286,8 @@ class Ui_DailyQuestsHelper(object):
 
         self.label_54 = QLabel(self.widget_85)
         self.label_54.setObjectName(u"label_54")
-        self.label_54.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+        self.label_54.setStyleSheet(u"font-size:13pt;\n"
+"color:rgba(255, 0, 0, 100);\n"
 "margin-left:18px;")
 
         self.verticalLayout_154.addWidget(self.label_54)
@@ -4304,7 +4316,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_199 = QLabel(self.widget_85)
         self.label_199.setObjectName(u"label_199")
         self.label_199.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_155.addWidget(self.label_199)
@@ -4312,11 +4324,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_44.addLayout(self.verticalLayout_155, 0, 0, 1, 1)
 
-        self.checkBox_36 = QCheckBox(self.widget_85)
-        self.checkBox_36.setObjectName(u"checkBox_36")
-        self.checkBox_36.setStyleSheet(u"")
+        self.MiJingTanXian_Enable = QCheckBox(self.widget_85)
+        self.MiJingTanXian_Enable.setObjectName(u"MiJingTanXian_Enable")
+        self.MiJingTanXian_Enable.setStyleSheet(u"")
 
-        self.gridLayout_44.addWidget(self.checkBox_36, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_44.addWidget(self.MiJingTanXian_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_156 = QVBoxLayout()
         self.verticalLayout_156.setObjectName(u"verticalLayout_156")
@@ -4328,7 +4340,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_201 = QLabel(self.widget_85)
         self.label_201.setObjectName(u"label_201")
         self.label_201.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_156.addWidget(self.label_201)
@@ -4336,11 +4348,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_44.addLayout(self.verticalLayout_156, 1, 0, 1, 1)
 
-        self.lineEdit_40 = QLineEdit(self.widget_85)
-        self.lineEdit_40.setObjectName(u"lineEdit_40")
-        self.lineEdit_40.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.MiJingTanXian_next_execute_time = QLineEdit(self.widget_85)
+        self.MiJingTanXian_next_execute_time.setObjectName(u"MiJingTanXian_next_execute_time")
+        self.MiJingTanXian_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.MiJingTanXian_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_44.addWidget(self.lineEdit_40, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_44.addWidget(self.MiJingTanXian_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_44.setColumnStretch(0, 5)
         self.gridLayout_44.setColumnStretch(1, 2)
@@ -4375,8 +4388,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_50.setObjectName(u"horizontalLayout_50")
         self.widget_68 = QWidget(self.QingBaoZhan_widget)
         self.widget_68.setObjectName(u"widget_68")
-        self.widget_68.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_68.setStyleSheet(u"")
         self.horizontalLayout_49 = QHBoxLayout(self.widget_68)
         self.horizontalLayout_49.setObjectName(u"horizontalLayout_49")
         self.horizontalSpacer_47 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -4390,7 +4402,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_27.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_24 = QWidget()
         self.scrollAreaWidgetContents_24.setObjectName(u"scrollAreaWidgetContents_24")
-        self.scrollAreaWidgetContents_24.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_24.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_121 = QVBoxLayout(self.scrollAreaWidgetContents_24)
         self.verticalLayout_121.setSpacing(20)
         self.verticalLayout_121.setObjectName(u"verticalLayout_121")
@@ -4460,7 +4472,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_40 = QLabel(self.widget_69)
         self.label_40.setObjectName(u"label_40")
         self.label_40.setStyleSheet(u"font-size:13pt;\n"
-"color:#39C5BB;\n"
+"color:rgba(255, 0, 0, 100);\n"
 "margin-left:18px;")
 
         self.verticalLayout_122.addWidget(self.label_40)
@@ -4489,7 +4501,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_159 = QLabel(self.widget_69)
         self.label_159.setObjectName(u"label_159")
         self.label_159.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_123.addWidget(self.label_159)
@@ -4497,11 +4509,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_36.addLayout(self.verticalLayout_123, 0, 0, 1, 1)
 
-        self.checkBox_28 = QCheckBox(self.widget_69)
-        self.checkBox_28.setObjectName(u"checkBox_28")
-        self.checkBox_28.setStyleSheet(u"")
+        self.QingBaoZhan_Enable = QCheckBox(self.widget_69)
+        self.QingBaoZhan_Enable.setObjectName(u"QingBaoZhan_Enable")
+        self.QingBaoZhan_Enable.setStyleSheet(u"")
 
-        self.gridLayout_36.addWidget(self.checkBox_28, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_36.addWidget(self.QingBaoZhan_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_124 = QVBoxLayout()
         self.verticalLayout_124.setObjectName(u"verticalLayout_124")
@@ -4513,7 +4525,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_161 = QLabel(self.widget_69)
         self.label_161.setObjectName(u"label_161")
         self.label_161.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_124.addWidget(self.label_161)
@@ -4521,11 +4533,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_36.addLayout(self.verticalLayout_124, 1, 0, 1, 1)
 
-        self.lineEdit_32 = QLineEdit(self.widget_69)
-        self.lineEdit_32.setObjectName(u"lineEdit_32")
-        self.lineEdit_32.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.QingBaoZhan_next_execute_time = QLineEdit(self.widget_69)
+        self.QingBaoZhan_next_execute_time.setObjectName(u"QingBaoZhan_next_execute_time")
+        self.QingBaoZhan_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.QingBaoZhan_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_36.addWidget(self.lineEdit_32, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_36.addWidget(self.QingBaoZhan_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_36.setColumnStretch(0, 5)
         self.gridLayout_36.setColumnStretch(1, 2)
@@ -4560,8 +4573,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_40.setObjectName(u"horizontalLayout_40")
         self.widget_60 = QWidget(self.MaoXianFuBen_widget)
         self.widget_60.setObjectName(u"widget_60")
-        self.widget_60.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_60.setStyleSheet(u"")
         self.horizontalLayout_39 = QHBoxLayout(self.widget_60)
         self.horizontalLayout_39.setObjectName(u"horizontalLayout_39")
         self.horizontalSpacer_39 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -4575,7 +4587,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_23.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_20 = QWidget()
         self.scrollAreaWidgetContents_20.setObjectName(u"scrollAreaWidgetContents_20")
-        self.scrollAreaWidgetContents_20.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_20.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_105 = QVBoxLayout(self.scrollAreaWidgetContents_20)
         self.verticalLayout_105.setSpacing(20)
         self.verticalLayout_105.setObjectName(u"verticalLayout_105")
@@ -4645,7 +4657,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_53 = QLabel(self.widget_61)
         self.label_53.setObjectName(u"label_53")
         self.label_53.setStyleSheet(u"font-size:13pt;\n"
-"color:#39C5BB;\n"
+"color:rgba(255, 0, 0, 100);\n"
 "margin-left:18px;")
 
         self.verticalLayout_106.addWidget(self.label_53)
@@ -4674,7 +4686,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_99 = QLabel(self.widget_61)
         self.label_99.setObjectName(u"label_99")
         self.label_99.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_107.addWidget(self.label_99)
@@ -4682,11 +4694,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_32.addLayout(self.verticalLayout_107, 0, 0, 1, 1)
 
-        self.checkBox_24 = QCheckBox(self.widget_61)
-        self.checkBox_24.setObjectName(u"checkBox_24")
-        self.checkBox_24.setStyleSheet(u"")
+        self.MaoXianFuBen_Enable = QCheckBox(self.widget_61)
+        self.MaoXianFuBen_Enable.setObjectName(u"MaoXianFuBen_Enable")
+        self.MaoXianFuBen_Enable.setStyleSheet(u"")
 
-        self.gridLayout_32.addWidget(self.checkBox_24, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_32.addWidget(self.MaoXianFuBen_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_108 = QVBoxLayout()
         self.verticalLayout_108.setObjectName(u"verticalLayout_108")
@@ -4698,7 +4710,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_149 = QLabel(self.widget_61)
         self.label_149.setObjectName(u"label_149")
         self.label_149.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_108.addWidget(self.label_149)
@@ -4706,11 +4718,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_32.addLayout(self.verticalLayout_108, 1, 0, 1, 1)
 
-        self.lineEdit_28 = QLineEdit(self.widget_61)
-        self.lineEdit_28.setObjectName(u"lineEdit_28")
-        self.lineEdit_28.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.MaoXianFuBen_next_execute_time = QLineEdit(self.widget_61)
+        self.MaoXianFuBen_next_execute_time.setObjectName(u"MaoXianFuBen_next_execute_time")
+        self.MaoXianFuBen_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.MaoXianFuBen_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_32.addWidget(self.lineEdit_28, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_32.addWidget(self.MaoXianFuBen_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_32.setColumnStretch(0, 5)
         self.gridLayout_32.setColumnStretch(1, 2)
@@ -4745,8 +4758,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_42.setObjectName(u"horizontalLayout_42")
         self.widget_62 = QWidget(self.HuoYueDuJiangLi_widget)
         self.widget_62.setObjectName(u"widget_62")
-        self.widget_62.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_62.setStyleSheet(u"")
         self.horizontalLayout_41 = QHBoxLayout(self.widget_62)
         self.horizontalLayout_41.setObjectName(u"horizontalLayout_41")
         self.horizontalSpacer_41 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -4760,7 +4772,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_24.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_21 = QWidget()
         self.scrollAreaWidgetContents_21.setObjectName(u"scrollAreaWidgetContents_21")
-        self.scrollAreaWidgetContents_21.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_21.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_109 = QVBoxLayout(self.scrollAreaWidgetContents_21)
         self.verticalLayout_109.setSpacing(20)
         self.verticalLayout_109.setObjectName(u"verticalLayout_109")
@@ -4851,7 +4863,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_102 = QLabel(self.widget_63)
         self.label_102.setObjectName(u"label_102")
         self.label_102.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_111.addWidget(self.label_102)
@@ -4859,11 +4871,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_33.addLayout(self.verticalLayout_111, 0, 0, 1, 1)
 
-        self.checkBox_25 = QCheckBox(self.widget_63)
-        self.checkBox_25.setObjectName(u"checkBox_25")
-        self.checkBox_25.setStyleSheet(u"")
+        self.HuoYueDuJiangLi_Enable = QCheckBox(self.widget_63)
+        self.HuoYueDuJiangLi_Enable.setObjectName(u"HuoYueDuJiangLi_Enable")
+        self.HuoYueDuJiangLi_Enable.setStyleSheet(u"")
 
-        self.gridLayout_33.addWidget(self.checkBox_25, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_33.addWidget(self.HuoYueDuJiangLi_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_112 = QVBoxLayout()
         self.verticalLayout_112.setObjectName(u"verticalLayout_112")
@@ -4875,7 +4887,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_151 = QLabel(self.widget_63)
         self.label_151.setObjectName(u"label_151")
         self.label_151.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_112.addWidget(self.label_151)
@@ -4883,11 +4895,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_33.addLayout(self.verticalLayout_112, 1, 0, 1, 1)
 
-        self.lineEdit_29 = QLineEdit(self.widget_63)
-        self.lineEdit_29.setObjectName(u"lineEdit_29")
-        self.lineEdit_29.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.HuoYueDuJiangLi_next_execute_time = QLineEdit(self.widget_63)
+        self.HuoYueDuJiangLi_next_execute_time.setObjectName(u"HuoYueDuJiangLi_next_execute_time")
+        self.HuoYueDuJiangLi_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.HuoYueDuJiangLi_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_33.addWidget(self.lineEdit_29, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_33.addWidget(self.HuoYueDuJiangLi_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_33.setColumnStretch(0, 5)
         self.gridLayout_33.setColumnStretch(1, 2)
@@ -4922,8 +4935,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_52.setObjectName(u"horizontalLayout_52")
         self.widget_70 = QWidget(self.QingKongYouJian_widget)
         self.widget_70.setObjectName(u"widget_70")
-        self.widget_70.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_70.setStyleSheet(u"")
         self.horizontalLayout_51 = QHBoxLayout(self.widget_70)
         self.horizontalLayout_51.setObjectName(u"horizontalLayout_51")
         self.horizontalSpacer_49 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -4937,7 +4949,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_28.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_25 = QWidget()
         self.scrollAreaWidgetContents_25.setObjectName(u"scrollAreaWidgetContents_25")
-        self.scrollAreaWidgetContents_25.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_25.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_125 = QVBoxLayout(self.scrollAreaWidgetContents_25)
         self.verticalLayout_125.setSpacing(20)
         self.verticalLayout_125.setObjectName(u"verticalLayout_125")
@@ -5028,7 +5040,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_164 = QLabel(self.widget_71)
         self.label_164.setObjectName(u"label_164")
         self.label_164.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_127.addWidget(self.label_164)
@@ -5036,11 +5048,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_37.addLayout(self.verticalLayout_127, 0, 0, 1, 1)
 
-        self.checkBox_29 = QCheckBox(self.widget_71)
-        self.checkBox_29.setObjectName(u"checkBox_29")
-        self.checkBox_29.setStyleSheet(u"")
+        self.QingKongYouJian_Enable = QCheckBox(self.widget_71)
+        self.QingKongYouJian_Enable.setObjectName(u"QingKongYouJian_Enable")
+        self.QingKongYouJian_Enable.setStyleSheet(u"")
 
-        self.gridLayout_37.addWidget(self.checkBox_29, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_37.addWidget(self.QingKongYouJian_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_128 = QVBoxLayout()
         self.verticalLayout_128.setObjectName(u"verticalLayout_128")
@@ -5052,7 +5064,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_166 = QLabel(self.widget_71)
         self.label_166.setObjectName(u"label_166")
         self.label_166.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_128.addWidget(self.label_166)
@@ -5060,11 +5072,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_37.addLayout(self.verticalLayout_128, 1, 0, 1, 1)
 
-        self.lineEdit_33 = QLineEdit(self.widget_71)
-        self.lineEdit_33.setObjectName(u"lineEdit_33")
-        self.lineEdit_33.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.QingKongYouJian_next_execute_time = QLineEdit(self.widget_71)
+        self.QingKongYouJian_next_execute_time.setObjectName(u"QingKongYouJian_next_execute_time")
+        self.QingKongYouJian_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.QingKongYouJian_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_37.addWidget(self.lineEdit_33, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_37.addWidget(self.QingKongYouJian_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_37.setColumnStretch(0, 5)
         self.gridLayout_37.setColumnStretch(1, 2)
@@ -5099,8 +5112,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_53.setObjectName(u"horizontalLayout_53")
         self.widget_76 = QWidget(self.XiuXingZhiLu_widget)
         self.widget_76.setObjectName(u"widget_76")
-        self.widget_76.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_76.setStyleSheet(u"")
         self.horizontalLayout_60 = QHBoxLayout(self.widget_76)
         self.horizontalLayout_60.setObjectName(u"horizontalLayout_60")
         self.horizontalSpacer_55 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -5114,7 +5126,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_31.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_28 = QWidget()
         self.scrollAreaWidgetContents_28.setObjectName(u"scrollAreaWidgetContents_28")
-        self.scrollAreaWidgetContents_28.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_28.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_137 = QVBoxLayout(self.scrollAreaWidgetContents_28)
         self.verticalLayout_137.setSpacing(20)
         self.verticalLayout_137.setObjectName(u"verticalLayout_137")
@@ -5184,7 +5196,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_220 = QLabel(self.widget_77)
         self.label_220.setObjectName(u"label_220")
         self.label_220.setStyleSheet(u"font-size:13pt;\n"
-"color:#39C5BB;\n"
+"color:rgba(255, 0, 0, 100);\n"
 "margin-left:18px;")
 
         self.verticalLayout_138.addWidget(self.label_220)
@@ -5213,7 +5225,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_179 = QLabel(self.widget_77)
         self.label_179.setObjectName(u"label_179")
         self.label_179.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_139.addWidget(self.label_179)
@@ -5221,11 +5233,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_40.addLayout(self.verticalLayout_139, 0, 0, 1, 1)
 
-        self.checkBox_32 = QCheckBox(self.widget_77)
-        self.checkBox_32.setObjectName(u"checkBox_32")
-        self.checkBox_32.setStyleSheet(u"")
+        self.XiuXingZhiLu_Enable = QCheckBox(self.widget_77)
+        self.XiuXingZhiLu_Enable.setObjectName(u"XiuXingZhiLu_Enable")
+        self.XiuXingZhiLu_Enable.setStyleSheet(u"")
 
-        self.gridLayout_40.addWidget(self.checkBox_32, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_40.addWidget(self.XiuXingZhiLu_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_140 = QVBoxLayout()
         self.verticalLayout_140.setObjectName(u"verticalLayout_140")
@@ -5237,7 +5249,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_181 = QLabel(self.widget_77)
         self.label_181.setObjectName(u"label_181")
         self.label_181.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_140.addWidget(self.label_181)
@@ -5245,11 +5257,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_40.addLayout(self.verticalLayout_140, 1, 0, 1, 1)
 
-        self.lineEdit_36 = QLineEdit(self.widget_77)
-        self.lineEdit_36.setObjectName(u"lineEdit_36")
-        self.lineEdit_36.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.XiuXingZhiLu_next_execute_time = QLineEdit(self.widget_77)
+        self.XiuXingZhiLu_next_execute_time.setObjectName(u"XiuXingZhiLu_next_execute_time")
+        self.XiuXingZhiLu_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.XiuXingZhiLu_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_40.addWidget(self.lineEdit_36, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_40.addWidget(self.XiuXingZhiLu_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_40.setColumnStretch(0, 5)
         self.gridLayout_40.setColumnStretch(1, 2)
@@ -5284,8 +5297,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_58.setObjectName(u"horizontalLayout_58")
         self.widget_72 = QWidget(self.RenFaTieDianZanFenXiang_widget)
         self.widget_72.setObjectName(u"widget_72")
-        self.widget_72.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_72.setStyleSheet(u"")
         self.horizontalLayout_54 = QHBoxLayout(self.widget_72)
         self.horizontalLayout_54.setObjectName(u"horizontalLayout_54")
         self.horizontalSpacer_51 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -5299,7 +5311,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_29.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_26 = QWidget()
         self.scrollAreaWidgetContents_26.setObjectName(u"scrollAreaWidgetContents_26")
-        self.scrollAreaWidgetContents_26.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_26.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_129 = QVBoxLayout(self.scrollAreaWidgetContents_26)
         self.verticalLayout_129.setSpacing(20)
         self.verticalLayout_129.setObjectName(u"verticalLayout_129")
@@ -5369,7 +5381,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_51 = QLabel(self.widget_73)
         self.label_51.setObjectName(u"label_51")
         self.label_51.setStyleSheet(u"font-size:13pt;\n"
-"color:#39C5BB;\n"
+"color:rgba(255, 0, 0, 100);\n"
 "margin-left:18px;")
 
         self.verticalLayout_130.addWidget(self.label_51)
@@ -5398,7 +5410,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_169 = QLabel(self.widget_73)
         self.label_169.setObjectName(u"label_169")
         self.label_169.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_131.addWidget(self.label_169)
@@ -5406,11 +5418,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_38.addLayout(self.verticalLayout_131, 0, 0, 1, 1)
 
-        self.checkBox_30 = QCheckBox(self.widget_73)
-        self.checkBox_30.setObjectName(u"checkBox_30")
-        self.checkBox_30.setStyleSheet(u"")
+        self.RenFaTieDianZanFenXiang_Enable = QCheckBox(self.widget_73)
+        self.RenFaTieDianZanFenXiang_Enable.setObjectName(u"RenFaTieDianZanFenXiang_Enable")
+        self.RenFaTieDianZanFenXiang_Enable.setStyleSheet(u"")
 
-        self.gridLayout_38.addWidget(self.checkBox_30, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_38.addWidget(self.RenFaTieDianZanFenXiang_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_132 = QVBoxLayout()
         self.verticalLayout_132.setObjectName(u"verticalLayout_132")
@@ -5422,7 +5434,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_171 = QLabel(self.widget_73)
         self.label_171.setObjectName(u"label_171")
         self.label_171.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_132.addWidget(self.label_171)
@@ -5430,11 +5442,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_38.addLayout(self.verticalLayout_132, 1, 0, 1, 1)
 
-        self.lineEdit_34 = QLineEdit(self.widget_73)
-        self.lineEdit_34.setObjectName(u"lineEdit_34")
-        self.lineEdit_34.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.RenFaTieDianZanFenXiang_next_execute_time = QLineEdit(self.widget_73)
+        self.RenFaTieDianZanFenXiang_next_execute_time.setObjectName(u"RenFaTieDianZanFenXiang_next_execute_time")
+        self.RenFaTieDianZanFenXiang_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.RenFaTieDianZanFenXiang_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_38.addWidget(self.lineEdit_34, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_38.addWidget(self.RenFaTieDianZanFenXiang_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_38.setColumnStretch(0, 5)
         self.gridLayout_38.setColumnStretch(1, 2)
@@ -5469,8 +5482,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_67.setObjectName(u"horizontalLayout_67")
         self.widget_88 = QWidget(self.TuanBen_widget)
         self.widget_88.setObjectName(u"widget_88")
-        self.widget_88.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_88.setStyleSheet(u"")
         self.horizontalLayout_55 = QHBoxLayout(self.widget_88)
         self.horizontalLayout_55.setObjectName(u"horizontalLayout_55")
         self.horizontalSpacer_67 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -5484,7 +5496,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_37.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_34 = QWidget()
         self.scrollAreaWidgetContents_34.setObjectName(u"scrollAreaWidgetContents_34")
-        self.scrollAreaWidgetContents_34.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_34.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_161 = QVBoxLayout(self.scrollAreaWidgetContents_34)
         self.verticalLayout_161.setSpacing(20)
         self.verticalLayout_161.setObjectName(u"verticalLayout_161")
@@ -5554,7 +5566,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_209 = QLabel(self.widget_89)
         self.label_209.setObjectName(u"label_209")
         self.label_209.setStyleSheet(u"font-size:13pt;\n"
-"color:#39C5BB;\n"
+"color:rgba(255, 0, 0, 100);\n"
 "margin-left:18px;")
 
         self.verticalLayout_162.addWidget(self.label_209)
@@ -5583,7 +5595,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_211 = QLabel(self.widget_89)
         self.label_211.setObjectName(u"label_211")
         self.label_211.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_163.addWidget(self.label_211)
@@ -5591,11 +5603,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_46.addLayout(self.verticalLayout_163, 0, 0, 1, 1)
 
-        self.checkBox_38 = QCheckBox(self.widget_89)
-        self.checkBox_38.setObjectName(u"checkBox_38")
-        self.checkBox_38.setStyleSheet(u"")
+        self.TuanBen_Enable = QCheckBox(self.widget_89)
+        self.TuanBen_Enable.setObjectName(u"TuanBen_Enable")
+        self.TuanBen_Enable.setStyleSheet(u"")
 
-        self.gridLayout_46.addWidget(self.checkBox_38, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_46.addWidget(self.TuanBen_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_164 = QVBoxLayout()
         self.verticalLayout_164.setObjectName(u"verticalLayout_164")
@@ -5607,7 +5619,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_213 = QLabel(self.widget_89)
         self.label_213.setObjectName(u"label_213")
         self.label_213.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_164.addWidget(self.label_213)
@@ -5615,11 +5627,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_46.addLayout(self.verticalLayout_164, 1, 0, 1, 1)
 
-        self.lineEdit_42 = QLineEdit(self.widget_89)
-        self.lineEdit_42.setObjectName(u"lineEdit_42")
-        self.lineEdit_42.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.TuanBen_next_execute_time = QLineEdit(self.widget_89)
+        self.TuanBen_next_execute_time.setObjectName(u"TuanBen_next_execute_time")
+        self.TuanBen_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.TuanBen_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_46.addWidget(self.lineEdit_42, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_46.addWidget(self.TuanBen_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_46.setColumnStretch(0, 5)
         self.gridLayout_46.setColumnStretch(1, 2)
@@ -5654,8 +5667,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_68.setObjectName(u"horizontalLayout_68")
         self.widget_90 = QWidget(self.YaoSaiZhengDuoZhan_widget)
         self.widget_90.setObjectName(u"widget_90")
-        self.widget_90.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_90.setStyleSheet(u"")
         self.horizontalLayout_56 = QHBoxLayout(self.widget_90)
         self.horizontalLayout_56.setObjectName(u"horizontalLayout_56")
         self.horizontalSpacer_69 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -5669,7 +5681,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_38.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_35 = QWidget()
         self.scrollAreaWidgetContents_35.setObjectName(u"scrollAreaWidgetContents_35")
-        self.scrollAreaWidgetContents_35.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_35.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_165 = QVBoxLayout(self.scrollAreaWidgetContents_35)
         self.verticalLayout_165.setSpacing(20)
         self.verticalLayout_165.setObjectName(u"verticalLayout_165")
@@ -5739,7 +5751,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_215 = QLabel(self.widget_91)
         self.label_215.setObjectName(u"label_215")
         self.label_215.setStyleSheet(u"font-size:13pt;\n"
-"color:#39C5BB;\n"
+"color:rgba(255, 0, 0, 100);\n"
 "margin-left:18px;")
 
         self.verticalLayout_166.addWidget(self.label_215)
@@ -5768,7 +5780,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_217 = QLabel(self.widget_91)
         self.label_217.setObjectName(u"label_217")
         self.label_217.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_167.addWidget(self.label_217)
@@ -5776,11 +5788,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_47.addLayout(self.verticalLayout_167, 0, 0, 1, 1)
 
-        self.checkBox_39 = QCheckBox(self.widget_91)
-        self.checkBox_39.setObjectName(u"checkBox_39")
-        self.checkBox_39.setStyleSheet(u"")
+        self.YaoSaiZhengDuoZhan_Enable = QCheckBox(self.widget_91)
+        self.YaoSaiZhengDuoZhan_Enable.setObjectName(u"YaoSaiZhengDuoZhan_Enable")
+        self.YaoSaiZhengDuoZhan_Enable.setStyleSheet(u"")
 
-        self.gridLayout_47.addWidget(self.checkBox_39, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_47.addWidget(self.YaoSaiZhengDuoZhan_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_168 = QVBoxLayout()
         self.verticalLayout_168.setObjectName(u"verticalLayout_168")
@@ -5792,7 +5804,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_219 = QLabel(self.widget_91)
         self.label_219.setObjectName(u"label_219")
         self.label_219.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_168.addWidget(self.label_219)
@@ -5800,11 +5812,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_47.addLayout(self.verticalLayout_168, 1, 0, 1, 1)
 
-        self.lineEdit_43 = QLineEdit(self.widget_91)
-        self.lineEdit_43.setObjectName(u"lineEdit_43")
-        self.lineEdit_43.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.YaoSaiZhengDuoZhan_next_execute_time = QLineEdit(self.widget_91)
+        self.YaoSaiZhengDuoZhan_next_execute_time.setObjectName(u"YaoSaiZhengDuoZhan_next_execute_time")
+        self.YaoSaiZhengDuoZhan_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.YaoSaiZhengDuoZhan_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_47.addWidget(self.lineEdit_43, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_47.addWidget(self.YaoSaiZhengDuoZhan_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_47.setColumnStretch(0, 5)
         self.gridLayout_47.setColumnStretch(1, 2)
@@ -5839,8 +5852,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_66.setObjectName(u"horizontalLayout_66")
         self.widget_86 = QWidget(self.PanRenLaiXi_widget)
         self.widget_86.setObjectName(u"widget_86")
-        self.widget_86.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_86.setStyleSheet(u"")
         self.horizontalLayout_57 = QHBoxLayout(self.widget_86)
         self.horizontalLayout_57.setObjectName(u"horizontalLayout_57")
         self.horizontalSpacer_65 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -5854,7 +5866,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_36.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_33 = QWidget()
         self.scrollAreaWidgetContents_33.setObjectName(u"scrollAreaWidgetContents_33")
-        self.scrollAreaWidgetContents_33.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_33.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_157 = QVBoxLayout(self.scrollAreaWidgetContents_33)
         self.verticalLayout_157.setSpacing(20)
         self.verticalLayout_157.setObjectName(u"verticalLayout_157")
@@ -5924,7 +5936,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_203 = QLabel(self.widget_87)
         self.label_203.setObjectName(u"label_203")
         self.label_203.setStyleSheet(u"font-size:13pt;\n"
-"color:#39C5BB;\n"
+"color:rgba(255, 0, 0, 100);\n"
 "margin-left:18px;")
 
         self.verticalLayout_158.addWidget(self.label_203)
@@ -5953,7 +5965,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_205 = QLabel(self.widget_87)
         self.label_205.setObjectName(u"label_205")
         self.label_205.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_159.addWidget(self.label_205)
@@ -5961,11 +5973,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_45.addLayout(self.verticalLayout_159, 0, 0, 1, 1)
 
-        self.checkBox_37 = QCheckBox(self.widget_87)
-        self.checkBox_37.setObjectName(u"checkBox_37")
-        self.checkBox_37.setStyleSheet(u"")
+        self.PanRenLaiXi_Enable = QCheckBox(self.widget_87)
+        self.PanRenLaiXi_Enable.setObjectName(u"PanRenLaiXi_Enable")
+        self.PanRenLaiXi_Enable.setStyleSheet(u"")
 
-        self.gridLayout_45.addWidget(self.checkBox_37, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_45.addWidget(self.PanRenLaiXi_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_160 = QVBoxLayout()
         self.verticalLayout_160.setObjectName(u"verticalLayout_160")
@@ -5977,7 +5989,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_207 = QLabel(self.widget_87)
         self.label_207.setObjectName(u"label_207")
         self.label_207.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_160.addWidget(self.label_207)
@@ -5985,11 +5997,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_45.addLayout(self.verticalLayout_160, 1, 0, 1, 1)
 
-        self.lineEdit_41 = QLineEdit(self.widget_87)
-        self.lineEdit_41.setObjectName(u"lineEdit_41")
-        self.lineEdit_41.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.PanRenLaiXi_next_execute_time = QLineEdit(self.widget_87)
+        self.PanRenLaiXi_next_execute_time.setObjectName(u"PanRenLaiXi_next_execute_time")
+        self.PanRenLaiXi_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.PanRenLaiXi_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_45.addWidget(self.lineEdit_41, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_45.addWidget(self.PanRenLaiXi_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_45.setColumnStretch(0, 5)
         self.gridLayout_45.setColumnStretch(1, 2)
@@ -6024,8 +6037,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_46.setObjectName(u"horizontalLayout_46")
         self.widget_64 = QWidget(self.KuaFuZhengBaSai_widget)
         self.widget_64.setObjectName(u"widget_64")
-        self.widget_64.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_64.setStyleSheet(u"")
         self.horizontalLayout_43 = QHBoxLayout(self.widget_64)
         self.horizontalLayout_43.setObjectName(u"horizontalLayout_43")
         self.horizontalSpacer_43 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -6039,7 +6051,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_25.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_22 = QWidget()
         self.scrollAreaWidgetContents_22.setObjectName(u"scrollAreaWidgetContents_22")
-        self.scrollAreaWidgetContents_22.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_22.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_113 = QVBoxLayout(self.scrollAreaWidgetContents_22)
         self.verticalLayout_113.setSpacing(20)
         self.verticalLayout_113.setObjectName(u"verticalLayout_113")
@@ -6109,7 +6121,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_39 = QLabel(self.widget_65)
         self.label_39.setObjectName(u"label_39")
         self.label_39.setStyleSheet(u"font-size:13pt;\n"
-"color:#39C5BB;\n"
+"color:rgba(255, 0, 0, 100);\n"
 "margin-left:18px;")
 
         self.verticalLayout_114.addWidget(self.label_39)
@@ -6138,7 +6150,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_117 = QLabel(self.widget_65)
         self.label_117.setObjectName(u"label_117")
         self.label_117.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_115.addWidget(self.label_117)
@@ -6146,11 +6158,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_34.addLayout(self.verticalLayout_115, 0, 0, 1, 1)
 
-        self.checkBox_26 = QCheckBox(self.widget_65)
-        self.checkBox_26.setObjectName(u"checkBox_26")
-        self.checkBox_26.setStyleSheet(u"")
+        self.KuaFuZhengBaSai_Enable = QCheckBox(self.widget_65)
+        self.KuaFuZhengBaSai_Enable.setObjectName(u"KuaFuZhengBaSai_Enable")
+        self.KuaFuZhengBaSai_Enable.setStyleSheet(u"")
 
-        self.gridLayout_34.addWidget(self.checkBox_26, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_34.addWidget(self.KuaFuZhengBaSai_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_116 = QVBoxLayout()
         self.verticalLayout_116.setObjectName(u"verticalLayout_116")
@@ -6162,7 +6174,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_153 = QLabel(self.widget_65)
         self.label_153.setObjectName(u"label_153")
         self.label_153.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_116.addWidget(self.label_153)
@@ -6170,11 +6182,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_34.addLayout(self.verticalLayout_116, 1, 0, 1, 1)
 
-        self.lineEdit_30 = QLineEdit(self.widget_65)
-        self.lineEdit_30.setObjectName(u"lineEdit_30")
-        self.lineEdit_30.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.KuaFuZhengBaSai_next_execute_time = QLineEdit(self.widget_65)
+        self.KuaFuZhengBaSai_next_execute_time.setObjectName(u"KuaFuZhengBaSai_next_execute_time")
+        self.KuaFuZhengBaSai_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.KuaFuZhengBaSai_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_34.addWidget(self.lineEdit_30, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_34.addWidget(self.KuaFuZhengBaSai_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_34.setColumnStretch(0, 5)
         self.gridLayout_34.setColumnStretch(1, 2)
@@ -6209,8 +6222,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_29.setObjectName(u"horizontalLayout_29")
         self.widget_48 = QWidget(self.GaoJiRenZheZhaoMu_widget)
         self.widget_48.setObjectName(u"widget_48")
-        self.widget_48.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_48.setStyleSheet(u"")
         self.horizontalLayout_28 = QHBoxLayout(self.widget_48)
         self.horizontalLayout_28.setObjectName(u"horizontalLayout_28")
         self.horizontalSpacer_27 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -6224,7 +6236,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_17.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_14 = QWidget()
         self.scrollAreaWidgetContents_14.setObjectName(u"scrollAreaWidgetContents_14")
-        self.scrollAreaWidgetContents_14.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_14.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_81 = QVBoxLayout(self.scrollAreaWidgetContents_14)
         self.verticalLayout_81.setSpacing(20)
         self.verticalLayout_81.setObjectName(u"verticalLayout_81")
@@ -6315,7 +6327,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_81 = QLabel(self.widget_49)
         self.label_81.setObjectName(u"label_81")
         self.label_81.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_83.addWidget(self.label_81)
@@ -6323,11 +6335,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_26.addLayout(self.verticalLayout_83, 0, 0, 1, 1)
 
-        self.checkBox_18 = QCheckBox(self.widget_49)
-        self.checkBox_18.setObjectName(u"checkBox_18")
-        self.checkBox_18.setStyleSheet(u"")
+        self.GaoJiRenZheZhaoMu_Enable = QCheckBox(self.widget_49)
+        self.GaoJiRenZheZhaoMu_Enable.setObjectName(u"GaoJiRenZheZhaoMu_Enable")
+        self.GaoJiRenZheZhaoMu_Enable.setStyleSheet(u"")
 
-        self.gridLayout_26.addWidget(self.checkBox_18, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_26.addWidget(self.GaoJiRenZheZhaoMu_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_84 = QVBoxLayout()
         self.verticalLayout_84.setObjectName(u"verticalLayout_84")
@@ -6339,7 +6351,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_137 = QLabel(self.widget_49)
         self.label_137.setObjectName(u"label_137")
         self.label_137.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_84.addWidget(self.label_137)
@@ -6347,11 +6359,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_26.addLayout(self.verticalLayout_84, 1, 0, 1, 1)
 
-        self.lineEdit_22 = QLineEdit(self.widget_49)
-        self.lineEdit_22.setObjectName(u"lineEdit_22")
-        self.lineEdit_22.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.GaoJiRenZheZhaoMu_next_execute_time = QLineEdit(self.widget_49)
+        self.GaoJiRenZheZhaoMu_next_execute_time.setObjectName(u"GaoJiRenZheZhaoMu_next_execute_time")
+        self.GaoJiRenZheZhaoMu_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.GaoJiRenZheZhaoMu_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_26.addWidget(self.lineEdit_22, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_26.addWidget(self.GaoJiRenZheZhaoMu_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_26.setColumnStretch(0, 5)
         self.gridLayout_26.setColumnStretch(1, 2)
@@ -6386,8 +6399,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_19.setObjectName(u"horizontalLayout_19")
         self.widget_38 = QWidget(self.MeiZhouShengChang_widget)
         self.widget_38.setObjectName(u"widget_38")
-        self.widget_38.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_38.setStyleSheet(u"")
         self.horizontalLayout_18 = QHBoxLayout(self.widget_38)
         self.horizontalLayout_18.setObjectName(u"horizontalLayout_18")
         self.horizontalSpacer_17 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -6401,7 +6413,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_12.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_9 = QWidget()
         self.scrollAreaWidgetContents_9.setObjectName(u"scrollAreaWidgetContents_9")
-        self.scrollAreaWidgetContents_9.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_9.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_61 = QVBoxLayout(self.scrollAreaWidgetContents_9)
         self.verticalLayout_61.setSpacing(20)
         self.verticalLayout_61.setObjectName(u"verticalLayout_61")
@@ -6471,7 +6483,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_52 = QLabel(self.widget_39)
         self.label_52.setObjectName(u"label_52")
         self.label_52.setStyleSheet(u"font-size:13pt;\n"
-"color:#39C5BB;\n"
+"color:rgba(255, 0, 0, 100);\n"
 "margin-left:18px;")
 
         self.verticalLayout_62.addWidget(self.label_52)
@@ -6500,7 +6512,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_66 = QLabel(self.widget_39)
         self.label_66.setObjectName(u"label_66")
         self.label_66.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_63.addWidget(self.label_66)
@@ -6508,11 +6520,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_21.addLayout(self.verticalLayout_63, 0, 0, 1, 1)
 
-        self.checkBox_13 = QCheckBox(self.widget_39)
-        self.checkBox_13.setObjectName(u"checkBox_13")
-        self.checkBox_13.setStyleSheet(u"")
+        self.MeiZhouShengChang_Enable = QCheckBox(self.widget_39)
+        self.MeiZhouShengChang_Enable.setObjectName(u"MeiZhouShengChang_Enable")
+        self.MeiZhouShengChang_Enable.setStyleSheet(u"")
 
-        self.gridLayout_21.addWidget(self.checkBox_13, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_21.addWidget(self.MeiZhouShengChang_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_64 = QVBoxLayout()
         self.verticalLayout_64.setObjectName(u"verticalLayout_64")
@@ -6524,7 +6536,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_127 = QLabel(self.widget_39)
         self.label_127.setObjectName(u"label_127")
         self.label_127.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_64.addWidget(self.label_127)
@@ -6532,11 +6544,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_21.addLayout(self.verticalLayout_64, 1, 0, 1, 1)
 
-        self.lineEdit_17 = QLineEdit(self.widget_39)
-        self.lineEdit_17.setObjectName(u"lineEdit_17")
-        self.lineEdit_17.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.MeiZhouShengChang_next_execute_time = QLineEdit(self.widget_39)
+        self.MeiZhouShengChang_next_execute_time.setObjectName(u"MeiZhouShengChang_next_execute_time")
+        self.MeiZhouShengChang_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.MeiZhouShengChang_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_21.addWidget(self.lineEdit_17, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_21.addWidget(self.MeiZhouShengChang_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_21.setColumnStretch(0, 5)
         self.gridLayout_21.setColumnStretch(1, 2)
@@ -6571,8 +6584,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_21.setObjectName(u"horizontalLayout_21")
         self.widget_40 = QWidget(self.SaiJiShengChang_widget)
         self.widget_40.setObjectName(u"widget_40")
-        self.widget_40.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_40.setStyleSheet(u"")
         self.horizontalLayout_20 = QHBoxLayout(self.widget_40)
         self.horizontalLayout_20.setObjectName(u"horizontalLayout_20")
         self.horizontalSpacer_19 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -6586,7 +6598,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_13.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_10 = QWidget()
         self.scrollAreaWidgetContents_10.setObjectName(u"scrollAreaWidgetContents_10")
-        self.scrollAreaWidgetContents_10.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_10.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_65 = QVBoxLayout(self.scrollAreaWidgetContents_10)
         self.verticalLayout_65.setSpacing(20)
         self.verticalLayout_65.setObjectName(u"verticalLayout_65")
@@ -6677,7 +6689,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_69 = QLabel(self.widget_41)
         self.label_69.setObjectName(u"label_69")
         self.label_69.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_67.addWidget(self.label_69)
@@ -6685,11 +6697,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_22.addLayout(self.verticalLayout_67, 0, 0, 1, 1)
 
-        self.checkBox_14 = QCheckBox(self.widget_41)
-        self.checkBox_14.setObjectName(u"checkBox_14")
-        self.checkBox_14.setStyleSheet(u"")
+        self.SaiJiShengChang_Enable = QCheckBox(self.widget_41)
+        self.SaiJiShengChang_Enable.setObjectName(u"SaiJiShengChang_Enable")
+        self.SaiJiShengChang_Enable.setStyleSheet(u"")
 
-        self.gridLayout_22.addWidget(self.checkBox_14, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_22.addWidget(self.SaiJiShengChang_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_68 = QVBoxLayout()
         self.verticalLayout_68.setObjectName(u"verticalLayout_68")
@@ -6701,7 +6713,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_129 = QLabel(self.widget_41)
         self.label_129.setObjectName(u"label_129")
         self.label_129.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_68.addWidget(self.label_129)
@@ -6709,11 +6721,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_22.addLayout(self.verticalLayout_68, 1, 0, 1, 1)
 
-        self.lineEdit_18 = QLineEdit(self.widget_41)
-        self.lineEdit_18.setObjectName(u"lineEdit_18")
-        self.lineEdit_18.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.SaiJiShengChang_next_execute_time = QLineEdit(self.widget_41)
+        self.SaiJiShengChang_next_execute_time.setObjectName(u"SaiJiShengChang_next_execute_time")
+        self.SaiJiShengChang_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.SaiJiShengChang_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_22.addWidget(self.lineEdit_18, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_22.addWidget(self.SaiJiShengChang_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_22.setColumnStretch(0, 5)
         self.gridLayout_22.setColumnStretch(1, 2)
@@ -6748,8 +6761,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_23.setObjectName(u"horizontalLayout_23")
         self.widget_42 = QWidget(self.GengDuoWanFa_widget)
         self.widget_42.setObjectName(u"widget_42")
-        self.widget_42.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_42.setStyleSheet(u"")
         self.horizontalLayout_22 = QHBoxLayout(self.widget_42)
         self.horizontalLayout_22.setObjectName(u"horizontalLayout_22")
         self.horizontalSpacer_21 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -6763,7 +6775,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_14.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_11 = QWidget()
         self.scrollAreaWidgetContents_11.setObjectName(u"scrollAreaWidgetContents_11")
-        self.scrollAreaWidgetContents_11.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_11.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_69 = QVBoxLayout(self.scrollAreaWidgetContents_11)
         self.verticalLayout_69.setSpacing(20)
         self.verticalLayout_69.setObjectName(u"verticalLayout_69")
@@ -6854,7 +6866,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_72 = QLabel(self.widget_43)
         self.label_72.setObjectName(u"label_72")
         self.label_72.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_71.addWidget(self.label_72)
@@ -6862,11 +6874,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_23.addLayout(self.verticalLayout_71, 0, 0, 1, 1)
 
-        self.checkBox_15 = QCheckBox(self.widget_43)
-        self.checkBox_15.setObjectName(u"checkBox_15")
-        self.checkBox_15.setStyleSheet(u"")
+        self.GengDuoWanFa_Enable = QCheckBox(self.widget_43)
+        self.GengDuoWanFa_Enable.setObjectName(u"GengDuoWanFa_Enable")
+        self.GengDuoWanFa_Enable.setStyleSheet(u"")
 
-        self.gridLayout_23.addWidget(self.checkBox_15, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_23.addWidget(self.GengDuoWanFa_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_72 = QVBoxLayout()
         self.verticalLayout_72.setObjectName(u"verticalLayout_72")
@@ -6878,7 +6890,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_131 = QLabel(self.widget_43)
         self.label_131.setObjectName(u"label_131")
         self.label_131.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_72.addWidget(self.label_131)
@@ -6886,11 +6898,12 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_23.addLayout(self.verticalLayout_72, 1, 0, 1, 1)
 
-        self.lineEdit_19 = QLineEdit(self.widget_43)
-        self.lineEdit_19.setObjectName(u"lineEdit_19")
-        self.lineEdit_19.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.GengDuoWanFa_next_execute_time = QLineEdit(self.widget_43)
+        self.GengDuoWanFa_next_execute_time.setObjectName(u"GengDuoWanFa_next_execute_time")
+        self.GengDuoWanFa_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.GengDuoWanFa_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_23.addWidget(self.lineEdit_19, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_23.addWidget(self.GengDuoWanFa_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_23.setColumnStretch(0, 5)
         self.gridLayout_23.setColumnStretch(1, 2)
@@ -6925,8 +6938,7 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
         self.widget_92 = QWidget(self.ChongQiYouXi_widget)
         self.widget_92.setObjectName(u"widget_92")
-        self.widget_92.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_92.setStyleSheet(u"")
         self.horizontalLayout_69 = QHBoxLayout(self.widget_92)
         self.horizontalLayout_69.setObjectName(u"horizontalLayout_69")
         self.horizontalSpacer_71 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -6940,7 +6952,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_39.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_36 = QWidget()
         self.scrollAreaWidgetContents_36.setObjectName(u"scrollAreaWidgetContents_36")
-        self.scrollAreaWidgetContents_36.setGeometry(QRect(0, 0, 598, 660))
+        self.scrollAreaWidgetContents_36.setGeometry(QRect(0, 0, 625, 551))
         self.verticalLayout_169 = QVBoxLayout(self.scrollAreaWidgetContents_36)
         self.verticalLayout_169.setSpacing(20)
         self.verticalLayout_169.setObjectName(u"verticalLayout_169")
@@ -7031,7 +7043,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_223 = QLabel(self.widget_93)
         self.label_223.setObjectName(u"label_223")
         self.label_223.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_171.addWidget(self.label_223)
@@ -7039,11 +7051,11 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_48.addLayout(self.verticalLayout_171, 0, 0, 1, 1)
 
-        self.checkBox_40 = QCheckBox(self.widget_93)
-        self.checkBox_40.setObjectName(u"checkBox_40")
-        self.checkBox_40.setStyleSheet(u"")
+        self.ChongQiYouXi_Enable = QCheckBox(self.widget_93)
+        self.ChongQiYouXi_Enable.setObjectName(u"ChongQiYouXi_Enable")
+        self.ChongQiYouXi_Enable.setStyleSheet(u"")
 
-        self.gridLayout_48.addWidget(self.checkBox_40, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_48.addWidget(self.ChongQiYouXi_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
 
         self.verticalLayout_172 = QVBoxLayout()
         self.verticalLayout_172.setObjectName(u"verticalLayout_172")
@@ -7055,7 +7067,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_225 = QLabel(self.widget_93)
         self.label_225.setObjectName(u"label_225")
         self.label_225.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_172.addWidget(self.label_225)
@@ -7063,11 +7075,14 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_48.addLayout(self.verticalLayout_172, 1, 0, 1, 1)
 
-        self.lineEdit_44 = QLineEdit(self.widget_93)
-        self.lineEdit_44.setObjectName(u"lineEdit_44")
-        self.lineEdit_44.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.ChongQiYouXi_next_execute_time = QLineEdit(self.widget_93)
+        self.ChongQiYouXi_next_execute_time.setObjectName(u"ChongQiYouXi_next_execute_time")
+        self.ChongQiYouXi_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.ChongQiYouXi_next_execute_time.setFont(font)
+        self.ChongQiYouXi_next_execute_time.setAutoFillBackground(False)
+        self.ChongQiYouXi_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.gridLayout_48.addWidget(self.lineEdit_44, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_48.addWidget(self.ChongQiYouXi_next_execute_time, 1, 1, 1, 1)
 
         self.gridLayout_48.setColumnStretch(0, 5)
         self.gridLayout_48.setColumnStretch(1, 2)
@@ -7098,12 +7113,12 @@ class Ui_DailyQuestsHelper(object):
         self.stackedWidget.addWidget(self.ChongQiYouXi_widget)
         self.DQH_Settings_widget = QWidget()
         self.DQH_Settings_widget.setObjectName(u"DQH_Settings_widget")
+        self.DQH_Settings_widget.setMinimumSize(QSize(90, 0))
         self.horizontalLayout_5 = QHBoxLayout(self.DQH_Settings_widget)
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
         self.widget_19 = QWidget(self.DQH_Settings_widget)
         self.widget_19.setObjectName(u"widget_19")
-        self.widget_19.setStyleSheet(u"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
-"color:#0f322f;")
+        self.widget_19.setStyleSheet(u"")
         self.horizontalLayout_12 = QHBoxLayout(self.widget_19)
         self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
         self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
@@ -7117,7 +7132,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_8.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_5 = QWidget()
         self.scrollAreaWidgetContents_5.setObjectName(u"scrollAreaWidgetContents_5")
-        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, -232, 586, 934))
+        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, -464, 613, 1015))
         self.verticalLayout_25 = QVBoxLayout(self.scrollAreaWidgetContents_5)
         self.verticalLayout_25.setSpacing(20)
         self.verticalLayout_25.setObjectName(u"verticalLayout_25")
@@ -7154,9 +7169,9 @@ class Ui_DailyQuestsHelper(object):
 "	border-color: #cccccc;\n"
 "}\n"
 "/* 1. \u672a\u9009\u4e2d\uff08\u9ed8\u8ba4\uff09\u72b6\u6001\u7684\u4e0b\u8fb9\u6846 */\n"
-"            QLineEdit {\n"
-"                /* \u6e05\u9664\u9ed8"
-                        "\u8ba4\u8fb9\u6846\uff0c\u53ea\u4fdd\u7559\u4e0b\u8fb9\u6846 */\n"
+"QLineEdit {\n"
+"                /* \u6e05\u9664\u9ed8\u8ba4\u8fb9"
+                        "\u6846\uff0c\u53ea\u4fdd\u7559\u4e0b\u8fb9\u6846 */\n"
 "                border: none;\n"
 "                border-bottom: 3px solid #969696;  /* \u7070\u8272\u4e0b\u8fb9\u6846 */\n"
 "                padding: 5px 0;  /* \u4e0a\u4e0b\u4e0b\u5185\u8fb9\u8ddd\uff0c\u907f\u514d\u6587\u5b57\u7d27\u8d34\u7d27\u8d34\u8fb9\u6846 */\n"
@@ -7165,16 +7180,113 @@ class Ui_DailyQuestsHelper(object):
 "            }\n"
 "            \n"
 "            /* 2. \u9009\u4e2d\uff08\u83b7\u5f97\u7126\u70b9\u70b9\uff09\u72b6\u6001\u7684\u4e0b\u8fb9\u6846 */\n"
-"            QLineEdit:focus {\n"
+"QLineEdit:focus {\n"
 "                border-bottom: 4px solid #39C5BB;  /* \u84dd\u8272\u4e0b\u8fb9\u6846\uff08\u7a81\u51fa\u663e\u793a\uff09 */\n"
 "                outline: none;  /* \u53bb\u9664\u7cfb\u7edf\u9ed8\u8ba4\u7684\u805a\u7126\u5916\u8fb9\u6846 */\n"
 "            }\n"
 "            \n"
-"            /* 3. \u9f20\u6807\u7565\u8fc7\uff08\u60ac\u505c\uff09\u72b6\u6001"
-                        "\u7684\u4e0b\u8fb9\u6846 */\n"
-"            QLineEdit:hover {\n"
+"            /* 3. \u9f20\u6807\u7565\u8fc7\uff08\u60ac\u505c\uff09\u72b6\u6001\u7684\u4e0b\u8fb9\u6846"
+                        " */\n"
+"QLineEdit:hover {\n"
 "                border-bottom: 4px solid #39C5BB;  /* \u6df1\u7070\u8272\u4e0b\u8fb9\u6846\uff08\u4e2d\u95f4\u72b6\u6001\uff09 */\n"
-"            }")
+"            }\n"
+"/* QComboBox \u6837\u5f0f */\n"
+"QComboBox {\n"
+"    border: 2px solid #0f322f;  /* \u8fb9\u6846\u989c\u8272\u4e0eCheckBox\u4fdd\u6301\u4e00\u81f4 */\n"
+"    border-radius: 3px;\n"
+"    padding: 5px 0px 5px 10px;  /* \u53f3\u4fa7\u9884\u7559\u7a7a\u95f4\u7ed9\u81ea\u5b9a\u4e49\u7bad\u5934 */\n"
+"    background-color: #e7e7e7;\n"
+"    min-height: 20px;\n"
+"}\n"
+"\n"
+"/* \u9690\u85cfQComboBox\u9ed8\u8ba4\u4e0b\u62c9\u6309\u94ae */\n"
+"QComboBox::drop-down {\n"
+"    border: none;  /* \u53bb\u9664\u9ed8\u8ba4\u6309\u94ae\u8fb9\u6846 */\n"
+"\n"
+"}\n"
+"\n"
+"/* \u81ea\u5b9a\u4e49\u4e0b\u62c9\u7bad\u5934\uff08\u4f7f\u7528\u4e09\u89d2\u5f62\u5b57\u7b26\u6a21\u62df\uff09 */\n"
+"QComboBox::down-arrow {\n"
+"    image: none;  /* \u53bb\u9664\u9ed8\u8ba4\u7bad\u5934 */\n"
+"}\n"
+"\n"
+"QComboBox::down-arrow:on {\n"
+"    image: none;  /* \u4e0b\u62c9"
+                        "\u72b6\u6001\u4e5f\u4e0d\u663e\u793a\u9ed8\u8ba4\u7bad\u5934 */\n"
+"}\n"
+"\n"
+"/* \u4e0b\u62c9\u5217\u8868\u6837\u5f0f */\n"
+"QComboBox QAbstractItemView {\n"
+"    border: 2px solid #b5b5b5;\n"
+"    border-radius: 3px;\n"
+"    background-color: #e7e7e7;\n"
+"    padding: 5px;\n"
+"    selection-background-color: #39C5BB;  /* \u9009\u4e2d\u9879\u80cc\u666f\u8272 */\n"
+"    selection-color: #000000;\n"
+"}\n"
+"\n"
+"/* \u60ac\u505c\u548c\u9009\u4e2d\u72b6\u6001 */\n"
+"QComboBox:hover {\n"
+"    border-color: #39C5BB;\n"
+"}\n"
+"\n"
+"QComboBox:focus {\n"
+"    border-color: #39C5BB;\n"
+"    outline: none;\n"
+"}\n"
+"\n"
+"/* QSpinBox \u6837\u5f0f */\n"
+"QSpinBox {\n"
+"    border: 2px solid #0f322f;\n"
+"    border-radius: 3px;\n"
+"    padding: 5px 10px 5px 10px;  /* \u53f3\u4fa7\u9884\u7559\u7a7a\u95f4\u7ed9\u81ea\u5b9a\u4e49\u6309\u94ae */\n"
+"    background-color: #e7e7e7;\n"
+"    min-height: 20px;\n"
+"}\n"
+"\n"
+"/* \u9690\u85cfQSpinBox\u9ed8\u8ba4\u4e0a\u4e0b\u6309\u94ae */\n"
+"QSpinBox::up-button, QSpinBox::down-button"
+                        " {\n"
+"    border: none;\n"
+"    width: 0;  /* \u9690\u85cf\u9ed8\u8ba4\u6309\u94ae */\n"
+"    height: 0;\n"
+"}\n"
+"\n"
+"\n"
+"\n"
+"/* \u60ac\u505c\u548c\u9009\u4e2d\u72b6\u6001 */\n"
+"QSpinBox:hover {\n"
+"    border-color: #39C5BB;\n"
+"}\n"
+"\n"
+"QSpinBox:focus {\n"
+"    border-color: #39C5BB;\n"
+"    outline: none;\n"
+"}\n"
+"\n"
+"/* \u89e3\u51b3QSpinBox\u7f16\u8f91\u533a\u57df\u4e0e\u6574\u4f53\u6837\u5f0f\u51b2\u7a81 */\n"
+"QSpinBox::edit-focus {\n"
+"    background-color: transparent;\n"
+"    border: none;\n"
+"    outline: none;\n"
+"}\n"
+"\n"
+"QPushButton{\n"
+"min-height: 26px;\n"
+"border: 2px solid #0f322f;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
+"background-color: #e7e7e7;\n"
+"border-radius:3px;\n"
+"outline:none;\n"
+"color:#0f322f;\n"
+"padding-top:2px;\n"
+"padding-bottom:2px;\n"
+"}\n"
+"QPushButton::hover {\n"
+"border: 2px solid #39C5BB;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
+"outline:none;\n"
+"color:#39C5BB;\n"
+"}\n"
+"")
         self.verticalLayout_26 = QVBoxLayout(self.widget_21)
         self.verticalLayout_26.setObjectName(u"verticalLayout_26")
         self.verticalLayout_26.setContentsMargins(-1, 7, -1, -1)
@@ -7199,6 +7311,13 @@ class Ui_DailyQuestsHelper(object):
         self.gridLayout_5 = QGridLayout()
         self.gridLayout_5.setObjectName(u"gridLayout_5")
         self.gridLayout_5.setContentsMargins(10, 10, 0, 10)
+        self.serial = QLineEdit(self.widget_21)
+        self.serial.setObjectName(u"serial")
+        self.serial.setMaxLength(30)
+        self.serial.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        self.gridLayout_5.addWidget(self.serial, 2, 1, 1, 1)
+
         self.verticalLayout_14 = QVBoxLayout()
         self.verticalLayout_14.setObjectName(u"verticalLayout_14")
         self.label_106 = QLabel(self.widget_21)
@@ -7209,45 +7328,49 @@ class Ui_DailyQuestsHelper(object):
         self.label_107 = QLabel(self.widget_21)
         self.label_107.setObjectName(u"label_107")
         self.label_107.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_14.addWidget(self.label_107)
 
 
-        self.gridLayout_5.addLayout(self.verticalLayout_14, 1, 0, 1, 1)
+        self.gridLayout_5.addLayout(self.verticalLayout_14, 2, 0, 1, 1)
 
         self.verticalLayout_27 = QVBoxLayout()
         self.verticalLayout_27.setObjectName(u"verticalLayout_27")
         self.label_19 = QLabel(self.widget_21)
         self.label_19.setObjectName(u"label_19")
+        self.label_19.setStyleSheet(u"QLabel QToolTip {\n"
+"                background-color: #f0f0f0;  /* \u80cc\u666f\u8272 */\n"
+"                color: #333333;             /* \u6587\u5b57\u989c\u8272 */\n"
+"                border: 1px solid #cccccc;  /* \u8fb9\u6846 */\n"
+"                padding: 6px 10px;          /* \u5185\u8fb9\u8ddd */\n"
+"                font-family: \"\u9ed1\u4f53\", sans-serif;  /* \u5b57\u4f53 */\n"
+"                font-size: 15px;            /* \u5b57\u53f7 */\n"
+"            }\n"
+"")
 
         self.verticalLayout_27.addWidget(self.label_19)
 
         self.label_20 = QLabel(self.widget_21)
         self.label_20.setObjectName(u"label_20")
         self.label_20.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
         self.label_20.setTextFormat(Qt.TextFormat.AutoText)
 
         self.verticalLayout_27.addWidget(self.label_20)
 
 
-        self.gridLayout_5.addLayout(self.verticalLayout_27, 0, 0, 1, 1)
+        self.gridLayout_5.addLayout(self.verticalLayout_27, 1, 0, 1, 1)
 
-        self.lineEdit_3 = QLineEdit(self.widget_21)
-        self.lineEdit_3.setObjectName(u"lineEdit_3")
-        self.lineEdit_3.setMaxLength(30)
-        self.lineEdit_3.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.control_mode = QComboBox(self.widget_21)
+        self.control_mode.addItem("")
+        self.control_mode.addItem("")
+        self.control_mode.setObjectName(u"control_mode")
+        self.control_mode.setMaximumSize(QSize(120, 16777215))
 
-        self.gridLayout_5.addWidget(self.lineEdit_3, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
-
-        self.checkBox_5 = QCheckBox(self.widget_21)
-        self.checkBox_5.setObjectName(u"checkBox_5")
-        self.checkBox_5.setStyleSheet(u"")
-
-        self.gridLayout_5.addWidget(self.checkBox_5, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
+        self.gridLayout_5.addWidget(self.control_mode, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
 
         self.gridLayout_5.setColumnStretch(0, 5)
         self.gridLayout_5.setColumnStretch(1, 2)
@@ -7441,13 +7564,22 @@ class Ui_DailyQuestsHelper(object):
         self.verticalLayout_37.setContentsMargins(0, 0, 0, 0)
         self.label_34 = QLabel(self.widget_13)
         self.label_34.setObjectName(u"label_34")
+        self.label_34.setStyleSheet(u"QLabel QToolTip {\n"
+"                background-color: #f0f0f0;  /* \u80cc\u666f\u8272 */\n"
+"                color: #333333;             /* \u6587\u5b57\u989c\u8272 */\n"
+"                border: 1px solid #cccccc;  /* \u8fb9\u6846 */\n"
+"                padding: 6px 10px;          /* \u5185\u8fb9\u8ddd */\n"
+"                font-family: \"\u9ed1\u4f53\", sans-serif;  /* \u5b57\u4f53 */\n"
+"                font-size: 15px;            /* \u5b57\u53f7 */\n"
+"            }\n"
+"")
 
         self.verticalLayout_37.addWidget(self.label_34)
 
         self.label_35 = QLabel(self.widget_13)
         self.label_35.setObjectName(u"label_35")
         self.label_35.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
         self.label_35.setTextFormat(Qt.TextFormat.AutoText)
         self.label_35.setWordWrap(True)
@@ -7457,21 +7589,21 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_10.addWidget(self.widget_13, 0, 0, 1, 1)
 
-        self.comboBox = QComboBox(self.widget_23)
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.comboBox.addItem("")
-        self.comboBox.setObjectName(u"comboBox")
+        self.screen_mode = QComboBox(self.widget_23)
+        self.screen_mode.addItem("")
+        self.screen_mode.addItem("")
+        self.screen_mode.addItem("")
+        self.screen_mode.setObjectName(u"screen_mode")
 
-        self.gridLayout_10.addWidget(self.comboBox, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_10.addWidget(self.screen_mode, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
 
         self.gridLayout_10.setColumnStretch(0, 5)
         self.gridLayout_10.setColumnStretch(1, 2)
 
         self.verticalLayout_36.addLayout(self.gridLayout_10)
 
-        self.stackedWidget_2 = QStackedWidget(self.widget_23)
-        self.stackedWidget_2.setObjectName(u"stackedWidget_2")
+        self.screen_mode_settings_stackedWidget = QStackedWidget(self.widget_23)
+        self.screen_mode_settings_stackedWidget.setObjectName(u"screen_mode_settings_stackedWidget")
         self.DxCam = QWidget()
         self.DxCam.setObjectName(u"DxCam")
         self.verticalLayout_11 = QVBoxLayout(self.DxCam)
@@ -7481,18 +7613,18 @@ class Ui_DailyQuestsHelper(object):
         self.gridLayout.setObjectName(u"gridLayout")
         self.gridLayout.setVerticalSpacing(4)
         self.gridLayout.setContentsMargins(10, 0, 0, 0)
-        self.comboBox_2 = QComboBox(self.DxCam)
-        self.comboBox_2.addItem("")
-        self.comboBox_2.addItem("")
-        self.comboBox_2.addItem("")
-        self.comboBox_2.addItem("")
-        self.comboBox_2.setObjectName(u"comboBox_2")
-        self.comboBox_2.setMinimumSize(QSize(130, 34))
-        self.comboBox_2.setAutoFillBackground(False)
-        self.comboBox_2.setInsertPolicy(QComboBox.InsertPolicy.InsertAtBottom)
-        self.comboBox_2.setLabelDrawingMode(QComboBox.LabelDrawingMode.UseDelegate)
+        self.resolution = QComboBox(self.DxCam)
+        self.resolution.addItem("")
+        self.resolution.addItem("")
+        self.resolution.addItem("")
+        self.resolution.addItem("")
+        self.resolution.setObjectName(u"resolution")
+        self.resolution.setMinimumSize(QSize(130, 34))
+        self.resolution.setAutoFillBackground(False)
+        self.resolution.setInsertPolicy(QComboBox.InsertPolicy.InsertAtBottom)
+        self.resolution.setLabelDrawingMode(QComboBox.LabelDrawingMode.UseDelegate)
 
-        self.gridLayout.addWidget(self.comboBox_2, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout.addWidget(self.resolution, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
 
         self.widget_25 = QWidget(self.DxCam)
         self.widget_25.setObjectName(u"widget_25")
@@ -7507,7 +7639,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_37 = QLabel(self.widget_25)
         self.label_37.setObjectName(u"label_37")
         self.label_37.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
         self.label_37.setTextFormat(Qt.TextFormat.AutoText)
         self.label_37.setWordWrap(True)
@@ -7530,7 +7662,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_36 = QLabel(self.widget_31)
         self.label_36.setObjectName(u"label_36")
         self.label_36.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
         self.label_36.setTextFormat(Qt.TextFormat.AutoText)
         self.label_36.setWordWrap(True)
@@ -7540,21 +7672,90 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout.addWidget(self.widget_31, 0, 0, 1, 1)
 
-        self.spinBox = QSpinBox(self.DxCam)
-        self.spinBox.setObjectName(u"spinBox")
-        self.spinBox.setMaximumSize(QSize(80, 35))
-        self.spinBox.setWrapping(False)
-        self.spinBox.setFrame(True)
-        self.spinBox.setMaximum(300)
-        self.spinBox.setValue(60)
+        self.video_fps = QSpinBox(self.DxCam)
+        self.video_fps.setObjectName(u"video_fps")
+        self.video_fps.setMinimumSize(QSize(90, 34))
+        self.video_fps.setMaximumSize(QSize(90, 35))
+        self.video_fps.setWrapping(False)
+        self.video_fps.setFrame(True)
+        self.video_fps.setMaximum(300)
+        self.video_fps.setValue(60)
 
-        self.gridLayout.addWidget(self.spinBox, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout.addWidget(self.video_fps, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
 
         self.gridLayout.setColumnStretch(0, 5)
 
         self.verticalLayout_11.addLayout(self.gridLayout)
 
-        self.stackedWidget_2.addWidget(self.DxCam)
+        self.screen_mode_settings_stackedWidget.addWidget(self.DxCam)
+        self.MuMu = QWidget()
+        self.MuMu.setObjectName(u"MuMu")
+        self.verticalLayout_39 = QVBoxLayout(self.MuMu)
+        self.verticalLayout_39.setObjectName(u"verticalLayout_39")
+        self.verticalLayout_39.setContentsMargins(0, 0, 0, 0)
+        self.gridLayout_11 = QGridLayout()
+        self.gridLayout_11.setObjectName(u"gridLayout_11")
+        self.gridLayout_11.setSizeConstraint(QLayout.SizeConstraint.SetMinAndMaxSize)
+        self.gridLayout_11.setHorizontalSpacing(20)
+        self.gridLayout_11.setVerticalSpacing(5)
+        self.gridLayout_11.setContentsMargins(10, 0, -1, -1)
+        self.label_10 = QLabel(self.MuMu)
+        self.label_10.setObjectName(u"label_10")
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.label_10.sizePolicy().hasHeightForWidth())
+        self.label_10.setSizePolicy(sizePolicy3)
+        self.label_10.setMaximumSize(QSize(16777215, 20))
+
+        self.gridLayout_11.addWidget(self.label_10, 0, 0, 1, 1)
+
+        self.MuMu_install_path = QLineEdit(self.MuMu)
+        self.MuMu_install_path.setObjectName(u"MuMu_install_path")
+        self.MuMu_install_path.setMaximumSize(QSize(16777215, 40))
+
+        self.gridLayout_11.addWidget(self.MuMu_install_path, 1, 0, 1, 1)
+
+        self.MuMu_install_path_browse = QPushButton(self.MuMu)
+        self.MuMu_install_path_browse.setObjectName(u"MuMu_install_path_browse")
+        self.MuMu_install_path_browse.setMaximumSize(QSize(16777215, 35))
+
+        self.gridLayout_11.addWidget(self.MuMu_install_path_browse, 1, 1, 1, 1)
+
+        self.widget_14 = QWidget(self.MuMu)
+        self.widget_14.setObjectName(u"widget_14")
+        self.verticalLayout_35 = QVBoxLayout(self.widget_14)
+        self.verticalLayout_35.setObjectName(u"verticalLayout_35")
+        self.verticalLayout_35.setContentsMargins(0, 0, 0, 0)
+        self.label_11 = QLabel(self.widget_14)
+        self.label_11.setObjectName(u"label_11")
+        self.label_11.setMaximumSize(QSize(16777215, 20))
+
+        self.verticalLayout_35.addWidget(self.label_11)
+
+        self.label_31 = QLabel(self.widget_14)
+        self.label_31.setObjectName(u"label_31")
+        self.label_31.setStyleSheet(u"font-size:11pt;\n"
+"color:#959595;\n"
+"margin-left:18px;")
+
+        self.verticalLayout_35.addWidget(self.label_31)
+
+
+        self.gridLayout_11.addWidget(self.widget_14, 3, 0, 1, 1)
+
+        self.MuMu_instance_index = QSpinBox(self.MuMu)
+        self.MuMu_instance_index.setObjectName(u"MuMu_instance_index")
+        self.MuMu_instance_index.setMinimumSize(QSize(0, 34))
+        self.MuMu_instance_index.setMaximumSize(QSize(70, 35))
+
+        self.gridLayout_11.addWidget(self.MuMu_instance_index, 3, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+
+        self.gridLayout_11.setColumnStretch(0, 5)
+
+        self.verticalLayout_39.addLayout(self.gridLayout_11)
+
+        self.screen_mode_settings_stackedWidget.addWidget(self.MuMu)
         self.LD = QWidget()
         self.LD.setObjectName(u"LD")
         self.verticalLayout_38 = QVBoxLayout(self.LD)
@@ -7568,27 +7769,24 @@ class Ui_DailyQuestsHelper(object):
         self.gridLayout_2.setContentsMargins(10, 0, -1, -1)
         self.label_8 = QLabel(self.LD)
         self.label_8.setObjectName(u"label_8")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
-        sizePolicy3.setHorizontalStretch(0)
-        sizePolicy3.setVerticalStretch(0)
         sizePolicy3.setHeightForWidth(self.label_8.sizePolicy().hasHeightForWidth())
         self.label_8.setSizePolicy(sizePolicy3)
         self.label_8.setMaximumSize(QSize(16777215, 20))
 
         self.gridLayout_2.addWidget(self.label_8, 0, 0, 1, 1)
 
-        self.lineEdit_8 = QLineEdit(self.LD)
-        self.lineEdit_8.setObjectName(u"lineEdit_8")
-        self.lineEdit_8.setMaximumSize(QSize(16777215, 30))
+        self.LD_install_path = QLineEdit(self.LD)
+        self.LD_install_path.setObjectName(u"LD_install_path")
+        self.LD_install_path.setMaximumSize(QSize(16777215, 40))
 
-        self.gridLayout_2.addWidget(self.lineEdit_8, 1, 0, 1, 1)
+        self.gridLayout_2.addWidget(self.LD_install_path, 1, 0, 1, 1)
 
-        self.pushButton = QPushButton(self.LD)
-        self.pushButton.setObjectName(u"pushButton")
-        self.pushButton.setMaximumSize(QSize(16777215, 35))
-        self.pushButton.setStyleSheet(u"")
+        self.LD_install_path_browse = QPushButton(self.LD)
+        self.LD_install_path_browse.setObjectName(u"LD_install_path_browse")
+        self.LD_install_path_browse.setMaximumSize(QSize(16777215, 35))
+        self.LD_install_path_browse.setStyleSheet(u"")
 
-        self.gridLayout_2.addWidget(self.pushButton, 1, 1, 1, 1)
+        self.gridLayout_2.addWidget(self.LD_install_path_browse, 1, 1, 1, 1)
 
         self.widget_15 = QWidget(self.LD)
         self.widget_15.setObjectName(u"widget_15")
@@ -7605,7 +7803,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_32 = QLabel(self.widget_15)
         self.label_32.setObjectName(u"label_32")
         self.label_32.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_40.addWidget(self.label_32)
@@ -7613,87 +7811,241 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_2.addWidget(self.widget_15, 3, 0, 1, 1)
 
-        self.spinBox_2 = QSpinBox(self.LD)
-        self.spinBox_2.setObjectName(u"spinBox_2")
-        self.spinBox_2.setMaximumSize(QSize(70, 35))
+        self.LD_instance_index = QSpinBox(self.LD)
+        self.LD_instance_index.setObjectName(u"LD_instance_index")
+        self.LD_instance_index.setMaximumSize(QSize(70, 35))
 
-        self.gridLayout_2.addWidget(self.spinBox_2, 3, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_2.addWidget(self.LD_instance_index, 3, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
 
         self.gridLayout_2.setColumnStretch(0, 5)
 
         self.verticalLayout_38.addLayout(self.gridLayout_2)
 
-        self.stackedWidget_2.addWidget(self.LD)
-        self.MuMu = QWidget()
-        self.MuMu.setObjectName(u"MuMu")
-        self.verticalLayout_39 = QVBoxLayout(self.MuMu)
-        self.verticalLayout_39.setObjectName(u"verticalLayout_39")
-        self.verticalLayout_39.setContentsMargins(0, 0, 0, 0)
-        self.gridLayout_11 = QGridLayout()
-        self.gridLayout_11.setObjectName(u"gridLayout_11")
-        self.gridLayout_11.setSizeConstraint(QLayout.SizeConstraint.SetMinAndMaxSize)
-        self.gridLayout_11.setHorizontalSpacing(20)
-        self.gridLayout_11.setVerticalSpacing(5)
-        self.gridLayout_11.setContentsMargins(10, 0, -1, -1)
-        self.label_10 = QLabel(self.MuMu)
-        self.label_10.setObjectName(u"label_10")
-        sizePolicy3.setHeightForWidth(self.label_10.sizePolicy().hasHeightForWidth())
-        self.label_10.setSizePolicy(sizePolicy3)
-        self.label_10.setMaximumSize(QSize(16777215, 20))
+        self.screen_mode_settings_stackedWidget.addWidget(self.LD)
 
-        self.gridLayout_11.addWidget(self.label_10, 0, 0, 1, 1)
-
-        self.lineEdit_9 = QLineEdit(self.MuMu)
-        self.lineEdit_9.setObjectName(u"lineEdit_9")
-        self.lineEdit_9.setMaximumSize(QSize(16777215, 30))
-
-        self.gridLayout_11.addWidget(self.lineEdit_9, 1, 0, 1, 1)
-
-        self.pushButton_2 = QPushButton(self.MuMu)
-        self.pushButton_2.setObjectName(u"pushButton_2")
-        self.pushButton_2.setMaximumSize(QSize(16777215, 35))
-
-        self.gridLayout_11.addWidget(self.pushButton_2, 1, 1, 1, 1)
-
-        self.widget_14 = QWidget(self.MuMu)
-        self.widget_14.setObjectName(u"widget_14")
-        self.verticalLayout_35 = QVBoxLayout(self.widget_14)
-        self.verticalLayout_35.setObjectName(u"verticalLayout_35")
-        self.verticalLayout_35.setContentsMargins(0, 0, 0, 0)
-        self.label_11 = QLabel(self.widget_14)
-        self.label_11.setObjectName(u"label_11")
-        self.label_11.setMaximumSize(QSize(16777215, 20))
-
-        self.verticalLayout_35.addWidget(self.label_11)
-
-        self.label_31 = QLabel(self.widget_14)
-        self.label_31.setObjectName(u"label_31")
-        self.label_31.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
-"margin-left:18px;")
-
-        self.verticalLayout_35.addWidget(self.label_31)
-
-
-        self.gridLayout_11.addWidget(self.widget_14, 3, 0, 1, 1)
-
-        self.spinBox_3 = QSpinBox(self.MuMu)
-        self.spinBox_3.setObjectName(u"spinBox_3")
-        self.spinBox_3.setMinimumSize(QSize(0, 34))
-        self.spinBox_3.setMaximumSize(QSize(70, 35))
-
-        self.gridLayout_11.addWidget(self.spinBox_3, 3, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
-
-        self.gridLayout_11.setColumnStretch(0, 5)
-
-        self.verticalLayout_39.addLayout(self.gridLayout_11)
-
-        self.stackedWidget_2.addWidget(self.MuMu)
-
-        self.verticalLayout_36.addWidget(self.stackedWidget_2)
+        self.verticalLayout_36.addWidget(self.screen_mode_settings_stackedWidget)
 
 
         self.verticalLayout_25.addWidget(self.widget_23)
+
+        self.widget_95 = QWidget(self.scrollAreaWidgetContents_5)
+        self.widget_95.setObjectName(u"widget_95")
+        self.widget_95.setStyleSheet(u"QWidget {\n"
+"                background-color: #dfdfdf;  /* \u80cc\u666f\u989c\u8272 */\n"
+"				border-radius:10px;\n"
+"            }\n"
+"/* \u8c03\u6574\u52fe\u9009\u6846\u7684\u5927\u5c0f */\n"
+"QCheckBox::indicator {\n"
+"	width: 20px;      /* \u52fe\u9009\u6846\u5bbd\u5ea6 */\n"
+"	height: 20px;     /* \u52fe\u9009\u6846\u9ad8\u5ea6 */\n"
+"	outline:none;\n"
+"border:none;\n"
+"}\n"
+"\n"
+"/* \u53ef\u9009\uff1a\u8bbe\u7f6e\u52fe\u9009\u6846\u4e0d\u540c\u72b6\u6001\u7684\u6837\u5f0f */\n"
+"QCheckBox::indicator:unchecked {\n"
+"	border: 2px solid #0f322f;\n"
+"	border-radius: 3px;\n"
+"}\n"
+"QCheckBox::indicator:checked {\n"
+"	background-color:#39C5BB;\n"
+"	border: 2px solid #0f322f;\n"
+"	border-radius: 3px;\n"
+"	\n"
+"}\n"
+"\n"
+"/* \u7981\u7528\u72b6\u6001 */\n"
+"QCheckBox::indicator:disabled {\n"
+"	background-color: #f0f0f0;\n"
+"	border-color: #cccccc;\n"
+"}\n"
+"/* 1. \u672a\u9009\u4e2d\uff08\u9ed8\u8ba4\uff09\u72b6\u6001\u7684\u4e0b\u8fb9\u6846 */\n"
+"QLineEdit {\n"
+"                /* \u6e05\u9664\u9ed8\u8ba4\u8fb9"
+                        "\u6846\uff0c\u53ea\u4fdd\u7559\u4e0b\u8fb9\u6846 */\n"
+"                border: none;\n"
+"                border-bottom: 3px solid #969696;  /* \u7070\u8272\u4e0b\u8fb9\u6846 */\n"
+"                padding: 5px 0;  /* \u4e0a\u4e0b\u4e0b\u5185\u8fb9\u8ddd\uff0c\u907f\u514d\u6587\u5b57\u7d27\u8d34\u7d27\u8d34\u8fb9\u6846 */\n"
+"				border-radius:0px;\n"
+"                background: transparent;  /* \u80cc\u666f\u900f\u660e\uff0c\u53ea\u663e\u793a\u4e0b\u8fb9\u6846 */\n"
+"            }\n"
+"            \n"
+"            /* 2. \u9009\u4e2d\uff08\u83b7\u5f97\u7126\u70b9\u70b9\uff09\u72b6\u6001\u7684\u4e0b\u8fb9\u6846 */\n"
+"QLineEdit:focus {\n"
+"                border-bottom: 4px solid #39C5BB;  /* \u84dd\u8272\u4e0b\u8fb9\u6846\uff08\u7a81\u51fa\u663e\u793a\uff09 */\n"
+"                outline: none;  /* \u53bb\u9664\u7cfb\u7edf\u9ed8\u8ba4\u7684\u805a\u7126\u5916\u8fb9\u6846 */\n"
+"            }\n"
+"            \n"
+"            /* 3. \u9f20\u6807\u7565\u8fc7\uff08\u60ac\u505c\uff09\u72b6\u6001\u7684\u4e0b\u8fb9\u6846"
+                        " */\n"
+"QLineEdit:hover {\n"
+"                border-bottom: 4px solid #39C5BB;  /* \u6df1\u7070\u8272\u4e0b\u8fb9\u6846\uff08\u4e2d\u95f4\u72b6\u6001\uff09 */\n"
+"            }\n"
+"/* QComboBox \u6837\u5f0f */\n"
+"QComboBox {\n"
+"    border: 2px solid #0f322f;  /* \u8fb9\u6846\u989c\u8272\u4e0eCheckBox\u4fdd\u6301\u4e00\u81f4 */\n"
+"    border-radius: 3px;\n"
+"    padding: 5px 0px 5px 10px;  /* \u53f3\u4fa7\u9884\u7559\u7a7a\u95f4\u7ed9\u81ea\u5b9a\u4e49\u7bad\u5934 */\n"
+"    background-color: #e7e7e7;\n"
+"    min-height: 20px;\n"
+"}\n"
+"\n"
+"/* \u9690\u85cfQComboBox\u9ed8\u8ba4\u4e0b\u62c9\u6309\u94ae */\n"
+"QComboBox::drop-down {\n"
+"    border: none;  /* \u53bb\u9664\u9ed8\u8ba4\u6309\u94ae\u8fb9\u6846 */\n"
+"\n"
+"}\n"
+"\n"
+"/* \u81ea\u5b9a\u4e49\u4e0b\u62c9\u7bad\u5934\uff08\u4f7f\u7528\u4e09\u89d2\u5f62\u5b57\u7b26\u6a21\u62df\uff09 */\n"
+"QComboBox::down-arrow {\n"
+"    image: none;  /* \u53bb\u9664\u9ed8\u8ba4\u7bad\u5934 */\n"
+"}\n"
+"\n"
+"QComboBox::down-arrow:on {\n"
+"    image: none;  /* \u4e0b\u62c9"
+                        "\u72b6\u6001\u4e5f\u4e0d\u663e\u793a\u9ed8\u8ba4\u7bad\u5934 */\n"
+"}\n"
+"\n"
+"/* \u4e0b\u62c9\u5217\u8868\u6837\u5f0f */\n"
+"QComboBox QAbstractItemView {\n"
+"    border: 2px solid #b5b5b5;\n"
+"    border-radius: 3px;\n"
+"    background-color: #e7e7e7;\n"
+"    padding: 5px;\n"
+"    selection-background-color: #39C5BB;  /* \u9009\u4e2d\u9879\u80cc\u666f\u8272 */\n"
+"    selection-color: #000000;\n"
+"}\n"
+"\n"
+"/* \u60ac\u505c\u548c\u9009\u4e2d\u72b6\u6001 */\n"
+"QComboBox:hover {\n"
+"    border-color: #39C5BB;\n"
+"}\n"
+"\n"
+"QComboBox:focus {\n"
+"    border-color: #39C5BB;\n"
+"    outline: none;\n"
+"}\n"
+"\n"
+"/* QSpinBox \u6837\u5f0f */\n"
+"QSpinBox {\n"
+"    border: 2px solid #0f322f;\n"
+"    border-radius: 3px;\n"
+"    padding: 5px 10px 5px 10px;  /* \u53f3\u4fa7\u9884\u7559\u7a7a\u95f4\u7ed9\u81ea\u5b9a\u4e49\u6309\u94ae */\n"
+"    background-color: #e7e7e7;\n"
+"    min-height: 20px;\n"
+"}\n"
+"\n"
+"/* \u9690\u85cfQSpinBox\u9ed8\u8ba4\u4e0a\u4e0b\u6309\u94ae */\n"
+"QSpinBox::up-button, QSpinBox::down-button"
+                        " {\n"
+"    border: none;\n"
+"    width: 0;  /* \u9690\u85cf\u9ed8\u8ba4\u6309\u94ae */\n"
+"    height: 0;\n"
+"}\n"
+"\n"
+"\n"
+"\n"
+"/* \u60ac\u505c\u548c\u9009\u4e2d\u72b6\u6001 */\n"
+"QSpinBox:hover {\n"
+"    border-color: #39C5BB;\n"
+"}\n"
+"\n"
+"QSpinBox:focus {\n"
+"    border-color: #39C5BB;\n"
+"    outline: none;\n"
+"}\n"
+"\n"
+"/* \u89e3\u51b3QSpinBox\u7f16\u8f91\u533a\u57df\u4e0e\u6574\u4f53\u6837\u5f0f\u51b2\u7a81 */\n"
+"QSpinBox::edit-focus {\n"
+"    background-color: transparent;\n"
+"    border: none;\n"
+"    outline: none;\n"
+"}\n"
+"\n"
+"QPushButton{\n"
+"min-height: 26px;\n"
+"border: 2px solid #0f322f;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
+"background-color: #e7e7e7;\n"
+"border-radius:3px;\n"
+"outline:none;\n"
+"color:#0f322f;\n"
+"padding-top:2px;\n"
+"padding-bottom:2px;\n"
+"}\n"
+"QPushButton::hover {\n"
+"border: 2px solid #39C5BB;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
+"outline:none;\n"
+"color:#39C5BB;\n"
+"}\n"
+"")
+        self.verticalLayout_175 = QVBoxLayout(self.widget_95)
+        self.verticalLayout_175.setSpacing(6)
+        self.verticalLayout_175.setObjectName(u"verticalLayout_175")
+        self.verticalLayout_175.setContentsMargins(-1, 9, -1, -1)
+        self.label_231 = QLabel(self.widget_95)
+        self.label_231.setObjectName(u"label_231")
+        self.label_231.setStyleSheet(u"font-size:20pt;\n"
+"border:none;")
+
+        self.verticalLayout_175.addWidget(self.label_231)
+
+        self.frame_44 = QFrame(self.widget_95)
+        self.frame_44.setObjectName(u"frame_44")
+        self.frame_44.setStyleSheet(u"QWidget QFrame{\n"
+"border:2px solid #969696;\n"
+"border-radius:1px;\n"
+"            }")
+        self.frame_44.setFrameShape(QFrame.Shape.HLine)
+        self.frame_44.setFrameShadow(QFrame.Shadow.Raised)
+
+        self.verticalLayout_175.addWidget(self.frame_44)
+
+        self.gridLayout_16 = QGridLayout()
+        self.gridLayout_16.setObjectName(u"gridLayout_16")
+        self.gridLayout_16.setVerticalSpacing(0)
+        self.gridLayout_16.setContentsMargins(10, 10, 0, 0)
+        self.widget_18 = QWidget(self.widget_95)
+        self.widget_18.setObjectName(u"widget_18")
+        self.widget_18.setMinimumSize(QSize(0, 0))
+        self.verticalLayout_176 = QVBoxLayout(self.widget_18)
+        self.verticalLayout_176.setSpacing(6)
+        self.verticalLayout_176.setObjectName(u"verticalLayout_176")
+        self.verticalLayout_176.setContentsMargins(0, 0, 0, 0)
+        self.label_233 = QLabel(self.widget_18)
+        self.label_233.setObjectName(u"label_233")
+
+        self.verticalLayout_176.addWidget(self.label_233)
+
+        self.label_234 = QLabel(self.widget_18)
+        self.label_234.setObjectName(u"label_234")
+        self.label_234.setStyleSheet(u"font-size:11pt;\n"
+"color:#959595;\n"
+"margin-left:18px;")
+        self.label_234.setTextFormat(Qt.TextFormat.AutoText)
+        self.label_234.setWordWrap(True)
+
+        self.verticalLayout_176.addWidget(self.label_234)
+
+
+        self.gridLayout_16.addWidget(self.widget_18, 0, 0, 1, 1)
+
+        self.scan_inerval = QSpinBox(self.widget_95)
+        self.scan_inerval.setObjectName(u"scan_inerval")
+        self.scan_inerval.setMaximumSize(QSize(110, 35))
+        self.scan_inerval.setWrapping(False)
+        self.scan_inerval.setFrame(True)
+        self.scan_inerval.setMinimum(50)
+        self.scan_inerval.setMaximum(9999)
+        self.scan_inerval.setValue(1000)
+
+        self.gridLayout_16.addWidget(self.scan_inerval, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+
+        self.gridLayout_16.setColumnStretch(0, 5)
+
+        self.verticalLayout_175.addLayout(self.gridLayout_16)
+
+
+        self.verticalLayout_25.addWidget(self.widget_95)
 
         self.widget_94 = QWidget(self.scrollAreaWidgetContents_5)
         self.widget_94.setObjectName(u"widget_94")
@@ -7859,7 +8211,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_230 = QLabel(self.widget_94)
         self.label_230.setObjectName(u"label_230")
         self.label_230.setStyleSheet(u"font-size:13pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_173.addWidget(self.label_230)
@@ -7893,7 +8245,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_229 = QLabel(self.widget_17)
         self.label_229.setObjectName(u"label_229")
         self.label_229.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
         self.label_229.setTextFormat(Qt.TextFormat.AutoText)
         self.label_229.setWordWrap(True)
@@ -7903,13 +8255,13 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_12.addWidget(self.widget_17, 0, 0, 1, 1)
 
-        self.pushButton_3 = QPushButton(self.widget_94)
-        self.pushButton_3.setObjectName(u"pushButton_3")
-        self.pushButton_3.setMinimumSize(QSize(70, 34))
-        self.pushButton_3.setMaximumSize(QSize(16777215, 35))
-        self.pushButton_3.setStyleSheet(u"")
+        self.key_map_configuration_button = QPushButton(self.widget_94)
+        self.key_map_configuration_button.setObjectName(u"key_map_configuration_button")
+        self.key_map_configuration_button.setMinimumSize(QSize(70, 34))
+        self.key_map_configuration_button.setMaximumSize(QSize(16777215, 35))
+        self.key_map_configuration_button.setStyleSheet(u"")
 
-        self.gridLayout_12.addWidget(self.pushButton_3, 0, 1, 1, 1)
+        self.gridLayout_12.addWidget(self.key_map_configuration_button, 0, 1, 1, 1)
 
         self.gridLayout_12.setColumnStretch(0, 5)
 
@@ -7969,7 +8321,7 @@ class Ui_DailyQuestsHelper(object):
 "            /* 3. \u9f20\u6807\u7565\u8fc7\uff08\u60ac\u505c\uff09\u72b6\u6001"
                         "\u7684\u4e0b\u8fb9\u6846 */\n"
 "            QLineEdit:hover {\n"
-"                border-bottom: 4px solid #0f322f;  /* \u6df1\u7070\u8272\u4e0b\u8fb9\u6846\uff08\u4e2d\u95f4\u72b6\u6001\uff09 */\n"
+"                border-bottom: 4px solid #39C5BB;  /* \u6df1\u7070\u8272\u4e0b\u8fb9\u6846\uff08\u4e2d\u95f4\u72b6\u6001\uff09 */\n"
 "            }")
         self.verticalLayout_34 = QVBoxLayout(self.widget_22)
         self.verticalLayout_34.setObjectName(u"verticalLayout_34")
@@ -8005,7 +8357,7 @@ class Ui_DailyQuestsHelper(object):
         self.label_115 = QLabel(self.widget_22)
         self.label_115.setObjectName(u"label_115")
         self.label_115.setStyleSheet(u"font-size:11pt;\n"
-"color:#39C5BB;\n"
+"color:#959595;\n"
 "margin-left:18px;")
 
         self.verticalLayout_18.addWidget(self.label_115)
@@ -8013,13 +8365,14 @@ class Ui_DailyQuestsHelper(object):
 
         self.gridLayout_9.addLayout(self.verticalLayout_18, 0, 0, 1, 1)
 
-        self.lineEdit_7 = QLineEdit(self.widget_22)
-        self.lineEdit_7.setObjectName(u"lineEdit_7")
-        self.lineEdit_7.setMaxLength(6)
-        self.lineEdit_7.setEchoMode(QLineEdit.EchoMode.Password)
-        self.lineEdit_7.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.secondary_password = QLineEdit(self.widget_22)
+        self.secondary_password.setObjectName(u"secondary_password")
+        self.secondary_password.setMaxLength(6)
+        self.secondary_password.setEchoMode(QLineEdit.EchoMode.PasswordEchoOnEdit)
+        self.secondary_password.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.secondary_password.setDragEnabled(False)
 
-        self.gridLayout_9.addWidget(self.lineEdit_7, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
+        self.gridLayout_9.addWidget(self.secondary_password, 0, 1, 1, 1)
 
         self.gridLayout_9.setColumnStretch(0, 5)
 
@@ -8055,7 +8408,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.overview_panel_button.setDefault(False)
         self.stackedWidget.setCurrentIndex(32)
-        self.stackedWidget_2.setCurrentIndex(0)
+        self.screen_mode_settings_stackedWidget.setCurrentIndex(0)
 
 
         QMetaObject.connectSlotsByName(DailyQuestsHelper)
@@ -8153,29 +8506,30 @@ class Ui_DailyQuestsHelper(object):
         self.label_3.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c31\u7eea\u961f\u5217", None))
         self.label_4.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u7b49\u5f85\u961f\u5217", None))
         self.label_5.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u65e5\u5fd7", None))
+        self.bool_debug.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8c03\u8bd5\u6a21\u5f0f", None))
         self.bool_save_img.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4fdd\u5b58\u56fe\u50cf", None))
         self.label_73.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_74.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_75.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_16.setText("")
+        self.DengLuJiangLi_Enable.setText("")
         self.label_132.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_133.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_85.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_86.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_87.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_20.setText("")
+        self.PaiHangBangDianZan_Enable.setText("")
         self.label_140.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_141.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_88.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_89.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_90.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_21.setText("")
+        self.MeiYueQianDao_Enable.setText("")
         self.label_142.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_143.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_55.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_56.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_57.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_10.setText("")
+        self.GouMaiTiLi_Enable.setText("")
         self.label_120.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_121.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_41.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8d2d\u4e70\u4f53\u529b", None))
@@ -8189,11 +8543,11 @@ class Ui_DailyQuestsHelper(object):
 #endif // QT_CONFIG(tooltip)
         self.label_42.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8d2d\u4e70\u4f53\u529b\u6b21\u6570", None))
         self.label_43.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u9700\u8981\u8bbe\u7f6e\u52a9\u624b\u8bbe\u7f6e-\u4e8c\u7ea7\u5bc6\u7801", None))
-        self.spinBox_4.setSuffix("")
+        self.GouMaiTiLi_times.setSuffix("")
         self.label_58.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_59.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_60.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_11.setText("")
+        self.JinBiZhaoCai_Enable.setText("")
         self.label_122.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_123.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_44.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u91d1\u5e01\u62db\u8d22", None))
@@ -8208,11 +8562,11 @@ class Ui_DailyQuestsHelper(object):
         self.label_45.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u62db\u8d22\u6b21\u6570", None))
         self.label_46.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8be5\u8bbe\u7f6e\u5305\u542b\u514d\u8d39\u6b21\u6570\u5728\u5185\u7684\u6b21\u6570!!!\n"
 "\u9700\u8981\u8bbe\u7f6e\u52a9\u624b\u8bbe\u7f6e-\u4e8c\u7ea7\u5bc6\u7801", None))
-        self.spinBox_5.setSuffix("")
+        self.JinBiZhaoCai_times.setSuffix("")
         self.label_61.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_62.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_63.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_12.setText("")
+        self.XiaoDuiTuXi_Enable.setText("")
         self.label_124.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_125.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_47.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c0f\u961f\u7a81\u88ad", None))
@@ -8225,27 +8579,27 @@ class Ui_DailyQuestsHelper(object):
 "    \u4f7f\u7528\u96f7\u7535\u6a21\u62df\u5668\u7684\u63a5\u53e3\u622a\u56fe\uff0c\u6a21\u62df\u5668\u53ef\u4ee5\u6700\u5c0f\u5316/\u88ab\u906e\u6321", None))
 #endif // QT_CONFIG(tooltip)
         self.label_48.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u56db\u500d\u5956\u52b1\u6b21\u6570", None))
-        self.spinBox_6.setSuffix("")
+        self.XiaoDuiTuXi_4rewards_times.setSuffix("")
         self.label_13.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u56db\u500d\u5956\u52b1\u52fe\u9009", None))
         self.label_12.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u9009\u62e9\u540e\u4f1a\u81ea\u52a8\u52fe\u9009\u6536\u53d6\u56db\u500d\u5956\u52b1\n"
 "\u9700\u8981\u52a9\u624b\u8bbe\u7f6e\u4e2d\u8bbe\u7f6e\u4e8c\u7ea7\u5bc6\u7801", None))
-        self.checkBox.setText("")
+        self.XiaoDuiTuXi_4rewards_Enable.setText("")
         self.label_187.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_188.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_189.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_34.setText("")
+        self.ZuZhiQiFu_Enable.setText("")
         self.label_190.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_191.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_82.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_83.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_84.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_19.setText("")
+        self.HaoYouTiLi_Enable.setText("")
         self.label_138.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_139.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_118.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_119.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_154.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_27.setText("")
+        self.PuTongRenZheZhaoMu_Enable.setText("")
         self.label_155.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_156.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_94.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
@@ -8254,55 +8608,55 @@ class Ui_DailyQuestsHelper(object):
         self.label_95.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_96.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668\n"
 "\u9700\u8981\u6a21\u62df\u5668\u5b89\u88c5QQ\uff08\u767b\u4e0d\u767b\u5f55\u90fd\u53ef\u4ee5\uff09", None))
-        self.checkBox_23.setText("")
+        self.MeiRiFenXiang_Enable.setText("")
         self.label_146.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_147.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_76.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_226.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u9700\u8981\u5728\u52a9\u624b\u8bbe\u7f6e\u4e2d\u914d\u7f6e\u952e\u4f4d", None))
         self.label_77.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_78.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_17.setText("")
+        self.FengRaoZhiJian_Enable.setText("")
         self.label_134.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_135.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_172.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_49.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8be5\u4efb\u52a1\u7531\u4e8e\u63a5\u53d6\u7b97\u6cd5\u672a\u5b9e\u73b0\uff0c\u8d85\u5f71\u7279\u6743\u7528\u6237\u6536\u76ca\u4e0d\u80fd\u6700\u5927\u5316", None))
+        self.label_49.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u7531\u4e8e\u63a5\u53d6\u7b97\u6cd5\u672a\u5b9e\u73b0\uff0c\u8d85\u5f71\u7279\u6743\u7528\u6237\u6536\u76ca\u4e0d\u80fd\u6700\u5927\u5316", None))
         self.label_173.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_174.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_31.setText("")
+        self.RenWuJiHuiSuo_Enable.setText("")
         self.label_175.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_176.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_182.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_183.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_184.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_33.setText("")
+        self.YiLeWaiMai_Enable.setText("")
         self.label_185.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_186.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_91.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_14.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u6ce8\u610f\uff1a\u8be5\u4efb\u52a1\u4f1a\u76f4\u63a5\u4f7f\u7528\u5f53\u524d\u5339\u914d\u9635\u5bb9\uff0c\u8bf7\u63d0\u524d\u8bbe\u7f6e\u597d\u9635\u5bb9\u9632\u6b62\u6389\u80dc\u7387", None))
         self.label_92.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_93.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_22.setText("")
+        self.MeiRiShengChang_Enable.setText("")
         self.label_144.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_145.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_192.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_50.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8bf7\u4fdd\u8bc1\u6218\u529b\u80fd\u626b\u8361\u8fc7\u751f\u5b58\u6311\u6218\uff0c\u5426\u5219\u6536\u76ca\u6ca1\u6709\u624b\u6253\u9ad8", None))
         self.label_193.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_194.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_35.setText("")
+        self.ShengCunTiaoZhan_Enable.setText("")
         self.label_195.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_196.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_197.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_54.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5f85\u5f00\u53d1", None))
         self.label_198.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_199.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_36.setText("")
+        self.MiJingTanXian_Enable.setText("")
         self.label_200.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_201.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_157.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_40.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8be5\u4efb\u52a1\u53ef\u80fd\u56e0\u4e3a\u7f51\u7edc\u8fde\u63a5\u5dee\u5bfc\u81f4\u5931\u8d25\uff0c\u8bf7\u52a1\u5fc5\u786e\u4fdd\u7f51\u7edc\u8fde\u63a5\u6b63\u5e38", None))
         self.label_158.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_159.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_28.setText("")
+        self.QingBaoZhan_Enable.setText("")
         self.label_160.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_161.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_97.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
@@ -8310,67 +8664,67 @@ class Ui_DailyQuestsHelper(object):
 "\u5426\u5219\u4efb\u52a1\u4f1a\u52fe\u9009\u5168\u9009\u4ee5\u8fbe\u5230\u901a\u8fc7\u4efb\u52a1\u7684\u76ee\u7684", None))
         self.label_98.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_99.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_24.setText("")
+        self.MaoXianFuBen_Enable.setText("")
         self.label_148.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_149.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_100.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_101.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_102.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_25.setText("")
+        self.HuoYueDuJiangLi_Enable.setText("")
         self.label_150.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_151.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_162.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_163.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_164.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_29.setText("")
+        self.QingKongYouJian_Enable.setText("")
         self.label_165.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_166.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_177.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_220.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5f85\u5f00\u53d1", None))
         self.label_178.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_179.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_32.setText("")
+        self.XiuXingZhiLu_Enable.setText("")
         self.label_180.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_181.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_167.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_51.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u6a21\u62df\u5668\u9700\u8981\u5b89\u88c5QQ", None))
         self.label_168.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_169.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_30.setText("")
+        self.RenFaTieDianZanFenXiang_Enable.setText("")
         self.label_170.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_171.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_208.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_209.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5f85\u5f00\u53d1", None))
         self.label_210.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_211.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_38.setText("")
+        self.TuanBen_Enable.setText("")
         self.label_212.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_213.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_214.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_215.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5f85\u5f00\u53d1", None))
         self.label_216.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_217.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_39.setText("")
+        self.YaoSaiZhengDuoZhan_Enable.setText("")
         self.label_218.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_219.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_202.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_203.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5f85\u5f00\u53d1", None))
         self.label_204.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_205.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_37.setText("")
+        self.PanRenLaiXi_Enable.setText("")
         self.label_206.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_207.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_103.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_39.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5f85\u5f00\u53d1", None))
         self.label_116.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_117.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_26.setText("")
+        self.KuaFuZhengBaSai_Enable.setText("")
         self.label_152.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_153.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_79.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_80.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_81.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
-        self.checkBox_18.setText("")
+        self.GaoJiRenZheZhaoMu_Enable.setText("")
         self.label_136.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_137.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_64.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
@@ -8379,76 +8733,94 @@ class Ui_DailyQuestsHelper(object):
         self.label_65.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_66.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668\n"
 "\u4e34\u65f6\u4efb\u52a1\u4f1a\u5728\u7ed3\u675f\u540e\u81ea\u52a8\u7981\u7528\u4efb\u52a1", None))
-        self.checkBox_13.setText("")
+        self.MeiZhouShengChang_Enable.setText("")
         self.label_126.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_127.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_67.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_68.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_69.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668\n"
 "\u4e34\u65f6\u4efb\u52a1\u4f1a\u5728\u7ed3\u675f\u540e\u81ea\u52a8\u7981\u7528\u4efb\u52a1", None))
-        self.checkBox_14.setText("")
+        self.SaiJiShengChang_Enable.setText("")
         self.label_128.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_129.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_70.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_71.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_72.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668\n"
 "\u4e34\u65f6\u4efb\u52a1\u4f1a\u5728\u7ed3\u675f\u540e\u81ea\u52a8\u7981\u7528\u4efb\u52a1", None))
-        self.checkBox_15.setText("")
+        self.GengDuoWanFa_Enable.setText("")
         self.label_130.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_131.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
         self.label_221.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
         self.label_222.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
         self.label_223.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668\n"
 "\u4e34\u65f6\u4efb\u52a1\u4f1a\u5728\u7ed3\u675f\u540e\u81ea\u52a8\u7981\u7528\u4efb\u52a1", None))
-        self.checkBox_40.setText("")
+        self.ChongQiYouXi_Enable.setText("")
         self.label_224.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
         self.label_225.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.ChongQiYouXi_next_execute_time.setText("")
         self.label_18.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u63a7\u5236\u6a21\u5f0f", None))
+        self.serial.setText("")
         self.label_106.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e32\u53e3", None))
-        self.label_107.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u6a21\u62df\u5668\u7684ADB\u7aef\u53e3\u5730\u5740", None))
+        self.label_107.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u6a21\u62df\u5668\u7684ADB\u7aef\u53e3\u5730\u5740\n"
+"\u5982\u679c\u4e0d\u77e5\u9053\u600e\u4e48\u83b7\u5f97\uff0c\u8bf7\u9f20\u6807\u60ac\u505c\u67e5\u770b\u8be6\u7ec6\u65b9\u6cd5", None))
 #if QT_CONFIG(tooltip)
-        self.label_19.setToolTip(QCoreApplication.translate("DailyQuestsHelper", u"  - U2\uff1auiautomator2", None))
+        self.label_19.setToolTip(QCoreApplication.translate("DailyQuestsHelper", u"ADB\uff1a\u901a\u7528\u65b9\u6848\uff0c\u6027\u80fd\u4e0d\u9ad8\n"
+"U2\uff1auiautomator2", None))
 #endif // QT_CONFIG(tooltip)
         self.label_19.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u63a7\u5236\u6a21\u5f0f\u9009\u62e9", None))
         self.label_20.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u51b3\u5b9a\u4f7f\u7528\u54ea\u79cd\u65b9\u6848\u63a7\u5236\u6a21\u62df\u5668\n"
 "\u9f20\u6807\u60ac\u505c\u67e5\u770b\u8be6\u7ec6\u4ecb\u7ecd", None))
-        self.checkBox_5.setText("")
+        self.control_mode.setItemText(0, QCoreApplication.translate("DailyQuestsHelper", u"ADB", None))
+        self.control_mode.setItemText(1, QCoreApplication.translate("DailyQuestsHelper", u"U2", None))
+
         self.label_33.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u622a\u56fe\u6a21\u5f0f", None))
 #if QT_CONFIG(tooltip)
-        self.label_34.setToolTip(QCoreApplication.translate("DailyQuestsHelper", u"  - DxCam\n"
+        self.label_34.setToolTip(QCoreApplication.translate("DailyQuestsHelper", u"DxCam\uff1a\u901f\u5ea6\u5feb\uff0c\u4f46\u662f\u6a21\u62df\u5668\u7a97\u53e3\u5fc5\u987b\u5728\u5c4f\u5e55\u8fb9\u754c\u5185\uff0c\u4e0d\u80fd\u6700\u5c0f\u5316\u6216\u88ab\u906e\u6321\n"
+"MuMu\uff1a\u4f7f\u7528MuMu\u6a21\u62df\u5668\u7684\u63a5\u53e3\u622a\u56fe\uff0c\u6a21\u62df\u5668\u53ef\u4ee5\u6700\u5c0f\u5316/\u88ab\u906e\u6321\n"
+"LD\uff1a\u4f7f\u7528\u96f7\u7535\u6a21\u62df\u5668\u7684\u63a5\u53e3\u622a\u56fe\uff0c\u6a21\u62df\u5668\u53ef\u4ee5\u6700\u5c0f\u5316/\u88ab\u906e\u6321", None))
+#endif // QT_CONFIG(tooltip)
+        self.label_34.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u622a\u56fe\u6a21\u5f0f\u9009\u62e9", None))
+        self.label_35.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u6839\u636e\u81ea\u5df1\u7684\u60c5\u51b5\u51b3\u5b9a\u4f7f\u7528\u54ea\u79cd\u622a\u56fe\u65b9\u6848\n"
+"\u9f20\u6807\u60ac\u505c\u67e5\u770b\u8be6\u7ec6\u4ecb\u7ecd", None))
+        self.screen_mode.setItemText(0, QCoreApplication.translate("DailyQuestsHelper", u"DxCam", None))
+        self.screen_mode.setItemText(1, QCoreApplication.translate("DailyQuestsHelper", u"MuMu", None))
+        self.screen_mode.setItemText(2, QCoreApplication.translate("DailyQuestsHelper", u"LD", None))
+
+        self.resolution.setItemText(0, QCoreApplication.translate("DailyQuestsHelper", u"1280x720", None))
+        self.resolution.setItemText(1, QCoreApplication.translate("DailyQuestsHelper", u"1600x900", None))
+        self.resolution.setItemText(2, QCoreApplication.translate("DailyQuestsHelper", u"1920x1080", None))
+        self.resolution.setItemText(3, QCoreApplication.translate("DailyQuestsHelper", u"2560x1440", None))
+
+        self.label_7.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u89c6\u9891\u6d41\u5e27\u7387", None))
+        self.label_37.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5efa\u8bae\u4e0d\u4f4e\u4e8e60\u5e27\uff0c\u5426\u5219\u51b3\u6597\u573a\u76f8\u5173\u4efb\u52a1\u53ef\u80fd\u51fa\u73b0\u5f02\u5e38", None))
+        self.label_6.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u6a21\u62df\u5668\u5206\u8fa8\u7387", None))
+        self.label_36.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u9009\u62e9\u548c\u6a21\u62df\u5668\u8bbe\u7f6e\u5185\u76f8\u540c\u7684\u5206\u8fa8\u7387\n"
+"\u4f5c\u8005\u4f7f\u75281600x900\u5236\u4f5c\u8be5\u7a0b\u5e8f\n"
+"\u5bf9\u5176\u4ed6\u5206\u8fa8\u7387\u4ec5\u4fdd\u8bc1\u7a0b\u5e8f\u4e0a\u517c\u5bb9", None))
+        self.video_fps.setSuffix(QCoreApplication.translate("DailyQuestsHelper", u" \u5e27", None))
+        self.label_10.setText(QCoreApplication.translate("DailyQuestsHelper", u"MuMu\u6a21\u62df\u5668\u5b89\u88c5\u8def\u5f84", None))
+        self.MuMu_install_path_browse.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u6d4f\u89c8", None))
+        self.label_11.setText(QCoreApplication.translate("DailyQuestsHelper", u"MuMu\u5b9e\u4f8b\u7d22\u5f15", None))
+        self.label_31.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5728MuMu\u591a\u5f00\u5668\u4e2d\u67e5\u770b\u81ea\u5df1\u6b63\u5728\u4f7f\u7528\u7684\u6a21\u62df\u5668\u5b9e\u4f8b\u7d22\u5f15\n"
+"\u5982\u679c\u662f\u7b2c\u4e00\u4e2a\u6a21\u62df\u5668\u5c31\u662f0\uff0c\u4f9d\u6b21\u7c7b\u63a8", None))
+        self.label_8.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u96f7\u7535\u6a21\u62df\u5668\u5b89\u88c5\u8def\u5f84", None))
+        self.LD_install_path_browse.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u6d4f\u89c8", None))
+        self.label_9.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u96f7\u7535\u5b9e\u4f8b\u7d22\u5f15", None))
+        self.label_32.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5728\u96f7\u7535\u591a\u5f00\u5668\u4e2d\u67e5\u770b\u81ea\u5df1\u6b63\u5728\u4f7f\u7528\u7684\u6a21\u62df\u5668\u5b9e\u4f8b\u7d22\u5f15\n"
+"\u5982\u679c\u662f\u7b2c\u4e00\u4e2a\u6a21\u62df\u5668\u5c31\u662f0\uff0c\u4f9d\u6b21\u7c7b\u63a8", None))
+        self.label_231.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8c03\u5ea6\u8bbe\u7f6e", None))
+#if QT_CONFIG(tooltip)
+        self.label_233.setToolTip(QCoreApplication.translate("DailyQuestsHelper", u"  - DxCam\n"
 "    \u901f\u5ea6\u5feb\uff0c\u4f46\u662f\u6a21\u62df\u5668\u7a97\u53e3\u5fc5\u987b\u5728\u5c4f\u5e55\u8fb9\u754c\u5185\uff0c\u4e0d\u80fd\u6700\u5c0f\u5316\u6216\u88ab\u906e\u6321\n"
 "  - MuMu\n"
 "    \u4f7f\u7528MuMu\u6a21\u62df\u5668\u7684\u63a5\u53e3\u622a\u56fe\uff0c\u6a21\u62df\u5668\u53ef\u4ee5\u6700\u5c0f\u5316/\u88ab\u906e\u6321\n"
 "  - LD\n"
 "    \u4f7f\u7528\u96f7\u7535\u6a21\u62df\u5668\u7684\u63a5\u53e3\u622a\u56fe\uff0c\u6a21\u62df\u5668\u53ef\u4ee5\u6700\u5c0f\u5316/\u88ab\u906e\u6321", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_34.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u622a\u56fe\u6a21\u5f0f\u9009\u62e9", None))
-        self.label_35.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u6839\u636e\u81ea\u5df1\u7684\u60c5\u51b5\u51b3\u5b9a\u4f7f\u7528\u54ea\u79cd\u622a\u56fe\u65b9\u6848\n"
-"\u9f20\u6807\u60ac\u505c\u67e5\u770b\u8be6\u7ec6\u4ecb\u7ecd", None))
-        self.comboBox.setItemText(0, QCoreApplication.translate("DailyQuestsHelper", u"DxCam", None))
-        self.comboBox.setItemText(1, QCoreApplication.translate("DailyQuestsHelper", u"MuMu", None))
-        self.comboBox.setItemText(2, QCoreApplication.translate("DailyQuestsHelper", u"LD", None))
-
-        self.comboBox_2.setItemText(0, QCoreApplication.translate("DailyQuestsHelper", u"2560x1440", None))
-        self.comboBox_2.setItemText(1, QCoreApplication.translate("DailyQuestsHelper", u"1280x720", None))
-        self.comboBox_2.setItemText(2, QCoreApplication.translate("DailyQuestsHelper", u"1600x900", None))
-        self.comboBox_2.setItemText(3, QCoreApplication.translate("DailyQuestsHelper", u"1920x1080", None))
-
-        self.label_7.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u89c6\u9891\u6d41\u5e27\u7387", None))
-        self.label_37.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5efa\u8bae\u4e0d\u4f4e\u4e8e60\u5e27\uff0c\u5426\u5219\u51b3\u6597\u573a\u76f8\u5173\u53ef\u80fd\u51fa\u73b0\u5f02\u5e38", None))
-        self.label_6.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u6a21\u62df\u5668\u5206\u8fa8\u7387", None))
-        self.label_36.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u9009\u62e9\u548c\u6a21\u62df\u5668\u8bbe\u7f6e\u5185\u76f8\u540c\u7684\u5206\u8fa8\u7387", None))
-        self.spinBox.setSuffix(QCoreApplication.translate("DailyQuestsHelper", u" \u5e27", None))
-        self.label_8.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u96f7\u7535\u6a21\u62df\u5668\u5b89\u88c5\u8def\u5f84", None))
-        self.pushButton.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u6d4f\u89c8", None))
-        self.label_9.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u96f7\u7535\u5b9e\u4f8b\u7d22\u5f15", None))
-        self.label_32.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5728MuMu\u591a\u5f00\u5668\u4e2d\u67e5\u770b\u81ea\u5df1\u6b63\u5728\u4f7f\u7528\u7684\u6a21\u62df\u5668\u5b9e\u4f8b\u7d22\u5f15\n"
-"\u5982\u679c\u662f\u7b2c\u4e00\u4e2a\u6a21\u62df\u5668\u5c31\u662f0\uff0c\u4f9d\u6b21\u7c7b\u63a8", None))
-        self.label_10.setText(QCoreApplication.translate("DailyQuestsHelper", u"MuMu\u6a21\u62df\u5668\u5b89\u88c5\u8def\u5f84", None))
-        self.pushButton_2.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u6d4f\u89c8", None))
-        self.label_11.setText(QCoreApplication.translate("DailyQuestsHelper", u"MuMu\u5b9e\u4f8b\u7d22\u5f15", None))
-        self.label_31.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5728MuMu\u591a\u5f00\u5668\u4e2d\u67e5\u770b\u81ea\u5df1\u6b63\u5728\u4f7f\u7528\u7684\u6a21\u62df\u5668\u5b9e\u4f8b\u7d22\u5f15\n"
-"\u5982\u679c\u662f\u7b2c\u4e00\u4e2a\u6a21\u62df\u5668\u5c31\u662f0\uff0c\u4f9d\u6b21\u7c7b\u63a8", None))
+        self.label_233.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u626b\u63cf\u95f4\u9694", None))
+        self.label_234.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u95f4\u9694\u8d8a\u5c0f\u8c03\u5ea6\u5668\u626b\u63cf\u4efb\u52a1\u8d8a\u9891\u7e41\n"
+"\u4e00\u822c1000ms\u8db3\u77e3", None))
+        self.scan_inerval.setSuffix(QCoreApplication.translate("DailyQuestsHelper", u" ms", None))
         self.label_227.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8fde\u70b9\u952e\u4f4d", None))
         self.label_230.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8bf8\u5982\u4e30\u9976\u4e4b\u95f4\uff0c\u6bcf\u65e5\u80dc\u573a\u7b49\u4efb\u52a1\u7684\u5fc5\u8981\u8bbe\u7f6e", None))
 #if QT_CONFIG(tooltip)
@@ -8462,11 +8834,11 @@ class Ui_DailyQuestsHelper(object):
         self.label_228.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u952e\u4f4d\u914d\u7f6e", None))
         self.label_229.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5173\u95ed\u8c03\u5ea6\u5668\u4e4b\u540e\uff0c\u8fdb\u5165\u7ec3\u4e60\u573a\uff0c\u70b9\u51fb\u53f3\u4fa7\u914d\u7f6e\u6309\u94ae\n"
 "\u5c06\u5f39\u51fa\u7a97\u53e3\u4e2d\u7684\u952e\u4f4d\u63a7\u4ef6\u62d6\u52a8\u5230\u56fe\u4e2d\u4f60\u7684\u5bf9\u5e94\u952e\u4f4d\u4e0a", None))
-        self.pushButton_3.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u914d\u7f6e", None))
+        self.key_map_configuration_button.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u914d\u7f6e", None))
         self.label_30.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e8c\u7ea7\u5bc6\u7801", None))
         self.label_114.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e8c\u7ea7\u5bc6\u7801", None))
         self.label_115.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u7528\u6765\u81ea\u52a8\u6267\u884c\u4e00\u4e9b\u9700\u8981\u4e8c\u7ea7\u5bc6\u7801\u7684\u4efb\u52a1\n"
 "\u53ea\u5728\u672c\u5730\u5b58\u50a8", None))
-        self.lineEdit_7.setInputMask("")
+        self.secondary_password.setInputMask("")
     # retranslateUi
 

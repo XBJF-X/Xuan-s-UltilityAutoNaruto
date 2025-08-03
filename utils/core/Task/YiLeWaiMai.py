@@ -5,12 +5,12 @@ from utils.core.Task.BaseTask import BaseTask
 class YiLeWaiMai(BaseTask):
 
     def _execute(self):
-        self.logger.debug(f"开始执行")
+        self.logger.info(f"开始执行")
         try:
             # 确定在主场景
             if not self.home():
                 raise self.StepFailedError("无法回到[主场景]")
-            self.logger.debug("进入[活动]")
+            self.logger.info("进入[活动]")
             if not self.click_and_wait({
                 'type': "ELEMENT",
                 'name': "主场景-活动"
@@ -21,7 +21,7 @@ class YiLeWaiMai(BaseTask):
                 'name': "活动"
             }):
                 raise self.StepFailedError("[活动]未出现")
-            self.logger.debug("进入[一乐外卖]")
+            self.logger.info("进入[一乐外卖]")
             if not self.click_and_wait({
                 'type': "ELEMENT",
                 'name': "活动-一乐外卖-选中"
@@ -31,14 +31,14 @@ class YiLeWaiMai(BaseTask):
                     'name': "活动-一乐外卖-选中"
                 }):
                     raise self.StepFailedError("进入[一乐外卖]失败")
-            self.logger.debug("开始领取[一乐外卖]")
+            self.logger.info("开始领取[一乐外卖]")
             takeout_sum = 0
             while self.click_and_wait({
                 'type': "ELEMENT",
                 'name': "活动-一乐外卖-待领取"
             }):
                 takeout_sum += 1
-                self.logger.debug(f"已领取了 {takeout_sum} 份外卖")
+                self.logger.info(f"已领取了 {takeout_sum} 份外卖")
                 continue
             if takeout_sum == 0:
                 self._update_next_execute_time(delta=timedelta(hours=1))
@@ -51,5 +51,5 @@ class YiLeWaiMai(BaseTask):
             self.logger.warning(e)
         finally:
             self.home()
-            self.logger.debug(f"执行完毕")
+            self.logger.info(f"执行完毕")
             self.callback(self)

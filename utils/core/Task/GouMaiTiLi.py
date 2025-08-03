@@ -3,7 +3,7 @@ from utils.core.Task.BaseTask import BaseTask
 class GouMaiTiLi(BaseTask):
 
     def _execute(self):
-        self.logger.debug(f"开始执行")
+        self.logger.info(f"开始执行")
         try:
             # 确定在主场景
             if not self.home():
@@ -16,14 +16,13 @@ class GouMaiTiLi(BaseTask):
                 'type': "SCENE",
                 'name': "购买体力"
             }):
-                for i in range(0):
+                for i in range(self.data.get("购买体力次数",0)):
                     if self.click_and_wait({
                         'type': "ELEMENT",
                         "name": "购买体力-购买"
                     }):
                         self.pass_secondary_password()
-                        self.logger.debug(f"已购买体力 {i} 次")
-
+                        self.logger.info(f"已购买体力 {i+1} 次")
                 # 随便点下返回主场景
                 self.click_and_wait({
                     'type': "COORDINATE",
@@ -39,5 +38,5 @@ class GouMaiTiLi(BaseTask):
             self.logger.warning(e)
         finally:
             self.home()
-            self.logger.debug(f"执行完毕")
+            self.logger.info(f"执行完毕")
             self.callback(self)

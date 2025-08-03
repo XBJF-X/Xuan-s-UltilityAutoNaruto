@@ -1,14 +1,15 @@
 from utils.core.Task.BaseTask import BaseTask
 
+
 class SaiJiShengChang(BaseTask):
 
     def _execute(self):
-        self.logger.debug(f"开始执行")
+        self.logger.info(f"开始执行")
         try:
             # 确定在主场景
             if not self.home():
                 raise self.StepFailedError("无法回到[主场景]")
-            self.logger.debug("进入[决斗场-首页]")
+            self.logger.info("进入[决斗场-首页]")
             if not self.click_and_search(
                     [
                         {"type": "ELEMENT", "name": "主场景-决斗场"}
@@ -46,7 +47,7 @@ class SaiJiShengChang(BaseTask):
             }):
                 raise self.StepFailedError("未进入[决斗场-首页]")
 
-            self.logger.debug("进入[决斗赛季]")
+            self.logger.info("进入[决斗赛季]")
             self.click_and_wait({
                 'type': "COORDINATE",
                 'coordinate': [1506, 206]
@@ -57,7 +58,7 @@ class SaiJiShengChang(BaseTask):
                 'name': "赛季-决斗场内获得N次胜利-已领"
             }, wait_time=2, max_time=1):
                 self.esc()
-                self.logger.debug("进入[决斗场-忍术对战-单人模式]")
+                self.logger.info("进入[决斗场-忍术对战-单人模式]")
                 if not self.click_and_wait({
                     'type': "ELEMENT",
                     'name': "决斗场-忍术对战"
@@ -68,7 +69,7 @@ class SaiJiShengChang(BaseTask):
                     'name': "决斗场-忍术对战-单人模式"
                 }):
                     raise self.StepFailedError("[决斗场-忍术对战-单人模式]未出现")
-                self.logger.debug("查看[决斗场-忍术对战-单人模式-决斗任务]")
+                self.logger.info("查看[决斗场-忍术对战-单人模式-决斗任务]")
                 if not self.click_and_wait({
                     'type': "ELEMENT",
                     'name': "决斗场-忍术对战-单人模式-决斗任务"
@@ -79,7 +80,7 @@ class SaiJiShengChang(BaseTask):
                     'name': "决斗场-忍术对战-单人模式-决斗任务"
                 }):
                     raise self.StepFailedError("[决斗场-忍术对战-单人模式-决斗任务]未出现")
-                self.logger.debug("领取所有待领取的决斗任务宝箱")
+                self.logger.info("领取所有待领取的决斗任务宝箱")
                 while self.click_and_wait({
                     'type': "ELEMENT",
                     'name': "决斗任务-宝箱-待领取"
@@ -93,19 +94,13 @@ class SaiJiShengChang(BaseTask):
                 if self.click_and_wait({
                     'type': "ELEMENT",
                     'name': "决斗场-忍术对战-单人模式-开战"
-                }
+                }, wait_time=2
                 ):
                     self.click_and_wait({
                         'type': "ELEMENT",
                         'name': "决斗场-忍术对战-单人模式-开战"
-                    })
-                    self.logger.debug("开始检测倒计时60s出现")
-                    while not self.detect_and_wait({
-                        'type': "ELEMENT",
-                        'name': "决斗场-60"
-                    }, wait_time=0):
-                        continue
-                    self.logger.debug("倒计时60s出现，连点执行中...")
+                    }, wait_time=2)
+                    self.logger.info("连点执行中...")
                     # 使用连点器，结束的标志定为时刻
                     self.auto_clicker(
                         [
@@ -123,7 +118,7 @@ class SaiJiShengChang(BaseTask):
                         ],
                         max_workers=7
                     )
-                    self.logger.debug("对局结束，返回[单人模式-首页]")
+                    self.logger.info("对局结束，返回[单人模式-首页]")
                     # 先回到单人模式首页，看看有没有宝箱能领的，能领的都领掉
                     if not self.detect_and_search(
                             [
@@ -133,11 +128,11 @@ class SaiJiShengChang(BaseTask):
                                 {'click': {'type': "COORDINATE", 'coordinate': [800, 745]}},
                                 {'click': {'type': "COORDINATE", 'coordinate': [800, 569]}}
                             ],
-                            999
+                            30
                     ):
                         raise self.StepFailedError("战斗结束后无法退回[忍术对战-单人模式]")
 
-                    self.logger.debug("返回[决斗赛季]")
+                    self.logger.info("返回[决斗赛季]")
                     self.home(home_name="决斗场-首页")
                     if not self.detect_and_wait({
                         'type': "SCENE",
@@ -152,7 +147,7 @@ class SaiJiShengChang(BaseTask):
                 else:
                     raise self.StepFailedError("点击出战失败")
 
-            self.logger.debug("已打完所有赛季胜场")
+            self.logger.warning("已打完所有赛季胜场")
             self.click_and_wait({
                 'type': "COORDINATE",
                 'coordinate': [1523, 45]
@@ -164,5 +159,5 @@ class SaiJiShengChang(BaseTask):
             self.logger.warning(e)
         finally:
             self.home()
-            self.logger.debug(f"执行完毕")
+            self.logger.info(f"执行完毕")
             self.callback(self)

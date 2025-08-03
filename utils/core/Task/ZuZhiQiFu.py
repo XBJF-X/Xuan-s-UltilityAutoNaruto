@@ -3,12 +3,12 @@ from utils.core.Task.BaseTask import BaseTask
 class ZuZhiQiFu(BaseTask):
 
     def _execute(self):
-        self.logger.debug(f"开始执行")
+        self.logger.info(f"开始执行")
         try:
             # 确定在主场景
             if not self.home():
                 raise self.StepFailedError("无法回到[主场景]")
-            self.logger.debug("进入奖励界面")
+            self.logger.info("进入奖励界面")
             # 点击奖励图标
             self.click_and_wait({
                 "type": "ELEMENT",
@@ -19,7 +19,7 @@ class ZuZhiQiFu(BaseTask):
                 "type": "SCENE",
                 "name": "奖励"
             })
-            self.logger.debug("跳转至[组织祈福]")
+            self.logger.info("跳转至[组织祈福]")
             # 点击组织祈福-立即前往
             if not self.click_and_search(
                     [
@@ -49,7 +49,7 @@ class ZuZhiQiFu(BaseTask):
                 "type": "ELEMENT",
                 "name": "组织祈福-超影免费"
             }):
-                self.logger.debug("超影祈福不存在，点击焚香祈福")
+                self.logger.info("超影祈福不存在，点击焚香祈福")
                 # 点击组织祈福-焚香祈福
                 if not self.click_and_wait({
                     "type": "ELEMENT",
@@ -57,27 +57,27 @@ class ZuZhiQiFu(BaseTask):
                 }):
                     raise self.StepFailedError("[焚香祈福]失败")
                 else:
-                    self.logger.debug("[焚香祈福]成功")
+                    self.logger.info("[焚香祈福]成功")
             else:
-                self.logger.debug("点击超影祈福")
+                self.logger.info("点击超影祈福")
             # 点掉上限弹窗
             if self.click_and_wait({
                 "type": "ELEMENT",
                 "name": "组织祈福-今日次数已达上限-确定"
             }, wait_time=2):
-                self.logger.debug("已经焚香祈福过了")
-            self.logger.debug("领取祈福奖励")
+                self.logger.info("已经焚香祈福过了")
+            self.logger.info("领取祈福奖励")
             # 确认祈福成功
             if self.detect_and_wait({
                 "type": "ELEMENT",
                 "name": "组织祈福-恭喜你获得"
             }):
-                self.logger.debug("祈福奖励领取成功")
+                self.logger.info("祈福奖励领取成功")
                 # 随便点下关掉弹窗
                 self.click_and_wait({
                     "type": "COORDINATE",
                     "coordinate": [1525, 45]}, wait_time=3)
-            self.logger.debug("领取昨日奖励")
+            self.logger.info("领取昨日奖励")
             # 点击昨日奖励
             if self.click_and_wait({
                 'type': "ELEMENT",
@@ -93,7 +93,7 @@ class ZuZhiQiFu(BaseTask):
                 self.detect_and_wait({
                     "type": "COORDINATE",
                     "coordinate": [1525, 45]})
-                self.logger.debug("昨日奖励领取成功")
+                self.logger.info("昨日奖励领取成功")
             else:
                 raise self.EndEarly("昨日奖励已领取或昨日祈福人数不足15")
             self._update_next_execute_time()
@@ -104,5 +104,5 @@ class ZuZhiQiFu(BaseTask):
             self.logger.warning(e)
         finally:
             self.home()
-            self.logger.debug(f"执行完毕")
+            self.logger.info(f"执行完毕")
             self.callback(self)

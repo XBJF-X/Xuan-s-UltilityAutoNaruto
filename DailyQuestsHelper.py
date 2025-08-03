@@ -3,7 +3,9 @@ import json
 import logging
 import os
 import sys
+from datetime import datetime
 from typing import Dict
+from zoneinfo import ZoneInfo
 
 import cv2
 import numpy as np
@@ -11,7 +13,7 @@ import win32gui
 
 from PySide6.QtCore import Qt, QFile, QTextStream
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QApplication
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QApplication, QWidget, QFileDialog
 
 from ui.DailyQuestsHelper_ui import Ui_DailyQuestsHelper
 from StaticFunctions import resource_path, get_real_path
@@ -20,7 +22,7 @@ from utils.core.Device import Device
 from utils.core.Logger import LogWindow
 from utils.core.Scheduler import Scheduler
 from utils.core.Config import Config
-from utils.core.Task import TREE_INDEX_DIC
+from utils.core.Task import TREE_INDEX_DIC, TASK_NAME_CN2EN_MAP
 
 
 class DailyQuestsHelper(QMainWindow):
@@ -34,13 +36,8 @@ class DailyQuestsHelper(QMainWindow):
         self.init_environment()
         self.alloc_ui_ref_map()
         self.connect_ui2function()
-        self.scene_templates = self.preprocess_templates("src/SceneInfo.json")
-        self.element_templates = self.preprocess_templates("src/ElementInfo.json")
-        self.recognizer = Recognizer(self.scene_templates, self.element_templates)
-        self.device = Device(self.config, self.recognizer)
-        self.scheduler = Scheduler(self.UI, self.device, self.config)
-
-        self.logger.debug("初始化完成...")
+        self.scheduler = Scheduler(self.UI, self.config)
+        self.logger.info("初始化完成...")
 
     def init_environment(self):
         """初始化环境设置"""
@@ -70,63 +67,123 @@ class DailyQuestsHelper(QMainWindow):
         # self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
 
     def alloc_ui_ref_map(self):
-        # 假设你在 UI 文件中有一个 QWidget 用于放置日志窗口，这里命名为 logs_container
+        # 日志窗口设置
         layout = QVBoxLayout(self.UI.logs_container)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.log_window)
+        # 确保首页为总览面板
         self.UI.stackedWidget.setCurrentIndex(0)
+        # 加载日常助手设置项
+        self.UI.bool_debug.setChecked(self.config.get_config('调试模式', 0))
+        self.UI.control_mode.setCurrentIndex(self.config.get_config('控制模式', 0))
+        self.UI.serial.setText(self.config.get_config('串口', "127.0.0.1:5555"))
+        self.UI.screen_mode.setCurrentIndex(self.config.get_config('截图模式', 0))
+        self.UI.screen_mode_settings_stackedWidget.setCurrentIndex(self.config.get_config('截图模式', 0))
+        self.UI.resolution.setCurrentIndex(self.config.get_config('模拟器分辨率', 0))
+        self.UI.video_fps.setValue(self.config.get_config('视频流帧率', 60))
+        self.UI.LD_install_path.setText(self.config.get_config('雷电安装路径', ""))
+        self.UI.LD_instance_index.setValue(self.config.get_config('雷电实例索引', 0))
+        self.UI.MuMu_install_path.setText(self.config.get_config('MuMu安装路径', ""))
+        self.UI.MuMu_instance_index.setValue(self.config.get_config('MuMu实例索引', 0))
+        self.UI.scan_inerval.setValue(self.config.get_config('扫描间隔', 1000))
+        self.UI.secondary_password.setText(self.config.get_config('二级密码', ""))
+        # 加载各种任务设置项
+        self.process_common_task_settings_control()
+        self.UI.XiaoDuiTuXi_4rewards_Enable.setChecked(self.config.get_task_config("小队突袭", "四倍奖励勾选"))
+        self.UI.XiaoDuiTuXi_4rewards_times.setValue(self.config.get_task_config("小队突袭", "四倍奖励次数"))
+        self.UI.JinBiZhaoCai_times.setValue(self.config.get_task_config("金币招财", "招财次数"))
+        self.UI.GouMaiTiLi_times.setValue(self.config.get_task_config("购买体力", "购买体力次数"))
 
     def connect_ui2function(self):
         self.UI.start_schedule_button.clicked.connect(self._on_start_schedule_button_clicked)
         self.UI.overview_panel_button.clicked.connect(lambda _: self.UI.stackedWidget.setCurrentIndex(0))
         self.UI.treeWidget.itemClicked.connect(self._on_tree_item_clicked)
+        self.UI.bool_debug.toggled.connect(self._on_bool_debug_toggled)
+        self.UI.screen_mode.currentIndexChanged.connect(self._on_screen_mode_change)
+        self.UI.control_mode.currentIndexChanged.connect(self._on_control_mode_change)
+        self.UI.serial.editingFinished.connect(lambda w=self.UI.secondary_password: self.config.set_config("串口", w.text()))
+        self.UI.resolution.currentIndexChanged.connect(self._on_resolution_change)
 
-    def preprocess_templates(self, info_path) -> Dict:
-        """预处理模板图像"""
-        # self.logger.debug("预处理模版图像：")
-        templates_dic = {}
-        with open(get_real_path(info_path), "r", encoding='utf-8') as f:
-            templates = json.load(f)
+        self.UI.video_fps.valueChanged.connect(lambda index: self.config.set_config('视频流帧率', index))
+        self.UI.LD_install_path.editingFinished.connect(lambda path: self.config.set_config('雷电安装路径', path))
+        self.UI.LD_install_path_browse.clicked.connect(lambda: self._on_filepath_browse_clicked("雷电"))
+        self.UI.LD_instance_index.valueChanged.connect(lambda index: self.config.set_config('雷电实例索引', index))
+        self.UI.MuMu_install_path.editingFinished.connect(lambda path: self.config.set_config('MuMu安装路径', path))
+        self.UI.MuMu_install_path_browse.clicked.connect(lambda: self._on_filepath_browse_clicked("MuMu"))
+        self.UI.MuMu_instance_index.valueChanged.connect(lambda index: self.config.set_config('MuMu实例索引', index))
+        self.UI.scan_inerval.valueChanged.connect(lambda index: self.config.set_config('扫描间隔', index))
+        self.UI.secondary_password.editingFinished.connect(lambda w=self.UI.secondary_password: self.config.set_config("二级密码", w.text()))
 
-        for key, template in templates.items():
+    def process_common_task_settings_control(self):
+        # 处理所有任务相关的通用设置控件的响应
+        all_widgets = self.findChildren(QWidget)
+        for widget in all_widgets:
+            # 尝试一些没有text()方法的控件（如布局管理器等）
+            if not hasattr(widget, 'text'):
+                continue
+
             try:
-                gray_path = get_real_path(os.path.join(template['path'], "Gray", f"{key}.png"))
-                alpha_path = get_real_path(os.path.join(template['path'], "Alpha", f"{key}.png"))
-                # self.logger.debug("模板路径：%s", template_path)
-                with open(gray_path, 'rb') as f:
-                    gray_array = np.frombuffer(f.read(), dtype=np.uint8)
-                    gray = cv2.imdecode(gray_array, cv2.IMREAD_GRAYSCALE)
-                    if gray is None:
-                        raise FileNotFoundError(f"文件存在但无法读取: {gray_path}")
-                    template['GRAY'] = gray.astype(np.uint8)
-                with open(alpha_path, 'rb') as f:
-                    alpha_array = np.frombuffer(f.read(), dtype=np.uint8)
-                    alpha = cv2.imdecode(alpha_array, cv2.IMREAD_GRAYSCALE)
-                    if alpha is None:
-                        raise FileNotFoundError(f"文件存在但无法读取: {alpha_path}")
-                    template['MASK'] = alpha.astype(np.uint8)
-
-                templates_dic[key] = template
+                # 获取控件文本
+                widget_name = widget.objectName()
+                for key, value in TASK_NAME_CN2EN_MAP.items():
+                    if f"{value}_Enable" == widget_name:
+                        widget.setChecked(self.config.get_task_config(key, "是否启用"))
+                        widget.toggled.connect(lambda flag, task_name=key: self.config.set_task_config(task_name, "是否启用", flag))
+                        break
+                    elif f"{value}_next_execute_time" == widget_name:
+                        widget.setText(
+                            datetime.fromtimestamp(
+                                self.config.get_task_config(key, "下次执行时间"),
+                                tz=ZoneInfo("Asia/Shanghai")
+                            ).strftime("%Y-%m-%d %H:%M:%S"))
+                        widget.editingFinished.connect(
+                            lambda task_name=key, w=widget: self._on_task_next_execute_time_changed(task_name, w.text())
+                        )
+                        break
             except Exception as e:
-                self.logger.error("模板预处理失败: %s", f"{template['path']}{key}.png")
-        return templates_dic
+                # 某些控件的text()方法可能有特殊实现，跳过异常
+                self.logger.warning(e)
+                continue
 
     def _on_start_schedule_button_clicked(self):
         if not self.scheduler.running:
-            self.scheduler.running = True
-            self.scheduler.timer_thread.trigger(1000)
-            self.UI.start_schedule_button.setText("暂停")
-            self.logger.debug("[调度器]已启动")
+            self.scheduler.start()
         else:
-            self.scheduler.running = False
-            self.scheduler.timer_thread.trigger(1000)
-            self.UI.start_schedule_button.setText("启动")
-            self.logger.debug("[调度器]已暂停")
+            self.scheduler.stop()
 
     def _on_tree_item_clicked(self, item, column):
         text = item.text(column)
         if TREE_INDEX_DIC.get(text, 0):
             self.UI.stackedWidget.setCurrentIndex(TREE_INDEX_DIC[text])
+
+    def _on_bool_debug_toggled(self, flag):
+        self.log_window.log_level = logging.DEBUG if flag else logging.INFO
+        self.logger.debug(f"日志窗口显示等级已经调为[{"DEBUG" if flag else "INFO"}]")
+        self.config.set_config('调试模式', int(flag))
+
+    def _on_screen_mode_change(self, index):
+        self.UI.screen_mode_settings_stackedWidget.setCurrentIndex(index)
+        self.config.set_config("截图模式", index)
+
+    def _on_control_mode_change(self, index):
+        self.config.set_config("控制模式", index)
+
+    def _on_resolution_change(self, index):
+        self.config.set_config("模拟器分辨率", index)
+
+    def _on_filepath_browse_clicked(self, name):
+        folder = QFileDialog.getExistingDirectory(self, f"选择{name}模拟器安装目录")
+        if folder:
+            if name == "MuMu":
+                self.UI.MuMu_install_path.setText(folder)
+                self.config.set_config("MuMu安装路径", folder)
+            elif name == "雷电":
+                self.UI.LD_install_path.setText(folder)
+                self.config.set_config("雷电安装路径", folder)
+
+    def _on_task_next_execute_time_changed(self, task_name, text):
+        if text == "":
+            self.logger.debug(f"{task_name} 将立刻执行")
 
 
 if __name__ == "__main__":

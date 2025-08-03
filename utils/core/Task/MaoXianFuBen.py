@@ -3,27 +3,27 @@ from utils.core.Task.BaseTask import BaseTask
 class MaoXianFuBen(BaseTask):
 
     def _execute(self):
-        self.logger.debug(f"开始执行")
+        self.logger.info(f"开始执行")
         try:
             # 确定在主场景
             if not self.home():
                 raise self.StepFailedError("无法回到[主场景]")
 
-            self.logger.debug("进入[冒险]")
+            self.logger.info("进入[冒险]")
             if not self.click_and_wait({
                 'type': "ELEMENT",
                 'name': "冒险"
             }):
                 raise self.StepFailedError("无法进入[冒险]")
 
-            self.logger.debug("进入[精英副本]")
+            self.logger.info("进入[精英副本]")
             if not self.click_and_wait({
                 'type': "ELEMENT",
                 'name': "冒险-精英副本"
             }):
                 raise self.StepFailedError("无法进入[精英副本]")
 
-            self.logger.debug("进入[便捷扫荡]")
+            self.logger.info("进入[便捷扫荡]")
             if not self.click_and_wait({
                 'type': "ELEMENT",
                 'name': "冒险-精英副本-便捷扫荡"
@@ -35,14 +35,14 @@ class MaoXianFuBen(BaseTask):
             }):
                 raise self.StepFailedError("[便捷扫荡]未出现")
 
-            self.logger.debug("检查是否选择[勾选上次扫荡副本]")
+            self.logger.info("检查是否选择[勾选上次扫荡副本]")
             if not self.click_and_wait({
                 'type': "ELEMENT",
                 'name': "冒险-精英副本-便捷扫荡-勾选上次扫荡副本-未选中"
             }):
-                self.logger.debug("未选中[勾选上次扫荡副本]，已自动选择")
+                self.logger.warning("未选中[勾选上次扫荡副本]，已自动选择")
 
-            self.logger.debug("点击扫荡")
+            self.logger.info("点击扫荡")
             if not self.click_and_wait({
                 'type': "ELEMENT",
                 'name': "冒险-精英副本-便捷扫荡-扫荡"
@@ -57,12 +57,13 @@ class MaoXianFuBen(BaseTask):
                 'type': "ELEMENT",
                 'name': "冒险-精英副本-便捷扫荡-扫荡-请选中至少一个需要扫荡的副本"
             }, wait_time=0, max_time=0.3):
-                self.logger.debug("未勾选需要扫荡的副本")
+                self.logger.warning("未勾选需要扫荡的副本，即将全选")
                 if not self.click_and_wait({
                     'type': "ELEMENT",
                     'name': "冒险-精英副本-便捷扫荡-一键全选-未选中"
                 }):
                     raise self.StepFailedError("全选失败，提前退出执行")
+
                 if not self.click_and_wait({
                     'type': "ELEMENT",
                     'name': "冒险-精英副本-便捷扫荡-扫荡"
@@ -73,8 +74,8 @@ class MaoXianFuBen(BaseTask):
                 'type': "ELEMENT",
                 'name': "冒险-精英副本-便捷扫荡-扫荡-继续扫荡"
             }):
-                self.logger.debug("确认继续扫荡")
-            self.logger.debug("扫荡开始，等待扫荡结束")
+                self.logger.info("确认继续扫荡")
+            self.logger.info("扫荡开始，等待扫荡结束")
             while not self.click_and_wait({
                 'type': "ELEMENT",
                 'name': "冒险-精英副本-便捷扫荡-扫荡结束-确定"
@@ -91,7 +92,7 @@ class MaoXianFuBen(BaseTask):
                         'coordinate': [1364, 152]
                     })
                     break
-            self.logger.debug("扫荡任务结束")
+            self.logger.info("扫荡任务结束")
             # 点掉扫荡信息弹窗
             self.click_and_wait({
                 "type": "COORDINATE",
@@ -105,5 +106,5 @@ class MaoXianFuBen(BaseTask):
             self.logger.warning(e)
         finally:
             self.home()
-            self.logger.debug(f"执行完毕")
+            self.logger.info(f"执行完毕")
             self.callback(self)

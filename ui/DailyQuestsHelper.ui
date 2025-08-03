@@ -6,26 +6,36 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>962</width>
-    <height>716</height>
+    <width>1179</width>
+    <height>607</height>
    </rect>
   </property>
   <property name="font">
    <font>
-    <family>仓耳今楷02-6763</family>
+    <family>黑体</family>
+    <pointsize>15</pointsize>
+    <italic>false</italic>
+    <bold>false</bold>
    </font>
   </property>
   <property name="windowTitle">
    <string>日常助手</string>
   </property>
   <property name="styleSheet">
-   <string notr="true"/>
+   <string notr="true">/*
+font: 15pt &quot;仓耳今楷02-6763&quot;;
+font: 15pt &quot;Microsoft YaHei UI&quot;;
+*/
+font: 15pt &quot;黑体&quot;;
+</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="font">
     <font>
-     <family>仓耳今楷02-6763</family>
+     <family>黑体</family>
      <pointsize>15</pointsize>
+     <italic>false</italic>
+     <bold>false</bold>
     </font>
    </property>
    <layout class="QHBoxLayout" name="horizontalLayout">
@@ -142,8 +152,10 @@
       </property>
       <property name="font">
        <font>
-        <family>仓耳今楷02-6763</family>
+        <family>黑体</family>
         <pointsize>15</pointsize>
+        <italic>false</italic>
+        <bold>false</bold>
        </font>
       </property>
       <property name="styleSheet">
@@ -168,7 +180,7 @@
        <item>
         <widget class="QWidget" name="widget_9" native="true">
          <property name="styleSheet">
-          <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;</string>
+          <string notr="true"/>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_8">
           <item>
@@ -187,7 +199,7 @@
             </property>
             <property name="font">
              <font>
-              <family>仓耳今楷02-6763</family>
+              <family>黑体</family>
               <pointsize>15</pointsize>
               <italic>false</italic>
               <bold>false</bold>
@@ -255,8 +267,10 @@ padding-bottom:2px;
             </property>
             <property name="font">
              <font>
-              <family>仓耳今楷02-6763</family>
+              <family>黑体</family>
               <pointsize>-1</pointsize>
+              <italic>false</italic>
+              <bold>false</bold>
              </font>
             </property>
             <property name="styleSheet">
@@ -662,6 +676,9 @@ QTreeWidget QScrollBar::add-line:vertical {
           <number>32</number>
          </property>
          <widget class="QWidget" name="Overview_Panel_widget">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
           <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1">
            <item>
             <widget class="QWidget" name="widget_2" native="true">
@@ -678,8 +695,7 @@ QTreeWidget QScrollBar::add-line:vertical {
               </size>
              </property>
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,0,4,4">
               <property name="spacing">
@@ -940,6 +956,9 @@ margin-bottom:0px;</string>
                  </item>
                  <item>
                   <widget class="QPushButton" name="start_schedule_button">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
                    <property name="styleSheet">
                     <string notr="true">QPushButton{
 border: 2px solid #b5b5b5;  /* 2px宽的深灰色实线边框 */
@@ -947,18 +966,23 @@ background-color: rgb(255, 255, 255);
 border-radius:10px;
 outline:none;
 color:#0f322f;
-padding-top:2px;
-padding-bottom:2px;
+padding-top:5px;
+padding-bottom:5px;
 }
 QPushButton::hover {
 border: 2px solid #39C5BB;  /* 2px宽的深灰色实线边框 */
 background-color: rgb(255, 255, 255);
 border-radius:10px;
 outline:none;
-padding-top:2px;
+padding-top:5px;
 color:#39C5BB;
-padding-bottom:2px;
-}</string>
+padding-bottom:5px;
+}
+QPushButton:disabled {
+        background-color: #dedede;  /* 背景色 */
+        color: #b5b5b5;             /* 文字颜色 */
+        border: 2px solid #b5b5b5;  /* 2px宽的深灰色实线边框 */
+    }</string>
                    </property>
                    <property name="text">
                     <string>启动</string>
@@ -1433,7 +1457,7 @@ QScrollArea &gt; QWidget &gt; QWidget {
                       <x>0</x>
                       <y>0</y>
                       <width>230</width>
-                      <height>192</height>
+                      <height>150</height>
                      </rect>
                     </property>
                    </widget>
@@ -1667,7 +1691,7 @@ QScrollArea &gt; QWidget &gt; QWidget {
                       <x>0</x>
                       <y>0</y>
                       <width>230</width>
-                      <height>191</height>
+                      <height>150</height>
                      </rect>
                     </property>
                    </widget>
@@ -1723,9 +1747,8 @@ QScrollArea &gt; QWidget &gt; QWidget {
 				border-radius:10px;
             }
 QLabel{color:#0f322f;}
-
 /* 调整勾选框的大小 */
-QCheckBox::indicator {margin-top:2px;
+QCheckBox::indicator {
 color:#0f322f;
 	width: 14px;      /* 勾选框宽度 */
 	height: 14px;     /* 勾选框高度 */
@@ -1771,12 +1794,15 @@ QCheckBox::indicator:disabled {
                 border-bottom: 4px solid #0f322f;  /* 深灰色下边框（中间状态） */
             }</string>
                    </property>
-                   <layout class="QHBoxLayout" name="horizontalLayout_4">
-                    <item>
+                   <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="1,0,0">
+                    <property name="spacing">
+                     <number>15</number>
+                    </property>
+                    <item alignment="Qt::AlignmentFlag::AlignLeft">
                      <widget class="QLabel" name="label_5">
                       <property name="font">
                        <font>
-                        <family>仓耳今楷02-6763</family>
+                        <family>黑体</family>
                         <pointsize>-1</pointsize>
                         <italic>false</italic>
                         <bold>false</bold>
@@ -1795,9 +1821,16 @@ QCheckBox::indicator:disabled {
                      </widget>
                     </item>
                     <item alignment="Qt::AlignmentFlag::AlignRight">
+                     <widget class="QCheckBox" name="bool_debug">
+                      <property name="text">
+                       <string>调试模式</string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item alignment="Qt::AlignmentFlag::AlignRight">
                      <widget class="QCheckBox" name="bool_save_img">
                       <property name="styleSheet">
-                       <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;</string>
+                       <string notr="true"/>
                       </property>
                       <property name="text">
                        <string>保存图像</string>
@@ -1812,6 +1845,9 @@ QCheckBox::indicator:disabled {
               </item>
               <item>
                <widget class="QWidget" name="logs_container" native="true">
+                <property name="enabled">
+                 <bool>true</bool>
+                </property>
                 <property name="layoutDirection">
                  <enum>Qt::LayoutDirection::LeftToRight</enum>
                 </property>
@@ -1830,8 +1866,7 @@ QCheckBox::indicator:disabled {
            <item>
             <widget class="QWidget" name="widget_44" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_24" stretch="1,5,1">
               <item>
@@ -1866,8 +1901,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_73">
@@ -1985,7 +2020,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_75">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -1996,7 +2031,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_16">
+                        <widget class="QCheckBox" name="DengLuJiangLi_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -2018,7 +2053,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_133">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -2028,8 +2063,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_20">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="DengLuJiangLi_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -2080,8 +2121,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_52" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true">;</string>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_31" stretch="1,5,1">
               <item>
@@ -2116,8 +2156,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_89">
@@ -2235,7 +2275,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_87">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -2246,7 +2286,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_20">
+                        <widget class="QCheckBox" name="PaiHangBangDianZan_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -2268,7 +2308,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_141">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -2278,8 +2318,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_24">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="PaiHangBangDianZan_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -2330,8 +2376,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_54" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_33" stretch="1,5,1">
               <item>
@@ -2366,8 +2411,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_93">
@@ -2485,7 +2530,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_90">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -2496,7 +2541,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_21">
+                        <widget class="QCheckBox" name="MeiYueQianDao_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -2518,7 +2563,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_143">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -2528,8 +2573,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_25">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="MeiYueQianDao_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -2580,8 +2631,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_24" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_13" stretch="1,5,1">
               <item>
@@ -2616,8 +2666,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_46">
@@ -2735,7 +2785,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_57">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -2746,7 +2796,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_10">
+                        <widget class="QCheckBox" name="GouMaiTiLi_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -2768,7 +2818,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_121">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -2778,8 +2828,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_14">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="GouMaiTiLi_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -3026,7 +3082,7 @@ border-radius:1px;
                            <widget class="QLabel" name="label_43">
                             <property name="styleSheet">
                              <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                             </property>
                             <property name="text">
@@ -3044,7 +3100,7 @@ margin-left:18px;</string>
                         </widget>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QSpinBox" name="spinBox_4">
+                        <widget class="QSpinBox" name="GouMaiTiLi_times">
                          <property name="maximumSize">
                           <size>
                            <width>80</width>
@@ -3113,8 +3169,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_27" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="1,5,1">
               <item>
@@ -3149,8 +3204,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_47">
@@ -3268,7 +3323,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_60">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -3279,7 +3334,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_11">
+                        <widget class="QCheckBox" name="JinBiZhaoCai_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -3301,7 +3356,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_123">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -3311,8 +3366,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_15">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="JinBiZhaoCai_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -3571,7 +3632,7 @@ border-radius:1px;
                             </property>
                             <property name="styleSheet">
                              <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                             </property>
                             <property name="text">
@@ -3593,7 +3654,7 @@ margin-left:18px;</string>
                         </widget>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QSpinBox" name="spinBox_5">
+                        <widget class="QSpinBox" name="JinBiZhaoCai_times">
                          <property name="maximumSize">
                           <size>
                            <width>80</width>
@@ -3662,8 +3723,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_29" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_16" stretch="1,5,1">
               <item>
@@ -3698,8 +3758,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_51">
@@ -3817,7 +3877,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_63">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -3828,7 +3888,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_12">
+                        <widget class="QCheckBox" name="XiaoDuiTuXi_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -3850,7 +3910,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_125">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -3860,8 +3920,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_16">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="XiaoDuiTuXi_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -4123,7 +4189,7 @@ border-radius:1px;
                         </widget>
                        </item>
                        <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QSpinBox" name="spinBox_6">
+                        <widget class="QSpinBox" name="XiaoDuiTuXi_4rewards_times">
                          <property name="maximumSize">
                           <size>
                            <width>80</width>
@@ -4173,7 +4239,7 @@ border-radius:1px;
                            <widget class="QLabel" name="label_12">
                             <property name="styleSheet">
                              <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                             </property>
                             <property name="text">
@@ -4186,7 +4252,7 @@ margin-left:18px;</string>
                         </widget>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QCheckBox" name="checkBox">
+                        <widget class="QCheckBox" name="XiaoDuiTuXi_4rewards_Enable">
                          <property name="text">
                           <string/>
                          </property>
@@ -4237,8 +4303,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_80" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_62" stretch="1,5,1">
               <item>
@@ -4273,8 +4338,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_145">
@@ -4392,7 +4457,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_189">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -4403,7 +4468,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_34">
+                        <widget class="QCheckBox" name="ZuZhiQiFu_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -4425,7 +4490,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_191">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -4435,8 +4500,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_38">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="ZuZhiQiFu_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -4487,8 +4558,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_50" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_30" stretch="1,5,1">
               <item>
@@ -4523,8 +4593,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_85">
@@ -4642,7 +4712,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_84">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -4653,7 +4723,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_19">
+                        <widget class="QCheckBox" name="HaoYouTiLi_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -4675,7 +4745,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_139">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -4685,8 +4755,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_23">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="HaoYouTiLi_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -4737,8 +4813,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_66" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_48" stretch="1,5,1">
               <item>
@@ -4773,8 +4848,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_117">
@@ -4892,7 +4967,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_154">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -4903,7 +4978,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_27">
+                        <widget class="QCheckBox" name="PuTongRenZheZhaoMu_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -4925,7 +5000,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_156">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -4935,8 +5010,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_31">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="PuTongRenZheZhaoMu_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -4987,8 +5068,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_58" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_37" stretch="1,5,1">
               <item>
@@ -5023,8 +5103,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_101">
@@ -5103,7 +5183,7 @@ border:none;</string>
                       <widget class="QLabel" name="label_38">
                        <property name="styleSheet">
                         <string notr="true">font-size:13pt;
-color:#39C5BB;
+color:rgba(255, 0, 0, 100);
 margin-left:18px;</string>
                        </property>
                        <property name="text">
@@ -5155,7 +5235,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_96">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -5167,7 +5247,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_23">
+                        <widget class="QCheckBox" name="MeiRiFenXiang_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -5189,7 +5269,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_147">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -5199,8 +5279,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_27">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="MeiRiFenXiang_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -5251,8 +5337,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_46" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_26" stretch="1,5,1">
               <item>
@@ -5287,8 +5372,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_77">
@@ -5367,7 +5452,7 @@ border:none;</string>
                       <widget class="QLabel" name="label_226">
                        <property name="styleSheet">
                         <string notr="true">font-size:13pt;
-color:#39C5BB;
+color:rgba(255, 0, 0, 100);
 margin-left:18px;</string>
                        </property>
                        <property name="text">
@@ -5418,7 +5503,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_78">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -5429,7 +5514,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_17">
+                        <widget class="QCheckBox" name="FengRaoZhiJian_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -5451,7 +5536,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_135">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -5461,8 +5546,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_21">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="FengRaoZhiJian_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -5513,8 +5604,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_74" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_59" stretch="1,5,1">
               <item>
@@ -5549,8 +5639,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_133">
@@ -5629,11 +5719,11 @@ border:none;</string>
                       <widget class="QLabel" name="label_49">
                        <property name="styleSheet">
                         <string notr="true">font-size:13pt;
-color:#39C5BB;
+color:rgba(255, 0, 0, 100);
 margin-left:18px;</string>
                        </property>
                        <property name="text">
-                        <string>该任务由于接取算法未实现，超影特权用户收益不能最大化</string>
+                        <string>由于接取算法未实现，超影特权用户收益不能最大化</string>
                        </property>
                       </widget>
                      </item>
@@ -5680,7 +5770,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_174">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -5691,7 +5781,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_31">
+                        <widget class="QCheckBox" name="RenWuJiHuiSuo_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -5713,7 +5803,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_176">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -5723,8 +5813,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_35">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="RenWuJiHuiSuo_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -5775,8 +5871,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_78" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_61" stretch="1,5,1">
               <item>
@@ -5811,8 +5906,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_141">
@@ -5930,7 +6025,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_184">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -5941,7 +6036,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_33">
+                        <widget class="QCheckBox" name="YiLeWaiMai_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -5963,7 +6058,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_186">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -5973,8 +6068,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_37">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="YiLeWaiMai_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -6025,8 +6126,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_56" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_35" stretch="1,5,1">
               <item>
@@ -6061,8 +6161,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_97">
@@ -6141,7 +6241,7 @@ border:none;</string>
                       <widget class="QLabel" name="label_14">
                        <property name="styleSheet">
                         <string notr="true">font-size:13pt;
-color:#39C5BB;
+color:rgba(255, 0, 0, 100);
 margin-left:18px;</string>
                        </property>
                        <property name="text">
@@ -6192,7 +6292,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_93">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -6203,7 +6303,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_22">
+                        <widget class="QCheckBox" name="MeiRiShengChang_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -6225,7 +6325,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_145">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -6235,8 +6335,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_26">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="MeiRiShengChang_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -6287,8 +6393,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_82" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_63" stretch="1,5,1">
               <item>
@@ -6323,8 +6428,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_149">
@@ -6403,7 +6508,7 @@ border:none;</string>
                       <widget class="QLabel" name="label_50">
                        <property name="styleSheet">
                         <string notr="true">font-size:13pt;
-color:#39C5BB;
+color:rgba(255, 0, 0, 100);
 margin-left:18px;</string>
                        </property>
                        <property name="text">
@@ -6454,7 +6559,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_194">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -6465,7 +6570,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_35">
+                        <widget class="QCheckBox" name="ShengCunTiaoZhan_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -6487,7 +6592,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_196">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -6497,8 +6602,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_39">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="ShengCunTiaoZhan_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -6549,8 +6660,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_84" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_64" stretch="1,5,1">
               <item>
@@ -6585,8 +6695,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_153">
@@ -6664,8 +6774,8 @@ border:none;</string>
                      <item>
                       <widget class="QLabel" name="label_54">
                        <property name="styleSheet">
-                        <string notr="true">font-size:11pt;
-color:#39C5BB;
+                        <string notr="true">font-size:13pt;
+color:rgba(255, 0, 0, 100);
 margin-left:18px;</string>
                        </property>
                        <property name="text">
@@ -6716,7 +6826,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_199">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -6727,7 +6837,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_36">
+                        <widget class="QCheckBox" name="MiJingTanXian_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -6749,7 +6859,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_201">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -6759,8 +6869,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_40">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="MiJingTanXian_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -6811,8 +6927,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_68" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_49" stretch="1,5,1">
               <item>
@@ -6847,8 +6962,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_121">
@@ -6927,7 +7042,7 @@ border:none;</string>
                       <widget class="QLabel" name="label_40">
                        <property name="styleSheet">
                         <string notr="true">font-size:13pt;
-color:#39C5BB;
+color:rgba(255, 0, 0, 100);
 margin-left:18px;</string>
                        </property>
                        <property name="text">
@@ -6978,7 +7093,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_159">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -6989,7 +7104,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_28">
+                        <widget class="QCheckBox" name="QingBaoZhan_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -7011,7 +7126,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_161">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -7021,8 +7136,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_32">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="QingBaoZhan_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -7073,8 +7194,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_60" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_39" stretch="1,5,1">
               <item>
@@ -7109,8 +7229,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_105">
@@ -7189,7 +7309,7 @@ border:none;</string>
                       <widget class="QLabel" name="label_53">
                        <property name="styleSheet">
                         <string notr="true">font-size:13pt;
-color:#39C5BB;
+color:rgba(255, 0, 0, 100);
 margin-left:18px;</string>
                        </property>
                        <property name="text">
@@ -7241,7 +7361,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_99">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -7252,7 +7372,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_24">
+                        <widget class="QCheckBox" name="MaoXianFuBen_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -7274,7 +7394,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_149">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -7284,8 +7404,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_28">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="MaoXianFuBen_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -7336,8 +7462,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_62" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_41" stretch="1,5,1">
               <item>
@@ -7372,8 +7497,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_109">
@@ -7491,7 +7616,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_102">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -7502,7 +7627,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_25">
+                        <widget class="QCheckBox" name="HuoYueDuJiangLi_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -7524,7 +7649,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_151">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -7534,8 +7659,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_29">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="HuoYueDuJiangLi_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -7586,8 +7717,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_70" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_51" stretch="1,5,1">
               <item>
@@ -7622,8 +7752,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_125">
@@ -7741,7 +7871,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_164">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -7752,7 +7882,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_29">
+                        <widget class="QCheckBox" name="QingKongYouJian_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -7774,7 +7904,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_166">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -7784,8 +7914,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_33">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="QingKongYouJian_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -7836,8 +7972,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_76" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_60" stretch="1,5,1">
               <item>
@@ -7872,8 +8007,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_137">
@@ -7952,7 +8087,7 @@ border:none;</string>
                       <widget class="QLabel" name="label_220">
                        <property name="styleSheet">
                         <string notr="true">font-size:13pt;
-color:#39C5BB;
+color:rgba(255, 0, 0, 100);
 margin-left:18px;</string>
                        </property>
                        <property name="text">
@@ -8003,7 +8138,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_179">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -8014,7 +8149,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_32">
+                        <widget class="QCheckBox" name="XiuXingZhiLu_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -8036,7 +8171,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_181">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -8046,8 +8181,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_36">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="XiuXingZhiLu_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -8098,8 +8239,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_72" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_54" stretch="1,5,1">
               <item>
@@ -8134,8 +8274,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_129">
@@ -8214,7 +8354,7 @@ border:none;</string>
                       <widget class="QLabel" name="label_51">
                        <property name="styleSheet">
                         <string notr="true">font-size:13pt;
-color:#39C5BB;
+color:rgba(255, 0, 0, 100);
 margin-left:18px;</string>
                        </property>
                        <property name="text">
@@ -8265,7 +8405,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_169">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -8276,7 +8416,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_30">
+                        <widget class="QCheckBox" name="RenFaTieDianZanFenXiang_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -8298,7 +8438,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_171">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -8308,8 +8448,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_34">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="RenFaTieDianZanFenXiang_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -8360,8 +8506,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_88" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_55" stretch="1,5,1">
               <item>
@@ -8396,8 +8541,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_161">
@@ -8476,7 +8621,7 @@ border:none;</string>
                       <widget class="QLabel" name="label_209">
                        <property name="styleSheet">
                         <string notr="true">font-size:13pt;
-color:#39C5BB;
+color:rgba(255, 0, 0, 100);
 margin-left:18px;</string>
                        </property>
                        <property name="text">
@@ -8527,7 +8672,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_211">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -8538,7 +8683,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_38">
+                        <widget class="QCheckBox" name="TuanBen_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -8560,7 +8705,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_213">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -8570,8 +8715,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_42">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="TuanBen_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -8622,8 +8773,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_90" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_56" stretch="1,5,1">
               <item>
@@ -8658,8 +8808,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_165">
@@ -8738,7 +8888,7 @@ border:none;</string>
                       <widget class="QLabel" name="label_215">
                        <property name="styleSheet">
                         <string notr="true">font-size:13pt;
-color:#39C5BB;
+color:rgba(255, 0, 0, 100);
 margin-left:18px;</string>
                        </property>
                        <property name="text">
@@ -8789,7 +8939,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_217">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -8800,7 +8950,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_39">
+                        <widget class="QCheckBox" name="YaoSaiZhengDuoZhan_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -8822,7 +8972,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_219">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -8832,8 +8982,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_43">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="YaoSaiZhengDuoZhan_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -8884,8 +9040,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_86" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_57" stretch="1,5,1">
               <item>
@@ -8920,8 +9075,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_157">
@@ -9000,7 +9155,7 @@ border:none;</string>
                       <widget class="QLabel" name="label_203">
                        <property name="styleSheet">
                         <string notr="true">font-size:13pt;
-color:#39C5BB;
+color:rgba(255, 0, 0, 100);
 margin-left:18px;</string>
                        </property>
                        <property name="text">
@@ -9051,7 +9206,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_205">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -9062,7 +9217,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_37">
+                        <widget class="QCheckBox" name="PanRenLaiXi_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -9084,7 +9239,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_207">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -9094,8 +9249,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_41">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="PanRenLaiXi_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -9146,8 +9307,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_64" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_43" stretch="1,5,1">
               <item>
@@ -9182,8 +9342,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_113">
@@ -9262,7 +9422,7 @@ border:none;</string>
                       <widget class="QLabel" name="label_39">
                        <property name="styleSheet">
                         <string notr="true">font-size:13pt;
-color:#39C5BB;
+color:rgba(255, 0, 0, 100);
 margin-left:18px;</string>
                        </property>
                        <property name="text">
@@ -9313,7 +9473,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_117">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -9324,7 +9484,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_26">
+                        <widget class="QCheckBox" name="KuaFuZhengBaSai_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -9346,7 +9506,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_153">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -9356,8 +9516,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_30">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="KuaFuZhengBaSai_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -9408,8 +9574,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_48" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_28" stretch="1,5,1">
               <item>
@@ -9444,8 +9609,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_81">
@@ -9563,7 +9728,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_81">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -9574,7 +9739,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_18">
+                        <widget class="QCheckBox" name="GaoJiRenZheZhaoMu_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -9596,7 +9761,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_137">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -9606,8 +9771,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_22">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="GaoJiRenZheZhaoMu_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -9658,8 +9829,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_38" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_18" stretch="1,5,1">
               <item>
@@ -9694,8 +9864,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_61">
@@ -9774,7 +9944,7 @@ border:none;</string>
                       <widget class="QLabel" name="label_52">
                        <property name="styleSheet">
                         <string notr="true">font-size:13pt;
-color:#39C5BB;
+color:rgba(255, 0, 0, 100);
 margin-left:18px;</string>
                        </property>
                        <property name="text">
@@ -9826,7 +9996,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_66">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -9838,7 +10008,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_13">
+                        <widget class="QCheckBox" name="MeiZhouShengChang_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -9860,7 +10030,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_127">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -9870,8 +10040,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_17">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="MeiZhouShengChang_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -9922,8 +10098,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_40" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_20" stretch="1,5,1">
               <item>
@@ -9958,8 +10133,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_65">
@@ -10077,7 +10252,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_69">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -10089,7 +10264,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_14">
+                        <widget class="QCheckBox" name="SaiJiShengChang_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -10111,7 +10286,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_129">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -10121,8 +10296,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_18">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="SaiJiShengChang_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -10173,8 +10354,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_42" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_22" stretch="1,5,1">
               <item>
@@ -10209,8 +10389,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_69">
@@ -10328,7 +10508,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_72">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -10340,7 +10520,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_15">
+                        <widget class="QCheckBox" name="GengDuoWanFa_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -10362,7 +10542,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_131">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -10372,8 +10552,14 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_19">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="GengDuoWanFa_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -10424,8 +10610,7 @@ margin-left:18px;</string>
            <item>
             <widget class="QWidget" name="widget_92" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_69" stretch="1,5,1">
               <item>
@@ -10460,8 +10645,8 @@ color:#0f322f;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>660</height>
+                   <width>625</width>
+                   <height>551</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_169">
@@ -10579,7 +10764,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_223">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -10591,7 +10776,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_40">
+                        <widget class="QCheckBox" name="ChongQiYouXi_Enable">
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -10613,7 +10798,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_225">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -10623,8 +10808,28 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_44">
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="ChongQiYouXi_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
+                         <property name="font">
+                          <font>
+                           <family>黑体</family>
+                           <pointsize>15</pointsize>
+                           <italic>false</italic>
+                           <bold>false</bold>
+                          </font>
+                         </property>
+                         <property name="autoFillBackground">
+                          <bool>false</bool>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
                          </property>
@@ -10671,12 +10876,17 @@ margin-left:18px;</string>
           </layout>
          </widget>
          <widget class="QWidget" name="DQH_Settings_widget">
+          <property name="minimumSize">
+           <size>
+            <width>90</width>
+            <height>0</height>
+           </size>
+          </property>
           <layout class="QHBoxLayout" name="horizontalLayout_5">
            <item>
             <widget class="QWidget" name="widget_19" native="true">
              <property name="styleSheet">
-              <string notr="true">font: 15pt &quot;仓耳今楷02-6763&quot;;
-color:#0f322f;</string>
+              <string notr="true"/>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="1,5,1">
               <item>
@@ -10710,9 +10920,9 @@ color:#0f322f;</string>
                  <property name="geometry">
                   <rect>
                    <x>0</x>
-                   <y>-232</y>
-                   <width>586</width>
-                   <height>934</height>
+                   <y>-464</y>
+                   <width>613</width>
+                   <height>1015</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_25">
@@ -10758,7 +10968,7 @@ QCheckBox::indicator:disabled {
 	border-color: #cccccc;
 }
 /* 1. 未选中（默认）状态的下边框 */
-            QLineEdit {
+QLineEdit {
                 /* 清除默认边框，只保留下边框 */
                 border: none;
                 border-bottom: 3px solid #969696;  /* 灰色下边框 */
@@ -10768,15 +10978,110 @@ QCheckBox::indicator:disabled {
             }
             
             /* 2. 选中（获得焦点点）状态的下边框 */
-            QLineEdit:focus {
+QLineEdit:focus {
                 border-bottom: 4px solid #39C5BB;  /* 蓝色下边框（突出显示） */
                 outline: none;  /* 去除系统默认的聚焦外边框 */
             }
             
             /* 3. 鼠标略过（悬停）状态的下边框 */
-            QLineEdit:hover {
+QLineEdit:hover {
                 border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
-            }</string>
+            }
+/* QComboBox 样式 */
+QComboBox {
+    border: 2px solid #0f322f;  /* 边框颜色与CheckBox保持一致 */
+    border-radius: 3px;
+    padding: 5px 0px 5px 10px;  /* 右侧预留空间给自定义箭头 */
+    background-color: #e7e7e7;
+    min-height: 20px;
+}
+
+/* 隐藏QComboBox默认下拉按钮 */
+QComboBox::drop-down {
+    border: none;  /* 去除默认按钮边框 */
+
+}
+
+/* 自定义下拉箭头（使用三角形字符模拟） */
+QComboBox::down-arrow {
+    image: none;  /* 去除默认箭头 */
+}
+
+QComboBox::down-arrow:on {
+    image: none;  /* 下拉状态也不显示默认箭头 */
+}
+
+/* 下拉列表样式 */
+QComboBox QAbstractItemView {
+    border: 2px solid #b5b5b5;
+    border-radius: 3px;
+    background-color: #e7e7e7;
+    padding: 5px;
+    selection-background-color: #39C5BB;  /* 选中项背景色 */
+    selection-color: #000000;
+}
+
+/* 悬停和选中状态 */
+QComboBox:hover {
+    border-color: #39C5BB;
+}
+
+QComboBox:focus {
+    border-color: #39C5BB;
+    outline: none;
+}
+
+/* QSpinBox 样式 */
+QSpinBox {
+    border: 2px solid #0f322f;
+    border-radius: 3px;
+    padding: 5px 10px 5px 10px;  /* 右侧预留空间给自定义按钮 */
+    background-color: #e7e7e7;
+    min-height: 20px;
+}
+
+/* 隐藏QSpinBox默认上下按钮 */
+QSpinBox::up-button, QSpinBox::down-button {
+    border: none;
+    width: 0;  /* 隐藏默认按钮 */
+    height: 0;
+}
+
+
+
+/* 悬停和选中状态 */
+QSpinBox:hover {
+    border-color: #39C5BB;
+}
+
+QSpinBox:focus {
+    border-color: #39C5BB;
+    outline: none;
+}
+
+/* 解决QSpinBox编辑区域与整体样式冲突 */
+QSpinBox::edit-focus {
+    background-color: transparent;
+    border: none;
+    outline: none;
+}
+
+QPushButton{
+min-height: 26px;
+border: 2px solid #0f322f;  /* 2px宽的深灰色实线边框 */
+background-color: #e7e7e7;
+border-radius:3px;
+outline:none;
+color:#0f322f;
+padding-top:2px;
+padding-bottom:2px;
+}
+QPushButton::hover {
+border: 2px solid #39C5BB;  /* 2px宽的深灰色实线边框 */
+outline:none;
+color:#39C5BB;
+}
+</string>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_26">
                      <property name="topMargin">
@@ -10810,7 +11115,7 @@ border-radius:1px;
                       </widget>
                      </item>
                      <item>
-                      <layout class="QGridLayout" name="gridLayout_5" rowstretch="0,0" columnstretch="5,2">
+                      <layout class="QGridLayout" name="gridLayout_5" rowstretch="0,0,0" columnstretch="5,2">
                        <property name="leftMargin">
                         <number>10</number>
                        </property>
@@ -10823,7 +11128,20 @@ border-radius:1px;
                        <property name="bottomMargin">
                         <number>10</number>
                        </property>
-                       <item row="1" column="0">
+                       <item row="2" column="1">
+                        <widget class="QLineEdit" name="serial">
+                         <property name="text">
+                          <string/>
+                         </property>
+                         <property name="maxLength">
+                          <number>30</number>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignmentFlag::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="2" column="0">
                         <layout class="QVBoxLayout" name="verticalLayout_14">
                          <item>
                           <widget class="QLabel" name="label_106">
@@ -10836,22 +11154,35 @@ border-radius:1px;
                           <widget class="QLabel" name="label_107">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
-                            <string>模拟器的ADB端口地址</string>
+                            <string>模拟器的ADB端口地址
+如果不知道怎么获得，请鼠标悬停查看详细方法</string>
                            </property>
                           </widget>
                          </item>
                         </layout>
                        </item>
-                       <item row="0" column="0">
+                       <item row="1" column="0">
                         <layout class="QVBoxLayout" name="verticalLayout_27">
                          <item>
                           <widget class="QLabel" name="label_19">
                            <property name="toolTip">
-                            <string>  - U2：uiautomator2</string>
+                            <string>ADB：通用方案，性能不高
+U2：uiautomator2</string>
+                           </property>
+                           <property name="styleSheet">
+                            <string notr="true">QLabel QToolTip {
+                background-color: #f0f0f0;  /* 背景色 */
+                color: #333333;             /* 文字颜色 */
+                border: 1px solid #cccccc;  /* 边框 */
+                padding: 6px 10px;          /* 内边距 */
+                font-family: &quot;黑体&quot;, sans-serif;  /* 字体 */
+                font-size: 15px;            /* 字号 */
+            }
+</string>
                            </property>
                            <property name="text">
                             <string>控制模式选择</string>
@@ -10862,7 +11193,7 @@ margin-left:18px;</string>
                           <widget class="QLabel" name="label_20">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -10877,23 +11208,23 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_3">
-                         <property name="maxLength">
-                          <number>30</number>
+                        <widget class="QComboBox" name="control_mode">
+                         <property name="maximumSize">
+                          <size>
+                           <width>120</width>
+                           <height>16777215</height>
+                          </size>
                          </property>
-                         <property name="alignment">
-                          <set>Qt::AlignmentFlag::AlignCenter</set>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="checkBox_5">
-                         <property name="styleSheet">
-                          <string notr="true"/>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
+                         <item>
+                          <property name="text">
+                           <string>ADB</string>
+                          </property>
+                         </item>
+                         <item>
+                          <property name="text">
+                           <string>U2</string>
+                          </property>
+                         </item>
                         </widget>
                        </item>
                       </layout>
@@ -11121,12 +11452,20 @@ border-radius:1px;
                           <item>
                            <widget class="QLabel" name="label_34">
                             <property name="toolTip">
-                             <string>  - DxCam
-    速度快，但是模拟器窗口必须在屏幕边界内，不能最小化或被遮挡
-  - MuMu
-    使用MuMu模拟器的接口截图，模拟器可以最小化/被遮挡
-  - LD
-    使用雷电模拟器的接口截图，模拟器可以最小化/被遮挡</string>
+                             <string>DxCam：速度快，但是模拟器窗口必须在屏幕边界内，不能最小化或被遮挡
+MuMu：使用MuMu模拟器的接口截图，模拟器可以最小化/被遮挡
+LD：使用雷电模拟器的接口截图，模拟器可以最小化/被遮挡</string>
+                            </property>
+                            <property name="styleSheet">
+                             <string notr="true">QLabel QToolTip {
+                background-color: #f0f0f0;  /* 背景色 */
+                color: #333333;             /* 文字颜色 */
+                border: 1px solid #cccccc;  /* 边框 */
+                padding: 6px 10px;          /* 内边距 */
+                font-family: &quot;黑体&quot;, sans-serif;  /* 字体 */
+                font-size: 15px;            /* 字号 */
+            }
+</string>
                             </property>
                             <property name="text">
                              <string>截图模式选择</string>
@@ -11137,7 +11476,7 @@ border-radius:1px;
                            <widget class="QLabel" name="label_35">
                             <property name="styleSheet">
                              <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                             </property>
                             <property name="text">
@@ -11156,7 +11495,7 @@ margin-left:18px;</string>
                         </widget>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QComboBox" name="comboBox">
+                        <widget class="QComboBox" name="screen_mode">
                          <item>
                           <property name="text">
                            <string>DxCam</string>
@@ -11177,7 +11516,7 @@ margin-left:18px;</string>
                       </layout>
                      </item>
                      <item>
-                      <widget class="QStackedWidget" name="stackedWidget_2">
+                      <widget class="QStackedWidget" name="screen_mode_settings_stackedWidget">
                        <property name="currentIndex">
                         <number>0</number>
                        </property>
@@ -11196,7 +11535,7 @@ margin-left:18px;</string>
                           <number>9</number>
                          </property>
                          <item>
-                          <layout class="QGridLayout" name="gridLayout" columnstretch="5,0,0">
+                          <layout class="QGridLayout" name="gridLayout" columnstretch="5,0">
                            <property name="leftMargin">
                             <number>10</number>
                            </property>
@@ -11213,7 +11552,7 @@ margin-left:18px;</string>
                             <number>4</number>
                            </property>
                            <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                            <widget class="QComboBox" name="comboBox_2">
+                            <widget class="QComboBox" name="resolution">
                              <property name="minimumSize">
                               <size>
                                <width>130</width>
@@ -11231,11 +11570,6 @@ margin-left:18px;</string>
                              </property>
                              <item>
                               <property name="text">
-                               <string>2560x1440</string>
-                              </property>
-                             </item>
-                             <item>
-                              <property name="text">
                                <string>1280x720</string>
                               </property>
                              </item>
@@ -11247,6 +11581,11 @@ margin-left:18px;</string>
                              <item>
                               <property name="text">
                                <string>1920x1080</string>
+                              </property>
+                             </item>
+                             <item>
+                              <property name="text">
+                               <string>2560x1440</string>
                               </property>
                              </item>
                             </widget>
@@ -11277,11 +11616,11 @@ margin-left:18px;</string>
                                <widget class="QLabel" name="label_37">
                                 <property name="styleSheet">
                                  <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                                 </property>
                                 <property name="text">
-                                 <string>建议不低于60帧，否则决斗场相关可能出现异常</string>
+                                 <string>建议不低于60帧，否则决斗场相关任务可能出现异常</string>
                                 </property>
                                 <property name="textFormat">
                                  <enum>Qt::TextFormat::AutoText</enum>
@@ -11320,11 +11659,13 @@ margin-left:18px;</string>
                                <widget class="QLabel" name="label_36">
                                 <property name="styleSheet">
                                  <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                                 </property>
                                 <property name="text">
-                                 <string>选择和模拟器设置内相同的分辨率</string>
+                                 <string>选择和模拟器设置内相同的分辨率
+作者使用1600x900制作该程序
+对其他分辨率仅保证程序上兼容</string>
                                 </property>
                                 <property name="textFormat">
                                  <enum>Qt::TextFormat::AutoText</enum>
@@ -11338,10 +11679,16 @@ margin-left:18px;</string>
                             </widget>
                            </item>
                            <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                            <widget class="QSpinBox" name="spinBox">
+                            <widget class="QSpinBox" name="video_fps">
+                             <property name="minimumSize">
+                              <size>
+                               <width>90</width>
+                               <height>34</height>
+                              </size>
+                             </property>
                              <property name="maximumSize">
                               <size>
-                               <width>80</width>
+                               <width>90</width>
                                <height>35</height>
                               </size>
                              </property>
@@ -11359,143 +11706,6 @@ margin-left:18px;</string>
                              </property>
                              <property name="value">
                               <number>60</number>
-                             </property>
-                            </widget>
-                           </item>
-                          </layout>
-                         </item>
-                        </layout>
-                       </widget>
-                       <widget class="QWidget" name="LD">
-                        <layout class="QVBoxLayout" name="verticalLayout_38">
-                         <property name="spacing">
-                          <number>0</number>
-                         </property>
-                         <property name="leftMargin">
-                          <number>0</number>
-                         </property>
-                         <property name="topMargin">
-                          <number>0</number>
-                         </property>
-                         <property name="rightMargin">
-                          <number>0</number>
-                         </property>
-                         <property name="bottomMargin">
-                          <number>0</number>
-                         </property>
-                         <item>
-                          <layout class="QGridLayout" name="gridLayout_2" columnstretch="5,0">
-                           <property name="leftMargin">
-                            <number>10</number>
-                           </property>
-                           <property name="topMargin">
-                            <number>0</number>
-                           </property>
-                           <property name="horizontalSpacing">
-                            <number>20</number>
-                           </property>
-                           <property name="verticalSpacing">
-                            <number>5</number>
-                           </property>
-                           <item row="0" column="0">
-                            <widget class="QLabel" name="label_8">
-                             <property name="sizePolicy">
-                              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-                               <horstretch>0</horstretch>
-                               <verstretch>0</verstretch>
-                              </sizepolicy>
-                             </property>
-                             <property name="maximumSize">
-                              <size>
-                               <width>16777215</width>
-                               <height>20</height>
-                              </size>
-                             </property>
-                             <property name="text">
-                              <string>雷电模拟器安装路径</string>
-                             </property>
-                            </widget>
-                           </item>
-                           <item row="1" column="0">
-                            <widget class="QLineEdit" name="lineEdit_8">
-                             <property name="maximumSize">
-                              <size>
-                               <width>16777215</width>
-                               <height>30</height>
-                              </size>
-                             </property>
-                            </widget>
-                           </item>
-                           <item row="1" column="1">
-                            <widget class="QPushButton" name="pushButton">
-                             <property name="maximumSize">
-                              <size>
-                               <width>16777215</width>
-                               <height>35</height>
-                              </size>
-                             </property>
-                             <property name="styleSheet">
-                              <string notr="true"/>
-                             </property>
-                             <property name="text">
-                              <string>浏览</string>
-                             </property>
-                            </widget>
-                           </item>
-                           <item row="3" column="0">
-                            <widget class="QWidget" name="widget_15" native="true">
-                             <layout class="QVBoxLayout" name="verticalLayout_40">
-                              <property name="spacing">
-                               <number>6</number>
-                              </property>
-                              <property name="leftMargin">
-                               <number>0</number>
-                              </property>
-                              <property name="topMargin">
-                               <number>0</number>
-                              </property>
-                              <property name="rightMargin">
-                               <number>0</number>
-                              </property>
-                              <property name="bottomMargin">
-                               <number>0</number>
-                              </property>
-                              <item>
-                               <widget class="QLabel" name="label_9">
-                                <property name="maximumSize">
-                                 <size>
-                                  <width>16777215</width>
-                                  <height>20</height>
-                                 </size>
-                                </property>
-                                <property name="text">
-                                 <string>雷电实例索引</string>
-                                </property>
-                               </widget>
-                              </item>
-                              <item>
-                               <widget class="QLabel" name="label_32">
-                                <property name="styleSheet">
-                                 <string notr="true">font-size:11pt;
-color:#39C5BB;
-margin-left:18px;</string>
-                                </property>
-                                <property name="text">
-                                 <string>在MuMu多开器中查看自己正在使用的模拟器实例索引
-如果是第一个模拟器就是0，依次类推</string>
-                                </property>
-                               </widget>
-                              </item>
-                             </layout>
-                            </widget>
-                           </item>
-                           <item row="3" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                            <widget class="QSpinBox" name="spinBox_2">
-                             <property name="maximumSize">
-                              <size>
-                               <width>70</width>
-                               <height>35</height>
-                              </size>
                              </property>
                             </widget>
                            </item>
@@ -11554,17 +11764,17 @@ margin-left:18px;</string>
                             </widget>
                            </item>
                            <item row="1" column="0">
-                            <widget class="QLineEdit" name="lineEdit_9">
+                            <widget class="QLineEdit" name="MuMu_install_path">
                              <property name="maximumSize">
                               <size>
                                <width>16777215</width>
-                               <height>30</height>
+                               <height>40</height>
                               </size>
                              </property>
                             </widget>
                            </item>
                            <item row="1" column="1">
-                            <widget class="QPushButton" name="pushButton_2">
+                            <widget class="QPushButton" name="MuMu_install_path_browse">
                              <property name="maximumSize">
                               <size>
                                <width>16777215</width>
@@ -11608,7 +11818,7 @@ margin-left:18px;</string>
                                <widget class="QLabel" name="label_31">
                                 <property name="styleSheet">
                                  <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                                 </property>
                                 <property name="text">
@@ -11621,7 +11831,7 @@ margin-left:18px;</string>
                             </widget>
                            </item>
                            <item row="3" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                            <widget class="QSpinBox" name="spinBox_3">
+                            <widget class="QSpinBox" name="MuMu_instance_index">
                              <property name="minimumSize">
                               <size>
                                <width>0</width>
@@ -11640,7 +11850,437 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </widget>
+                       <widget class="QWidget" name="LD">
+                        <layout class="QVBoxLayout" name="verticalLayout_38">
+                         <property name="spacing">
+                          <number>0</number>
+                         </property>
+                         <property name="leftMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="topMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="rightMargin">
+                          <number>0</number>
+                         </property>
+                         <property name="bottomMargin">
+                          <number>0</number>
+                         </property>
+                         <item>
+                          <layout class="QGridLayout" name="gridLayout_2" columnstretch="5,0">
+                           <property name="leftMargin">
+                            <number>10</number>
+                           </property>
+                           <property name="topMargin">
+                            <number>0</number>
+                           </property>
+                           <property name="horizontalSpacing">
+                            <number>20</number>
+                           </property>
+                           <property name="verticalSpacing">
+                            <number>5</number>
+                           </property>
+                           <item row="0" column="0">
+                            <widget class="QLabel" name="label_8">
+                             <property name="sizePolicy">
+                              <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+                               <horstretch>0</horstretch>
+                               <verstretch>0</verstretch>
+                              </sizepolicy>
+                             </property>
+                             <property name="maximumSize">
+                              <size>
+                               <width>16777215</width>
+                               <height>20</height>
+                              </size>
+                             </property>
+                             <property name="text">
+                              <string>雷电模拟器安装路径</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="1" column="0">
+                            <widget class="QLineEdit" name="LD_install_path">
+                             <property name="maximumSize">
+                              <size>
+                               <width>16777215</width>
+                               <height>40</height>
+                              </size>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="1" column="1">
+                            <widget class="QPushButton" name="LD_install_path_browse">
+                             <property name="maximumSize">
+                              <size>
+                               <width>16777215</width>
+                               <height>35</height>
+                              </size>
+                             </property>
+                             <property name="styleSheet">
+                              <string notr="true"/>
+                             </property>
+                             <property name="text">
+                              <string>浏览</string>
+                             </property>
+                            </widget>
+                           </item>
+                           <item row="3" column="0">
+                            <widget class="QWidget" name="widget_15" native="true">
+                             <layout class="QVBoxLayout" name="verticalLayout_40">
+                              <property name="spacing">
+                               <number>6</number>
+                              </property>
+                              <property name="leftMargin">
+                               <number>0</number>
+                              </property>
+                              <property name="topMargin">
+                               <number>0</number>
+                              </property>
+                              <property name="rightMargin">
+                               <number>0</number>
+                              </property>
+                              <property name="bottomMargin">
+                               <number>0</number>
+                              </property>
+                              <item>
+                               <widget class="QLabel" name="label_9">
+                                <property name="maximumSize">
+                                 <size>
+                                  <width>16777215</width>
+                                  <height>20</height>
+                                 </size>
+                                </property>
+                                <property name="text">
+                                 <string>雷电实例索引</string>
+                                </property>
+                               </widget>
+                              </item>
+                              <item>
+                               <widget class="QLabel" name="label_32">
+                                <property name="styleSheet">
+                                 <string notr="true">font-size:11pt;
+color:#959595;
+margin-left:18px;</string>
+                                </property>
+                                <property name="text">
+                                 <string>在雷电多开器中查看自己正在使用的模拟器实例索引
+如果是第一个模拟器就是0，依次类推</string>
+                                </property>
+                               </widget>
+                              </item>
+                             </layout>
+                            </widget>
+                           </item>
+                           <item row="3" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
+                            <widget class="QSpinBox" name="LD_instance_index">
+                             <property name="maximumSize">
+                              <size>
+                               <width>70</width>
+                               <height>35</height>
+                              </size>
+                             </property>
+                            </widget>
+                           </item>
+                          </layout>
+                         </item>
+                        </layout>
+                       </widget>
                       </widget>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QWidget" name="widget_95" native="true">
+                    <property name="styleSheet">
+                     <string notr="true">QWidget {
+                background-color: #dfdfdf;  /* 背景颜色 */
+				border-radius:10px;
+            }
+/* 调整勾选框的大小 */
+QCheckBox::indicator {
+	width: 20px;      /* 勾选框宽度 */
+	height: 20px;     /* 勾选框高度 */
+	outline:none;
+border:none;
+}
+
+/* 可选：设置勾选框不同状态的样式 */
+QCheckBox::indicator:unchecked {
+	border: 2px solid #0f322f;
+	border-radius: 3px;
+}
+QCheckBox::indicator:checked {
+	background-color:#39C5BB;
+	border: 2px solid #0f322f;
+	border-radius: 3px;
+	
+}
+
+/* 禁用状态 */
+QCheckBox::indicator:disabled {
+	background-color: #f0f0f0;
+	border-color: #cccccc;
+}
+/* 1. 未选中（默认）状态的下边框 */
+QLineEdit {
+                /* 清除默认边框，只保留下边框 */
+                border: none;
+                border-bottom: 3px solid #969696;  /* 灰色下边框 */
+                padding: 5px 0;  /* 上下下内边距，避免文字紧贴紧贴边框 */
+				border-radius:0px;
+                background: transparent;  /* 背景透明，只显示下边框 */
+            }
+            
+            /* 2. 选中（获得焦点点）状态的下边框 */
+QLineEdit:focus {
+                border-bottom: 4px solid #39C5BB;  /* 蓝色下边框（突出显示） */
+                outline: none;  /* 去除系统默认的聚焦外边框 */
+            }
+            
+            /* 3. 鼠标略过（悬停）状态的下边框 */
+QLineEdit:hover {
+                border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
+            }
+/* QComboBox 样式 */
+QComboBox {
+    border: 2px solid #0f322f;  /* 边框颜色与CheckBox保持一致 */
+    border-radius: 3px;
+    padding: 5px 0px 5px 10px;  /* 右侧预留空间给自定义箭头 */
+    background-color: #e7e7e7;
+    min-height: 20px;
+}
+
+/* 隐藏QComboBox默认下拉按钮 */
+QComboBox::drop-down {
+    border: none;  /* 去除默认按钮边框 */
+
+}
+
+/* 自定义下拉箭头（使用三角形字符模拟） */
+QComboBox::down-arrow {
+    image: none;  /* 去除默认箭头 */
+}
+
+QComboBox::down-arrow:on {
+    image: none;  /* 下拉状态也不显示默认箭头 */
+}
+
+/* 下拉列表样式 */
+QComboBox QAbstractItemView {
+    border: 2px solid #b5b5b5;
+    border-radius: 3px;
+    background-color: #e7e7e7;
+    padding: 5px;
+    selection-background-color: #39C5BB;  /* 选中项背景色 */
+    selection-color: #000000;
+}
+
+/* 悬停和选中状态 */
+QComboBox:hover {
+    border-color: #39C5BB;
+}
+
+QComboBox:focus {
+    border-color: #39C5BB;
+    outline: none;
+}
+
+/* QSpinBox 样式 */
+QSpinBox {
+    border: 2px solid #0f322f;
+    border-radius: 3px;
+    padding: 5px 10px 5px 10px;  /* 右侧预留空间给自定义按钮 */
+    background-color: #e7e7e7;
+    min-height: 20px;
+}
+
+/* 隐藏QSpinBox默认上下按钮 */
+QSpinBox::up-button, QSpinBox::down-button {
+    border: none;
+    width: 0;  /* 隐藏默认按钮 */
+    height: 0;
+}
+
+
+
+/* 悬停和选中状态 */
+QSpinBox:hover {
+    border-color: #39C5BB;
+}
+
+QSpinBox:focus {
+    border-color: #39C5BB;
+    outline: none;
+}
+
+/* 解决QSpinBox编辑区域与整体样式冲突 */
+QSpinBox::edit-focus {
+    background-color: transparent;
+    border: none;
+    outline: none;
+}
+
+QPushButton{
+min-height: 26px;
+border: 2px solid #0f322f;  /* 2px宽的深灰色实线边框 */
+background-color: #e7e7e7;
+border-radius:3px;
+outline:none;
+color:#0f322f;
+padding-top:2px;
+padding-bottom:2px;
+}
+QPushButton::hover {
+border: 2px solid #39C5BB;  /* 2px宽的深灰色实线边框 */
+outline:none;
+color:#39C5BB;
+}
+</string>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_175">
+                     <property name="spacing">
+                      <number>6</number>
+                     </property>
+                     <property name="topMargin">
+                      <number>9</number>
+                     </property>
+                     <item>
+                      <widget class="QLabel" name="label_231">
+                       <property name="styleSheet">
+                        <string notr="true">font-size:20pt;
+border:none;</string>
+                       </property>
+                       <property name="text">
+                        <string>调度设置</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QFrame" name="frame_44">
+                       <property name="styleSheet">
+                        <string notr="true">QWidget QFrame{
+border:2px solid #969696;
+border-radius:1px;
+            }</string>
+                       </property>
+                       <property name="frameShape">
+                        <enum>QFrame::Shape::HLine</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Shadow::Raised</enum>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <layout class="QGridLayout" name="gridLayout_16" rowstretch="0" columnstretch="5,0">
+                       <property name="leftMargin">
+                        <number>10</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>10</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="verticalSpacing">
+                        <number>0</number>
+                       </property>
+                       <item row="0" column="0">
+                        <widget class="QWidget" name="widget_18" native="true">
+                         <property name="minimumSize">
+                          <size>
+                           <width>0</width>
+                           <height>0</height>
+                          </size>
+                         </property>
+                         <layout class="QVBoxLayout" name="verticalLayout_176">
+                          <property name="spacing">
+                           <number>6</number>
+                          </property>
+                          <property name="leftMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="topMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="rightMargin">
+                           <number>0</number>
+                          </property>
+                          <property name="bottomMargin">
+                           <number>0</number>
+                          </property>
+                          <item>
+                           <widget class="QLabel" name="label_233">
+                            <property name="toolTip">
+                             <string>  - DxCam
+    速度快，但是模拟器窗口必须在屏幕边界内，不能最小化或被遮挡
+  - MuMu
+    使用MuMu模拟器的接口截图，模拟器可以最小化/被遮挡
+  - LD
+    使用雷电模拟器的接口截图，模拟器可以最小化/被遮挡</string>
+                            </property>
+                            <property name="text">
+                             <string>扫描间隔</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QLabel" name="label_234">
+                            <property name="styleSheet">
+                             <string notr="true">font-size:11pt;
+color:#959595;
+margin-left:18px;</string>
+                            </property>
+                            <property name="text">
+                             <string>间隔越小调度器扫描任务越频繁
+一般1000ms足矣</string>
+                            </property>
+                            <property name="textFormat">
+                             <enum>Qt::TextFormat::AutoText</enum>
+                            </property>
+                            <property name="wordWrap">
+                             <bool>true</bool>
+                            </property>
+                           </widget>
+                          </item>
+                         </layout>
+                        </widget>
+                       </item>
+                       <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
+                        <widget class="QSpinBox" name="scan_inerval">
+                         <property name="maximumSize">
+                          <size>
+                           <width>110</width>
+                           <height>35</height>
+                          </size>
+                         </property>
+                         <property name="wrapping">
+                          <bool>false</bool>
+                         </property>
+                         <property name="frame">
+                          <bool>true</bool>
+                         </property>
+                         <property name="suffix">
+                          <string> ms</string>
+                         </property>
+                         <property name="minimum">
+                          <number>50</number>
+                         </property>
+                         <property name="maximum">
+                          <number>9999</number>
+                         </property>
+                         <property name="value">
+                          <number>1000</number>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
                      </item>
                     </layout>
                    </widget>
@@ -11815,7 +12455,7 @@ border:none;</string>
                       <widget class="QLabel" name="label_230">
                        <property name="styleSheet">
                         <string notr="true">font-size:13pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                        </property>
                        <property name="text">
@@ -11893,7 +12533,7 @@ border-radius:1px;
                            <widget class="QLabel" name="label_229">
                             <property name="styleSheet">
                              <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                             </property>
                             <property name="text">
@@ -11912,7 +12552,7 @@ margin-left:18px;</string>
                         </widget>
                        </item>
                        <item row="0" column="1">
-                        <widget class="QPushButton" name="pushButton_3">
+                        <widget class="QPushButton" name="key_map_configuration_button">
                          <property name="minimumSize">
                           <size>
                            <width>70</width>
@@ -11988,7 +12628,7 @@ QCheckBox::indicator:disabled {
             
             /* 3. 鼠标略过（悬停）状态的下边框 */
             QLineEdit:hover {
-                border-bottom: 4px solid #0f322f;  /* 深灰色下边框（中间状态） */
+                border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
             }</string>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_34">
@@ -12049,7 +12689,7 @@ border-radius:1px;
                           <widget class="QLabel" name="label_115">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
-color:#39C5BB;
+color:#959595;
 margin-left:18px;</string>
                            </property>
                            <property name="text">
@@ -12060,8 +12700,8 @@ margin-left:18px;</string>
                          </item>
                         </layout>
                        </item>
-                       <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QLineEdit" name="lineEdit_7">
+                       <item row="0" column="1">
+                        <widget class="QLineEdit" name="secondary_password">
                          <property name="inputMask">
                           <string/>
                          </property>
@@ -12069,10 +12709,13 @@ margin-left:18px;</string>
                           <number>6</number>
                          </property>
                          <property name="echoMode">
-                          <enum>QLineEdit::EchoMode::Password</enum>
+                          <enum>QLineEdit::EchoMode::PasswordEchoOnEdit</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
+                         </property>
+                         <property name="dragEnabled">
+                          <bool>false</bool>
                          </property>
                         </widget>
                        </item>

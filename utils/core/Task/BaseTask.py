@@ -8,6 +8,8 @@ from typing import Dict, List, Callable
 from zoneinfo import ZoneInfo
 
 from PySide6.QtCore import QThread
+
+from utils.core.Config import Config
 from utils.core.Device import Device
 
 
@@ -35,7 +37,8 @@ class BaseTask:
 
     def __init__(
         self,
-        data: Dict,
+        task_name: str,
+        config: Config,
         device: Device,
         callback: Callable
     ):
@@ -45,14 +48,17 @@ class BaseTask:
         # 0 - 正在执行
         # 1 - 就绪状态，等待执行
         # 2 - 等待状态，等待就绪
-        self.data = data
-        self.task_name = data.get('任务名称')
+        self.config = config
+        self.data: Dict = config.tasks.get(task_name)
+        self._execution_thread = None
+        self._stop_requested = False  # 添加停止标志
+        self.task_name = self.data.get('任务名称')
         self.logger = logging.getLogger(self.task_name)
-        self.task_id = data.get('任务ID')
-        self.resolution = data.get('任务基准分辨率')
-        self.is_activated = data.get('是否启用')
-        self.cycle_type = CycleType(data.get('周期类型'))
-        next_exec_ts = data.get('下次执行时间')
+        self.task_id = self.data.get('任务ID')
+        self.resolution = self.data.get('任务基准分辨率')
+        self.is_activated = self.data.get('是否启用')
+        self.cycle_type = CycleType(self.data.get('周期类型'))
+        next_exec_ts = self.data.get('下次执行时间')
         if next_exec_ts == 0:
             # 若初始值为0，设置为当前UTC时间（或其他合理时间）
             self.next_execute_time = datetime.now(ZoneInfo("Asia/Shanghai"))
@@ -92,7 +98,24 @@ class BaseTask:
         """
         启动新线程执行execute避免阻塞进程
         """
-        threading.Thread(target=self._execute).start()
+        # 重置停止标志
+        self._stop_requested = False
+        # 保存线程对象以便后续停止
+        self._execution_thread = threading.Thread(target=self._execute, daemon=True)
+        self._execution_thread.start()
+
+    def stop(self):
+        """
+        停止当前正在执行的任务
+        """
+        self.logger.info(f"正在停止任务: {self.task_name}")
+        # 设置停止标志
+        self._stop_requested = True
+        # 如果任务线程正在运行，等待其结束
+        if hasattr(self, '_execution_thread') and self._execution_thread.is_alive():
+            self._execution_thread.join(timeout=5.0)
+            if self._execution_thread.is_alive():
+                self.logger.warning(f"任务 {self.task_name} 线程未能在5秒内停止")
 
     def _execute(self):
         """
@@ -101,27 +124,41 @@ class BaseTask:
         self.home()
         self.callback(self)
 
-    def detect_and_wait(self, params, wait_time=1, max_time=2.0):
+    def detect_and_wait(self, params, wait_time=1, max_time=2.0, max_attempts=None):
         """
         检测并等待一段时间
         """
         start_time = time.perf_counter()
-        while time.perf_counter() - start_time < max_time:
-            if self.device.detect(params):
-                QThread.msleep(int(wait_time*1000))
-                return True
-        return False
+        if max_attempts:
+            for i in range(max_attempts):
+                if self.device.detect(params):
+                    QThread.msleep(int(wait_time * 1000))
+                    return True
+            return False
+        else:
+            while time.perf_counter() - start_time < max_time:
+                if self.device.detect(params):
+                    QThread.msleep(int(wait_time * 1000))
+                    return True
+            return False
 
-    def click_and_wait(self, params, wait_time=1.5, max_time=2.0, click_times=1):
+    def click_and_wait(self, params, wait_time=1.5, max_time=2.0, click_times=1, max_attempts=None):
         """
         点击并等待一段时间
         """
         start_time = time.perf_counter()
-        while time.perf_counter() - start_time < max_time:
-            if self.device.click(params, self.resolution, times=click_times):
-                QThread.msleep(int(wait_time*1000))
-                return True
-        return False
+        if max_attempts:
+            for i in range(max_attempts):
+                if self.device.click(params, self.resolution, times=click_times):
+                    QThread.msleep(int(wait_time * 1000))
+                    return True
+            return False
+        else:
+            while time.perf_counter() - start_time < max_time:
+                if self.device.click(params, self.resolution, times=click_times):
+                    QThread.msleep(int(wait_time * 1000))
+                    return True
+            return False
 
     def auto_clicker(self,
                      coordinates: list,
@@ -172,7 +209,7 @@ class BaseTask:
                             return
                         if stop_conditions is not None:
                             for stop_condition in stop_conditions:
-                                if self.detect_and_wait(stop_condition, 0):
+                                if self.detect_and_wait(stop_condition, 0, max_attempts=1):
                                     self.logger.debug(f"判定条件成立，点击停止")
                                     stop_event.set()
                                     return
@@ -245,10 +282,14 @@ class BaseTask:
                 if "click" in action:
                     self.click_and_wait(action['click'])
                 elif "swipe" in action:
-                    self.device.swipe(action['swipe'], self.resolution)
+                    self.device.swipe(
+                        action['swipe']['start_coordinate'],
+                        action['swipe']['end_coordinate'],
+                        action['swipe']['duration'],
+                        self.resolution)
         return False
 
-    def detect_and_search(self, params_list, search_actions, search_times, once_max_time=0.1, wait_time=1):
+    def detect_and_search(self, params_list, search_actions, search_max_time=None, once_max_time=1, wait_time=1):
         """
             循环执行元素检测，支持多轮次、多位置尝试，并在过程中执行辅助操作（如点击或滑动）
 
@@ -257,7 +298,7 @@ class BaseTask:
                 search_actions (List[Dict]): 搜索过程中执行的辅助动作列表，支持两种操作：
                     - {'click': 点击参数}：执行点击操作
                     - {'swipe': 滑动参数}：执行滑动操作
-                search_times (int): 搜索尝试的轮次数组，通常为range对象（如range(3)表示尝试3次）
+                search_max_time (float): 搜索尝试的轮次数组
                 once_max_time (float):单次搜索的最大时长，定义与detect_and_wait()一致
                 wait_time (int): 如果寻找到了，要等待几秒
 
@@ -270,17 +311,24 @@ class BaseTask:
                 self.logger.debug(f"[元素] {params['name']}")
             elif params['type'] == "SCENE":
                 self.logger.debug(f"[场景] {params['name']}")
-        for i in range(search_times):
-            self.logger.debug(f"第 {i + 1} 次搜索")
-            for params in params_list:
+        start = time.perf_counter()
+        while True:
+            if search_max_time:
+                if time.perf_counter() - start > search_max_time:
+                    self.logger.warning(f"搜索超时：{time.perf_counter() - start:.1f}s")
+                    return 0
+            for index, params in enumerate(params_list):
                 if self.detect_and_wait(params, wait_time=wait_time, max_time=once_max_time):
-                    return True
+                    return index + 1
             for action in search_actions:
                 if "click" in action:
                     self.click_and_wait(action['click'], max_time=1)
                 elif "swipe" in action:
-                    self.device.swipe(action['swipe'], self.resolution)
-        return False
+                    self.device.swipe(
+                        action['swipe']['start_coordinate'],
+                        action['swipe']['end_coordinate'],
+                        action['swipe']['duration'],
+                        self.resolution)
 
     def click_and_input(self, input_edit_params, input_text):
         """
@@ -302,17 +350,21 @@ class BaseTask:
             "name": "二级密码"
         }):
             self.logger.debug("出现二级密码窗口")
-            passward = input("请输入二级密码(6位数字)：")[:6]
+            passward = self.config.get_config("二级密码")
+            if len(passward) != 6:
+                raise self.StepFailedError("请检查二级密码！")
+
             # 输入操作
             self.click_and_input({
                 "type": "ELEMENT",
                 "name": "二级密码-输入框"
             }, passward)
             # 点击二级密码-确定
-            self.click_and_wait({
+            if not self.click_and_wait({
                 "type": "ELEMENT",
                 "name": "二级密码-确定"
-            })
+            }):
+                raise self.StepFailedError("二级密码验证失败")
             self.logger.debug("验证二级密码结束")
             return True
         self.logger.debug("未出现二级密码窗口")
@@ -370,7 +422,7 @@ class BaseTask:
         """
         self.device.press(key)
         if wait_time:
-            QThread.msleep(int(wait_time*1000))
+            QThread.msleep(int(wait_time * 1000))
 
     def restart(self):
         """
@@ -392,6 +444,8 @@ class BaseTask:
 
         if delta is not None:
             self.next_execute_time = current_time + delta
+            self.logger.info(f"下次执行时间为：{self.next_execute_time}")
+            self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
             return
         if self.cycle_type == CycleType.DAILY:
             next_day = current_time + timedelta(days=1)
@@ -400,6 +454,8 @@ class BaseTask:
                 next_day.year, next_day.month, next_day.day, 0, 0,
                 tzinfo=china_tz  # 关键：添加时区信息
             ) + time_offset
+            self.logger.info(f"下次执行时间为：{self.next_execute_time}")
+            self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
 
         elif self.cycle_type == CycleType.WEEKLY:
             days_ahead = 7 - current_time.weekday()
@@ -410,6 +466,8 @@ class BaseTask:
                 next_monday.year, next_monday.month, next_monday.day, 0, 0,
                 tzinfo=china_tz
             ) + time_offset
+            self.logger.info(f"下次执行时间为：{self.next_execute_time}")
+            self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
 
         elif self.cycle_type == CycleType.MONTHLY:
             year = current_time.year
@@ -421,5 +479,7 @@ class BaseTask:
                 year, month, 1, 0, 0,
                 tzinfo=china_tz  # 关键：添加时区信息
             ) + time_offset
+            self.logger.info(f"下次执行时间为：{self.next_execute_time}")
+            self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
         else:
-            self.logger.debug(f"{CycleType(self.cycle_type)}任务")
+            self.logger.warning(f"{CycleType(self.cycle_type)}任务")

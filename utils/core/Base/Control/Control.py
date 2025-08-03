@@ -8,7 +8,8 @@ from utils.core.Config import Config
 
 class ControlMode(enum.IntEnum):
     """控制模式枚举"""
-    U2 = 0
+    ADB = 0
+    U2 = 1
 
 
 class Control:
@@ -39,6 +40,8 @@ class Control:
                 if not initial:
                     QMessageBox.information(None, "", f"[U2]初始化控制实例初始化完毕", QMessageBox.StandardButton.Ok)
                 self.logger.info("U2控制实例初始化完毕")
+            else:
+                pass
             self.control_instance_ready = True
             self.config.set_config('控制模式', self.control_mode)
         except Exception as e:

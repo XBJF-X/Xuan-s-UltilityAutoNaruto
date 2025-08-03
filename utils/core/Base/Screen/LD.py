@@ -166,14 +166,16 @@ class LD:
         for emu in emu_list:
             if emu.index == self.config.get_config('雷电实例索引'):
                 target_emu = emu
+                self.logger.info(f"找到模拟器: 名称={target_emu.name.decode('gbk')}, PID={target_emu.playerpid}, 分辨率={target_emu.width}x{target_emu.height}")
                 break
+            else:
+                self.logger.info(f"存在模拟器: 名称={emu.name.decode('gbk')}, PID={emu.playerpid}, 分辨率={emu.width}x{emu.height}")
 
         if not target_emu:
             self.logger.warning(f"未找到索引为 {self.config.get_config('雷电实例索引')} 的模拟器实例")
             return False
 
         self.emu_info = target_emu
-        self.logger.debug(f"找到模拟器: 名称={target_emu.name.decode('gbk')}, PID={target_emu.playerpid}, 分辨率={target_emu.width}x{target_emu.height}")
 
         # 加载 ldopengl64.dll
         if not self._load_ld_opengl_dll():

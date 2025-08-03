@@ -54,10 +54,6 @@ class Screen:
             elif self.screen_mode == ScreenMode.LD:
                 self.screen_instance = LD(self.config)
                 self.screen_instance.set_ld_path()
-                emu_list = self.screen_instance.get_emu_list()
-                self.logger.debug("找到以下模拟器实例:")
-                for emu in emu_list:
-                    self.logger.debug(f"索引: {emu.index}, 名称: {emu.name.decode('gbk')}, 分辨率: {emu.width}x{emu.height}, PID: {emu.playerpid}")
                 self.screen_instance.connect_emu()
                 if not initial:
                     QMessageBox.information(None, "", f"[LD]初始化截图实例初始化完毕", QMessageBox.Ok)

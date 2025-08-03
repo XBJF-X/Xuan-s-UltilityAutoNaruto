@@ -6,12 +6,12 @@ from utils.core.Task.BaseTask import BaseTask
 class RenWuJiHuiSuo(BaseTask):
 
     def _execute(self):
-        self.logger.debug(f"开始执行")
+        self.logger.info(f"开始执行")
         try:
             # 确定在主场景
             if not self.home():
                 raise self.StepFailedError("无法回到[主场景]")
-            self.logger.debug("进入[奖励]界面")
+            self.logger.info("进入[奖励]界面")
             # 点击奖励图标
             self.click_and_wait({
                 "type": "ELEMENT",
@@ -22,7 +22,7 @@ class RenWuJiHuiSuo(BaseTask):
                 "type": "SCENE",
                 "name": "奖励"
             })
-            self.logger.debug("跳转至[任务集会所]")
+            self.logger.info("跳转至[任务集会所]")
             # 点击完成集会所任务-立刻前往
             if not self.click_and_search(
                     [
@@ -46,7 +46,7 @@ class RenWuJiHuiSuo(BaseTask):
                 "type": "SCENE",
                 "name": "任务集会所"
             })
-            self.logger.debug("开始领取任务奖励")
+            self.logger.info("开始领取任务奖励")
             # 点掉所有的可领取
             while self.click_and_wait(
                     {
@@ -84,10 +84,10 @@ class RenWuJiHuiSuo(BaseTask):
                             'coordinate': [800, 700]
                         })
                         # 可以直接结束奖励领取的循环了
-                        self.logger.debug("一键领取所有奖励")
+                        self.logger.info("一键领取所有奖励")
                         break
 
-            self.logger.debug("开始接取任务")
+            self.logger.info("开始接取任务")
             # 先看看是不是已经领完了所有任务了
             if self.detect_and_wait({
                 'type': "ELEMENT",
@@ -104,7 +104,7 @@ class RenWuJiHuiSuo(BaseTask):
                         {'type': "ELEMENT", 'name': "任务集会所-今天所有任务已经领完"}
                     ],
                     [],
-                    2
+                3
             ):
                 # 点掉所有的接取按钮，直到出现任务栏已满的提示
                 while self.click_and_wait({
@@ -133,18 +133,18 @@ class RenWuJiHuiSuo(BaseTask):
                                 {'type': "ELEMENT", 'name': "任务集会所-今天所有任务已经领完"}
                             ],
                             [],
-                            3
+                            5
                     ):
                         self._update_next_execute_time(delta=timedelta(hours=2))
                         raise self.EndEarly("任务栏已满/今日任务已经领完")
                     else:
                         task_sum += 1
-                        self.logger.debug(f"已接取 {task_sum} 个任务")
+                        self.logger.info(f"已接取 {task_sum} 个任务")
                 if self.click_and_wait({
                     'type': "ELEMENT",
                     'name': "任务集会所-超影免费"
                 }):
-                    self.logger.debug("刷新任务列表")
+                    self.logger.info("刷新任务列表")
                 else:
                     # 能接取的都接了，无法刷新，可以退出执行了
                     self._update_next_execute_time(delta=timedelta(hours=2))
@@ -156,6 +156,5 @@ class RenWuJiHuiSuo(BaseTask):
             self.logger.warning(e)
         finally:
             self.home()
-            self.logger.debug(f"执行完毕")
-            self.logger.debug(f"下次执行时间为：{self.next_execute_time}")
+            self.logger.info(f"执行完毕")
             self.callback(self)

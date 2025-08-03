@@ -17,6 +17,7 @@ from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout, QLayout, QBoxLayout
 
 from StaticFunctions import get_real_path, cv_save
 from ui.DailyQuestsHelper_ui import Ui_DailyQuestsHelper
+from utils.core.Base.Recognizer import Recognizer
 from utils.core.Config import Config
 from utils.core.Device import Device
 from utils.core.Task import TASK_TYPE_MAP
@@ -180,13 +181,15 @@ class Scheduler(QObject):
     add_task_ui_signal = Signal(BaseTask, int)
     remove_task_ui_signal = Signal(BaseTask, int)
 
-    def __init__(self, ui: Ui_DailyQuestsHelper, device: Device, config: Config):
+    def __init__(self, ui: Ui_DailyQuestsHelper, config: Config):
         super().__init__()
         self.logger = logging.getLogger("调度器")
         self.running = False
         self.UI = ui
         self.config = config
-        self.device = device
+        self.scene_templates = self.preprocess_templates("src/SceneInfo.json")
+        self.element_templates = self.preprocess_templates("src/ElementInfo.json")
+        self.recognizer = Recognizer(self.scene_templates, self.element_templates)
         self.running_queue = PriorityQueue[BaseTask]()  # 执行队列
         self.ready_queue = PriorityQueue[BaseTask]()  # 就绪队列
         self.waiting_queue = PriorityQueue[BaseTask]()  # 等待队列
@@ -201,10 +204,23 @@ class Scheduler(QObject):
         self.add_task_ui_signal.connect(self.create_task_ui)
         self.remove_task_ui_signal.connect(self.remove_task_ui)
 
-        with open(get_real_path("src/Tasks.json"), 'r', encoding='utf-8') as f:
-            self.tasks = json.load(f)
+        self.device: Device = None
 
-        for task_info in self.tasks.values():
+        self.timer_thread = TimerThread()
+        self.timer_thread.timeout.connect(self.scan)
+
+        # tracemalloc.start()
+        # self.snapshot1 = tracemalloc.take_snapshot()
+        self.logger.info("初始化完成...")
+
+    def start(self):
+        self.logger.info("正在启动调度器...")
+        self.UI.start_schedule_button.setText("暂停")
+        self.UI.start_schedule_button.setEnabled(False)
+        self.running = True
+        self.device = Device(self.config, self.recognizer)
+
+        for task_info in self.config.tasks.values():
             if not task_info.get("是否启用", 0):
                 continue
             if task_info.get("周期类型", 4) == CycleType.TEMP.value:
@@ -216,20 +232,96 @@ class Scheduler(QObject):
                 self.logger.warning(f"[{task_name}] 任务创建出错")
                 continue
             task_instance = task_class(
-                task_info,
+                task_name,
+                self.config,
                 self.device,
                 self._execute_done_callback
             )
             self.waiting_queue.enqueue(task_instance)
             self.create_task_ui(task_instance, 2)
-
-        self.timer_thread = TimerThread()
-        self.timer_thread.timeout.connect(self.scan)
         # 启动调度器开始扫描
         self.timer_thread.start()  # 启动线程，线程会进入等待状态
-        # tracemalloc.start()
-        # self.snapshot1 = tracemalloc.take_snapshot()
-        self.logger.debug("初始化完成...")
+        self.timer_thread.trigger(self.config.get_config("扫描间隔"),1000)
+        self.UI.start_schedule_button.setEnabled(True)
+        self.logger.info("调度器已完成启动")
+
+    def stop(self):
+        """
+            停止调度器及其所有任务
+        """
+        self.logger.info("正在停止调度器...")
+        self.UI.start_schedule_button.setText("启动")
+        self.UI.start_schedule_button.setEnabled(False)
+        self.running = False
+
+        # 停止定时器线程
+        if hasattr(self, 'timer_thread'):
+            self.timer_thread.stop()
+
+        # 停止所有正在运行的任务
+        running_tasks = self.running_queue.peek()[:]  # 复制当前运行队列
+        for task in running_tasks:
+            task.stop()
+
+        # 清空所有队列
+        self.running_queue = PriorityQueue[BaseTask]()
+        self.ready_queue = PriorityQueue[BaseTask]()
+        self.waiting_queue = PriorityQueue[BaseTask]()
+
+        # 清空UI显示
+        self.clear_ui()
+
+        # 释放设备资源
+        self.device = None
+        self.UI.start_schedule_button.setEnabled(True)
+        self.logger.info("调度器已完全停止")
+
+    def clear_ui(self):
+        """清空所有UI队列显示"""
+        # 清空运行队列UI
+        for widget in self.running_widget_list.widgets[:]:
+            task_name = widget.property("task_name")
+            self.running_widget_list.remove_widget(task_name)
+
+        # 清空就绪队列UI
+        for widget in self.ready_widget_list.widgets[:]:
+            task_name = widget.property("task_name")
+            self.ready_widget_list.remove_widget(task_name)
+
+        # 清空等待队列UI
+        for widget in self.waiting_widget_list.widgets[:]:
+            task_name = widget.property("task_name")
+            self.waiting_widget_list.remove_widget(task_name)
+
+    def preprocess_templates(self, info_path) -> Dict:
+        """预处理模板图像"""
+        # self.logger.debug("预处理模版图像：")
+        templates_dic = {}
+        with open(get_real_path(info_path), "r", encoding='utf-8') as f:
+            templates = json.load(f)
+
+        for key, template in templates.items():
+            try:
+                gray_path = get_real_path(os.path.join(template['path'], "Gray", f"{key}.png"))
+                alpha_path = get_real_path(os.path.join(template['path'], "Alpha", f"{key}.png"))
+                # self.logger.debug("模板路径：%s", template_path)
+                with open(gray_path, 'rb') as f:
+                    gray_array = np.frombuffer(f.read(), dtype=np.uint8)
+                    gray = cv2.imdecode(gray_array, cv2.IMREAD_GRAYSCALE)
+                    if gray is None:
+                        raise FileNotFoundError(f"文件存在但无法读取: {gray_path}")
+                    template['GRAY'] = gray.astype(np.uint8)
+                with open(alpha_path, 'rb') as f:
+                    alpha_array = np.frombuffer(f.read(), dtype=np.uint8)
+                    alpha = cv2.imdecode(alpha_array, cv2.IMREAD_GRAYSCALE)
+                    if alpha is None:
+                        raise FileNotFoundError(f"文件存在但无法读取: {alpha_path}")
+                    template['MASK'] = alpha.astype(np.uint8)
+
+                templates_dic[key] = template
+            except Exception as e:
+                self.logger.error("模板预处理失败: %s", f"{template['path']}{key}.png")
+        return templates_dic
 
     def init_scroll_area_layouts(self):
         """初始化三个滚动区域的布局"""
@@ -278,29 +370,13 @@ class Scheduler(QObject):
         1.扫描等待队列中的任务，如果可以执行则放入就绪队列
         2.扫描就绪队列，如果执行队列为空且就绪队列不为空，则从就绪队列中取出优先级最高的Task交给Executor执行
         """
+        start = time.perf_counter()
         if self.UI.bool_save_img.isChecked():
             threading.Thread(target=self.save_screen).start()
 
         moved_tasks = []  # 记录从等待队列移动到就绪队列的任务
 
         # self.logger.debug("Scanning...")
-        # # --------------------------
-        # # 打印各队列状态（长度+优先级最高元素）
-        # # --------------------------
-        # # 等待队列
-        # waiting_len = len(self.waiting.peek())
-        # waiting_top = self.waiting.peek()[0] if waiting_len > 0 else "None"
-        # # 就绪队列
-        # ready_len = len(self.ready.peek())
-        # ready_top = self.ready.peek()[0] if ready_len > 0 else "None"
-        # # 执行队列
-        # running_len = len(self.running.peek())
-        # running_top = self.running.peek()[0] if running_len > 0 else "None"
-
-        # self.logger.info(f"执行队列[长度: {running_len}, 最高优先级: {running_top}]")
-        # self.logger.info(f"就绪队列[长度: {ready_len}, 最高优先级: {ready_top}]")
-        # self.logger.info(f"等待队列[长度: {waiting_len}, 最高优先级: {waiting_top}]")
-
         # for element in self.controller.device.xpath('//*').all():
         #     print(f"元素: {element.info}")
         #     # 打印关键属性
@@ -325,7 +401,7 @@ class Scheduler(QObject):
                 self.ready_queue.enqueue(task)  # 添加到就绪队列
                 self.add_task_ui_signal.emit(task, 1)
                 moved_tasks.append(task)
-                self.logger.debug(f"[{task.task_name}]-[{task.task_id}] 就绪")
+                self.logger.info(f"[{task.task_name}]-[{task.task_id}] 就绪")
 
         # 如果有任务被移动，重新触发扫描以检查就绪队列
         if moved_tasks:
@@ -350,31 +426,18 @@ class Scheduler(QObject):
             # print("[内存增长统计]")
             # for stat in top_stats[:10]:  # 打印前10个增长最多的项
             #     print(stat)
-            self.timer_thread.trigger(1000)  # 每秒扫描一次
+            wait_time = max(0.0, self.config.get_config("扫描间隔") - 1000*(time.perf_counter() - start))
+            self.timer_thread.trigger(int(wait_time))  # 每秒扫描一次
 
     def _execute_done_callback(self, task: BaseTask):
         self.running_queue.dequeue()
         self.remove_task_ui_signal.emit(task, 0)
-        if task.cycle_type != CycleType.TEMP:
+        if task.cycle_type != CycleType.TEMP and self.running:
             task.current_status = 2
             task.create_time = datetime.now(ZoneInfo("Asia/Shanghai"))
             # 添加到等待队列
             self.waiting_queue.enqueue(task)
             self.add_task_ui_signal.emit(task, 2)
-            self._save_task_info(task)
-
-    def _save_task_info(self, task: BaseTask):
-        """将任务信息保存到本地JSON文件"""
-        try:
-            self.logger.debug(f"更新[{task.task_name}]的任务信息")
-            with open(get_real_path('src/Tasks.json'), 'r', encoding='utf-8') as f:
-                tasks_info = json.load(f)
-                task_info = tasks_info[task.task_name]
-                task_info['下次执行时间'] = int(task.next_execute_time.timestamp())
-            with open(get_real_path('src/Tasks.json'), 'w', encoding='utf-8') as f:
-                json.dump(tasks_info, f, ensure_ascii=False, indent=4)
-        except FileNotFoundError:
-            self.logger.error("Task配置文件 %s 不存在", get_real_path('src/Tasks.json'))
 
     @staticmethod
     def _create_task_widget(task: BaseTask) -> tuple[QWidget, QLabel]:

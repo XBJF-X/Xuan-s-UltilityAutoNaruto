@@ -40,6 +40,7 @@ class LogWindow(QWidget):
         super().__init__()
         self.config = config
         self.max_lines = max_lines  # 最大日志行数
+        self.log_level = logging.DEBUG
         self.init_ui()
         # 初始化日志级别颜色格式
         self.init_log_formats()
@@ -52,12 +53,12 @@ class LogWindow(QWidget):
         # 日志输出区域（只读，使用QPlainTextEdit）
         self.log_text = QPlainTextEdit()
         self.log_text.setReadOnly(True)
-        self.log_text.setFont(QFont("Consolas, 微软雅黑", 10))
 
         # 设置样式表（针对QPlainTextEdit优化）
         self.log_text.setStyleSheet("""
             QPlainTextEdit {
-                font-size: 10pt;
+                font-family: "Consolas", "SimHei", sans-serif;
+                font-size: 11pt;
                 background-color: #f5f5f5;
                 border: 1px solid gray;
                 padding: 7px;
@@ -124,7 +125,7 @@ class LogWindow(QWidget):
         # 配置root logger
         root_logger = logging.getLogger()
         root_logger.addHandler(self.log_handler)
-        root_logger.setLevel(logging.DEBUG)
+        root_logger.setLevel(logging.DEBUG if self.config.get_config('调试模式', 0) else logging.INFO)
 
         # 添加文件处理器
         if not os.path.exists(get_real_path("log")):
@@ -167,6 +168,9 @@ class LogWindow(QWidget):
 
         # 获取日志级别和对应格式
         level = self.get_log_level(log_msg)
+        if level == "DEBUG" and self.log_level > logging.DEBUG:
+            return
+
         text_format = self.formats.get(level, self.formats['INFO'])
 
         # 处理覆盖行（\r结尾的日志）
@@ -192,23 +196,6 @@ class LogWindow(QWidget):
             # 提交光标更改（但不改变视图位置）
             self.log_text.setTextCursor(cursor)
             cursor.insertText(log_msg + '\n')  # 手动添加换行
-
-        # # 检查是否超过最大行数，超过则从顶部截断
-        # current_lines = self.log_text.document().blockCount()
-        # if current_lines > self.max_lines:
-        #     # 计算需要删除的行数
-        #     lines_to_remove = current_lines - self.max_lines
-        #     # 创建临时光标进行操作（不影响当前视图）
-        #     temp_cursor = QTextCursor(self.log_text.document())
-        #     temp_cursor.movePosition(QTextCursor.MoveOperation.Start)
-        #
-        #     # 移动到需要删除的最后一行的末尾
-        #     temp_cursor.movePosition(QTextCursor.MoveOperation.Down, QTextCursor.MoveMode.MoveAnchor, lines_to_remove - 1)
-        #     temp_cursor.movePosition(QTextCursor.MoveOperation.EndOfLine)
-        #
-        #     # 选中从文档开始到当前位置的所有内容
-        #     temp_cursor.setPosition(0, QTextCursor.MoveMode.KeepAnchor)
-        #     temp_cursor.removeSelectedText()
 
         # 保持滚动位置（如果原本在底部则自动滚动）
         if is_at_bottom:

@@ -7,6 +7,7 @@ from .GouMaiTiLi import GouMaiTiLi
 from .HaoYouTiLi import HaoYouTiLi
 from .HuoYueDuJiangLi import HuoYueDuJiangLi
 from .JinBiZhaoCai import JinBiZhaoCai
+from .KuaFuZhengBaSai import KuaFuZhengBaSai
 from .MaoXianFuBen import MaoXianFuBen
 from .MeiRiFenXiang import MeiRiFenXiang
 from .MeiRiShengChang import MeiRiShengChang
@@ -14,6 +15,7 @@ from .MeiYueQianDao import MeiYueQianDao
 from .MeiZhouShengChang import MeiZhouShengChang
 from .MiJingTanXian import MiJingTanXian
 from .PaiHangBangDianZan import PaiHangBangDianZan
+from .PanRenLaiXi import PanRenLaiXi
 from .PuTongRenZheZhaoMu import PuTongRenZheZhaoMu
 from .QingBaoZhan import QingBaoZhan
 from .QingKongYouJian import QingKongYouJian
@@ -24,6 +26,7 @@ from .ShengCunTiaoZhan import ShengCunTiaoZhan
 from .TuanBen import TuanBen
 from .XiaoDuiTuXi import XiaoDuiTuXi
 from .XiuXingZhiLu import XiuXingZhiLu
+from .YaoSaiZhengDuoZhan import YaoSaiZhengDuoZhan
 from .YiLeWaiMai import YiLeWaiMai
 from .ZuZhiQiFu import ZuZhiQiFu
 
@@ -56,9 +59,12 @@ TASK_TYPE_MAP = {
     "每月签到": MeiYueQianDao,
     "忍法帖点赞分享": RenFaTieDianZanFenXiang,
     "重启游戏": ChongQiYouXi,
+    '要塞争夺战': YaoSaiZhengDuoZhan,
+    '叛忍来袭': PanRenLaiXi,
+    '跨服争霸赛': KuaFuZhengBaSai,
 }
 
-TASK_NAME_MAP = {
+TASK_NAME_CN2EN_MAP = {
     '登录奖励': "DengLuJiangLi",
     '丰饶之间': "FengRaoZhiJian",
     '金币招财': "JinBiZhaoCai",
@@ -87,6 +93,9 @@ TASK_NAME_MAP = {
     "每月签到": "MeiYueQianDao",
     "忍法帖点赞分享": "RenFaTieDianZanFenXiang",
     "重启游戏": 'ChongQiYouXi',
+    '要塞争夺战': 'YaoSaiZhengDuoZhan',
+    '叛忍来袭': 'PanRenLaiXi',
+    '跨服争霸赛': 'KuaFuZhengBaSai',
 }
 TREE_INDEX_DIC = {
     '登录奖励': 1,

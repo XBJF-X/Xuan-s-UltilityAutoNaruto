@@ -23,7 +23,7 @@ def visualize_confidence_heatmap(result, template_name):
 
 class Recognizer:
     def __init__(self, scene_templates: Dict, element_templates: Dict):
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = logging.getLogger("识别器")
         self.scene_templates = scene_templates
         self.element_templates = element_templates
 

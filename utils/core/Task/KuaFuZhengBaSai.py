@@ -1,7 +1,7 @@
 from utils.core.Task.BaseTask import BaseTask
 
 
-class Example(BaseTask):
+class KuaFuZhengBaSai(BaseTask):
     def _execute(self):
         self.logger.info(f"开始执行")
         try:

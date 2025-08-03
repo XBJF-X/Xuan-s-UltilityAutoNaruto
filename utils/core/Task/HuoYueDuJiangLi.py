@@ -3,12 +3,12 @@ from utils.core.Task.BaseTask import BaseTask
 class HuoYueDuJiangLi(BaseTask):
 
     def _execute(self):
-        self.logger.debug(f"开始执行")
+        self.logger.info(f"开始执行")
         try:
             # 确定在主场景
             if not self.home():
                 raise self.StepFailedError("无法回到[主场景]")
-            self.logger.debug("进入奖励界面")
+            self.logger.info("进入奖励界面")
             # 点击奖励图标
             self.click_and_wait({
                 "type": "ELEMENT",
@@ -36,12 +36,12 @@ class HuoYueDuJiangLi(BaseTask):
             self.logger.warning(e)
         finally:
             self.home()
-            self.logger.debug(f"执行完毕")
+            self.logger.info(f"执行完毕")
             self.callback(self)
 
     def _handle_daily_activity_reward(self, num):
         # 点击待领取的宝箱
-        self.logger.debug(f"[{num}活跃度宝箱] 开始领取")
+        self.logger.info(f"[{num}活跃度宝箱] 开始领取")
         if not self.click_and_wait({
             'type': "ELEMENT",
             'name': f"每日活跃度-{num}-待领取"
@@ -50,15 +50,15 @@ class HuoYueDuJiangLi(BaseTask):
                 'type': "ELEMENT",
                 'name': f"每日活跃度-{num}-未领取"
             }):
-                self.logger.debug(f"[{num}活跃度宝箱] 活跃度不足")
+                self.logger.info(f"[{num}活跃度宝箱] 活跃度不足")
                 return False
             if self.detect_and_wait({
                 'type': "ELEMENT",
                 'name': f"每日活跃度-{num}-已领取"
             }):
-                self.logger.debug(f"[{num}活跃度宝箱] 已被领取")
+                self.logger.info(f"[{num}活跃度宝箱] 已被领取")
                 return True
-        self.logger.debug(f"[{num}活跃度宝箱] 领取完成")
+        self.logger.info(f"[{num}活跃度宝箱] 领取完成")
         return True
 
     def _handle_weekly_acticity_reward(self):
@@ -66,15 +66,15 @@ class HuoYueDuJiangLi(BaseTask):
             'type': "ELEMENT",
             'name': "奖励-周活跃礼-有红点"
         }):
-            self.logger.debug("周活跃已满")
+            self.logger.info("周活跃已满")
             if self.click_and_wait({
                 'type': "ELEMENT",
                 'name': "奖励-周活跃大礼-领取"
             }):
-                self.logger.debug("周活跃奖励领取成功")
+                self.logger.info("周活跃奖励领取成功")
             self.click_and_wait({
                 'type': "COORDINATE",
                 'coordinate': [1248, 177]
             })
         else:
-            self.logger.debug("周活跃未满")
+            self.logger.warning("周活跃未满")

@@ -1,14 +1,15 @@
 from utils.core.Task.BaseTask import BaseTask
 
+
 class MeiRiShengChang(BaseTask):
 
     def _execute(self):
-        self.logger.debug(f"开始执行")
+        self.logger.info(f"开始执行")
         try:
             # 确定在主场景
             if not self.home():
                 raise self.StepFailedError("无法回到[主场景]")
-            self.logger.debug("进入[决斗场-首页]")
+            self.logger.info("进入[决斗场-首页]")
             if not self.click_and_search(
                     [
                         {"type": "ELEMENT", "name": "主场景-决斗场"}
@@ -45,7 +46,7 @@ class MeiRiShengChang(BaseTask):
                 'name': "决斗场-首页"
             }):
                 raise self.StepFailedError("未进入[决斗场-首页]")
-            self.logger.debug("进入[决斗场-忍术对战-单人模式]")
+            self.logger.info("进入[决斗场-忍术对战-单人模式]")
             if not self.click_and_wait({
                 'type': "ELEMENT",
                 'name': "决斗场-忍术对战"
@@ -56,7 +57,7 @@ class MeiRiShengChang(BaseTask):
                 'name': "决斗场-忍术对战-单人模式"
             }):
                 raise self.StepFailedError("[决斗场-忍术对战-单人模式]未出现")
-            self.logger.debug("查看[决斗场-忍术对战-单人模式-决斗任务]")
+            self.logger.info("查看[决斗场-忍术对战-单人模式-决斗任务]")
             if not self.click_and_wait({
                 'type': "ELEMENT",
                 'name': "决斗场-忍术对战-单人模式-决斗任务"
@@ -67,7 +68,7 @@ class MeiRiShengChang(BaseTask):
                 'name': "决斗场-忍术对战-单人模式-决斗任务"
             }):
                 raise self.StepFailedError("[决斗场-忍术对战-单人模式-决斗任务]未出现")
-            self.logger.debug("领取所有待领取的决斗任务宝箱")
+            self.logger.info("领取所有待领取的决斗任务宝箱")
             while self.click_and_wait({
                 'type': "ELEMENT",
                 'name': "决斗任务-宝箱-待领取"
@@ -79,7 +80,7 @@ class MeiRiShengChang(BaseTask):
                 'type': "ELEMENT",
                 'name': "决斗任务-宝箱-未达成"
             }):
-                self.logger.debug("存在未达成的每日胜场任务，继续执行")
+                self.logger.info("存在未达成的每日胜场任务，继续执行")
                 self.click_and_wait({
                     'type': "COORDINATE",
                     'coordinate': [1523, 45]
@@ -92,25 +93,55 @@ class MeiRiShengChang(BaseTask):
                         'type': "ELEMENT",
                         'name': "决斗场-忍术对战-单人模式-开战"
                     })
-                    self.logger.debug("连点执行中...")
-                    # 使用连点器，结束的标志定为举报反馈
-                    self.auto_clicker(
+                    flag = self.detect_and_search(
                         [
-                            (1541, 832),
-                            (1456, 862),
-                            (1468, 774),
-                            (1550, 735),
-                            (1377, 860),
-                            (1535, 640),
-                            (1295, 861)
+                            {'type': "ELEMENT", 'name': "决斗场-60"},
+                            {"type": "ELEMENT",
+                                "name": "决斗场-忍术对战-单人模式-你的对手离开了游戏"},
                         ],
-                        stop_conditions=[
-                            {"type": "ELEMENT", "name": "决斗场-举报反馈"},
-                            {"type": "ELEMENT", "name": "决斗场-忍术对战-单人模式-你的对手离开了游戏"},
+                        [
+                            {'click': {'type': "COORDINATE", 'coordinate': [800, 569]}}
                         ],
-                        max_workers=7
+                        100
                     )
-                    self.logger.debug("对局结束，返回[单人模式-首页]")
+                    if not flag:
+                        raise self.StepFailedError("开始战斗超时")
+                    else:
+                        if flag == 2:
+                            self.logger.warning("对手退出游戏，即将返回[忍术对战-单人模式]")
+                            if not self.detect_and_search(
+                                    [
+                                        {'type': "SCENE", 'name': "决斗场-忍术对战-单人模式"}
+                                    ],
+                                    [
+                                        {'click': {'type': "COORDINATE", 'coordinate': [800, 745]}},
+                                        {'click': {'type': "COORDINATE", 'coordinate': [800, 569]}}
+                                    ],
+                                    30
+                            ):
+
+                                raise self.StepFailedError("战斗结束后无法退回[忍术对战-单人模式]")
+                        elif flag == 1:
+                            self.logger.info("倒计时60s出现，连点执行中...")
+                            # 使用连点器，结束的标志定为举报反馈
+                            self.auto_clicker(
+                                [
+                                    (1541, 832),
+                                    (1456, 862),
+                                    (1468, 774),
+                                    (1550, 735),
+                                    (1377, 860),
+                                    (1535, 640),
+                                    (1295, 861)
+                                ],
+                                stop_conditions=[
+                                    {"type": "ELEMENT", "name": "决斗场-举报反馈"},
+                                    {"type": "ELEMENT",
+                                        "name": "决斗场-忍术对战-单人模式-你的对手离开了游戏"},
+                                ],
+                                max_workers=7
+                            )
+                            self.logger.info("对局结束，返回[单人模式-首页]")
                     # 先回到单人模式首页，看看有没有宝箱能领的，能领的都领掉
                     if not self.detect_and_search(
                             [
@@ -120,11 +151,11 @@ class MeiRiShengChang(BaseTask):
                                 {'click': {'type': "COORDINATE", 'coordinate': [800, 745]}},
                                 {'click': {'type': "COORDINATE", 'coordinate': [800, 569]}}
                             ],
-                            999
+                            30
                     ):
                         raise self.StepFailedError("战斗结束后无法退回[忍术对战-单人模式]")
 
-                    self.logger.debug("查看[决斗场-忍术对战-单人模式-决斗任务]")
+                    self.logger.info("查看[决斗场-忍术对战-单人模式-决斗任务]")
                     if not self.click_and_wait({
                         'type': "ELEMENT",
                         'name': "决斗场-忍术对战-单人模式-决斗任务"
@@ -135,13 +166,13 @@ class MeiRiShengChang(BaseTask):
                         'name': "决斗场-忍术对战-单人模式-决斗任务"
                     }):
                         raise self.StepFailedError("[决斗场-忍术对战-单人模式-决斗任务]未出现")
-                    self.logger.debug("领取所有待领取的决斗任务宝箱")
+                    self.logger.info("领取所有待领取的决斗任务宝箱")
                     while self.click_and_wait({
                         'type': "ELEMENT",
                         'name': "决斗任务-宝箱-待领取"
                     }):
                         continue
-            self.logger.debug("不存在未达成的每日胜场任务")
+            self.logger.info("不存在未达成的每日胜场任务")
             self.click_and_wait({
                 'type': "COORDINATE",
                 'coordinate': [1523, 45]
@@ -155,5 +186,5 @@ class MeiRiShengChang(BaseTask):
             self.logger.warning(e)
         finally:
             self.home()
-            self.logger.debug(f"执行完毕")
+            self.logger.info(f"执行完毕")
             self.callback(self)
