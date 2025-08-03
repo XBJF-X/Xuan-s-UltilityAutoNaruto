@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>KeyMapConfiguration</class>
+ <widget class="QDialog" name="KeyMapConfiguration">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>771</width>
+    <height>577</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>键位配置</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">font: 15pt &quot;黑体&quot;;</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
+   <item>
+    <widget class="QWidget" name="image_container" native="true">
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <property name="spacing">
+       <number>0</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="image_label">
+        <property name="text">
+         <string/>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item alignment="Qt::AlignmentFlag::AlignTop">
+    <widget class="QWidget" name="widget_2" native="true">
+     <property name="maximumSize">
+      <size>
+       <width>150</width>
+       <height>16777215</height>
+      </size>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QWidget {
+                background-color: #dfdfdf;  /* 背景颜色 */
+				border-radius:10px;
+            }
+QLabel{color:#0f322f;}</string>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <property name="spacing">
+       <number>10</number>
+      </property>
+      <property name="leftMargin">
+       <number>10</number>
+      </property>
+      <property name="topMargin">
+       <number>10</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="QLabel" name="A">
+        <property name="maximumSize">
+         <size>
+          <width>200</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text">
+         <string>1：平A</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="skill_1">
+        <property name="text">
+         <string>2：一技能</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="skill_2">
+        <property name="text">
+         <string>3：二技能</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="ougi">
+        <property name="text">
+         <string>4：奥义</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="left_sub_skill">
+        <property name="text">
+         <string>5：左子技能</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="right_sub_skill">
+        <property name="text">
+         <string>6：右子技能</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="stand_in">
+        <property name="text">
+         <string>7：替身</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="secret_ecroll">
+        <property name="text">
+         <string>8：秘卷</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="tongling">
+        <property name="text">
+         <string>9：通灵</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="joystick">
+        <property name="text">
+         <string>10：摇杆</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QWidget" name="widget_3" native="true">
+        <layout class="QVBoxLayout" name="verticalLayout">
+         <item alignment="Qt::AlignmentFlag::AlignHCenter">
+          <widget class="QPushButton" name="finish">
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>40</height>
+            </size>
+           </property>
+           <property name="maximumSize">
+            <size>
+             <width>90</width>
+             <height>16777215</height>
+            </size>
+           </property>
+           <property name="styleSheet">
+            <string notr="true">QPushButton{
+border: 2px solid #b5b5b5;  /* 2px宽的深灰色实线边框 */
+background-color: rgb(255, 255, 255);
+border-radius:10px;
+outline:none;
+color:#0f322f;
+padding-top:2px;
+padding-bottom:2px;
+}
+QPushButton::hover {
+border: 2px solid #39C5BB;  /* 2px宽的深灰色实线边框 */
+background-color: rgb(255, 255, 255);
+border-radius:10px;
+outline:none;
+padding-top:2px;
+color:#39C5BB;
+padding-bottom:2px;
+}</string>
+           </property>
+           <property name="text">
+            <string>结束</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -9,20 +9,19 @@ from zoneinfo import ZoneInfo
 
 import cv2
 import numpy as np
-import win32gui
 
-from PySide6.QtCore import Qt, QFile, QTextStream
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QApplication, QWidget, QFileDialog
 
 from ui.DailyQuestsHelper_ui import Ui_DailyQuestsHelper
 from StaticFunctions import resource_path, get_real_path
-from utils.core.Base.Recognizer import Recognizer
-from utils.core.Device import Device
-from utils.core.Logger import LogWindow
-from utils.core.Scheduler import Scheduler
-from utils.core.Config import Config
-from utils.core.Task import TREE_INDEX_DIC, TASK_NAME_CN2EN_MAP
+from utils.Base.Recognizer import Recognizer
+from utils.Device import Device
+from utils.KeyMapConfiguration import KeyMapConfiguration
+from utils.Logger import LogWindow
+from utils.Scheduler import Scheduler
+from utils.Config import Config
+from utils.Task import TREE_INDEX_DIC, TASK_NAME_CN2EN_MAP
 
 
 class DailyQuestsHelper(QMainWindow):
@@ -36,7 +35,10 @@ class DailyQuestsHelper(QMainWindow):
         self.init_environment()
         self.alloc_ui_ref_map()
         self.connect_ui2function()
-        self.scheduler = Scheduler(self.UI, self.config)
+        self.scene_templates = self.preprocess_templates("src/SceneInfo.json")
+        self.element_templates = self.preprocess_templates("src/ElementInfo.json")
+        self.recognizer = Recognizer(self.scene_templates, self.element_templates)
+        self.scheduler = Scheduler(self.UI, self.recognizer, self.config)
         self.logger.info("初始化完成...")
 
     def init_environment(self):
@@ -64,7 +66,11 @@ class DailyQuestsHelper(QMainWindow):
         cv2.ocl.setUseOpenCL(True)
         self.setWindowIcon(QIcon(resource_path("src/ASDS.ico")))
         self.resize(1400, 600)
+        app.aboutToQuit.connect(self._on_about_to_quit)
         # self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+
+    def _on_about_to_quit(self):
+        self.scheduler.timer_thread.stop()
 
     def alloc_ui_ref_map(self):
         # 日志窗口设置
@@ -103,7 +109,6 @@ class DailyQuestsHelper(QMainWindow):
         self.UI.control_mode.currentIndexChanged.connect(self._on_control_mode_change)
         self.UI.serial.editingFinished.connect(lambda w=self.UI.secondary_password: self.config.set_config("串口", w.text()))
         self.UI.resolution.currentIndexChanged.connect(self._on_resolution_change)
-
         self.UI.video_fps.valueChanged.connect(lambda index: self.config.set_config('视频流帧率', index))
         self.UI.LD_install_path.editingFinished.connect(lambda path: self.config.set_config('雷电安装路径', path))
         self.UI.LD_install_path_browse.clicked.connect(lambda: self._on_filepath_browse_clicked("雷电"))
@@ -113,6 +118,7 @@ class DailyQuestsHelper(QMainWindow):
         self.UI.MuMu_instance_index.valueChanged.connect(lambda index: self.config.set_config('MuMu实例索引', index))
         self.UI.scan_inerval.valueChanged.connect(lambda index: self.config.set_config('扫描间隔', index))
         self.UI.secondary_password.editingFinished.connect(lambda w=self.UI.secondary_password: self.config.set_config("二级密码", w.text()))
+        self.UI.key_map_configuration_button.clicked.connect(self._on_key_map_configuration_button_clicked)
 
     def process_common_task_settings_control(self):
         # 处理所有任务相关的通用设置控件的响应
@@ -145,6 +151,36 @@ class DailyQuestsHelper(QMainWindow):
                 self.logger.warning(e)
                 continue
 
+    def preprocess_templates(self, info_path) -> Dict:
+        """预处理模板图像"""
+        # self.logger.debug("预处理模版图像：")
+        templates_dic = {}
+        with open(get_real_path(info_path), "r", encoding='utf-8') as f:
+            templates = json.load(f)
+
+        for key, template in templates.items():
+            try:
+                gray_path = get_real_path(os.path.join(template['path'], "Gray", f"{key}.png"))
+                alpha_path = get_real_path(os.path.join(template['path'], "Alpha", f"{key}.png"))
+                # self.logger.debug("模板路径：%s", template_path)
+                with open(gray_path, 'rb') as f:
+                    gray_array = np.frombuffer(f.read(), dtype=np.uint8)
+                    gray = cv2.imdecode(gray_array, cv2.IMREAD_GRAYSCALE)
+                    if gray is None:
+                        raise FileNotFoundError(f"文件存在但无法读取: {gray_path}")
+                    template['GRAY'] = gray.astype(np.uint8)
+                with open(alpha_path, 'rb') as f:
+                    alpha_array = np.frombuffer(f.read(), dtype=np.uint8)
+                    alpha = cv2.imdecode(alpha_array, cv2.IMREAD_GRAYSCALE)
+                    if alpha is None:
+                        raise FileNotFoundError(f"文件存在但无法读取: {alpha_path}")
+                    template['MASK'] = alpha.astype(np.uint8)
+
+                templates_dic[key] = template
+            except Exception as e:
+                self.logger.error("模板预处理失败: %s", f"{template['path']}{key}.png")
+        return templates_dic
+
     def _on_start_schedule_button_clicked(self):
         if not self.scheduler.running:
             self.scheduler.start()
@@ -170,6 +206,11 @@ class DailyQuestsHelper(QMainWindow):
 
     def _on_resolution_change(self, index):
         self.config.set_config("模拟器分辨率", index)
+
+    def _on_key_map_configuration_button_clicked(self):
+        device = Device(self.config, self.recognizer)
+        editor = KeyMapConfiguration(self.config, device.screen_cap(), self)
+        editor.exec()
 
     def _on_filepath_browse_clicked(self, name):
         folder = QFileDialog.getExistingDirectory(self, f"选择{name}模拟器安装目录")
