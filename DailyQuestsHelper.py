@@ -1,8 +1,9 @@
+import sys
+
 import ctypes
 import json
 import logging
 import os
-import sys
 from collections import defaultdict
 from datetime import datetime
 from typing import Dict
@@ -10,21 +11,18 @@ from zoneinfo import ZoneInfo
 
 import cv2
 import numpy as np
-
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QApplication, QWidget, QFileDialog, QLineEdit, \
-    QCheckBox
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QApplication, QWidget, QFileDialog
 
-from ui.DailyQuestsHelper_ui import Ui_DailyQuestsHelper
 from StaticFunctions import resource_path, get_real_path
+from ui.DailyQuestsHelper_ui import Ui_DailyQuestsHelper
 from utils.Base.Recognizer import Recognizer
+from utils.Config import Config
 from utils.Device import Device
 from utils.KeyMapConfiguration import KeyMapConfiguration
 from utils.Logger import LogWindow
 from utils.Scheduler import Scheduler
-from utils.Config import Config
 from utils.Task import TREE_INDEX_DIC, TASK_NAME_CN2EN_MAP
-from utils.Task.BaseTask import BaseTask
 
 
 class DailyQuestsHelper(QMainWindow):
@@ -43,6 +41,7 @@ class DailyQuestsHelper(QMainWindow):
         self.element_templates = self.preprocess_templates("src/ElementInfo.json")
         self.recognizer = Recognizer(self.scene_templates, self.element_templates)
         self.scheduler = Scheduler(self.UI, self.recognizer, self.config, self.task_common_control_ref_map)
+
         self.logger.info("初始化完成...")
 
     def init_environment(self):

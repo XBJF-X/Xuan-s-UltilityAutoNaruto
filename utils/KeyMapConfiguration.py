@@ -6,7 +6,7 @@ import cv2
 from PIL.ImageQt import QPixmap
 from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QCursor, QPainter, QColor, QPen, QImage
-from PySide6.QtWidgets import QMainWindow, QDialog, QApplication, QWidget
+from PySide6.QtWidgets import QDialog, QApplication, QWidget
 
 from ui.KeyMapConfiguration_ui import Ui_KeyMapConfiguration
 from utils.Config import Config

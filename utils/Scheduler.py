@@ -1,5 +1,4 @@
 import heapq
-import json
 import logging
 import os
 import threading
@@ -8,12 +7,9 @@ from datetime import datetime
 from typing import Dict, TypeVar, Generic, List, Optional
 from zoneinfo import ZoneInfo
 
-import cv2
-import numpy as np
-
 from PySide6 import QtWidgets
 from PySide6.QtCore import QThread, Signal, QMutex, QWaitCondition, Qt, QObject, Slot
-from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout, QBoxLayout, QCheckBox, QLineEdit, QVBoxLayout
+from PySide6.QtWidgets import QWidget, QLabel, QBoxLayout, QVBoxLayout
 
 from StaticFunctions import get_real_path, cv_save
 from ui.DailyQuestsHelper_ui import Ui_DailyQuestsHelper

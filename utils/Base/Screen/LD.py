@@ -4,6 +4,7 @@ import os
 from ctypes import wintypes, POINTER, c_void_p, c_uint, c_char, c_ubyte, \
     create_string_buffer
 from typing import List, Optional
+
 import cv2
 import numpy as np
 
