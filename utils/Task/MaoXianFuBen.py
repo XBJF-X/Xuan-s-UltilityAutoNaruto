@@ -1,3 +1,5 @@
+from datetime import timedelta
+
 from utils.Task.BaseTask import BaseTask
 
 class MaoXianFuBen(BaseTask):
@@ -98,11 +100,11 @@ class MaoXianFuBen(BaseTask):
                 "type": "COORDINATE",
                 'coordinate': [1364, 152]
             })
-            self._update_next_execute_time()
+            self._update_next_execute_time(time_offset=timedelta(hours=8))
         except self.StepFailedError as e:
             self.logger.error(e)
         except self.EndEarly as e:
-            self._update_next_execute_time()
+            self._update_next_execute_time(time_offset=timedelta(hours=8))
             self.logger.warning(e)
         except self.Stop as e:
             self.logger.warning("线程被要求停止")

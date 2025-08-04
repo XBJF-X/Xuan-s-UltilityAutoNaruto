@@ -33,7 +33,7 @@ class SkillButton(QWidget):
     def __init__(self, skill_id: int, parent=None):
         super().__init__(parent)
         self.skill_id = skill_id  # 技能ID，用于标识不同技能
-        self.setFixedSize(40, 40)  # 固定大小
+        self.setFixedSize(60, 60)  # 固定大小
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))  # 鼠标悬停时显示手型
         self.dragging = False
         self.offset = QPoint()
@@ -71,9 +71,17 @@ class SkillButton(QWidget):
         painter.setPen(QPen(QColor(255, 255, 255), 2))  # 白色边框
         painter.drawEllipse(2, 2, self.width() - 4, self.height() - 4)
 
+        # 创建并设置字体 - 关键修改
+        font = painter.font()
+        # 根据按钮大小动态计算字体大小
+        font_size = int(min(self.width(), self.height()) * 0.4)  # 占按钮大小的40%
+        font.setPointSize(font_size)
+        font.setBold(True)  # 加粗
+        painter.setFont(font)
+
         # 绘制技能ID
         painter.setPen(QColor(255, 255, 255))
-        painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, str(self.skill_id))
+        painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, str(self.skill_id+1))
 
 
 class KeyMapConfiguration(QDialog):
@@ -87,33 +95,41 @@ class KeyMapConfiguration(QDialog):
         self.result_positions = [[] for _ in range(10)]
         self.setModal(True)
 
-        height, width = screen.shape[:2]
-        self.setFixedSize(width + 150, height)  # 总宽度=图片宽度+右侧面板宽度
         # 将BGR转换为RGB
         rgb_image = cv2.cvtColor(screen, cv2.COLOR_BGR2RGB)
         # 获取图像尺寸和通道数
         height, width, channel = rgb_image.shape
+        self.screen_size = [width, height]
         bytes_per_line = channel * width
         # 创建QImage
         q_image = QImage(rgb_image.data, width, height, bytes_per_line, QImage.Format.Format_RGB888)
         self.UI.image_label.setPixmap(QPixmap.fromImage(q_image))
         # 设置标签大小
         self.UI.image_label.setFixedSize(width, height)
+        # 设置容器大小与图片一致
+        self.UI.image_container.setFixedSize(width, height)
         # 添加技能按钮
         for i in range(10):
             skill_btn = SkillButton(i, self.UI.image_container)
             x, y = self.config.get_config("键位")[i]
-            skill_btn.move(x, y)
+            real_x = x*self.screen_size[0]/1600
+            real_y = y*self.screen_size[1]/900
+            skill_btn.move(real_x, real_y)
             skill_btn.show()
             self.skill_buttons.append(skill_btn)
         self.UI.finish.clicked.connect(self._on_finish)
+        # 调整窗口初始大小为屏幕的80%
+        screen_geometry = QApplication.primaryScreen().geometry()
+        self.resize(int(screen_geometry.width() * 0.7), int(screen_geometry.height() * 0.7))
 
     def _on_finish(self):
         """确认按钮点击事件，收集所有技能按钮位置"""
         for btn in self.skill_buttons:
             # 获取按钮在图片容器中的相对位置
             pos = btn.pos()
-            self.result_positions[btn.skill_id] = [pos.x(), pos.y()]
+            x = int(pos.x() * 1600 / self.screen_size[0])
+            y = int(pos.y() * 900 / self.screen_size[1])
+            self.result_positions[btn.skill_id] = [x, y]
 
         self.config.set_config("键位", self.result_positions)
         # 关闭对话框

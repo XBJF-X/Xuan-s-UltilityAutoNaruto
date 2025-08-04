@@ -55,13 +55,27 @@ class Recognizer:
             return False, 0.0
 
         # 2. 对场景图和模板图进行模板匹配（仅使用非透明区域）
-        # 使用归一化相关系数法（适合亮度变化场景）
-        result = cv2.matchTemplate(
-            scene_gray,
-            template_img,
-            method=cv2.TM_CCOEFF_NORMED,
-            mask=mask
-        )
+        # 执行模板匹配（添加异常捕获）
+        try:
+            if scene_img.shape[:2] < (900, 1600):
+                scene_gray = cv2.resize(scene_gray, (1600, 900), interpolation=cv2.INTER_CUBIC)
+            elif scene_img.shape[:2] > (900, 1600):
+                scene_gray = cv2.resize(scene_gray, (1600, 900), interpolation=cv2.INTER_AREA)
+            roi = template_data.get('roi', None)
+            if roi:
+                x1, x2, y1, y2 = roi
+                scene_gray = scene_gray[y1:y2, x1:x2]
+            result = cv2.matchTemplate(
+                scene_gray,
+                template_img,
+                method=cv2.TM_CCOEFF_NORMED,
+                mask=mask
+            )
+            # 修复非有限值：将 NaN/Inf 替换为 -1（有效值范围是[-1,1]）
+            result = np.nan_to_num(result, nan=-1.0, posinf=-1.0, neginf=-1.0)
+        except cv2.error as e:
+            self.logger.error(f"模板匹配出错：{e}")
+            return False,0.0
 
         # 3. 判断最高匹配得分是否超过阈值
         max_score = np.max(result)  # 获取所有位置中的最高匹配得分

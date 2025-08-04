@@ -16,20 +16,33 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QDialog, QHBoxLayout, QLabel,
-    QPushButton, QSizePolicy, QVBoxLayout, QWidget)
+    QPushButton, QScrollArea, QSizePolicy, QVBoxLayout,
+    QWidget)
 
 class Ui_KeyMapConfiguration(object):
     def setupUi(self, KeyMapConfiguration):
         if not KeyMapConfiguration.objectName():
             KeyMapConfiguration.setObjectName(u"KeyMapConfiguration")
-        KeyMapConfiguration.resize(771, 577)
+        KeyMapConfiguration.resize(928, 459)
         KeyMapConfiguration.setStyleSheet(u"font: 15pt \"\u9ed1\u4f53\";")
         self.horizontalLayout = QHBoxLayout(KeyMapConfiguration)
         self.horizontalLayout.setSpacing(0)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
-        self.image_container = QWidget(KeyMapConfiguration)
+        self.scrollArea = QScrollArea(KeyMapConfiguration)
+        self.scrollArea.setObjectName(u"scrollArea")
+        self.scrollArea.setMinimumSize(QSize(800, 450))
+        self.scrollArea.setWidgetResizable(True)
+        self.scroll_widget = QWidget()
+        self.scroll_widget.setObjectName(u"scroll_widget")
+        self.scroll_widget.setGeometry(QRect(0, 0, 798, 457))
+        self.verticalLayout_4 = QVBoxLayout(self.scroll_widget)
+        self.verticalLayout_4.setSpacing(0)
+        self.verticalLayout_4.setObjectName(u"verticalLayout_4")
+        self.verticalLayout_4.setContentsMargins(0, 0, 0, 0)
+        self.image_container = QWidget(self.scroll_widget)
         self.image_container.setObjectName(u"image_container")
+        self.image_container.setStyleSheet(u"")
         self.verticalLayout_3 = QVBoxLayout(self.image_container)
         self.verticalLayout_3.setSpacing(0)
         self.verticalLayout_3.setObjectName(u"verticalLayout_3")
@@ -40,7 +53,11 @@ class Ui_KeyMapConfiguration(object):
         self.verticalLayout_3.addWidget(self.image_label)
 
 
-        self.horizontalLayout.addWidget(self.image_container)
+        self.verticalLayout_4.addWidget(self.image_container)
+
+        self.scrollArea.setWidget(self.scroll_widget)
+
+        self.horizontalLayout.addWidget(self.scrollArea)
 
         self.widget_2 = QWidget(KeyMapConfiguration)
         self.widget_2.setObjectName(u"widget_2")

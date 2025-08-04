@@ -42,7 +42,7 @@ class DailyQuestsHelper(QMainWindow):
         self.scene_templates = self.preprocess_templates("src/SceneInfo.json")
         self.element_templates = self.preprocess_templates("src/ElementInfo.json")
         self.recognizer = Recognizer(self.scene_templates, self.element_templates)
-        self.scheduler = Scheduler(self.UI, self.recognizer, self.config,self.task_common_control_ref_map)
+        self.scheduler = Scheduler(self.UI, self.recognizer, self.config, self.task_common_control_ref_map)
         self.logger.info("初始化完成...")
 
     def init_environment(self):
@@ -216,9 +216,13 @@ class DailyQuestsHelper(QMainWindow):
         self.config.set_config("模拟器分辨率", index)
 
     def _on_key_map_configuration_button_clicked(self):
-        device = Device(self.config, self.recognizer)
+        if self.scheduler.device is not None:
+            device = self.scheduler.device
+        else:
+            device = Device(self.config, self.recognizer)
         editor = KeyMapConfiguration(self.config, device.screen_cap(), self)
         editor.exec()
+        device = None
 
     def _on_filepath_browse_clicked(self, name):
         folder = QFileDialog.getExistingDirectory(self, f"选择{name}模拟器安装目录")
