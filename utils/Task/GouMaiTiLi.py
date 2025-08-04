@@ -1,5 +1,6 @@
 from utils.Task.BaseTask import BaseTask
 
+
 class GouMaiTiLi(BaseTask):
 
     def _execute(self):
@@ -16,13 +17,15 @@ class GouMaiTiLi(BaseTask):
                 'type': "SCENE",
                 'name': "购买体力"
             }):
-                for i in range(self.data.get("购买体力次数",0)):
+                times = 0
+                while times < self.data.get("购买体力次数", 0):
                     if self.click_and_wait({
                         'type': "ELEMENT",
                         "name": "购买体力-购买"
                     }):
-                        self.pass_secondary_password()
-                        self.logger.info(f"已购买体力 {i+1} 次")
+                        if not self.pass_secondary_password():
+                            times += 1
+                            self.logger.info(f"已购买体力 {times} 次")
                 # 随便点下返回主场景
                 self.click_and_wait({
                     'type': "COORDINATE",

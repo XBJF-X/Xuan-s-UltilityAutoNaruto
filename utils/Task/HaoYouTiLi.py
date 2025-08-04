@@ -1,4 +1,7 @@
+from datetime import timedelta
+
 from utils.Task.BaseTask import BaseTask
+
 
 class HaoYouTiLi(BaseTask):
 
@@ -64,11 +67,11 @@ class HaoYouTiLi(BaseTask):
                 self.logger.info("QQ好友体力领取成功")
             else:
                 self.logger.warning("未能领取QQ好友体力")
-            self._update_next_execute_time()
+            self._update_next_execute_time(time_offset=timedelta(hours=8))
         except self.StepFailedError as e:
             self.logger.error(e)
         except self.EndEarly as e:
-            self._update_next_execute_time()
+            self._update_next_execute_time(time_offset=timedelta(hours=8))
             self.logger.warning(e)
         except self.Stop as e:
             self.logger.warning("线程被要求停止")

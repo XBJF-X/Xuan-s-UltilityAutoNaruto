@@ -1,4 +1,5 @@
 import uiautomator2 as u2
+from PySide6.QtCore import QThread
 
 from utils.Config import Config
 
@@ -19,8 +20,11 @@ class U2:
         except Exception as e:
             print(e)
 
-    def click(self, x, y):
-        self.u2_device.click(x, y)
+    def click(self, x, y, duration=200):
+        self.u2_device.touch.down(x, y)
+        QThread.msleep(duration)
+        self.u2_device.touch.up(x, y)
+        # self.u2_device.click(x, y)
 
     def swipe(self, start_coordinate, end_coordinate, duration=0.5):
         self.u2_device.swipe(
@@ -40,3 +44,9 @@ class U2:
 
     def release(self):
         pass
+
+    def touch_down(self, x, y):
+        self.u2_device.touch.down(x, y)
+
+    def touch_up(self, x, y):
+        self.u2_device.touch.up(x, y)

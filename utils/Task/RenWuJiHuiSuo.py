@@ -124,7 +124,7 @@ class RenWuJiHuiSuo(BaseTask):
                     if not self.click_and_wait({
                         'type': "ELEMENT",
                         'name': "任务集会所-接取-出战"
-                    }):
+                    },wait_time=0):
                         raise self.StepFailedError("出战失败")
                     # 检查任务栏是否已满
                     if self.detect_and_search(

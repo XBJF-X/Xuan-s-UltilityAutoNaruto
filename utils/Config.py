@@ -1,3 +1,4 @@
+import copy
 import json
 import logging
 import os
@@ -68,10 +69,7 @@ class Config:
 
     def _save_config_to_file(self):
         try:
-            config_data = {
-                k: self.setting_dics[k]
-                for k in self.setting_dics
-            }
+            config_data = copy.deepcopy(self.setting_dics)
             with open(self.config_path, 'w', encoding='utf-8') as f:
                 json.dump(config_data, f, ensure_ascii=False, indent=4)
         except Exception as e:

@@ -118,8 +118,8 @@ class XiaoDuiTuXi(BaseTask):
                 }, wait_time=4)
             self.logger.info("进入自动战斗")
             # 使用连点器过小队突袭
-            self.auto_clicker([
-                (800, 750)
+            self.auto_cycle_actioner([
+                ("CLICK", (800, 750))
             ],
                 stop_conditions=[
                     {"type": "SCENE", "name": "小队突袭"}
@@ -173,8 +173,8 @@ class XiaoDuiTuXi(BaseTask):
                 "name": "小队突袭-组织助战-出战"
             }, wait_time=4)
             # 使用连点器过小队突袭
-            self.auto_clicker([
-                (800, 750)
+            self.auto_cycle_actioner([
+                ("CLICK", (800, 750))
             ],
                 stop_conditions=[
                     {"type": "SCENE", "name": "小队突袭"}
@@ -220,9 +220,9 @@ class XiaoDuiTuXi(BaseTask):
             # 直接开始点击，点到小队突袭界面出现
             self.logger.info("进入自动战斗")
             # 使用连点器过小队突袭
-            self.auto_clicker(
+            self.auto_cycle_actioner(
                 [
-                    (800, 750)
+                    ("CLICK", (800, 750))
                 ],
                 stop_conditions=[
                     {"type": "SCENE", "name": "小队突袭"}

@@ -114,11 +114,6 @@ class QingBaoZhan(BaseTask):
                 'type': "ELEMENT",
                 'name': "情报站-首页-福利站"
             }, wait_time=4)
-            # 确认福利站页面已出现
-            self.detect_and_wait({
-                'type': "SCENE",
-                'name': "福利站"
-            }, wait_time=2, max_time=4)
             self.logger.info("福利站签到")
             # 点击福利站-立即签到
             if not self.click_and_wait({
@@ -140,6 +135,12 @@ class QingBaoZhan(BaseTask):
                 'type': "ELEMENT",
                 'name': "福利站-我知道了"
             }, wait_time=3)
+            # 确认福利站页面已出现
+            if self.detect_and_wait({
+                'type': "SCENE",
+                'name': "福利站"
+            }, wait_time=2, max_time=4):
+                self.logger.info("[福利站]页面出现")
             self.logger.info("进入金币助手")
             # 点击[福利站-今日查看金币助手-去完成]
             if not self.click_and_search(

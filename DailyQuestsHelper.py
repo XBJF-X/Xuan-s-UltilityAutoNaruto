@@ -3,6 +3,7 @@ import json
 import logging
 import os
 import sys
+from collections import defaultdict
 from datetime import datetime
 from typing import Dict
 from zoneinfo import ZoneInfo
@@ -11,7 +12,8 @@ import cv2
 import numpy as np
 
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QApplication, QWidget, QFileDialog
+from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QApplication, QWidget, QFileDialog, QLineEdit, \
+    QCheckBox
 
 from ui.DailyQuestsHelper_ui import Ui_DailyQuestsHelper
 from StaticFunctions import resource_path, get_real_path
@@ -22,6 +24,7 @@ from utils.Logger import LogWindow
 from utils.Scheduler import Scheduler
 from utils.Config import Config
 from utils.Task import TREE_INDEX_DIC, TASK_NAME_CN2EN_MAP
+from utils.Task.BaseTask import BaseTask
 
 
 class DailyQuestsHelper(QMainWindow):
@@ -33,12 +36,13 @@ class DailyQuestsHelper(QMainWindow):
         self.log_window = LogWindow(self.config)
         self.logger = logging.getLogger("日常助手")
         self.init_environment()
+        self.task_common_control_ref_map: Dict[str:Dict[str:QWidget]] = defaultdict(dict)  # 任务控制控件
         self.alloc_ui_ref_map()
         self.connect_ui2function()
         self.scene_templates = self.preprocess_templates("src/SceneInfo.json")
         self.element_templates = self.preprocess_templates("src/ElementInfo.json")
         self.recognizer = Recognizer(self.scene_templates, self.element_templates)
-        self.scheduler = Scheduler(self.UI, self.recognizer, self.config)
+        self.scheduler = Scheduler(self.UI, self.recognizer, self.config,self.task_common_control_ref_map)
         self.logger.info("初始化完成...")
 
     def init_environment(self):
@@ -65,12 +69,14 @@ class DailyQuestsHelper(QMainWindow):
 
         cv2.ocl.setUseOpenCL(True)
         self.setWindowIcon(QIcon(resource_path("src/ASDS.ico")))
-        self.resize(1400, 600)
+        self.resize(1400, 800)
         app.aboutToQuit.connect(self._on_about_to_quit)
         # self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
 
     def _on_about_to_quit(self):
         self.scheduler.timer_thread.stop()
+        self.scheduler.stop()
+        self.logger.debug("日常助手退出")
 
     def alloc_ui_ref_map(self):
         # 日志窗口设置
@@ -133,17 +139,19 @@ class DailyQuestsHelper(QMainWindow):
                 widget_name = widget.objectName()
                 for key, value in TASK_NAME_CN2EN_MAP.items():
                     if f"{value}_Enable" == widget_name:
+                        self.task_common_control_ref_map[key]["CheckBox"] = widget
                         widget.setChecked(self.config.get_task_config(key, "是否启用"))
-                        widget.toggled.connect(lambda flag, task_name=key: self.config.set_task_config(task_name, "是否启用", flag))
+                        widget.toggled.connect(lambda state, task_name=key: self.scheduler.toggle_task_activation(state, task_name))
                         break
                     elif f"{value}_next_execute_time" == widget_name:
+                        self.task_common_control_ref_map[key]["LineEdit"] = widget
                         widget.setText(
                             datetime.fromtimestamp(
                                 self.config.get_task_config(key, "下次执行时间"),
                                 tz=ZoneInfo("Asia/Shanghai")
                             ).strftime("%Y-%m-%d %H:%M:%S"))
                         widget.editingFinished.connect(
-                            lambda task_name=key, w=widget: self._on_task_next_execute_time_changed(task_name, w.text())
+                            lambda task_name=key: self.scheduler.task_next_execute_time_editfinished(task_name)
                         )
                         break
             except Exception as e:
@@ -221,10 +229,6 @@ class DailyQuestsHelper(QMainWindow):
             elif name == "雷电":
                 self.UI.LD_install_path.setText(folder)
                 self.config.set_config("雷电安装路径", folder)
-
-    def _on_task_next_execute_time_changed(self, task_name, text):
-        if text == "":
-            self.logger.debug(f"{task_name} 将立刻执行")
 
 
 if __name__ == "__main__":

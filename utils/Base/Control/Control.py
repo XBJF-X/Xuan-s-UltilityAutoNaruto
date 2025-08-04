@@ -2,6 +2,7 @@ import enum
 import logging
 from PySide6.QtWidgets import QMessageBox
 
+from utils.Base.Control.ADB import ADB
 from utils.Base.Control.U2 import U2
 from utils.Config import Config
 
@@ -35,7 +36,12 @@ class Control:
     def init_control_instance(self, initial=False):
         self.logger.info(f"当前控制模式：[{self.control_mode.name}]")
         try:
-            if self.control_mode == ControlMode.U2:
+            if self.control_mode == ControlMode.ADB:
+                self.control_instance = ADB(self.config)
+                if not initial:
+                    QMessageBox.information(None, "", f"[ADB]初始化控制实例初始化完毕", QMessageBox.StandardButton.Ok)
+                self.logger.info("[ADB]控制实例初始化完毕")
+            elif self.control_mode == ControlMode.U2:
                 self.control_instance = U2(self.config)
                 if not initial:
                     QMessageBox.information(None, "", f"[U2]初始化控制实例初始化完毕", QMessageBox.StandardButton.Ok)
@@ -45,8 +51,8 @@ class Control:
             self.control_instance_ready = True
             self.config.set_config('控制模式', self.control_mode)
         except Exception as e:
-            QMessageBox.warning(None, "", f"[{self.control_mode.name}]初始化控制实例出错，将启用[U2]方案", QMessageBox.StandardButton.Ok)
-            self.logger.error(f"[%s]初始化控制实例出错，将启用[U2]方案", self.control_mode.name)
+            QMessageBox.warning(None, "", f"[{self.control_mode.name}]初始化控制实例出错，将启用[ADB]方案", QMessageBox.StandardButton.Ok)
+            self.logger.error(f"[%s]初始化控制实例出错，将启用[ADB]方案", self.control_mode.name)
             try:
                 self.control_mode = ControlMode.U2
                 self.control_instance = U2(self.config)
@@ -109,3 +115,10 @@ class Control:
 
     def press(self, key):
         self.control_instance.press(key)
+
+    def touch_down(self, x, y):
+        self.control_instance.touch_down(x,y)
+
+    def touch_up(self, x, y):
+        self.control_instance.touch_up(x, y)
+

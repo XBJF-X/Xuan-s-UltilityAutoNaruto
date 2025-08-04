@@ -3,7 +3,6 @@ from utils.Task.BaseTask import BaseTask
 
 
 class MeiRiShengChang(BaseTask):
-
     def _execute(self):
         self.logger.info(f"开始执行")
         try:
@@ -86,95 +85,24 @@ class MeiRiShengChang(BaseTask):
                     'type': "COORDINATE",
                     'coordinate': [1523, 45]
                 })
-                if self.click_and_wait({
+                self.fight()
+                self.logger.info("查看[决斗场-忍术对战-单人模式-决斗任务]")
+                if not self.click_and_wait({
                     'type': "ELEMENT",
-                    'name': "决斗场-忍术对战-单人模式-开战"
-                }):
-                    self.click_and_wait({
-                        'type': "ELEMENT",
-                        'name': "决斗场-忍术对战-单人模式-开战"
-                    })
-                    flag = self.detect_and_search(
-                        [
-                            {'type': "ELEMENT", 'name': "决斗场-60"},
-                            {"type": "ELEMENT",
-                                "name": "决斗场-忍术对战-单人模式-你的对手离开了游戏"},
-                        ],
-                        [
-                            {'click': {'type': "COORDINATE", 'coordinate': [800, 569]}}
-                        ],
-                        100
-                    )
-                    if not flag:
-                        raise self.StepFailedError("开始战斗超时")
-                    else:
-                        if flag == 2:
-                            self.logger.warning("对手退出游戏，即将返回[忍术对战-单人模式]")
-                            if not self.detect_and_search(
-                                    [
-                                        {'type': "SCENE", 'name': "决斗场-忍术对战-单人模式"}
-                                    ],
-                                    [
-                                        {'click': {'type': "COORDINATE", 'coordinate': [800, 745]}},
-                                        {'click': {'type': "COORDINATE", 'coordinate': [800, 569]}}
-                                    ],
-                                    30
-                            ):
-
-                                raise self.StepFailedError("战斗结束后无法退回[忍术对战-单人模式]")
-                        elif flag == 1:
-                            self.logger.info("倒计时60s出现，连点执行中...")
-                            # 使用连点器，结束的标志定为举报反馈
-                            self.auto_clicker(
-                                [
-                                    self.config.get_config("键位")[KEY_INDEX.BasicAttack],
-                                    self.config.get_config("键位")[KEY_INDEX.FirstSkill],
-                                    self.config.get_config("键位")[KEY_INDEX.SecondSkill],
-                                    self.config.get_config("键位")[KEY_INDEX.UltimateSkill],
-                                    self.config.get_config("键位")[KEY_INDEX.SecretScroll],
-                                    self.config.get_config("键位")[KEY_INDEX.Summon],
-                                    self.config.get_config("键位")[KEY_INDEX.Substitution],
-                                    self.config.get_config("键位")[KEY_INDEX.LeftSubSkill],
-                                    self.config.get_config("键位")[KEY_INDEX.RightSubSkill]
-                                ],
-                                stop_conditions=[
-                                    {"type": "ELEMENT", "name": "决斗场-举报反馈"},
-                                    {"type": "ELEMENT",
-                                        "name": "决斗场-忍术对战-单人模式-你的对手离开了游戏"},
-                                ],
-                                max_workers=7
-                            )
-                            self.logger.info("对局结束，返回[单人模式-首页]")
-                    # 先回到单人模式首页，看看有没有宝箱能领的，能领的都领掉
-                    if not self.detect_and_search(
-                            [
-                                {'type': "SCENE", 'name': "决斗场-忍术对战-单人模式"}
-                            ],
-                            [
-                                {'click': {'type': "COORDINATE", 'coordinate': [800, 745]}},
-                                {'click': {'type': "COORDINATE", 'coordinate': [800, 569]}}
-                            ],
-                            30
-                    ):
-                        raise self.StepFailedError("战斗结束后无法退回[忍术对战-单人模式]")
-
-                    self.logger.info("查看[决斗场-忍术对战-单人模式-决斗任务]")
-                    if not self.click_and_wait({
-                        'type': "ELEMENT",
-                        'name': "决斗场-忍术对战-单人模式-决斗任务"
-                    }):
-                        raise self.StepFailedError("未进入[决斗场-忍术对战-单人模式-决斗任务]")
-                    if not self.detect_and_wait({
-                        'type': "SCENE",
-                        'name': "决斗场-忍术对战-单人模式-决斗任务"
-                    }):
-                        raise self.StepFailedError("[决斗场-忍术对战-单人模式-决斗任务]未出现")
-                    self.logger.info("领取所有待领取的决斗任务宝箱")
-                    while self.click_and_wait({
-                        'type': "ELEMENT",
-                        'name': "决斗任务-宝箱-待领取"
-                    }):
-                        continue
+                    'name': "决斗场-忍术对战-单人模式-决斗任务"
+                }, max_time=3):
+                    raise self.StepFailedError("未进入[决斗场-忍术对战-单人模式-决斗任务]")
+                if not self.detect_and_wait({
+                    'type': "SCENE",
+                    'name': "决斗场-忍术对战-单人模式-决斗任务"
+                }, max_time=5):
+                    raise self.StepFailedError("[决斗场-忍术对战-单人模式-决斗任务]未出现")
+                self.logger.info("领取所有待领取的决斗任务宝箱")
+                while self.click_and_wait({
+                    'type': "ELEMENT",
+                    'name': "决斗任务-宝箱-待领取"
+                }, max_time=3):
+                    continue
             self.logger.info("不存在未达成的每日胜场任务")
             self.click_and_wait({
                 'type': "COORDINATE",
@@ -193,3 +121,79 @@ class MeiRiShengChang(BaseTask):
             self.home()
             self.logger.info(f"执行完毕")
             self.callback(self)
+
+    def fight(self):
+        """
+        通用的刷决斗场函数，周胜赛季胜等等都可以使用
+        :return:
+        """
+        # 进入战斗
+        if self.click_and_wait({
+            'type': "ELEMENT",
+            'name': "决斗场-忍术对战-单人模式-开战"
+        }):
+            self.click_and_wait({
+                'type': "ELEMENT",
+                'name': "决斗场-忍术对战-单人模式-开战"
+            })
+            flag = self.detect_and_search(
+                [
+                    {'type': "ELEMENT", 'name': "决斗场-60"},
+                    {"type": "ELEMENT",
+                        "name": "决斗场-忍术对战-单人模式-你的对手离开了游戏"},
+                ],
+                [
+                    {'click': {'type': "COORDINATE", 'coordinate': [800, 569]}}
+                ],
+                100
+            )
+            if not flag:
+                raise self.StepFailedError("开始战斗超时")
+            else:
+                if flag == 2:
+                    self.logger.warning("对手退出游戏，即将返回[忍术对战-单人模式]")
+                    if not self.detect_and_search(
+                            [
+                                {'type': "SCENE", 'name': "决斗场-忍术对战-单人模式"}
+                            ],
+                            [
+                                {'click': {'type': "COORDINATE", 'coordinate': [800, 745]}},
+                                {'click': {'type': "COORDINATE", 'coordinate': [800, 569]}}
+                            ],
+                            30
+                    ):
+                        raise self.StepFailedError("战斗结束后无法退回[忍术对战-单人模式]")
+                elif flag == 1:
+                    self.logger.info("倒计时60s出现，连点执行中...")
+                    # 使用连点器，结束的标志定为举报反馈
+                    self.auto_cycle_actioner(
+                        [
+                            ("PRESS", self.config.get_config("键位")[KEY_INDEX.BasicAttack]),
+                            ("PRESS", self.config.get_config("键位")[KEY_INDEX.FirstSkill]),
+                            ("PRESS", self.config.get_config("键位")[KEY_INDEX.SecondSkill]),
+                            ("PRESS", self.config.get_config("键位")[KEY_INDEX.UltimateSkill]),
+                            ("CLICK", self.config.get_config("键位")[KEY_INDEX.SecretScroll]),
+                            ("CLICK", self.config.get_config("键位")[KEY_INDEX.Summon]),
+                            ("PRESS", self.config.get_config("键位")[KEY_INDEX.Substitution])
+                        ],
+                        stop_conditions=[
+                            {"type": "ELEMENT", "name": "决斗场-举报反馈"},
+                            {"type": "ELEMENT","name": "决斗场-忍术对战-单人模式-你的对手离开了游戏"},
+                        ],
+                        max_workers=7
+                    )
+                    self.logger.info("对局结束，返回[单人模式-首页]")
+            # 先回到单人模式首页，看看有没有宝箱能领的，能领的都领掉
+            if not self.detect_and_search(
+                    [
+                        {'type': "SCENE", 'name': "决斗场-忍术对战-单人模式"}
+                    ],
+                    [
+                        {'click': {'type': "COORDINATE", 'coordinate': [800, 745]}},
+                        {'click': {'type': "COORDINATE", 'coordinate': [800, 569]}}
+                    ],
+                    30
+            ):
+                raise self.StepFailedError("战斗结束后无法退回[忍术对战-单人模式]")
+        else:
+            raise self.StepFailedError("点击出战失败")

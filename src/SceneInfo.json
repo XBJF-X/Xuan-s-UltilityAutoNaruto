@@ -182,7 +182,7 @@
     "决斗场-忍术对战-单人模式-决斗任务": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.7
     },
     "冒险-精英副本-便捷扫荡": {
         "resolution": [1600, 900],

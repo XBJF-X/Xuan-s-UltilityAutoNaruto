@@ -295,7 +295,7 @@ class MuMu:
 
 if __name__ == "__main__":
     # 创建实例并初始化
-    mumu = MuMu(FightInformation())
+    mumu = MuMu(Config())
     if mumu.init():
         print("MuMu emulator initialized successfully!")
         # 捕获屏幕

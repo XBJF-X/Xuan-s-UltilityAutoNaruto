@@ -205,6 +205,9 @@ font: 15pt &quot;黑体&quot;;
               <bold>false</bold>
              </font>
             </property>
+            <property name="focusPolicy">
+             <enum>Qt::FocusPolicy::ClickFocus</enum>
+            </property>
             <property name="layoutDirection">
              <enum>Qt::LayoutDirection::LeftToRight</enum>
             </property>
@@ -679,25 +682,25 @@ QTreeWidget QScrollBar::add-line:vertical {
           <property name="enabled">
            <bool>true</bool>
           </property>
-          <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,1">
+          <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0">
            <item>
             <widget class="QWidget" name="widget_2" native="true">
              <property name="minimumSize">
               <size>
-               <width>270</width>
+               <width>260</width>
                <height>0</height>
               </size>
              </property>
              <property name="maximumSize">
               <size>
-               <width>270</width>
+               <width>260</width>
                <height>16777215</height>
               </size>
              </property>
              <property name="styleSheet">
               <string notr="true"/>
              </property>
-             <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,0,4,4">
+             <layout class="QVBoxLayout" name="verticalLayout_3" stretch="1,1,3,5">
               <property name="spacing">
                <number>9</number>
               </property>
@@ -959,6 +962,9 @@ margin-bottom:0px;</string>
                    <property name="enabled">
                     <bool>true</bool>
                    </property>
+                   <property name="focusPolicy">
+                    <enum>Qt::FocusPolicy::ClickFocus</enum>
+                   </property>
                    <property name="styleSheet">
                     <string notr="true">QPushButton{
 border: 2px solid #b5b5b5;  /* 2px宽的深灰色实线边框 */
@@ -1002,19 +1008,19 @@ border-radius: 10px;
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout">
                  <property name="spacing">
-                  <number>3</number>
+                  <number>4</number>
                  </property>
                  <property name="leftMargin">
-                  <number>5</number>
+                  <number>9</number>
                  </property>
                  <property name="topMargin">
-                  <number>0</number>
+                  <number>9</number>
                  </property>
                  <property name="rightMargin">
-                  <number>5</number>
+                  <number>9</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>5</number>
+                  <number>9</number>
                  </property>
                  <item>
                   <widget class="QLabel" name="label_2">
@@ -1217,7 +1223,7 @@ QScrollArea &gt; QWidget &gt; QWidget {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>230</width>
+                      <width>212</width>
                       <height>63</height>
                      </rect>
                     </property>
@@ -1243,19 +1249,19 @@ border-radius: 10px;
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_6">
                  <property name="spacing">
-                  <number>3</number>
+                  <number>4</number>
                  </property>
                  <property name="leftMargin">
-                  <number>5</number>
+                  <number>9</number>
                  </property>
                  <property name="topMargin">
-                  <number>0</number>
+                  <number>9</number>
                  </property>
                  <property name="rightMargin">
-                  <number>5</number>
+                  <number>9</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>5</number>
+                  <number>9</number>
                  </property>
                  <item>
                   <widget class="QLabel" name="label_3">
@@ -1456,8 +1462,8 @@ QScrollArea &gt; QWidget &gt; QWidget {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>230</width>
-                      <height>142</height>
+                      <width>212</width>
+                      <height>76</height>
                      </rect>
                     </property>
                    </widget>
@@ -1476,19 +1482,19 @@ border-radius: 10px;
                 </property>
                 <layout class="QVBoxLayout" name="verticalLayout_7">
                  <property name="spacing">
-                  <number>3</number>
+                  <number>4</number>
                  </property>
                  <property name="leftMargin">
-                  <number>5</number>
+                  <number>9</number>
                  </property>
                  <property name="topMargin">
-                  <number>0</number>
+                  <number>9</number>
                  </property>
                  <property name="rightMargin">
-                  <number>5</number>
+                  <number>9</number>
                  </property>
                  <property name="bottomMargin">
-                  <number>5</number>
+                  <number>9</number>
                  </property>
                  <item>
                   <widget class="QLabel" name="label_4">
@@ -1690,8 +1696,8 @@ QScrollArea &gt; QWidget &gt; QWidget {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>230</width>
-                      <height>142</height>
+                      <width>212</width>
+                      <height>165</height>
                      </rect>
                     </property>
                    </widget>
@@ -1822,6 +1828,9 @@ QCheckBox::indicator:disabled {
                     </item>
                     <item alignment="Qt::AlignmentFlag::AlignRight">
                      <widget class="QCheckBox" name="bool_debug">
+                      <property name="focusPolicy">
+                       <enum>Qt::FocusPolicy::ClickFocus</enum>
+                      </property>
                       <property name="text">
                        <string>调试模式</string>
                       </property>
@@ -1829,6 +1838,9 @@ QCheckBox::indicator:disabled {
                     </item>
                     <item alignment="Qt::AlignmentFlag::AlignRight">
                      <widget class="QCheckBox" name="bool_save_img">
+                      <property name="focusPolicy">
+                       <enum>Qt::FocusPolicy::ClickFocus</enum>
+                      </property>
                       <property name="styleSheet">
                        <string notr="true"/>
                       </property>
@@ -2032,6 +2044,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="DengLuJiangLi_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -2070,6 +2085,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -2287,6 +2305,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="PaiHangBangDianZan_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -2325,6 +2346,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -2411,8 +2435,8 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>585</width>
-                   <height>215</height>
+                   <width>625</width>
+                   <height>533</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_93">
@@ -2542,6 +2566,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="MeiYueQianDao_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -2580,6 +2607,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -2797,6 +2827,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="GouMaiTiLi_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -2835,6 +2868,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -3107,6 +3143,9 @@ margin-left:18px;</string>
                            <height>35</height>
                           </size>
                          </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::WheelFocus</enum>
+                         </property>
                          <property name="wrapping">
                           <bool>false</bool>
                          </property>
@@ -3335,6 +3374,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="JinBiZhaoCai_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -3373,6 +3415,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -3889,6 +3934,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="XiaoDuiTuXi_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -3927,6 +3975,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -4253,6 +4304,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
                         <widget class="QCheckBox" name="XiaoDuiTuXi_4rewards_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="text">
                           <string/>
                          </property>
@@ -4469,6 +4523,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="ZuZhiQiFu_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -4507,6 +4564,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -4724,6 +4784,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="HaoYouTiLi_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -4762,6 +4825,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -4979,6 +5045,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="PuTongRenZheZhaoMu_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -5017,6 +5086,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -5248,6 +5320,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="MeiRiFenXiang_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -5286,6 +5361,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -5515,6 +5593,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="FengRaoZhiJian_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -5553,6 +5634,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -5782,6 +5866,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="RenWuJiHuiSuo_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -5820,6 +5907,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -6037,6 +6127,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="YiLeWaiMai_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -6075,6 +6168,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -6304,6 +6400,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="MeiRiShengChang_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -6342,6 +6441,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -6571,6 +6673,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="ShengCunTiaoZhan_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -6609,6 +6714,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -6838,6 +6946,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="MiJingTanXian_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -6876,6 +6987,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -7105,6 +7219,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="QingBaoZhan_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -7143,6 +7260,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -7373,6 +7493,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="MaoXianFuBen_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -7411,6 +7534,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -7628,6 +7754,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="HuoYueDuJiangLi_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -7666,6 +7795,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -7883,6 +8015,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="QingKongYouJian_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -7921,6 +8056,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -8150,6 +8288,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="XiuXingZhiLu_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -8188,6 +8329,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -8417,6 +8561,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="RenFaTieDianZanFenXiang_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -8455,6 +8602,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -8684,6 +8834,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="TuanBen_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -8722,6 +8875,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -8951,6 +9107,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="YaoSaiZhengDuoZhan_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -8989,6 +9148,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -9218,6 +9380,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="PanRenLaiXi_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -9256,6 +9421,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -9485,6 +9653,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="KuaFuZhengBaSai_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -9523,6 +9694,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -9740,6 +9914,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="GaoJiRenZheZhaoMu_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -9778,6 +9955,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -10009,6 +10189,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="MeiZhouShengChang_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -10047,6 +10230,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -10265,6 +10451,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="SaiJiShengChang_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -10303,6 +10492,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -10521,6 +10713,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="GengDuoWanFa_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -10559,6 +10754,9 @@ margin-left:18px;</string>
                            <width>200</width>
                            <height>0</height>
                           </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="alignment">
                           <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -10777,6 +10975,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
                         <widget class="QCheckBox" name="ChongQiYouXi_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -10823,6 +11024,9 @@ margin-left:18px;</string>
                            <italic>false</italic>
                            <bold>false</bold>
                           </font>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
                          <property name="autoFillBackground">
                           <bool>false</bool>
@@ -10921,7 +11125,7 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>613</width>
+                   <width>533</width>
                    <height>1015</height>
                   </rect>
                  </property>
@@ -11130,6 +11334,9 @@ border-radius:1px;
                        </property>
                        <item row="2" column="1">
                         <widget class="QLineEdit" name="serial">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="text">
                           <string/>
                          </property>
@@ -11518,7 +11725,7 @@ margin-left:18px;</string>
                      <item>
                       <widget class="QStackedWidget" name="screen_mode_settings_stackedWidget">
                        <property name="currentIndex">
-                        <number>0</number>
+                        <number>2</number>
                        </property>
                        <widget class="QWidget" name="DxCam">
                         <layout class="QVBoxLayout" name="verticalLayout_11">
@@ -11771,6 +11978,9 @@ margin-left:18px;</string>
                                <height>40</height>
                               </size>
                              </property>
+                             <property name="focusPolicy">
+                              <enum>Qt::FocusPolicy::ClickFocus</enum>
+                             </property>
                             </widget>
                            </item>
                            <item row="1" column="1">
@@ -11780,6 +11990,9 @@ margin-left:18px;</string>
                                <width>16777215</width>
                                <height>35</height>
                               </size>
+                             </property>
+                             <property name="focusPolicy">
+                              <enum>Qt::FocusPolicy::ClickFocus</enum>
                              </property>
                              <property name="text">
                               <string>浏览</string>
@@ -11908,6 +12121,9 @@ margin-left:18px;</string>
                                <height>40</height>
                               </size>
                              </property>
+                             <property name="focusPolicy">
+                              <enum>Qt::FocusPolicy::ClickFocus</enum>
+                             </property>
                             </widget>
                            </item>
                            <item row="1" column="1">
@@ -11917,6 +12133,9 @@ margin-left:18px;</string>
                                <width>16777215</width>
                                <height>35</height>
                               </size>
+                             </property>
+                             <property name="focusPolicy">
+                              <enum>Qt::FocusPolicy::ClickFocus</enum>
                              </property>
                              <property name="styleSheet">
                               <string notr="true"/>
@@ -12565,6 +12784,9 @@ margin-left:18px;</string>
                            <height>35</height>
                           </size>
                          </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="styleSheet">
                           <string notr="true"/>
                          </property>
@@ -12702,6 +12924,9 @@ margin-left:18px;</string>
                        </item>
                        <item row="0" column="1">
                         <widget class="QLineEdit" name="secondary_password">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
                          <property name="inputMask">
                           <string/>
                          </property>

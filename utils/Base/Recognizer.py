@@ -27,7 +27,8 @@ class Recognizer:
         self.scene_templates = scene_templates
         self.element_templates = element_templates
 
-    def scene_match(self, scene_img: np.ndarray, template_name: str) -> Tuple[bool, float]:
+    def scene_match(self, scene_img: np.ndarray, template_name: str, bool_debug:bool=True) -> Tuple[
+        bool, float]:
         """
         结合Alpha通道的模板匹配，忽略透明区域
         :param scene_img: 场景图（BGR格式，numpy数组）
@@ -66,7 +67,8 @@ class Recognizer:
         max_score = np.max(result)  # 获取所有位置中的最高匹配得分
         # 检查result的统计信息
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-        self.logger.debug(f"[{template_name}]匹配结果统计：最大值={max_val:.2f}")
+        if bool_debug:
+            self.logger.debug(f"[{template_name}]匹配结果统计：最大值={max_val:.2f}")
         # vis_img = visualize_confidence_heatmap(result, template_name)
         # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:-3]  # 截取前3位毫秒
         # # 构建带时间戳的文件名
@@ -75,7 +77,7 @@ class Recognizer:
         # print(f"[SCENE_MATCH]耗时 {(time.perf_counter() - start) * 1000:.2f} ms")
         return max_score >= threshold, max_score  # 超过阈值则认为匹配成功
 
-    def element_match(self, scene_img: np.ndarray, template_name: str) -> List[
+    def element_match(self, scene_img: np.ndarray, template_name: str, bool_debug: bool = True) -> List[
         Tuple[int, int, int, int]]:
         """
         在场景图中匹配模板元素，忽略模板的透明像素（Alpha=0区域），支持多目标和去重
@@ -91,7 +93,7 @@ class Recognizer:
         if template_data.get('match_way', None) == "SIFT":
             return self.sift_match(template_data, scene_img, template_name)
         else:
-            return self.template_match(template_data, scene_img, template_name)
+            return self.template_match(template_data, scene_img, template_name, bool_debug)
 
     def sift_match(self, template_data, scene_img, template_name, min_good_matches=10, ratio=0.75):
         # 1. 读取图像
@@ -146,7 +148,7 @@ class Recognizer:
         else:
             return []
 
-    def template_match(self, template_data, scene_img, template_name):
+    def template_match(self, template_data, scene_img, template_name, bool_debug: bool = True):
         template_img = template_data['GRAY']
         mask = template_data['MASK']
         threshold = template_data['threshold']
@@ -175,7 +177,8 @@ class Recognizer:
             return []
         # # 检查result的统计信息
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-        self.logger.debug(f"[{template_name}]匹配结果统计：最大值={max_val:.2f}")
+        if bool_debug:
+            self.logger.debug(f"[{template_name}]匹配结果统计：最大值={max_val:.2f}")
         # vis_img = visualize_confidence_heatmap(result, template_name)
         # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:-3]  # 截取前3位毫秒
         # # 构建带时间戳的文件名

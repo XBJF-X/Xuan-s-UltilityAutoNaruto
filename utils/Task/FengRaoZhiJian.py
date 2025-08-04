@@ -58,12 +58,12 @@ class FengRaoZhiJian(BaseTask):
                 }, wait_time=3):
                     self.logger.info("领取丰饶之间奖励")
                     # 使用连点器过丰饶之间
-                    self.auto_clicker(
+                    self.auto_cycle_actioner(
                         [
-                            self.config.get_config("键位")[KEY_INDEX.BasicAttack],
-                            self.config.get_config("键位")[KEY_INDEX.FirstSkill],
-                            self.config.get_config("键位")[KEY_INDEX.SecondSkill],
-                            self.config.get_config("键位")[KEY_INDEX.UltimateSkill],
+                            ("PRESS", self.config.get_config("键位")[KEY_INDEX.BasicAttack]),
+                            ("PRESS", self.config.get_config("键位")[KEY_INDEX.FirstSkill]),
+                            ("PRESS", self.config.get_config("键位")[KEY_INDEX.SecondSkill]),
+                            ("PRESS", self.config.get_config("键位")[KEY_INDEX.UltimateSkill]),
                         ],
                         stop_conditions=[
                             {"type": "SCENE", "name": "丰饶之间"}
@@ -88,12 +88,12 @@ class FengRaoZhiJian(BaseTask):
             }, wait_time=4):
                 self.logger.info("无法免费完成，开始自动挑战")
                 # 使用连点器过丰饶之间
-                self.auto_clicker(
+                self.auto_cycle_actioner(
                     [
-                        self.config.get_config("键位")[KEY_INDEX.BasicAttack],
-                        self.config.get_config("键位")[KEY_INDEX.FirstSkill],
-                        self.config.get_config("键位")[KEY_INDEX.SecondSkill],
-                        self.config.get_config("键位")[KEY_INDEX.UltimateSkill],
+                        ("PRESS", self.config.get_config("键位")[KEY_INDEX.BasicAttack]),
+                        ("PRESS", self.config.get_config("键位")[KEY_INDEX.FirstSkill]),
+                        ("PRESS", self.config.get_config("键位")[KEY_INDEX.SecondSkill]),
+                        ("PRESS", self.config.get_config("键位")[KEY_INDEX.UltimateSkill]),
                     ],
                     stop_conditions=[
                         {"type": "SCENE", "name": "丰饶之间"}

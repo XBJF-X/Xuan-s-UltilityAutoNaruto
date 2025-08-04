@@ -56,12 +56,12 @@ class PaiHangBangDianZan(BaseTask):
                 raise self.StepFailedError("点赞未成功，可能是已经点赞过了")
             else:
                 self.logger.info("点赞成功")
-            self._update_next_execute_time(time_offset=timedelta(hours=11))
+            self._update_next_execute_time(time_offset=timedelta(hours=8))
 
         except self.StepFailedError as e:
             self.logger.error(e)
         except self.EndEarly as e:
-            self._update_next_execute_time(time_offset=timedelta(hours=11))
+            self._update_next_execute_time(time_offset=timedelta(hours=8))
             self.logger.warning(e)
         except self.Stop as e:
             self.logger.warning("线程被要求停止")

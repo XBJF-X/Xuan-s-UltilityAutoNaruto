@@ -4,7 +4,7 @@ import logging
 import threading
 import time
 from datetime import datetime, timedelta
-from typing import Dict, List, Callable
+from typing import Dict, List, Callable, Tuple
 from zoneinfo import ZoneInfo
 
 from PySide6.QtCore import QThread
@@ -132,20 +132,20 @@ class BaseTask:
         self.home()
         self.callback(self)
 
-    def detect_and_wait(self, params, wait_time=1, max_time=2.0, max_attempts=None):
+    def detect_and_wait(self, params, wait_time=1, max_time=2.0, max_attempts=None, bool_debug: bool = True):
         """
         检测并等待一段时间
         """
         start_time = time.perf_counter()
         if max_attempts:
             for i in range(max_attempts):
-                if self.device.detect(params):
+                if self.device.detect(params, bool_debug):
                     QThread.msleep(int(wait_time * 1000))
                     return True
             return False
         else:
             while time.perf_counter() - start_time < max_time:
-                if self.device.detect(params):
+                if self.device.detect(params, bool_debug):
                     QThread.msleep(int(wait_time * 1000))
                     return True
             return False
@@ -168,105 +168,103 @@ class BaseTask:
                     return True
             return False
 
-    def auto_clicker(self,
-                     coordinates: list,
-                     stop_conditions: List = None,
-                     max_clicks: int = None,
-                     interval: int = 1,
-                     max_workers: int = 1
-                     ):
+    def auto_cycle_actioner(self,
+                            actions: list[Tuple],
+                            stop_conditions: List = None,
+                            max_time: float = None,
+                            max_workers: int = 1,
+                            bool_debug: bool = False
+                            ):
         """
         自动连点器 - 按坐标列表循环点击，支持两种停止条件
 
         Args:
-            coordinates: 坐标列表，格式为 [(x1, y1), (x2, y2), ...]
+            actions: 操作格式为 [(action, (x1,y1)) , ...]
             stop_conditions: 停止条件字典列表，用于传入判定条件（默认None）
-            max_clicks: 最大点击轮次（默认None）
-            interval: 检查判定条件的间隔，默认为1，即每次都检查
+            max_time: 最大点击轮次（默认None）
             max_workers: 最大工作线程数，默认1
+            bool_debug: 要不要输出日志（避免有的过程检测次数过多导致日志累积）
 
         Returns:
             实际执行的点击轮次
         """
         # 检查参数
-        if not coordinates:
-            self.logger.warning("坐标列表为空，无法执行点击")
+        if not actions:
+            self.logger.warning("操作列表为空，无法执行")
             return 0
 
         # 检查停止条件
-        if stop_conditions is None and max_clicks is None:
+        if stop_conditions is None and max_time is None:
             self.logger.warning("未设置停止条件，将执行无限循环点击")
 
-        # 初始化计数器
-        round_count = 0
-        last_check = 0
+        start = time.perf_counter()
         stop_event = threading.Event()  # 用于通知停止的事件
-        check_lock = threading.Lock()  # 用于保护检查计数器的锁
 
         # 判定线程函数
         def check_stop_condition():
             nonlocal stop_event
             while not stop_event.is_set():
-                with check_lock:
-                    if round_count >= last_check + interval:
-                        # 执行检查
-                        # print(time.perf_counter())
+                # 执行检查
+                # print(time.perf_counter())
+                if self._should_stop():
+                    stop_event.set()
+                    raise self.Stop
+                if max_time is not None and time.perf_counter() - start >= max_time:
+                    self.logger.debug(f"达到最大时长 {max_time}，操作停止")
+                    stop_event.set()
+                    return
+                if stop_conditions is not None:
+                    for stop_condition in stop_conditions:
                         if self._should_stop():
                             stop_event.set()
                             raise self.Stop
-                        if max_clicks is not None and round_count >= max_clicks:
-                            self.logger.debug(f"达到最大轮次 {max_clicks}，点击停止")
+                        if self.detect_and_wait(stop_condition, 0, max_attempts=1, bool_debug=False):
+                            self.logger.debug(f"判定条件成立，点击停止")
                             stop_event.set()
                             return
-                        if stop_conditions is not None:
-                            for stop_condition in stop_conditions:
-                                if self._should_stop():
-                                    stop_event.set()
-                                    raise self.Stop
-                                if self.detect_and_wait(stop_condition, 0, max_attempts=1):
-                                    self.logger.debug(f"判定条件成立，点击停止")
-                                    stop_event.set()
-                                    return
-                QThread.msleep(10)
+                QThread.msleep(20)
 
         # 点击工作函数
         def click_worker(coord):
+            nonlocal stop_event
             x, y = coord
-            self.device.click_position((x, y), resolution=self.resolution, times=2)
+            while not stop_event.is_set():
+                self.device.click_position((x, y), resolution=self.resolution)
+            return x, y
+
+        def press_worker(coord):
+            nonlocal stop_event
+            x, y = coord
+            instance = self.device.controller.touch_down(x, y)
+            while not stop_event.is_set():
+                QThread.msleep(50)
+                continue
+            instance.touch_up(x, y)
             return x, y
 
         # 如果设置了停止条件，启动判定线程
-        if stop_conditions is not None or max_clicks is not None:
+        if stop_conditions is not None or max_time is not None:
             checker_thread = threading.Thread(target=check_stop_condition, daemon=True)
             checker_thread.start()
 
         # 创建线程池
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # 开始循环点击
-            while not stop_event.is_set():
-                if self._should_stop():
-                    raise self.Stop
-                # 使用线程池并行执行点击
-                future_to_coord = {executor.submit(click_worker, coord): coord for coord in
-                    coordinates}
-
-                # 收集点击结果
-                for future in concurrent.futures.as_completed(future_to_coord):
-                    try:
-                        result = future.result()
-                    except Exception as e:
-                        self.logger.error(f"点击过程中发生错误: {e}")
-
-                # 更新轮次计数
-                with check_lock:
-                    round_count += 1
-                    # self.logger.debug(f"完成第 {round_count} 轮点击\r")
+            futures = []
+            for action in actions:
+                futures.append(executor.submit(click_worker, action[1]))
+                # if action[0] == "CLICK":
+                #     futures.append(executor.submit(click_worker, action[1]))
+                # elif action[0] == "PRESS":
+                #     futures.append(executor.submit(press_worker, action[1]))
+            for future in concurrent.futures.as_completed(futures):
+                try:
+                    result = future.result()
+                except Exception as e:
+                    self.logger.error(f"点击{result}过程中发生错误: {e}")
 
         # 等待判定线程结束（如果有）
-        if stop_conditions is not None or max_clicks is not None:
+        if stop_conditions is not None or max_time is not None:
             checker_thread.join(timeout=1.0)
-
-        return round_count
 
     def click_and_search(self, params_list, search_actions, search_times, wait_time=1):
         """
@@ -406,10 +404,8 @@ class BaseTask:
                         'type': "ELEMENT",
                         'name': x_name
                     },
-                    0,
-                    max_time=0.3
+                    max_time=0.4
             ):
-                QThread.msleep(1000)
                 return True
         return False
 
@@ -427,7 +423,8 @@ class BaseTask:
             'name': home_name
         }):
             attempt += 1
-
+            if attempt > 1:
+                self.device.click_position([1526, 44], self.resolution)
             if not self.esc(x_names):
                 self.logger.warning(f"回退失败{attempt}次，已过去 {time.perf_counter() - start:2f}s")
             if max_attempts is not None:
@@ -442,7 +439,7 @@ class BaseTask:
 
     def press(self, key, wait_time=0):
         """
-        模拟设备按键，输入key即为按键名称，调用u2的内置函数，定义自查
+        模拟设备按键，输入key即为按键名称
         """
         self.device.press(key)
         if wait_time:
@@ -468,7 +465,7 @@ class BaseTask:
 
         if delta is not None:
             self.next_execute_time = current_time + delta
-            self.logger.info(f"下次执行时间为：{self.next_execute_time}")
+            self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
             self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
             return
         if self.cycle_type == CycleType.DAILY:
@@ -478,7 +475,7 @@ class BaseTask:
                 next_day.year, next_day.month, next_day.day, 0, 0,
                 tzinfo=china_tz  # 关键：添加时区信息
             ) + time_offset
-            self.logger.info(f"下次执行时间为：{self.next_execute_time}")
+            self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
             self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
 
         elif self.cycle_type == CycleType.WEEKLY:
@@ -490,7 +487,7 @@ class BaseTask:
                 next_monday.year, next_monday.month, next_monday.day, 0, 0,
                 tzinfo=china_tz
             ) + time_offset
-            self.logger.info(f"下次执行时间为：{self.next_execute_time}")
+            self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
             self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
 
         elif self.cycle_type == CycleType.MONTHLY:
@@ -503,7 +500,7 @@ class BaseTask:
                 year, month, 1, 0, 0,
                 tzinfo=china_tz  # 关键：添加时区信息
             ) + time_offset
-            self.logger.info(f"下次执行时间为：{self.next_execute_time}")
+            self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
             self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
         else:
             self.logger.warning(f"{CycleType(self.cycle_type)}任务")

@@ -76,7 +76,7 @@ class Device:
     def press(self, key):
         self.controller.press(key)
 
-    def detect(self, params: Dict) -> bool:
+    def detect(self, params: Dict, bool_debug: bool = True) -> bool:
         """
         检测是否为某个Scene或者某个Element是否存在
 
@@ -87,10 +87,10 @@ class Device:
         screen = self.screen_cap()
         # second = time.perf_counter()
         if params['type'] == "SCENE":
-            flag, confidence = self.recognizer.scene_match(screen, params['name'])
+            flag, confidence = self.recognizer.scene_match(screen, params['name'], bool_debug)
             # print(f"[CAP]{(second - start) * 1000:.1f} ms [MATCH]{(time.perf_counter() - second) * 1000:.1f} ms")
             return flag
         elif params['type'] == "ELEMENT":
-            coordinates = self.recognizer.element_match(screen, params['name'])
+            coordinates = self.recognizer.element_match(screen, params['name'], bool_debug)
             # print(f"[CAP]{(second - start) * 1000:.1f} ms [MATCH]{(time.perf_counter() - second) * 1000:.1f} ms")
             return len(coordinates) != 0

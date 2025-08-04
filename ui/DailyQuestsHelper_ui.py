@@ -26,7 +26,7 @@ class Ui_DailyQuestsHelper(object):
     def setupUi(self, DailyQuestsHelper):
         if not DailyQuestsHelper.objectName():
             DailyQuestsHelper.setObjectName(u"DailyQuestsHelper")
-        DailyQuestsHelper.resize(1179, 607)
+        DailyQuestsHelper.resize(1179, 589)
         font = QFont()
         font.setFamilies([u"\u9ed1\u4f53"])
         font.setPointSize(15)
@@ -86,6 +86,7 @@ class Ui_DailyQuestsHelper(object):
         self.overview_panel_button.setSizePolicy(sizePolicy1)
         self.overview_panel_button.setMinimumSize(QSize(0, 40))
         self.overview_panel_button.setFont(font)
+        self.overview_panel_button.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.overview_panel_button.setLayoutDirection(Qt.LayoutDirection.LeftToRight)
         self.overview_panel_button.setStyleSheet(u"QPushButton{\n"
 "border: 2px solid #b5b5b5;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
@@ -292,8 +293,8 @@ class Ui_DailyQuestsHelper(object):
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
         self.widget_2 = QWidget(self.Overview_Panel_widget)
         self.widget_2.setObjectName(u"widget_2")
-        self.widget_2.setMinimumSize(QSize(270, 0))
-        self.widget_2.setMaximumSize(QSize(270, 16777215))
+        self.widget_2.setMinimumSize(QSize(260, 0))
+        self.widget_2.setMaximumSize(QSize(260, 16777215))
         self.widget_2.setStyleSheet(u"")
         self.verticalLayout_3 = QVBoxLayout(self.widget_2)
         self.verticalLayout_3.setSpacing(9)
@@ -357,6 +358,7 @@ class Ui_DailyQuestsHelper(object):
         self.start_schedule_button = QPushButton(self.widget_4)
         self.start_schedule_button.setObjectName(u"start_schedule_button")
         self.start_schedule_button.setEnabled(True)
+        self.start_schedule_button.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.start_schedule_button.setStyleSheet(u"QPushButton{\n"
 "border: 2px solid #b5b5b5;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
 "background-color: rgb(255, 255, 255);\n"
@@ -393,9 +395,9 @@ class Ui_DailyQuestsHelper(object):
 "border-radius: 10px;\n"
 "}")
         self.verticalLayout = QVBoxLayout(self.widget_5)
-        self.verticalLayout.setSpacing(3)
+        self.verticalLayout.setSpacing(4)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(5, 0, 5, 5)
+        self.verticalLayout.setContentsMargins(9, 9, 9, 9)
         self.label_2 = QLabel(self.widget_5)
         self.label_2.setObjectName(u"label_2")
         self.label_2.setStyleSheet(u"\n"
@@ -487,7 +489,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea.setWidgetResizable(True)
         self.scroll_area_running_content = QWidget()
         self.scroll_area_running_content.setObjectName(u"scroll_area_running_content")
-        self.scroll_area_running_content.setGeometry(QRect(0, 0, 230, 63))
+        self.scroll_area_running_content.setGeometry(QRect(0, 0, 212, 63))
         self.scrollArea.setWidget(self.scroll_area_running_content)
 
         self.verticalLayout.addWidget(self.scrollArea)
@@ -507,9 +509,9 @@ class Ui_DailyQuestsHelper(object):
 "border-radius: 10px;\n"
 "}")
         self.verticalLayout_6 = QVBoxLayout(self.widget_6)
-        self.verticalLayout_6.setSpacing(3)
+        self.verticalLayout_6.setSpacing(4)
         self.verticalLayout_6.setObjectName(u"verticalLayout_6")
-        self.verticalLayout_6.setContentsMargins(5, 0, 5, 5)
+        self.verticalLayout_6.setContentsMargins(9, 9, 9, 9)
         self.label_3 = QLabel(self.widget_6)
         self.label_3.setObjectName(u"label_3")
         self.label_3.setStyleSheet(u"margin-top:3px;\n"
@@ -595,7 +597,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_2.setWidgetResizable(True)
         self.scroll_area_ready_content = QWidget()
         self.scroll_area_ready_content.setObjectName(u"scroll_area_ready_content")
-        self.scroll_area_ready_content.setGeometry(QRect(0, 0, 230, 150))
+        self.scroll_area_ready_content.setGeometry(QRect(0, 0, 212, 76))
         self.scrollArea_2.setWidget(self.scroll_area_ready_content)
 
         self.verticalLayout_6.addWidget(self.scrollArea_2)
@@ -610,9 +612,9 @@ class Ui_DailyQuestsHelper(object):
 "border-radius: 10px;\n"
 "}")
         self.verticalLayout_7 = QVBoxLayout(self.widget_7)
-        self.verticalLayout_7.setSpacing(3)
+        self.verticalLayout_7.setSpacing(4)
         self.verticalLayout_7.setObjectName(u"verticalLayout_7")
-        self.verticalLayout_7.setContentsMargins(5, 0, 5, 5)
+        self.verticalLayout_7.setContentsMargins(9, 9, 9, 9)
         self.label_4 = QLabel(self.widget_7)
         self.label_4.setObjectName(u"label_4")
         self.label_4.setStyleSheet(u"\n"
@@ -699,7 +701,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_3.setWidgetResizable(True)
         self.scroll_area_wait_content = QWidget()
         self.scroll_area_wait_content.setObjectName(u"scroll_area_wait_content")
-        self.scroll_area_wait_content.setGeometry(QRect(0, 0, 230, 150))
+        self.scroll_area_wait_content.setGeometry(QRect(0, 0, 212, 165))
         self.scrollArea_3.setWidget(self.scroll_area_wait_content)
 
         self.verticalLayout_7.addWidget(self.scrollArea_3)
@@ -708,8 +710,9 @@ class Ui_DailyQuestsHelper(object):
         self.verticalLayout_3.addWidget(self.widget_7)
 
         self.verticalLayout_3.setStretch(0, 1)
-        self.verticalLayout_3.setStretch(2, 4)
-        self.verticalLayout_3.setStretch(3, 4)
+        self.verticalLayout_3.setStretch(1, 1)
+        self.verticalLayout_3.setStretch(2, 3)
+        self.verticalLayout_3.setStretch(3, 5)
 
         self.horizontalLayout_2.addWidget(self.widget_2)
 
@@ -794,11 +797,13 @@ class Ui_DailyQuestsHelper(object):
 
         self.bool_debug = QCheckBox(self.widget_12)
         self.bool_debug.setObjectName(u"bool_debug")
+        self.bool_debug.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
 
         self.horizontalLayout_4.addWidget(self.bool_debug, 0, Qt.AlignmentFlag.AlignRight)
 
         self.bool_save_img = QCheckBox(self.widget_12)
         self.bool_save_img.setObjectName(u"bool_save_img")
+        self.bool_save_img.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.bool_save_img.setStyleSheet(u"")
 
         self.horizontalLayout_4.addWidget(self.bool_save_img, 0, Qt.AlignmentFlag.AlignRight)
@@ -823,7 +828,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.horizontalLayout_2.addWidget(self.widget_3)
 
-        self.horizontalLayout_2.setStretch(1, 1)
+        self.horizontalLayout_2.setStretch(0, 1)
         self.stackedWidget.addWidget(self.Overview_Panel_widget)
         self.DengLuJiangLi_widget = QWidget()
         self.DengLuJiangLi_widget.setObjectName(u"DengLuJiangLi_widget")
@@ -845,7 +850,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_15.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_12 = QWidget()
         self.scrollAreaWidgetContents_12.setObjectName(u"scrollAreaWidgetContents_12")
-        self.scrollAreaWidgetContents_12.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_12.setGeometry(QRect(0, 0, 585, 215))
         self.verticalLayout_73 = QVBoxLayout(self.scrollAreaWidgetContents_12)
         self.verticalLayout_73.setSpacing(20)
         self.verticalLayout_73.setObjectName(u"verticalLayout_73")
@@ -946,6 +951,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.DengLuJiangLi_Enable = QCheckBox(self.widget_45)
         self.DengLuJiangLi_Enable.setObjectName(u"DengLuJiangLi_Enable")
+        self.DengLuJiangLi_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.DengLuJiangLi_Enable.setStyleSheet(u"")
 
         self.gridLayout_24.addWidget(self.DengLuJiangLi_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -971,6 +977,7 @@ class Ui_DailyQuestsHelper(object):
         self.DengLuJiangLi_next_execute_time = QLineEdit(self.widget_45)
         self.DengLuJiangLi_next_execute_time.setObjectName(u"DengLuJiangLi_next_execute_time")
         self.DengLuJiangLi_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.DengLuJiangLi_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.DengLuJiangLi_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_24.addWidget(self.DengLuJiangLi_next_execute_time, 1, 1, 1, 1)
@@ -1022,7 +1029,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_19.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_16 = QWidget()
         self.scrollAreaWidgetContents_16.setObjectName(u"scrollAreaWidgetContents_16")
-        self.scrollAreaWidgetContents_16.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_16.setGeometry(QRect(0, 0, 585, 215))
         self.verticalLayout_89 = QVBoxLayout(self.scrollAreaWidgetContents_16)
         self.verticalLayout_89.setSpacing(20)
         self.verticalLayout_89.setObjectName(u"verticalLayout_89")
@@ -1123,6 +1130,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.PaiHangBangDianZan_Enable = QCheckBox(self.widget_53)
         self.PaiHangBangDianZan_Enable.setObjectName(u"PaiHangBangDianZan_Enable")
+        self.PaiHangBangDianZan_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.PaiHangBangDianZan_Enable.setStyleSheet(u"")
 
         self.gridLayout_28.addWidget(self.PaiHangBangDianZan_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -1148,6 +1156,7 @@ class Ui_DailyQuestsHelper(object):
         self.PaiHangBangDianZan_next_execute_time = QLineEdit(self.widget_53)
         self.PaiHangBangDianZan_next_execute_time.setObjectName(u"PaiHangBangDianZan_next_execute_time")
         self.PaiHangBangDianZan_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.PaiHangBangDianZan_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.PaiHangBangDianZan_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_28.addWidget(self.PaiHangBangDianZan_next_execute_time, 1, 1, 1, 1)
@@ -1199,7 +1208,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_20.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_17 = QWidget()
         self.scrollAreaWidgetContents_17.setObjectName(u"scrollAreaWidgetContents_17")
-        self.scrollAreaWidgetContents_17.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_17.setGeometry(QRect(0, 0, 625, 533))
         self.verticalLayout_93 = QVBoxLayout(self.scrollAreaWidgetContents_17)
         self.verticalLayout_93.setSpacing(20)
         self.verticalLayout_93.setObjectName(u"verticalLayout_93")
@@ -1300,6 +1309,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.MeiYueQianDao_Enable = QCheckBox(self.widget_55)
         self.MeiYueQianDao_Enable.setObjectName(u"MeiYueQianDao_Enable")
+        self.MeiYueQianDao_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.MeiYueQianDao_Enable.setStyleSheet(u"")
 
         self.gridLayout_29.addWidget(self.MeiYueQianDao_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -1325,6 +1335,7 @@ class Ui_DailyQuestsHelper(object):
         self.MeiYueQianDao_next_execute_time = QLineEdit(self.widget_55)
         self.MeiYueQianDao_next_execute_time.setObjectName(u"MeiYueQianDao_next_execute_time")
         self.MeiYueQianDao_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.MeiYueQianDao_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.MeiYueQianDao_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_29.addWidget(self.MeiYueQianDao_next_execute_time, 1, 1, 1, 1)
@@ -1376,7 +1387,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_9.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_6 = QWidget()
         self.scrollAreaWidgetContents_6.setObjectName(u"scrollAreaWidgetContents_6")
-        self.scrollAreaWidgetContents_6.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_6.setGeometry(QRect(0, 0, 585, 385))
         self.verticalLayout_46 = QVBoxLayout(self.scrollAreaWidgetContents_6)
         self.verticalLayout_46.setSpacing(20)
         self.verticalLayout_46.setObjectName(u"verticalLayout_46")
@@ -1477,6 +1488,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.GouMaiTiLi_Enable = QCheckBox(self.widget_30)
         self.GouMaiTiLi_Enable.setObjectName(u"GouMaiTiLi_Enable")
+        self.GouMaiTiLi_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.GouMaiTiLi_Enable.setStyleSheet(u"")
 
         self.gridLayout_18.addWidget(self.GouMaiTiLi_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -1502,6 +1514,7 @@ class Ui_DailyQuestsHelper(object):
         self.GouMaiTiLi_next_execute_time = QLineEdit(self.widget_30)
         self.GouMaiTiLi_next_execute_time.setObjectName(u"GouMaiTiLi_next_execute_time")
         self.GouMaiTiLi_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.GouMaiTiLi_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.GouMaiTiLi_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_18.addWidget(self.GouMaiTiLi_next_execute_time, 1, 1, 1, 1)
@@ -1717,6 +1730,7 @@ class Ui_DailyQuestsHelper(object):
         self.GouMaiTiLi_times = QSpinBox(self.widget_26)
         self.GouMaiTiLi_times.setObjectName(u"GouMaiTiLi_times")
         self.GouMaiTiLi_times.setMaximumSize(QSize(80, 35))
+        self.GouMaiTiLi_times.setFocusPolicy(Qt.FocusPolicy.WheelFocus)
         self.GouMaiTiLi_times.setWrapping(False)
         self.GouMaiTiLi_times.setFrame(True)
         self.GouMaiTiLi_times.setMaximum(20)
@@ -1771,7 +1785,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_10.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_7 = QWidget()
         self.scrollAreaWidgetContents_7.setObjectName(u"scrollAreaWidgetContents_7")
-        self.scrollAreaWidgetContents_7.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_7.setGeometry(QRect(0, 0, 585, 428))
         self.verticalLayout_47 = QVBoxLayout(self.scrollAreaWidgetContents_7)
         self.verticalLayout_47.setSpacing(20)
         self.verticalLayout_47.setObjectName(u"verticalLayout_47")
@@ -1872,6 +1886,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.JinBiZhaoCai_Enable = QCheckBox(self.widget_33)
         self.JinBiZhaoCai_Enable.setObjectName(u"JinBiZhaoCai_Enable")
+        self.JinBiZhaoCai_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.JinBiZhaoCai_Enable.setStyleSheet(u"")
 
         self.gridLayout_19.addWidget(self.JinBiZhaoCai_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -1897,6 +1912,7 @@ class Ui_DailyQuestsHelper(object):
         self.JinBiZhaoCai_next_execute_time = QLineEdit(self.widget_33)
         self.JinBiZhaoCai_next_execute_time.setObjectName(u"JinBiZhaoCai_next_execute_time")
         self.JinBiZhaoCai_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.JinBiZhaoCai_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.JinBiZhaoCai_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_19.addWidget(self.JinBiZhaoCai_next_execute_time, 1, 1, 1, 1)
@@ -2170,7 +2186,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_11.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_8 = QWidget()
         self.scrollAreaWidgetContents_8.setObjectName(u"scrollAreaWidgetContents_8")
-        self.scrollAreaWidgetContents_8.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_8.setGeometry(QRect(0, 0, 585, 421))
         self.verticalLayout_51 = QVBoxLayout(self.scrollAreaWidgetContents_8)
         self.verticalLayout_51.setSpacing(20)
         self.verticalLayout_51.setObjectName(u"verticalLayout_51")
@@ -2271,6 +2287,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.XiaoDuiTuXi_Enable = QCheckBox(self.widget_35)
         self.XiaoDuiTuXi_Enable.setObjectName(u"XiaoDuiTuXi_Enable")
+        self.XiaoDuiTuXi_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.XiaoDuiTuXi_Enable.setStyleSheet(u"")
 
         self.gridLayout_20.addWidget(self.XiaoDuiTuXi_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -2296,6 +2313,7 @@ class Ui_DailyQuestsHelper(object):
         self.XiaoDuiTuXi_next_execute_time = QLineEdit(self.widget_35)
         self.XiaoDuiTuXi_next_execute_time.setObjectName(u"XiaoDuiTuXi_next_execute_time")
         self.XiaoDuiTuXi_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.XiaoDuiTuXi_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.XiaoDuiTuXi_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_20.addWidget(self.XiaoDuiTuXi_next_execute_time, 1, 1, 1, 1)
@@ -2534,6 +2552,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.XiaoDuiTuXi_4rewards_Enable = QCheckBox(self.widget_36)
         self.XiaoDuiTuXi_4rewards_Enable.setObjectName(u"XiaoDuiTuXi_4rewards_Enable")
+        self.XiaoDuiTuXi_4rewards_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
 
         self.gridLayout_15.addWidget(self.XiaoDuiTuXi_4rewards_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
 
@@ -2584,7 +2603,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_33.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_30 = QWidget()
         self.scrollAreaWidgetContents_30.setObjectName(u"scrollAreaWidgetContents_30")
-        self.scrollAreaWidgetContents_30.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_30.setGeometry(QRect(0, 0, 585, 215))
         self.verticalLayout_145 = QVBoxLayout(self.scrollAreaWidgetContents_30)
         self.verticalLayout_145.setSpacing(20)
         self.verticalLayout_145.setObjectName(u"verticalLayout_145")
@@ -2685,6 +2704,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.ZuZhiQiFu_Enable = QCheckBox(self.widget_81)
         self.ZuZhiQiFu_Enable.setObjectName(u"ZuZhiQiFu_Enable")
+        self.ZuZhiQiFu_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.ZuZhiQiFu_Enable.setStyleSheet(u"")
 
         self.gridLayout_42.addWidget(self.ZuZhiQiFu_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -2710,6 +2730,7 @@ class Ui_DailyQuestsHelper(object):
         self.ZuZhiQiFu_next_execute_time = QLineEdit(self.widget_81)
         self.ZuZhiQiFu_next_execute_time.setObjectName(u"ZuZhiQiFu_next_execute_time")
         self.ZuZhiQiFu_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.ZuZhiQiFu_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.ZuZhiQiFu_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_42.addWidget(self.ZuZhiQiFu_next_execute_time, 1, 1, 1, 1)
@@ -2761,7 +2782,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_18.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_15 = QWidget()
         self.scrollAreaWidgetContents_15.setObjectName(u"scrollAreaWidgetContents_15")
-        self.scrollAreaWidgetContents_15.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_15.setGeometry(QRect(0, 0, 585, 215))
         self.verticalLayout_85 = QVBoxLayout(self.scrollAreaWidgetContents_15)
         self.verticalLayout_85.setSpacing(20)
         self.verticalLayout_85.setObjectName(u"verticalLayout_85")
@@ -2862,6 +2883,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.HaoYouTiLi_Enable = QCheckBox(self.widget_51)
         self.HaoYouTiLi_Enable.setObjectName(u"HaoYouTiLi_Enable")
+        self.HaoYouTiLi_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.HaoYouTiLi_Enable.setStyleSheet(u"")
 
         self.gridLayout_27.addWidget(self.HaoYouTiLi_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -2887,6 +2909,7 @@ class Ui_DailyQuestsHelper(object):
         self.HaoYouTiLi_next_execute_time = QLineEdit(self.widget_51)
         self.HaoYouTiLi_next_execute_time.setObjectName(u"HaoYouTiLi_next_execute_time")
         self.HaoYouTiLi_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.HaoYouTiLi_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.HaoYouTiLi_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_27.addWidget(self.HaoYouTiLi_next_execute_time, 1, 1, 1, 1)
@@ -2938,7 +2961,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_26.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_23 = QWidget()
         self.scrollAreaWidgetContents_23.setObjectName(u"scrollAreaWidgetContents_23")
-        self.scrollAreaWidgetContents_23.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_23.setGeometry(QRect(0, 0, 585, 215))
         self.verticalLayout_117 = QVBoxLayout(self.scrollAreaWidgetContents_23)
         self.verticalLayout_117.setSpacing(20)
         self.verticalLayout_117.setObjectName(u"verticalLayout_117")
@@ -3039,6 +3062,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.PuTongRenZheZhaoMu_Enable = QCheckBox(self.widget_67)
         self.PuTongRenZheZhaoMu_Enable.setObjectName(u"PuTongRenZheZhaoMu_Enable")
+        self.PuTongRenZheZhaoMu_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.PuTongRenZheZhaoMu_Enable.setStyleSheet(u"")
 
         self.gridLayout_35.addWidget(self.PuTongRenZheZhaoMu_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -3064,6 +3088,7 @@ class Ui_DailyQuestsHelper(object):
         self.PuTongRenZheZhaoMu_next_execute_time = QLineEdit(self.widget_67)
         self.PuTongRenZheZhaoMu_next_execute_time.setObjectName(u"PuTongRenZheZhaoMu_next_execute_time")
         self.PuTongRenZheZhaoMu_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.PuTongRenZheZhaoMu_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.PuTongRenZheZhaoMu_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_35.addWidget(self.PuTongRenZheZhaoMu_next_execute_time, 1, 1, 1, 1)
@@ -3115,7 +3140,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_22.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_19 = QWidget()
         self.scrollAreaWidgetContents_19.setObjectName(u"scrollAreaWidgetContents_19")
-        self.scrollAreaWidgetContents_19.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_19.setGeometry(QRect(0, 0, 585, 270))
         self.verticalLayout_101 = QVBoxLayout(self.scrollAreaWidgetContents_19)
         self.verticalLayout_101.setSpacing(20)
         self.verticalLayout_101.setObjectName(u"verticalLayout_101")
@@ -3224,6 +3249,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.MeiRiFenXiang_Enable = QCheckBox(self.widget_59)
         self.MeiRiFenXiang_Enable.setObjectName(u"MeiRiFenXiang_Enable")
+        self.MeiRiFenXiang_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.MeiRiFenXiang_Enable.setStyleSheet(u"")
 
         self.gridLayout_31.addWidget(self.MeiRiFenXiang_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -3249,6 +3275,7 @@ class Ui_DailyQuestsHelper(object):
         self.MeiRiFenXiang_next_execute_time = QLineEdit(self.widget_59)
         self.MeiRiFenXiang_next_execute_time.setObjectName(u"MeiRiFenXiang_next_execute_time")
         self.MeiRiFenXiang_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.MeiRiFenXiang_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.MeiRiFenXiang_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_31.addWidget(self.MeiRiFenXiang_next_execute_time, 1, 1, 1, 1)
@@ -3300,7 +3327,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_16.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_13 = QWidget()
         self.scrollAreaWidgetContents_13.setObjectName(u"scrollAreaWidgetContents_13")
-        self.scrollAreaWidgetContents_13.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_13.setGeometry(QRect(0, 0, 585, 238))
         self.verticalLayout_77 = QVBoxLayout(self.scrollAreaWidgetContents_13)
         self.verticalLayout_77.setSpacing(20)
         self.verticalLayout_77.setObjectName(u"verticalLayout_77")
@@ -3409,6 +3436,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.FengRaoZhiJian_Enable = QCheckBox(self.widget_47)
         self.FengRaoZhiJian_Enable.setObjectName(u"FengRaoZhiJian_Enable")
+        self.FengRaoZhiJian_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.FengRaoZhiJian_Enable.setStyleSheet(u"")
 
         self.gridLayout_25.addWidget(self.FengRaoZhiJian_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -3434,6 +3462,7 @@ class Ui_DailyQuestsHelper(object):
         self.FengRaoZhiJian_next_execute_time = QLineEdit(self.widget_47)
         self.FengRaoZhiJian_next_execute_time.setObjectName(u"FengRaoZhiJian_next_execute_time")
         self.FengRaoZhiJian_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.FengRaoZhiJian_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.FengRaoZhiJian_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_25.addWidget(self.FengRaoZhiJian_next_execute_time, 1, 1, 1, 1)
@@ -3485,7 +3514,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_30.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_27 = QWidget()
         self.scrollAreaWidgetContents_27.setObjectName(u"scrollAreaWidgetContents_27")
-        self.scrollAreaWidgetContents_27.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_27.setGeometry(QRect(0, 0, 585, 238))
         self.verticalLayout_133 = QVBoxLayout(self.scrollAreaWidgetContents_27)
         self.verticalLayout_133.setSpacing(20)
         self.verticalLayout_133.setObjectName(u"verticalLayout_133")
@@ -3594,6 +3623,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.RenWuJiHuiSuo_Enable = QCheckBox(self.widget_75)
         self.RenWuJiHuiSuo_Enable.setObjectName(u"RenWuJiHuiSuo_Enable")
+        self.RenWuJiHuiSuo_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.RenWuJiHuiSuo_Enable.setStyleSheet(u"")
 
         self.gridLayout_39.addWidget(self.RenWuJiHuiSuo_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -3619,6 +3649,7 @@ class Ui_DailyQuestsHelper(object):
         self.RenWuJiHuiSuo_next_execute_time = QLineEdit(self.widget_75)
         self.RenWuJiHuiSuo_next_execute_time.setObjectName(u"RenWuJiHuiSuo_next_execute_time")
         self.RenWuJiHuiSuo_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.RenWuJiHuiSuo_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.RenWuJiHuiSuo_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_39.addWidget(self.RenWuJiHuiSuo_next_execute_time, 1, 1, 1, 1)
@@ -3670,7 +3701,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_32.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_29 = QWidget()
         self.scrollAreaWidgetContents_29.setObjectName(u"scrollAreaWidgetContents_29")
-        self.scrollAreaWidgetContents_29.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_29.setGeometry(QRect(0, 0, 585, 215))
         self.verticalLayout_141 = QVBoxLayout(self.scrollAreaWidgetContents_29)
         self.verticalLayout_141.setSpacing(20)
         self.verticalLayout_141.setObjectName(u"verticalLayout_141")
@@ -3771,6 +3802,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.YiLeWaiMai_Enable = QCheckBox(self.widget_79)
         self.YiLeWaiMai_Enable.setObjectName(u"YiLeWaiMai_Enable")
+        self.YiLeWaiMai_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.YiLeWaiMai_Enable.setStyleSheet(u"")
 
         self.gridLayout_41.addWidget(self.YiLeWaiMai_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -3796,6 +3828,7 @@ class Ui_DailyQuestsHelper(object):
         self.YiLeWaiMai_next_execute_time = QLineEdit(self.widget_79)
         self.YiLeWaiMai_next_execute_time.setObjectName(u"YiLeWaiMai_next_execute_time")
         self.YiLeWaiMai_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.YiLeWaiMai_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.YiLeWaiMai_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_41.addWidget(self.YiLeWaiMai_next_execute_time, 1, 1, 1, 1)
@@ -3847,7 +3880,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_21.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_18 = QWidget()
         self.scrollAreaWidgetContents_18.setObjectName(u"scrollAreaWidgetContents_18")
-        self.scrollAreaWidgetContents_18.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_18.setGeometry(QRect(0, 0, 590, 238))
         self.verticalLayout_97 = QVBoxLayout(self.scrollAreaWidgetContents_18)
         self.verticalLayout_97.setSpacing(20)
         self.verticalLayout_97.setObjectName(u"verticalLayout_97")
@@ -3956,6 +3989,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.MeiRiShengChang_Enable = QCheckBox(self.widget_57)
         self.MeiRiShengChang_Enable.setObjectName(u"MeiRiShengChang_Enable")
+        self.MeiRiShengChang_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.MeiRiShengChang_Enable.setStyleSheet(u"")
 
         self.gridLayout_30.addWidget(self.MeiRiShengChang_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -3981,6 +4015,7 @@ class Ui_DailyQuestsHelper(object):
         self.MeiRiShengChang_next_execute_time = QLineEdit(self.widget_57)
         self.MeiRiShengChang_next_execute_time.setObjectName(u"MeiRiShengChang_next_execute_time")
         self.MeiRiShengChang_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.MeiRiShengChang_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.MeiRiShengChang_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_30.addWidget(self.MeiRiShengChang_next_execute_time, 1, 1, 1, 1)
@@ -4032,7 +4067,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_34.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_31 = QWidget()
         self.scrollAreaWidgetContents_31.setObjectName(u"scrollAreaWidgetContents_31")
-        self.scrollAreaWidgetContents_31.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_31.setGeometry(QRect(0, 0, 585, 238))
         self.verticalLayout_149 = QVBoxLayout(self.scrollAreaWidgetContents_31)
         self.verticalLayout_149.setSpacing(20)
         self.verticalLayout_149.setObjectName(u"verticalLayout_149")
@@ -4141,6 +4176,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.ShengCunTiaoZhan_Enable = QCheckBox(self.widget_83)
         self.ShengCunTiaoZhan_Enable.setObjectName(u"ShengCunTiaoZhan_Enable")
+        self.ShengCunTiaoZhan_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.ShengCunTiaoZhan_Enable.setStyleSheet(u"")
 
         self.gridLayout_43.addWidget(self.ShengCunTiaoZhan_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -4166,6 +4202,7 @@ class Ui_DailyQuestsHelper(object):
         self.ShengCunTiaoZhan_next_execute_time = QLineEdit(self.widget_83)
         self.ShengCunTiaoZhan_next_execute_time.setObjectName(u"ShengCunTiaoZhan_next_execute_time")
         self.ShengCunTiaoZhan_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.ShengCunTiaoZhan_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.ShengCunTiaoZhan_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_43.addWidget(self.ShengCunTiaoZhan_next_execute_time, 1, 1, 1, 1)
@@ -4217,7 +4254,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_35.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_32 = QWidget()
         self.scrollAreaWidgetContents_32.setObjectName(u"scrollAreaWidgetContents_32")
-        self.scrollAreaWidgetContents_32.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_32.setGeometry(QRect(0, 0, 585, 238))
         self.verticalLayout_153 = QVBoxLayout(self.scrollAreaWidgetContents_32)
         self.verticalLayout_153.setSpacing(20)
         self.verticalLayout_153.setObjectName(u"verticalLayout_153")
@@ -4326,6 +4363,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.MiJingTanXian_Enable = QCheckBox(self.widget_85)
         self.MiJingTanXian_Enable.setObjectName(u"MiJingTanXian_Enable")
+        self.MiJingTanXian_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.MiJingTanXian_Enable.setStyleSheet(u"")
 
         self.gridLayout_44.addWidget(self.MiJingTanXian_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -4351,6 +4389,7 @@ class Ui_DailyQuestsHelper(object):
         self.MiJingTanXian_next_execute_time = QLineEdit(self.widget_85)
         self.MiJingTanXian_next_execute_time.setObjectName(u"MiJingTanXian_next_execute_time")
         self.MiJingTanXian_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.MiJingTanXian_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.MiJingTanXian_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_44.addWidget(self.MiJingTanXian_next_execute_time, 1, 1, 1, 1)
@@ -4402,7 +4441,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_27.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_24 = QWidget()
         self.scrollAreaWidgetContents_24.setObjectName(u"scrollAreaWidgetContents_24")
-        self.scrollAreaWidgetContents_24.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_24.setGeometry(QRect(0, 0, 585, 238))
         self.verticalLayout_121 = QVBoxLayout(self.scrollAreaWidgetContents_24)
         self.verticalLayout_121.setSpacing(20)
         self.verticalLayout_121.setObjectName(u"verticalLayout_121")
@@ -4511,6 +4550,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.QingBaoZhan_Enable = QCheckBox(self.widget_69)
         self.QingBaoZhan_Enable.setObjectName(u"QingBaoZhan_Enable")
+        self.QingBaoZhan_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.QingBaoZhan_Enable.setStyleSheet(u"")
 
         self.gridLayout_36.addWidget(self.QingBaoZhan_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -4536,6 +4576,7 @@ class Ui_DailyQuestsHelper(object):
         self.QingBaoZhan_next_execute_time = QLineEdit(self.widget_69)
         self.QingBaoZhan_next_execute_time.setObjectName(u"QingBaoZhan_next_execute_time")
         self.QingBaoZhan_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.QingBaoZhan_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.QingBaoZhan_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_36.addWidget(self.QingBaoZhan_next_execute_time, 1, 1, 1, 1)
@@ -4587,7 +4628,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_23.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_20 = QWidget()
         self.scrollAreaWidgetContents_20.setObjectName(u"scrollAreaWidgetContents_20")
-        self.scrollAreaWidgetContents_20.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_20.setGeometry(QRect(0, 0, 585, 255))
         self.verticalLayout_105 = QVBoxLayout(self.scrollAreaWidgetContents_20)
         self.verticalLayout_105.setSpacing(20)
         self.verticalLayout_105.setObjectName(u"verticalLayout_105")
@@ -4696,6 +4737,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.MaoXianFuBen_Enable = QCheckBox(self.widget_61)
         self.MaoXianFuBen_Enable.setObjectName(u"MaoXianFuBen_Enable")
+        self.MaoXianFuBen_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.MaoXianFuBen_Enable.setStyleSheet(u"")
 
         self.gridLayout_32.addWidget(self.MaoXianFuBen_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -4721,6 +4763,7 @@ class Ui_DailyQuestsHelper(object):
         self.MaoXianFuBen_next_execute_time = QLineEdit(self.widget_61)
         self.MaoXianFuBen_next_execute_time.setObjectName(u"MaoXianFuBen_next_execute_time")
         self.MaoXianFuBen_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.MaoXianFuBen_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.MaoXianFuBen_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_32.addWidget(self.MaoXianFuBen_next_execute_time, 1, 1, 1, 1)
@@ -4772,7 +4815,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_24.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_21 = QWidget()
         self.scrollAreaWidgetContents_21.setObjectName(u"scrollAreaWidgetContents_21")
-        self.scrollAreaWidgetContents_21.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_21.setGeometry(QRect(0, 0, 585, 215))
         self.verticalLayout_109 = QVBoxLayout(self.scrollAreaWidgetContents_21)
         self.verticalLayout_109.setSpacing(20)
         self.verticalLayout_109.setObjectName(u"verticalLayout_109")
@@ -4873,6 +4916,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.HuoYueDuJiangLi_Enable = QCheckBox(self.widget_63)
         self.HuoYueDuJiangLi_Enable.setObjectName(u"HuoYueDuJiangLi_Enable")
+        self.HuoYueDuJiangLi_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.HuoYueDuJiangLi_Enable.setStyleSheet(u"")
 
         self.gridLayout_33.addWidget(self.HuoYueDuJiangLi_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -4898,6 +4942,7 @@ class Ui_DailyQuestsHelper(object):
         self.HuoYueDuJiangLi_next_execute_time = QLineEdit(self.widget_63)
         self.HuoYueDuJiangLi_next_execute_time.setObjectName(u"HuoYueDuJiangLi_next_execute_time")
         self.HuoYueDuJiangLi_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.HuoYueDuJiangLi_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.HuoYueDuJiangLi_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_33.addWidget(self.HuoYueDuJiangLi_next_execute_time, 1, 1, 1, 1)
@@ -4949,7 +4994,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_28.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_25 = QWidget()
         self.scrollAreaWidgetContents_25.setObjectName(u"scrollAreaWidgetContents_25")
-        self.scrollAreaWidgetContents_25.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_25.setGeometry(QRect(0, 0, 585, 215))
         self.verticalLayout_125 = QVBoxLayout(self.scrollAreaWidgetContents_25)
         self.verticalLayout_125.setSpacing(20)
         self.verticalLayout_125.setObjectName(u"verticalLayout_125")
@@ -5050,6 +5095,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.QingKongYouJian_Enable = QCheckBox(self.widget_71)
         self.QingKongYouJian_Enable.setObjectName(u"QingKongYouJian_Enable")
+        self.QingKongYouJian_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.QingKongYouJian_Enable.setStyleSheet(u"")
 
         self.gridLayout_37.addWidget(self.QingKongYouJian_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -5075,6 +5121,7 @@ class Ui_DailyQuestsHelper(object):
         self.QingKongYouJian_next_execute_time = QLineEdit(self.widget_71)
         self.QingKongYouJian_next_execute_time.setObjectName(u"QingKongYouJian_next_execute_time")
         self.QingKongYouJian_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.QingKongYouJian_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.QingKongYouJian_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_37.addWidget(self.QingKongYouJian_next_execute_time, 1, 1, 1, 1)
@@ -5126,7 +5173,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_31.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_28 = QWidget()
         self.scrollAreaWidgetContents_28.setObjectName(u"scrollAreaWidgetContents_28")
-        self.scrollAreaWidgetContents_28.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_28.setGeometry(QRect(0, 0, 585, 238))
         self.verticalLayout_137 = QVBoxLayout(self.scrollAreaWidgetContents_28)
         self.verticalLayout_137.setSpacing(20)
         self.verticalLayout_137.setObjectName(u"verticalLayout_137")
@@ -5235,6 +5282,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.XiuXingZhiLu_Enable = QCheckBox(self.widget_77)
         self.XiuXingZhiLu_Enable.setObjectName(u"XiuXingZhiLu_Enable")
+        self.XiuXingZhiLu_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.XiuXingZhiLu_Enable.setStyleSheet(u"")
 
         self.gridLayout_40.addWidget(self.XiuXingZhiLu_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -5260,6 +5308,7 @@ class Ui_DailyQuestsHelper(object):
         self.XiuXingZhiLu_next_execute_time = QLineEdit(self.widget_77)
         self.XiuXingZhiLu_next_execute_time.setObjectName(u"XiuXingZhiLu_next_execute_time")
         self.XiuXingZhiLu_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.XiuXingZhiLu_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.XiuXingZhiLu_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_40.addWidget(self.XiuXingZhiLu_next_execute_time, 1, 1, 1, 1)
@@ -5311,7 +5360,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_29.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_26 = QWidget()
         self.scrollAreaWidgetContents_26.setObjectName(u"scrollAreaWidgetContents_26")
-        self.scrollAreaWidgetContents_26.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_26.setGeometry(QRect(0, 0, 585, 238))
         self.verticalLayout_129 = QVBoxLayout(self.scrollAreaWidgetContents_26)
         self.verticalLayout_129.setSpacing(20)
         self.verticalLayout_129.setObjectName(u"verticalLayout_129")
@@ -5420,6 +5469,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.RenFaTieDianZanFenXiang_Enable = QCheckBox(self.widget_73)
         self.RenFaTieDianZanFenXiang_Enable.setObjectName(u"RenFaTieDianZanFenXiang_Enable")
+        self.RenFaTieDianZanFenXiang_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.RenFaTieDianZanFenXiang_Enable.setStyleSheet(u"")
 
         self.gridLayout_38.addWidget(self.RenFaTieDianZanFenXiang_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -5445,6 +5495,7 @@ class Ui_DailyQuestsHelper(object):
         self.RenFaTieDianZanFenXiang_next_execute_time = QLineEdit(self.widget_73)
         self.RenFaTieDianZanFenXiang_next_execute_time.setObjectName(u"RenFaTieDianZanFenXiang_next_execute_time")
         self.RenFaTieDianZanFenXiang_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.RenFaTieDianZanFenXiang_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.RenFaTieDianZanFenXiang_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_38.addWidget(self.RenFaTieDianZanFenXiang_next_execute_time, 1, 1, 1, 1)
@@ -5496,7 +5547,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_37.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_34 = QWidget()
         self.scrollAreaWidgetContents_34.setObjectName(u"scrollAreaWidgetContents_34")
-        self.scrollAreaWidgetContents_34.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_34.setGeometry(QRect(0, 0, 585, 238))
         self.verticalLayout_161 = QVBoxLayout(self.scrollAreaWidgetContents_34)
         self.verticalLayout_161.setSpacing(20)
         self.verticalLayout_161.setObjectName(u"verticalLayout_161")
@@ -5605,6 +5656,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.TuanBen_Enable = QCheckBox(self.widget_89)
         self.TuanBen_Enable.setObjectName(u"TuanBen_Enable")
+        self.TuanBen_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.TuanBen_Enable.setStyleSheet(u"")
 
         self.gridLayout_46.addWidget(self.TuanBen_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -5630,6 +5682,7 @@ class Ui_DailyQuestsHelper(object):
         self.TuanBen_next_execute_time = QLineEdit(self.widget_89)
         self.TuanBen_next_execute_time.setObjectName(u"TuanBen_next_execute_time")
         self.TuanBen_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.TuanBen_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.TuanBen_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_46.addWidget(self.TuanBen_next_execute_time, 1, 1, 1, 1)
@@ -5681,7 +5734,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_38.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_35 = QWidget()
         self.scrollAreaWidgetContents_35.setObjectName(u"scrollAreaWidgetContents_35")
-        self.scrollAreaWidgetContents_35.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_35.setGeometry(QRect(0, 0, 585, 238))
         self.verticalLayout_165 = QVBoxLayout(self.scrollAreaWidgetContents_35)
         self.verticalLayout_165.setSpacing(20)
         self.verticalLayout_165.setObjectName(u"verticalLayout_165")
@@ -5790,6 +5843,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.YaoSaiZhengDuoZhan_Enable = QCheckBox(self.widget_91)
         self.YaoSaiZhengDuoZhan_Enable.setObjectName(u"YaoSaiZhengDuoZhan_Enable")
+        self.YaoSaiZhengDuoZhan_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.YaoSaiZhengDuoZhan_Enable.setStyleSheet(u"")
 
         self.gridLayout_47.addWidget(self.YaoSaiZhengDuoZhan_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -5815,6 +5869,7 @@ class Ui_DailyQuestsHelper(object):
         self.YaoSaiZhengDuoZhan_next_execute_time = QLineEdit(self.widget_91)
         self.YaoSaiZhengDuoZhan_next_execute_time.setObjectName(u"YaoSaiZhengDuoZhan_next_execute_time")
         self.YaoSaiZhengDuoZhan_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.YaoSaiZhengDuoZhan_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.YaoSaiZhengDuoZhan_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_47.addWidget(self.YaoSaiZhengDuoZhan_next_execute_time, 1, 1, 1, 1)
@@ -5866,7 +5921,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_36.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_33 = QWidget()
         self.scrollAreaWidgetContents_33.setObjectName(u"scrollAreaWidgetContents_33")
-        self.scrollAreaWidgetContents_33.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_33.setGeometry(QRect(0, 0, 585, 238))
         self.verticalLayout_157 = QVBoxLayout(self.scrollAreaWidgetContents_33)
         self.verticalLayout_157.setSpacing(20)
         self.verticalLayout_157.setObjectName(u"verticalLayout_157")
@@ -5975,6 +6030,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.PanRenLaiXi_Enable = QCheckBox(self.widget_87)
         self.PanRenLaiXi_Enable.setObjectName(u"PanRenLaiXi_Enable")
+        self.PanRenLaiXi_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.PanRenLaiXi_Enable.setStyleSheet(u"")
 
         self.gridLayout_45.addWidget(self.PanRenLaiXi_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -6000,6 +6056,7 @@ class Ui_DailyQuestsHelper(object):
         self.PanRenLaiXi_next_execute_time = QLineEdit(self.widget_87)
         self.PanRenLaiXi_next_execute_time.setObjectName(u"PanRenLaiXi_next_execute_time")
         self.PanRenLaiXi_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.PanRenLaiXi_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.PanRenLaiXi_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_45.addWidget(self.PanRenLaiXi_next_execute_time, 1, 1, 1, 1)
@@ -6051,7 +6108,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_25.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_22 = QWidget()
         self.scrollAreaWidgetContents_22.setObjectName(u"scrollAreaWidgetContents_22")
-        self.scrollAreaWidgetContents_22.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_22.setGeometry(QRect(0, 0, 585, 238))
         self.verticalLayout_113 = QVBoxLayout(self.scrollAreaWidgetContents_22)
         self.verticalLayout_113.setSpacing(20)
         self.verticalLayout_113.setObjectName(u"verticalLayout_113")
@@ -6160,6 +6217,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.KuaFuZhengBaSai_Enable = QCheckBox(self.widget_65)
         self.KuaFuZhengBaSai_Enable.setObjectName(u"KuaFuZhengBaSai_Enable")
+        self.KuaFuZhengBaSai_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.KuaFuZhengBaSai_Enable.setStyleSheet(u"")
 
         self.gridLayout_34.addWidget(self.KuaFuZhengBaSai_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -6185,6 +6243,7 @@ class Ui_DailyQuestsHelper(object):
         self.KuaFuZhengBaSai_next_execute_time = QLineEdit(self.widget_65)
         self.KuaFuZhengBaSai_next_execute_time.setObjectName(u"KuaFuZhengBaSai_next_execute_time")
         self.KuaFuZhengBaSai_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.KuaFuZhengBaSai_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.KuaFuZhengBaSai_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_34.addWidget(self.KuaFuZhengBaSai_next_execute_time, 1, 1, 1, 1)
@@ -6236,7 +6295,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_17.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_14 = QWidget()
         self.scrollAreaWidgetContents_14.setObjectName(u"scrollAreaWidgetContents_14")
-        self.scrollAreaWidgetContents_14.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_14.setGeometry(QRect(0, 0, 585, 215))
         self.verticalLayout_81 = QVBoxLayout(self.scrollAreaWidgetContents_14)
         self.verticalLayout_81.setSpacing(20)
         self.verticalLayout_81.setObjectName(u"verticalLayout_81")
@@ -6337,6 +6396,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.GaoJiRenZheZhaoMu_Enable = QCheckBox(self.widget_49)
         self.GaoJiRenZheZhaoMu_Enable.setObjectName(u"GaoJiRenZheZhaoMu_Enable")
+        self.GaoJiRenZheZhaoMu_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.GaoJiRenZheZhaoMu_Enable.setStyleSheet(u"")
 
         self.gridLayout_26.addWidget(self.GaoJiRenZheZhaoMu_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -6362,6 +6422,7 @@ class Ui_DailyQuestsHelper(object):
         self.GaoJiRenZheZhaoMu_next_execute_time = QLineEdit(self.widget_49)
         self.GaoJiRenZheZhaoMu_next_execute_time.setObjectName(u"GaoJiRenZheZhaoMu_next_execute_time")
         self.GaoJiRenZheZhaoMu_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.GaoJiRenZheZhaoMu_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.GaoJiRenZheZhaoMu_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_26.addWidget(self.GaoJiRenZheZhaoMu_next_execute_time, 1, 1, 1, 1)
@@ -6413,7 +6474,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_12.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_9 = QWidget()
         self.scrollAreaWidgetContents_9.setObjectName(u"scrollAreaWidgetContents_9")
-        self.scrollAreaWidgetContents_9.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_9.setGeometry(QRect(0, 0, 585, 270))
         self.verticalLayout_61 = QVBoxLayout(self.scrollAreaWidgetContents_9)
         self.verticalLayout_61.setSpacing(20)
         self.verticalLayout_61.setObjectName(u"verticalLayout_61")
@@ -6522,6 +6583,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.MeiZhouShengChang_Enable = QCheckBox(self.widget_39)
         self.MeiZhouShengChang_Enable.setObjectName(u"MeiZhouShengChang_Enable")
+        self.MeiZhouShengChang_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.MeiZhouShengChang_Enable.setStyleSheet(u"")
 
         self.gridLayout_21.addWidget(self.MeiZhouShengChang_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -6547,6 +6609,7 @@ class Ui_DailyQuestsHelper(object):
         self.MeiZhouShengChang_next_execute_time = QLineEdit(self.widget_39)
         self.MeiZhouShengChang_next_execute_time.setObjectName(u"MeiZhouShengChang_next_execute_time")
         self.MeiZhouShengChang_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.MeiZhouShengChang_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.MeiZhouShengChang_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_21.addWidget(self.MeiZhouShengChang_next_execute_time, 1, 1, 1, 1)
@@ -6598,7 +6661,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_13.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_10 = QWidget()
         self.scrollAreaWidgetContents_10.setObjectName(u"scrollAreaWidgetContents_10")
-        self.scrollAreaWidgetContents_10.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_10.setGeometry(QRect(0, 0, 585, 230))
         self.verticalLayout_65 = QVBoxLayout(self.scrollAreaWidgetContents_10)
         self.verticalLayout_65.setSpacing(20)
         self.verticalLayout_65.setObjectName(u"verticalLayout_65")
@@ -6699,6 +6762,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.SaiJiShengChang_Enable = QCheckBox(self.widget_41)
         self.SaiJiShengChang_Enable.setObjectName(u"SaiJiShengChang_Enable")
+        self.SaiJiShengChang_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.SaiJiShengChang_Enable.setStyleSheet(u"")
 
         self.gridLayout_22.addWidget(self.SaiJiShengChang_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -6724,6 +6788,7 @@ class Ui_DailyQuestsHelper(object):
         self.SaiJiShengChang_next_execute_time = QLineEdit(self.widget_41)
         self.SaiJiShengChang_next_execute_time.setObjectName(u"SaiJiShengChang_next_execute_time")
         self.SaiJiShengChang_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.SaiJiShengChang_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.SaiJiShengChang_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_22.addWidget(self.SaiJiShengChang_next_execute_time, 1, 1, 1, 1)
@@ -6775,7 +6840,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_14.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_11 = QWidget()
         self.scrollAreaWidgetContents_11.setObjectName(u"scrollAreaWidgetContents_11")
-        self.scrollAreaWidgetContents_11.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_11.setGeometry(QRect(0, 0, 585, 230))
         self.verticalLayout_69 = QVBoxLayout(self.scrollAreaWidgetContents_11)
         self.verticalLayout_69.setSpacing(20)
         self.verticalLayout_69.setObjectName(u"verticalLayout_69")
@@ -6876,6 +6941,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.GengDuoWanFa_Enable = QCheckBox(self.widget_43)
         self.GengDuoWanFa_Enable.setObjectName(u"GengDuoWanFa_Enable")
+        self.GengDuoWanFa_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.GengDuoWanFa_Enable.setStyleSheet(u"")
 
         self.gridLayout_23.addWidget(self.GengDuoWanFa_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -6901,6 +6967,7 @@ class Ui_DailyQuestsHelper(object):
         self.GengDuoWanFa_next_execute_time = QLineEdit(self.widget_43)
         self.GengDuoWanFa_next_execute_time.setObjectName(u"GengDuoWanFa_next_execute_time")
         self.GengDuoWanFa_next_execute_time.setMinimumSize(QSize(200, 0))
+        self.GengDuoWanFa_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.GengDuoWanFa_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self.gridLayout_23.addWidget(self.GengDuoWanFa_next_execute_time, 1, 1, 1, 1)
@@ -6952,7 +7019,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_39.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_36 = QWidget()
         self.scrollAreaWidgetContents_36.setObjectName(u"scrollAreaWidgetContents_36")
-        self.scrollAreaWidgetContents_36.setGeometry(QRect(0, 0, 625, 551))
+        self.scrollAreaWidgetContents_36.setGeometry(QRect(0, 0, 585, 230))
         self.verticalLayout_169 = QVBoxLayout(self.scrollAreaWidgetContents_36)
         self.verticalLayout_169.setSpacing(20)
         self.verticalLayout_169.setObjectName(u"verticalLayout_169")
@@ -7053,6 +7120,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.ChongQiYouXi_Enable = QCheckBox(self.widget_93)
         self.ChongQiYouXi_Enable.setObjectName(u"ChongQiYouXi_Enable")
+        self.ChongQiYouXi_Enable.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.ChongQiYouXi_Enable.setStyleSheet(u"")
 
         self.gridLayout_48.addWidget(self.ChongQiYouXi_Enable, 0, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter|Qt.AlignmentFlag.AlignVCenter)
@@ -7079,6 +7147,7 @@ class Ui_DailyQuestsHelper(object):
         self.ChongQiYouXi_next_execute_time.setObjectName(u"ChongQiYouXi_next_execute_time")
         self.ChongQiYouXi_next_execute_time.setMinimumSize(QSize(200, 0))
         self.ChongQiYouXi_next_execute_time.setFont(font)
+        self.ChongQiYouXi_next_execute_time.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.ChongQiYouXi_next_execute_time.setAutoFillBackground(False)
         self.ChongQiYouXi_next_execute_time.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -7132,7 +7201,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_8.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_5 = QWidget()
         self.scrollAreaWidgetContents_5.setObjectName(u"scrollAreaWidgetContents_5")
-        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, -464, 613, 1015))
+        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 533, 1015))
         self.verticalLayout_25 = QVBoxLayout(self.scrollAreaWidgetContents_5)
         self.verticalLayout_25.setSpacing(20)
         self.verticalLayout_25.setObjectName(u"verticalLayout_25")
@@ -7313,6 +7382,7 @@ class Ui_DailyQuestsHelper(object):
         self.gridLayout_5.setContentsMargins(10, 10, 0, 10)
         self.serial = QLineEdit(self.widget_21)
         self.serial.setObjectName(u"serial")
+        self.serial.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.serial.setMaxLength(30)
         self.serial.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -7713,12 +7783,14 @@ class Ui_DailyQuestsHelper(object):
         self.MuMu_install_path = QLineEdit(self.MuMu)
         self.MuMu_install_path.setObjectName(u"MuMu_install_path")
         self.MuMu_install_path.setMaximumSize(QSize(16777215, 40))
+        self.MuMu_install_path.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
 
         self.gridLayout_11.addWidget(self.MuMu_install_path, 1, 0, 1, 1)
 
         self.MuMu_install_path_browse = QPushButton(self.MuMu)
         self.MuMu_install_path_browse.setObjectName(u"MuMu_install_path_browse")
         self.MuMu_install_path_browse.setMaximumSize(QSize(16777215, 35))
+        self.MuMu_install_path_browse.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
 
         self.gridLayout_11.addWidget(self.MuMu_install_path_browse, 1, 1, 1, 1)
 
@@ -7778,12 +7850,14 @@ class Ui_DailyQuestsHelper(object):
         self.LD_install_path = QLineEdit(self.LD)
         self.LD_install_path.setObjectName(u"LD_install_path")
         self.LD_install_path.setMaximumSize(QSize(16777215, 40))
+        self.LD_install_path.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
 
         self.gridLayout_2.addWidget(self.LD_install_path, 1, 0, 1, 1)
 
         self.LD_install_path_browse = QPushButton(self.LD)
         self.LD_install_path_browse.setObjectName(u"LD_install_path_browse")
         self.LD_install_path_browse.setMaximumSize(QSize(16777215, 35))
+        self.LD_install_path_browse.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.LD_install_path_browse.setStyleSheet(u"")
 
         self.gridLayout_2.addWidget(self.LD_install_path_browse, 1, 1, 1, 1)
@@ -8259,6 +8333,7 @@ class Ui_DailyQuestsHelper(object):
         self.key_map_configuration_button.setObjectName(u"key_map_configuration_button")
         self.key_map_configuration_button.setMinimumSize(QSize(70, 34))
         self.key_map_configuration_button.setMaximumSize(QSize(16777215, 35))
+        self.key_map_configuration_button.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.key_map_configuration_button.setStyleSheet(u"")
 
         self.gridLayout_12.addWidget(self.key_map_configuration_button, 0, 1, 1, 1)
@@ -8367,6 +8442,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.secondary_password = QLineEdit(self.widget_22)
         self.secondary_password.setObjectName(u"secondary_password")
+        self.secondary_password.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self.secondary_password.setMaxLength(6)
         self.secondary_password.setEchoMode(QLineEdit.EchoMode.PasswordEchoOnEdit)
         self.secondary_password.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -8407,8 +8483,8 @@ class Ui_DailyQuestsHelper(object):
         self.retranslateUi(DailyQuestsHelper)
 
         self.overview_panel_button.setDefault(False)
-        self.stackedWidget.setCurrentIndex(32)
-        self.screen_mode_settings_stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(0)
+        self.screen_mode_settings_stackedWidget.setCurrentIndex(2)
 
 
         QMetaObject.connectSlotsByName(DailyQuestsHelper)
