@@ -39,7 +39,7 @@ class U2:
     def input(self, input_text):
         self.u2_device.shell(f"input text {input_text}")
 
-    def press(self, key):
+    def press_key(self, key):
         self.u2_device.press(key)
 
     def release(self):
@@ -49,4 +49,9 @@ class U2:
         self.u2_device.touch.down(x, y)
 
     def touch_up(self, x, y):
+        self.u2_device.touch.up(x, y)
+
+    def long_press(self, x, y, duration):
+        self.u2_device.touch.down(x, y)
+        QThread.msleep(int(duration*1000))
         self.u2_device.touch.up(x, y)

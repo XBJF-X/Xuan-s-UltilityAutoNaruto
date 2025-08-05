@@ -361,11 +361,15 @@ class Scheduler(QObject):
     def task_next_execute_time_editfinished(self, task_name):
         """如果清空则立即执行任务"""
         lineedit_widget = self.task_common_control_ref_map[task_name]["LineEdit"]
-        if lineedit_widget.text() == "":
-            self.config.set_task_config(task_name, "下次执行时间", int(datetime.now(ZoneInfo("Asia/Shanghai")).timestamp()))
-            lineedit_widget.setText(datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"))
+        if lineedit_widget.text() != "":
+            return
+
+        self.config.set_task_config(task_name, "下次执行时间", int(datetime.now(ZoneInfo("Asia/Shanghai")).timestamp()))
+        lineedit_widget.setText(datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"))
+
         if not self.running:
             return
+
         lineedit_widget.setEnabled(False)
         net = datetime.now(ZoneInfo("Asia/Shanghai"))
         if not self.waiting_queue.update(task_name, next_execute_time=net):
@@ -512,7 +516,11 @@ class Scheduler(QObject):
         self.running_queue.dequeue()
         self.remove_task_ui_signal.emit(task, 0)
         # 只有启用的非临时任务才会回到等待队列
-        if task.is_activated and task.cycle_type != CycleType.TEMP and self.running:
+        if task.is_activated and self.running:
+            if task.cycle_type == CycleType.TEMP:
+                task.is_activated = False
+                self.config.set_task_config(task.task_name, "是否启用", False)
+                return
             task.current_status = 2
             task.create_time = datetime.now(ZoneInfo("Asia/Shanghai"))
             # 添加到等待队列
@@ -560,7 +568,7 @@ def create_task_widget(task: BaseTask) -> tuple[QWidget, QLabel, QLabel]:
     # 创建水平布局并设置为居中对齐
     item_layout = QVBoxLayout(item_widget)
     item_layout.setContentsMargins(5, 0, 5, 0)
-    item_layout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    item_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
     # 任务名称标签（第一个标签）
     name_label = QLabel(task.task_name)

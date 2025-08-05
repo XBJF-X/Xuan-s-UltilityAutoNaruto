@@ -324,6 +324,7 @@
     "丰饶之间-点击任意位置关闭界面": {
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
+        "roi": [630,970,820,890],
         "threshold": 0.9,
         "ratio": [0.5,0.5]
     },
@@ -555,7 +556,13 @@
         "threshold": 0.75,
         "ratio": [0.5,0.5]
     },
-    "情报站-点赞": {
+    "情报站-点赞-未点": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.9,
+        "ratio": [0.5,0.5]
+    },
+    "情报站-点赞-已点": {
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
         "threshold": 0.9,
@@ -1019,5 +1026,120 @@
         "roi": [580,800,814,878],
         "threshold": 0.8,
         "ratio": [0.13,0.5]
+    },
+
+    "秘境探险-首页-创建房间": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "秘境探险-匹配-剩余挑战券-0": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "roi": [561,658,782,840],
+        "threshold": 0.9,
+        "ratio": [0.13,0.5]
+    },
+    "秘境探险-匹配-出战": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "roi": [1380,1600,630,900],
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "秘境探险-匹配-落岩秘境": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "roi": [720,900,0,81],
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "秘境探险-匹配-阴阳秘境": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "roi": [720,900,0,81],
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "秘境探险-匹配-雷霆秘境": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "roi": [720,900,0,81],
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "秘境探险-匹配-烈炎秘境": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "roi": [720,900,0,81],
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "秘境探险-匹配-水牢秘境": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "roi": [720,900,0,81],
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "秘境探险-匹配-毒风秘境": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "roi": [720,900,0,81],
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "秘境探险-匹配-罡体秘境": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "roi": [720,900,0,81],
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "秘境探险-匹配-胜利": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.9,
+        "ratio": [0.5,0.5]
+    },
+    "秘境探险-匹配-暂停": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "roi": [1508,1600,0,83],
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "秘境探险-匹配-暂停-退出战斗": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "秘境探险-匹配-暂停-退出战斗-确定": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "秘境探险-匹配-出战-继续挑战-确定": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "秘境探险-匹配-返回": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "roi": [48,230,806,875],
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "秘境探险-匹配-恭喜你获得": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "roi": [48,230,806,875],
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
     }
 }

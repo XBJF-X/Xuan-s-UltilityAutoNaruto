@@ -1,4 +1,3 @@
-from .ChongQiYouXi import ChongQiYouXi
 from .DengLuJiangLi import DengLuJiangLi
 from .FengRaoZhiJian import FengRaoZhiJian
 from .GaoJiRenZheZhaoMu import GaoJiRenZheZhaoMu
@@ -58,7 +57,6 @@ TASK_TYPE_MAP = {
     "一乐外卖": YiLeWaiMai,
     "每月签到": MeiYueQianDao,
     "忍法帖点赞分享": RenFaTieDianZanFenXiang,
-    "重启游戏": ChongQiYouXi,
     '要塞争夺战': YaoSaiZhengDuoZhan,
     '叛忍来袭': PanRenLaiXi,
     '跨服争霸赛': KuaFuZhengBaSai,
@@ -92,7 +90,6 @@ TASK_NAME_CN2EN_MAP = {
     "一乐外卖": "YiLeWaiMai",
     "每月签到": "MeiYueQianDao",
     "忍法帖点赞分享": "RenFaTieDianZanFenXiang",
-    "重启游戏": 'ChongQiYouXi',
     '要塞争夺战': 'YaoSaiZhengDuoZhan',
     '叛忍来袭': 'PanRenLaiXi',
     '跨服争霸赛': 'KuaFuZhengBaSai',
@@ -128,6 +125,5 @@ TREE_INDEX_DIC = {
     '每周胜场': 28,
     '赛季胜场': 29,
     '更多玩法': 30,
-    '重启游戏': 31,
-    '助手设置': 32,
+    '助手设置': 31,
 }

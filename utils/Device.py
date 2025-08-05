@@ -73,8 +73,11 @@ class Device:
     def input(self, input_text):
         self.controller.input(input_text)
 
-    def press(self, key):
-        self.controller.press(key)
+    def press_key(self, key):
+        self.controller.press_key(key)
+
+    def long_press(self, x, y, duration):
+        self.controller.long_press(x, y, duration)
 
     def detect(self, params: Dict, bool_debug: bool = True) -> bool:
         """

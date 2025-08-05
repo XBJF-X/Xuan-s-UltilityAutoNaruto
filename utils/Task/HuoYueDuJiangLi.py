@@ -3,43 +3,29 @@ from utils.Task.BaseTask import BaseTask
 class HuoYueDuJiangLi(BaseTask):
 
     def _execute(self):
-        self.logger.info(f"开始执行")
-        try:
-            # 确定在主场景
-            if not self.home():
-                raise self.StepFailedError("无法回到[主场景]")
-            self.logger.info("进入奖励界面")
-            # 点击奖励图标
-            self.click_and_wait({
-                "type": "ELEMENT",
-                "name": "主场景-奖励"
-            })
-            # 确认奖励界面出现
-            self.detect_and_wait({
-                "type": "SCENE",
-                "name": "奖励"
-            })
-            # 领取每日活跃度宝箱
-            self._handle_daily_activity_reward(10)
-            self._handle_daily_activity_reward(40)
-            self._handle_daily_activity_reward(80)
-            self._handle_daily_activity_reward(100)
+        # 确定在主场景
+        if not self.home():
+            raise self.StepFailedError("无法回到[主场景]")
+        self.logger.info("进入奖励界面")
+        # 点击奖励图标
+        self.click_and_wait({
+            "type": "ELEMENT",
+            "name": "主场景-奖励"
+        })
+        # 确认奖励界面出现
+        self.detect_and_wait({
+            "type": "SCENE",
+            "name": "奖励"
+        })
+        # 领取每日活跃度宝箱
+        self._handle_daily_activity_reward(10)
+        self._handle_daily_activity_reward(40)
+        self._handle_daily_activity_reward(80)
+        self._handle_daily_activity_reward(100)
 
-            # 领取每周活跃度奖励
-            self._handle_weekly_acticity_reward()
-            self._update_next_execute_time()
-
-        except self.StepFailedError as e:
-            self.logger.error(e)
-        except self.EndEarly as e:
-            self._update_next_execute_time()
-            self.logger.warning(e)
-        except self.Stop as e:
-            self.logger.warning("线程被要求停止")
-        finally:
-            self.home()
-            self.logger.info(f"执行完毕")
-            self.callback(self)
+        # 领取每周活跃度奖励
+        self._handle_weekly_acticity_reward()
+        self._update_next_execute_time()
 
     def _handle_daily_activity_reward(self, num):
         # 点击待领取的宝箱

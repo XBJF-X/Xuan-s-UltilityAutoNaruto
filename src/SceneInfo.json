@@ -193,5 +193,15 @@
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
         "threshold": 0.9
+    },
+    "秘境探险-首页": {
+        "resolution": [1600, 900],
+        "path": "src\\Template\\Scene\\",
+        "threshold": 0.9
+    },
+    "秘境探险-匹配": {
+        "resolution": [1600, 900],
+        "path": "src\\Template\\Scene\\",
+        "threshold": 0.9
     }
 }

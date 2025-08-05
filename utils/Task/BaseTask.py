@@ -22,7 +22,46 @@ class CycleType(enum.IntEnum):
     TEMP = 4
 
 
-class BaseTask:
+class TaskMeta(type):
+    """
+    元类：任何继承自 BaseTask 的子类，如果重写了 _execute，
+    都会被自动加上 handle_task_exceptions 装饰器。
+    """
+
+    def __new__(mcs, name, bases, namespace, **kwargs):
+        # 如果子类自己定义了 _execute，则自动加装饰器
+        if "_execute" in namespace and callable(namespace["_execute"]):
+            original_execute = namespace["_execute"]
+            namespace["_execute"] = handle_task_exceptions(original_execute)
+        return super().__new__(mcs, name, bases, namespace)
+
+
+def handle_task_exceptions(func):
+    """处理任务异常的装饰器（非静态方法）"""
+
+    def wrapper(self, *args, **kwargs):
+        self.logger.info("开始执行")
+        try:
+            func(self, *args, **kwargs)
+        except self.StepFailedError as e:
+            self.logger.error(e)
+        except self.EndEarly as e:
+            self.logger.warning(e)
+        except self.Stop as e:
+            self.logger.warning("线程被要求停止")
+        except Exception as e:
+            self.logger.error(f"未知错误：{e}")
+        finally:
+            try:
+                self.home()
+                self.callback(self)
+            except Exception as e:
+                self.logger.error(f"finally块执行出错: {e}")
+
+    return wrapper
+
+
+class BaseTask(metaclass=TaskMeta):
     class TaskError(Exception):
         """任务执行异常的基类"""
         pass
@@ -86,16 +125,6 @@ class BaseTask:
                      f"周期类型:{CycleType(self.cycle_type)},"
                      f"下次执行时间:{self.next_execute_time}"
                      )
-
-        info = {
-            "任务名称": self.task_name,
-            "任务ID": self.task_id,
-            "任务状态": self.current_status,
-            "任务基准分辨率": self.resolution,
-            "是否启用": self.is_activated,
-            "周期类型": self.cycle_type,
-            "下次执行时间": self.next_execute_time
-        }
         return info_text
 
     def run(self):
@@ -125,19 +154,30 @@ class BaseTask:
         """检查是否收到停止请求"""
         return self._stop_event.is_set()
 
+    @handle_task_exceptions
     def _execute(self):
         """
         任务的处理逻辑，默认需要自己重载为所用的逻辑
         """
-        self.home()
-        self.callback(self)
 
-    def detect_and_wait(self, params, wait_time=1, max_time=2.0, max_attempts=None, bool_debug: bool = True):
+    def detect_and_wait(self, params, **kwargs):
         """
         检测并等待一段时间
+        Args:
+            params: 检测条件（如{"type": "SCENE", "name": "..."}）
+            ** kwargs: 可选参数：
+            - wait_time: 检测到之后的等待时间
+            - max_time: 最大尝试时间，默认为2.0
+            - max_attempts: 最大尝试次数，如果定义则优先，不定义则按最大时间
+            - bool_debug：是否打印调试日志（默认True）
         """
+        wait_time: float = kwargs.get("wait_time", 1.0)
+        max_time: float = kwargs.get("max_time", 2.0)
+        max_attempts: int | None = kwargs.get("max_attempts")
+        bool_debug: bool = kwargs.get("bool_debug", True)
+
         start_time = time.perf_counter()
-        if max_attempts:
+        if max_attempts is not None:
             for i in range(max_attempts):
                 if self.device.detect(params, bool_debug):
                     QThread.msleep(int(wait_time * 1000))
@@ -150,10 +190,21 @@ class BaseTask:
                     return True
             return False
 
-    def click_and_wait(self, params, wait_time=1.5, max_time=2.0, click_times=1, max_attempts=None):
+    def click_and_wait(self, params, **kwargs):
         """
         点击并等待一段时间
+        Args:
+            params: 点击参数（如{"type": "ELEMENT", "name": "..."}）
+            ** kwargs: 可选参数：
+            - wait_time: 检测到之后的等待时间
+            - max_time: 最大尝试时间，默认为2.0
+            - max_attempts: 最大尝试次数，如果定义则优先，不定义则按最大时间
+            - click_times：点击次数，默认为1
         """
+        wait_time: float = kwargs.get("wait_time", 1.5)
+        max_time: float = kwargs.get("max_time", 2.0)
+        max_attempts: int | None = kwargs.get("max_attempts")
+        click_times: int = kwargs.get("click_times", 1)
         start_time = time.perf_counter()
         if max_attempts:
             for i in range(max_attempts):
@@ -168,26 +219,54 @@ class BaseTask:
                     return True
             return False
 
-    def auto_cycle_actioner(self,
-                            actions: list[Tuple],
-                            stop_conditions: List = None,
-                            max_time: float = None,
-                            max_workers: int = 1,
-                            bool_debug: bool = False
-                            ):
+    def swipe_and_wait(self, start_coordinate, end_coordinate, **kwargs):
+        """
+        滑动并等待一段时间
+
+        Args:
+            start_coordinate(Tuple[int,int]): 滑动起始点
+            end_coordinate(Tuple[int,int]): 滑动终点
+            **kwargs:
+            - wait_time: 检测到之后的等待时间
+            - duration: 滑动过程时间
+
+        Returns:
+            bool
+        """
+        wait_time: float = kwargs.get("wait_time", 1.0)
+        duration: float = kwargs.get("duration", 1.0)
+        self.device.swipe(
+            start_coordinate,
+            end_coordinate,
+            duration,
+            self.resolution
+        )
+        QThread.msleep(int(wait_time * 1000))
+        return True
+
+    def auto_cycle_actioner(self, actions: list[Tuple], **kwargs, ):
         """
         自动连点器 - 按坐标列表循环点击，支持两种停止条件
 
         Args:
-            actions: 操作格式为 [(action, (x1,y1)) , ...]
-            stop_conditions: 停止条件字典列表，用于传入判定条件（默认None）
-            max_time: 最大点击轮次（默认None）
-            max_workers: 最大工作线程数，默认1
-            bool_debug: 要不要输出日志（避免有的过程检测次数过多导致日志累积）
+            actions: 操作格式为[(action, (x1,y1)) , ...]
+            **kwargs:
+            - stop_conditions (List|None): 停止条件字典列表，用于传入判定条件
+            - max_time(float|None): 最大点击时间
+            - max_workers(int): 最大工作线程数，默认1
+            - bool_debug(bool): 要不要输出日志（避免有的过程检测次数过多导致日志累积）
 
         Returns:
-            实际执行的点击轮次
+            int 因为哪种条件而停止，返回1-based停止条件索引
         """
+        stop_conditions: List | None = kwargs.get("stop_conditions")
+        max_time: float | None = kwargs.get("max_time")
+        max_workers: int = kwargs.get("max_workers", 1)
+        bool_debug: bool = kwargs.get("bool_debug", False)
+
+        # 添加一个变量用于存储停止原因
+        stop_result = 0  # 默认为0表示未正常停止
+
         # 检查参数
         if not actions:
             self.logger.warning("操作列表为空，无法执行")
@@ -199,32 +278,37 @@ class BaseTask:
 
         start = time.perf_counter()
         stop_event = threading.Event()  # 用于通知停止的事件
+        checker_thread = None
 
         # 判定线程函数
         def check_stop_condition():
-            nonlocal stop_event
+            nonlocal stop_event, stop_result  # 使用nonlocal关键字共享变量
             while not stop_event.is_set():
                 # 执行检查
-                # print(time.perf_counter())
                 if self._should_stop():
                     stop_event.set()
                     raise self.Stop
                 if max_time is not None and time.perf_counter() - start >= max_time:
                     self.logger.debug(f"达到最大时长 {max_time}，操作停止")
                     stop_event.set()
+                    stop_result = -1  # 标记为超时停止
                     return
                 if stop_conditions is not None:
-                    for stop_condition in stop_conditions:
+                    for index, stop_condition in enumerate(stop_conditions):
                         if self._should_stop():
                             stop_event.set()
                             raise self.Stop
-                        if self.detect_and_wait(stop_condition, 0, max_attempts=1, bool_debug=False):
-                            self.logger.debug(f"判定条件成立，点击停止")
+                        if self.detect_and_wait(stop_condition,
+                                                wait_time=0,
+                                                max_attempts=1,
+                                                bool_debug=bool_debug):
                             stop_event.set()
+                            stop_result = index + 1  # 存储1-based索引
+                            self.logger.debug(f"判定条件{index + 1}成立，点击停止")
                             return
                 QThread.msleep(20)
 
-        # 点击工作函数
+        # 点击工作函数（保持不变）
         def click_worker(coord):
             nonlocal stop_event
             x, y = coord
@@ -247,87 +331,57 @@ class BaseTask:
             checker_thread = threading.Thread(target=check_stop_condition, daemon=True)
             checker_thread.start()
 
-        # 创建线程池
-        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            futures = []
-            for action in actions:
-                futures.append(executor.submit(click_worker, action[1]))
-                # if action[0] == "CLICK":
-                #     futures.append(executor.submit(click_worker, action[1]))
-                # elif action[0] == "PRESS":
-                #     futures.append(executor.submit(press_worker, action[1]))
-            for future in concurrent.futures.as_completed(futures):
-                try:
-                    result = future.result()
-                except Exception as e:
-                    self.logger.error(f"点击{result}过程中发生错误: {e}")
+        try:
+            # 创建线程池
+            with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = []
+                for action in actions:
+                    futures.append(executor.submit(press_worker, action[1]))
+                    # # 根据action类型选择不同的worker
+                    # if action[0] == "CLICK":
+                    #     futures.append(executor.submit(click_worker, action[1]))
+                    # elif action[0] == "PRESS":
+                    #     futures.append(executor.submit(press_worker, action[1]))
+        except Exception as e:
+            self.logger.error(f"操作过程中发生错误: {e}")
 
         # 等待判定线程结束（如果有）
         if stop_conditions is not None or max_time is not None:
             checker_thread.join(timeout=1.0)
+        self.logger.debug(f"返回：{stop_result}")
+        # 返回存储的停止原因
+        return stop_result
 
-    def click_and_search(self, params_list, search_actions, search_times, wait_time=1):
+    def search_and_click(self, params_list, search_actions, **kwargs, ):
         """
-            循环执行元素点击搜索，支持多轮次、多位置尝试，并在过程中执行辅助操作（如点击或滑动）
+        循环执行元素点击搜索，支持多轮次、多位置尝试，并在过程中执行辅助操作（如点击或滑动）
 
-            Args:
-                params_list (List[Dict]): 待点击的元素参数列表，每个元素是一个字典，格式与click_and_wait一致
-                search_actions (List[Dict]): 搜索过程中执行的辅助动作列表，支持两种操作：
+        Args:
+            params_list: (List[Dict]): 待点击的元素参数列表，每个元素是一个字典，格式与click_and_wait一致
+            search_actions: (List[Dict]): 搜索过程中执行的辅助动作列表，支持两种操作：
                     - {'click': 点击参数}：执行点击操作
                     - {'swipe': 滑动参数}：执行滑动操作
-                search_times (int): 搜索尝试的轮次
-                wait_time (int): 点击后等待的时间
+            **kwargs:
+            - search_max_time:  (float): 搜索尝试的最大时间，默认None，即不限时间
+            - max_attempts: (int):尝试搜索的最大次数，默认None，即不限次数
+            - once_max_time: (float):单次搜索点击的最大时间
+            - wait_time: (float): 点击后等待的时间
 
-            Returns:
-                bool: 是否成功找到并点击了params_list中的任一元素
+        Returns:
+            bool: 是否成功找到并点击了params_list中的任一元素
         """
+        search_max_time: float | None = kwargs.get("search_max_time")
+        max_attempts: int | None = kwargs.get("max_attempts")
+        once_max_time: float = kwargs.get("once_max_time", 1)
+        wait_time: float = kwargs.get("wait_time", 1)
         self.logger.debug(f"元素点击搜索内容：")
         for params in params_list:
             if params['type'] == "ELEMENT":
                 self.logger.debug(f"[元素] {params['name']}")
             elif params['type'] == "COORDINATE":
                 self.logger.debug(f"[坐标] {params['coordinate']}")
-        for i in range(search_times):
-            if self._should_stop():
-                raise self.Stop
-            self.logger.debug(f"第 {i + 1} 次搜索")
-            for params in params_list:
-                if self.click_and_wait(params, wait_time=wait_time):
-                    return True
-            for action in search_actions:
-                if "click" in action:
-                    self.click_and_wait(action['click'])
-                elif "swipe" in action:
-                    self.device.swipe(
-                        action['swipe']['start_coordinate'],
-                        action['swipe']['end_coordinate'],
-                        action['swipe']['duration'],
-                        self.resolution)
-        return False
-
-    def detect_and_search(self, params_list, search_actions, search_max_time=None, once_max_time=1, wait_time=1):
-        """
-            循环执行元素检测，支持多轮次、多位置尝试，并在过程中执行辅助操作（如点击或滑动）
-
-            Args:
-                params_list (List[Dict]): 待点击的元素参数列表，每个元素是一个字典，格式与click_and_wait()一致
-                search_actions (List[Dict]): 搜索过程中执行的辅助动作列表，支持两种操作：
-                    - {'click': 点击参数}：执行点击操作
-                    - {'swipe': 滑动参数}：执行滑动操作
-                search_max_time (float): 搜索尝试的轮次数组
-                once_max_time (float):单次搜索的最大时长，定义与detect_and_wait()一致
-                wait_time (int): 如果寻找到了，要等待几秒
-
-            Returns:
-                bool: 是否成功找到并点击了params_list中的任一元素
-        """
-        self.logger.debug(f"元素检测搜索内容：")
-        for params in params_list:
-            if params['type'] == "ELEMENT":
-                self.logger.debug(f"[元素] {params['name']}")
-            elif params['type'] == "SCENE":
-                self.logger.debug(f"[场景] {params['name']}")
         start = time.perf_counter()
+        attempts = 0
         while True:
             if self._should_stop():
                 raise self.Stop
@@ -335,10 +389,14 @@ class BaseTask:
                 if time.perf_counter() - start > search_max_time:
                     self.logger.warning(f"搜索超时：{time.perf_counter() - start:.1f}s")
                     return 0
+            elif max_attempts:
+                if attempts >= max_attempts:
+                    self.logger.warning(f"搜索次数已达{max_attempts}次")
+                    return 0
             for index, params in enumerate(params_list):
                 if self._should_stop():
                     raise self.Stop
-                if self.detect_and_wait(params, wait_time=wait_time, max_time=once_max_time):
+                if self.click_and_wait(params, wait_time=wait_time, max_time=once_max_time):
                     return index + 1
             for action in search_actions:
                 if self._should_stop():
@@ -351,6 +409,71 @@ class BaseTask:
                         action['swipe']['end_coordinate'],
                         action['swipe']['duration'],
                         self.resolution)
+            attempts += 1
+
+    def search_and_detect(self, params_list, search_actions, **kwargs):
+        """
+        循环执行元素检测，支持多轮次、多位置尝试，并在过程中执行辅助操作（如点击或滑动）
+
+        Args:
+            params_list: (List[Dict]): 待点击的元素参数列表，每个元素是一个字典，格式与click_and_wait()一致
+            search_actions: (List[Dict]): 搜索过程中执行的辅助动作列表，支持两种操作：
+                    - {'click': 点击参数}：执行点击操作
+                    - {'swipe': 滑动参数}：执行滑动操作
+            **kwargs:
+            - search_max_time: (float): 搜索尝试的最大时间，默认None，即不限时间
+            - max_attempts: (int):尝试搜索的最大次数，默认None，即不限次数
+            - once_max_time: (float):单次搜索的最大时长，定义与detect_and_wait()一致
+            - wait_time: (int): 如果寻找到了，要等待几秒
+            - bool_debug: (bool): 是否输出调试日志
+
+        Returns:
+            int: 未找到返回0，找到返回1-based索引，表示找到了params_list中哪个元素
+        """
+        search_max_time: float | None = kwargs.get("search_max_time")
+        max_attempts: int | None = kwargs.get("max_attempts")
+        once_max_time: float = kwargs.get("once_max_time", 1.0)
+        wait_time: float = kwargs.get("wait_time", 1.0)
+        bool_debug: bool = kwargs.get("bool_debug", False)
+        self.logger.debug(f"元素检测搜索内容：")
+        for params in params_list:
+            if params['type'] == "ELEMENT":
+                self.logger.debug(f"[元素] {params['name']}")
+            elif params['type'] == "SCENE":
+                self.logger.debug(f"[场景] {params['name']}")
+        start = time.perf_counter()
+        attempts = 0
+        while True:
+            if self._should_stop():
+                raise self.Stop
+            for index, params in enumerate(params_list):
+                if self._should_stop():
+                    raise self.Stop
+                if self.detect_and_wait(params,
+                                        wait_time=wait_time,
+                                        max_time=once_max_time,
+                                        bool_debug=bool_debug):
+                    return index + 1
+            if search_max_time:
+                if time.perf_counter() - start > search_max_time:
+                    self.logger.warning(f"搜索超时：{time.perf_counter() - start:.1f}s")
+                    return 0
+            elif max_attempts:
+                if attempts >= max_attempts:
+                    self.logger.warning(f"搜索次数已达{max_attempts}次")
+                    return 0
+            for action in search_actions:
+                if self._should_stop():
+                    raise self.Stop
+                if "click" in action:
+                    self.click_and_wait(action['click'], max_time=1)
+                elif "swipe" in action:
+                    self.device.swipe(
+                        action['swipe']['start_coordinate'],
+                        action['swipe']['end_coordinate'],
+                        action['swipe']['duration'],
+                        self.resolution)
+            attempts += 1
 
     def click_and_input(self, input_edit_params, input_text):
         """
@@ -409,10 +532,25 @@ class BaseTask:
                 return True
         return False
 
-    def home(self, home_name="主场景", x_names=None, max_attempts=None, max_time=30):
+    def home(self, **kwargs):
         """
         不断调用esc回退至主场景，也可以修改home_name和x_names达到回退到某个场景的目的
+
+        Args:
+            **kwargs:
+            - home_name(str): 返回的目标场景
+            - x_names(List[str]): 回退的点击元素
+            - max_attempts(int): 最大回退次数，默认None，不限次数
+            - max_time(float): 最大回退时长
+
+        Returns:
+
         """
+        home_name: str = kwargs.get("home_name", "主场景")
+        x_names: List[str] | None = kwargs.get("x_names")
+        max_attempts: int | None = kwargs.get("max_attempts")
+        max_time: float = kwargs.get("max_time", 30.0)
+
         if x_names is None:
             x_names = ["决斗场-X", "X", "招募-X", "情报站-X"]
         self.logger.debug(f"回退至[{home_name}]")
@@ -437,28 +575,60 @@ class BaseTask:
                     return False
         return True
 
-    def press(self, key, wait_time=0):
+    def press_key(self, key, wait_time=0):
         """
         模拟设备按键，输入key即为按键名称
         """
-        self.device.press(key)
+        self.device.press_key(key)
         if wait_time:
             QThread.msleep(int(wait_time * 1000))
+
+    def long_press(self, x, y, duration=1):
+        """
+        长按
+
+        Args:
+            x(int): 长按位置的x坐标
+            y(int): 长按位置的y坐标
+            duration(float): 长按持续时间
+
+        Returns:
+
+        """
+        self.logger.debug(f"LongPress ({x},{y}) {duration}s")
+        self.device.long_press(x, y, duration)
 
     def restart(self):
         """
         重启火影忍者
         """
         self.device.restart()
+        if not self.search_and_click(
+                [
+                    {'type': "ELEMENT", 'name': "进入游戏-开始游戏"}
+                ],
+                [],
+                search_max_time=300
+        ):
+            raise self.StepFailedError("重启游戏失败，未出现开始游戏按钮，请检查登录状态")
+        QThread.msleep(50000)  # 等待游戏进入，定为50秒
+        self.logger.info("成功进入游戏")
 
-    def _update_next_execute_time(self,
-                                  time_offset: timedelta = timedelta(hours=5),
-                                  delta: timedelta = None
-                                  ):
+    def _update_next_execute_time(self, **kwargs):
         """
         用于更新下次执行时间，不传入参数则更新为自己周期的第一天的五点
-        传入timedelta对象可以自定义延迟，即当前时间后多久再次执行
+        传入delta对象可以自定义延迟，即当前时间后多久再次执行
+        Args:
+            **kwargs:
+            - time_offset(timedelta): 自己周期内第一天的几点几时几分偏移量
+            - delta(timedelta|None): 自定义延迟，即当前时间后多久再次执行，默认None，如果传入则time_offset失效
+
+        Returns:
+
         """
+        time_offset: timedelta = kwargs.get("time_offset", timedelta(hours=5))
+        delta: timedelta | None = kwargs.get("delta")
+
         # 明确指定中国时区（带时区的当前时间）
         china_tz = ZoneInfo("Asia/Shanghai")
         current_time = datetime.now(china_tz)
@@ -502,5 +672,9 @@ class BaseTask:
             ) + time_offset
             self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
             self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
+        elif self.cycle_type == CycleType.TEMP:
+            self.logger.warning(f"临时任务 {self.task_name} 执行时间已重置")
+            self.next_execute_time = datetime(0, 0, 0, tzinfo=china_tz)
+            self.config.set_task_config(self.task_name, "下次执行时间", 0)
         else:
             self.logger.warning(f"{CycleType(self.cycle_type)}任务")

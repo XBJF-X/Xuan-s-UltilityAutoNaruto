@@ -33,7 +33,7 @@ class SkillButton(QWidget):
     def __init__(self, skill_id: int, parent=None):
         super().__init__(parent)
         self.skill_id = skill_id  # 技能ID，用于标识不同技能
-        self.setFixedSize(60, 60)  # 固定大小
+        self.setFixedSize(50, 50)  # 固定大小
         self.setCursor(QCursor(Qt.CursorShape.PointingHandCursor))  # 鼠标悬停时显示手型
         self.dragging = False
         self.offset = QPoint()
@@ -67,7 +67,7 @@ class SkillButton(QWidget):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)  # 抗锯齿
 
         # 绘制圆形背景
-        painter.setBrush(QColor(50, 150, 255, 200))  # 半透明蓝色
+        painter.setBrush(QColor(50, 150, 255, 150))  # 半透明蓝色
         painter.setPen(QPen(QColor(255, 255, 255), 2))  # 白色边框
         painter.drawEllipse(2, 2, self.width() - 4, self.height() - 4)
 
@@ -81,7 +81,7 @@ class SkillButton(QWidget):
 
         # 绘制技能ID
         painter.setPen(QColor(255, 255, 255))
-        painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, str(self.skill_id+1))
+        painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, str(self.skill_id + 1))
 
 
 class KeyMapConfiguration(QDialog):
@@ -112,8 +112,8 @@ class KeyMapConfiguration(QDialog):
         for i in range(10):
             skill_btn = SkillButton(i, self.UI.image_container)
             x, y = self.config.get_config("键位")[i]
-            real_x = x*self.screen_size[0]/1600
-            real_y = y*self.screen_size[1]/900
+            real_x = x * self.screen_size[0] / 1600 - skill_btn.width() / 2
+            real_y = y * self.screen_size[1] / 900 - skill_btn.height() / 2
             skill_btn.move(real_x, real_y)
             skill_btn.show()
             self.skill_buttons.append(skill_btn)
@@ -127,8 +127,8 @@ class KeyMapConfiguration(QDialog):
         for btn in self.skill_buttons:
             # 获取按钮在图片容器中的相对位置
             pos = btn.pos()
-            x = int(pos.x() * 1600 / self.screen_size[0])
-            y = int(pos.y() * 900 / self.screen_size[1])
+            x = int((pos.x() * 1600 / self.screen_size[0]) + btn.width() / 2)
+            y = int((pos.y() * 900 / self.screen_size[1]) + btn.height() / 2)
             self.result_positions[btn.skill_id] = [x, y]
 
         self.config.set_config("键位", self.result_positions)

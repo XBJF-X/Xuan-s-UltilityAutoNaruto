@@ -114,12 +114,15 @@ class Control:
     def input(self, input_text):
         self.control_instance.input(input_text)
 
-    def press(self, key):
-        self.control_instance.press(key)
+    def press_key(self, key):
+        self.control_instance.press_key(key)
 
     def touch_down(self, x, y):
         self.control_instance.touch_down(x,y)
 
     def touch_up(self, x, y):
         self.control_instance.touch_up(x, y)
+
+    def long_press(self, x, y, duration):
+        self.control_instance.long_press(x, y, duration)
 
