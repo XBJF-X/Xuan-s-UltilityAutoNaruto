@@ -112,7 +112,7 @@ class DailyQuestsHelper(QMainWindow):
         self.UI.bool_debug.toggled.connect(self._on_bool_debug_toggled)
         self.UI.screen_mode.currentIndexChanged.connect(self._on_screen_mode_change)
         self.UI.control_mode.currentIndexChanged.connect(self._on_control_mode_change)
-        self.UI.serial.editingFinished.connect(lambda w=self.UI.secondary_password: self.config.set_config("串口", w.text()))
+        self.UI.serial.editingFinished.connect(lambda w=self.UI.serial: self.config.set_config("串口", w.text()))
         self.UI.resolution.currentIndexChanged.connect(self._on_resolution_change)
         self.UI.video_fps.valueChanged.connect(lambda index: self.config.set_config('视频流帧率', index))
         self.UI.LD_install_path.editingFinished.connect(lambda path: self.config.set_config('雷电安装路径', path))

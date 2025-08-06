@@ -336,7 +336,7 @@ class BaseTask(metaclass=TaskMeta):
             with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
                 futures = []
                 for action in actions:
-                    futures.append(executor.submit(press_worker, action[1]))
+                    futures.append(executor.submit(click_worker, action[1]))
                     # # 根据action类型选择不同的worker
                     # if action[0] == "CLICK":
                     #     futures.append(executor.submit(click_worker, action[1]))

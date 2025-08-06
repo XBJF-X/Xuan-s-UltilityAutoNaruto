@@ -75,7 +75,7 @@ class MeiRiShengChang(BaseTask):
                 ],
                 [
                     {'swipe':
-                        {"start_coordinate": [462, 86], "end_coordinate": [1345, 86], "duration": 1}
+                        {"start_coordinate": [1095, 618], "end_coordinate": [1095, 167],"duration": 1}
                     }
                 ],
                 max_attempts=1,
@@ -88,7 +88,7 @@ class MeiRiShengChang(BaseTask):
                 {'type': "ELEMENT",'name': "决斗任务-宝箱-未达成"}
             ],
             [
-                {'swipe':{"start_coordinate": [462, 86],"end_coordinate": [1345, 86],"duration": 1}}
+                {"start_coordinate": [1095, 618], "end_coordinate": [1095, 167],"duration": 1}
             ],
             max_attempts=1,
         ):
@@ -116,7 +116,7 @@ class MeiRiShengChang(BaseTask):
                 ],
                 [
                     {'swipe':
-                        {"start_coordinate": [462, 86], "end_coordinate": [1345, 86],"duration": 1}
+                        {"start_coordinate": [1095, 618], "end_coordinate": [1095, 167],"duration": 1}
                     }
                 ],
                 max_attempts=1,
@@ -191,7 +191,7 @@ class MeiRiShengChang(BaseTask):
                         max_workers=7
                     )
                     self.logger.info("对局结束，返回[单人模式-首页]")
-            # 先回到单人模式首页，看看有没有宝箱能领的，能领的都领掉
+            # 先回到单人模式首页
             if not self.search_and_detect(
                     [
                         {'type': "SCENE", 'name': "决斗场-忍术对战-单人模式"}
