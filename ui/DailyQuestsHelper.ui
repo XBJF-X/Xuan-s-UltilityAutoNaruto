@@ -6,33 +6,41 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1009</width>
-    <height>589</height>
+    <width>999</width>
+    <height>588</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>180</width>
+    <height>0</height>
+   </size>
   </property>
   <property name="font">
    <font>
-    <family>黑体</family>
+    <family>Consolas</family>
     <pointsize>15</pointsize>
     <italic>false</italic>
     <bold>false</bold>
    </font>
   </property>
   <property name="windowTitle">
-   <string>日常助手</string>
+   <string>XUAN（Xuan's UtilityAutoNaruto）</string>
   </property>
   <property name="styleSheet">
    <string notr="true">/*
 font: 15pt &quot;仓耳今楷02-6763&quot;;
 font: 15pt &quot;Microsoft YaHei UI&quot;;
 */
-font: 15pt &quot;黑体&quot;;
+font-family:&quot;Consolas&quot;,&quot;黑体&quot;;
+font-size:15pt;
+
 </string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="font">
     <font>
-     <family>黑体</family>
+     <family>Consolas</family>
      <pointsize>15</pointsize>
      <italic>false</italic>
      <bold>false</bold>
@@ -152,7 +160,7 @@ font: 15pt &quot;黑体&quot;;
       </property>
       <property name="font">
        <font>
-        <family>黑体</family>
+        <family>Consolas</family>
         <pointsize>15</pointsize>
         <italic>false</italic>
         <bold>false</bold>
@@ -199,7 +207,7 @@ font: 15pt &quot;黑体&quot;;
             </property>
             <property name="font">
              <font>
-              <family>黑体</family>
+              <family>Consolas</family>
               <pointsize>15</pointsize>
               <italic>false</italic>
               <bold>false</bold>
@@ -270,7 +278,7 @@ padding-bottom:2px;
             </property>
             <property name="font">
              <font>
-              <family>黑体</family>
+              <family>Consolas</family>
               <pointsize>-1</pointsize>
               <italic>false</italic>
               <bold>false</bold>
@@ -676,7 +684,7 @@ QTreeWidget QScrollBar::add-line:vertical {
        <item>
         <widget class="QStackedWidget" name="stackedWidget">
          <property name="currentIndex">
-          <number>32</number>
+          <number>31</number>
          </property>
          <widget class="QWidget" name="Overview_Panel_widget">
           <property name="enabled">
@@ -1463,7 +1471,7 @@ QScrollArea &gt; QWidget &gt; QWidget {
                       <x>0</x>
                       <y>0</y>
                       <width>232</width>
-                      <height>76</height>
+                      <height>71</height>
                      </rect>
                     </property>
                    </widget>
@@ -1697,7 +1705,7 @@ QScrollArea &gt; QWidget &gt; QWidget {
                       <x>0</x>
                       <y>0</y>
                       <width>232</width>
-                      <height>165</height>
+                      <height>161</height>
                      </rect>
                     </property>
                    </widget>
@@ -1808,7 +1816,7 @@ QCheckBox::indicator:disabled {
                      <widget class="QLabel" name="label_5">
                       <property name="font">
                        <font>
-                        <family>黑体</family>
+                        <family>Consolas</family>
                         <pointsize>-1</pointsize>
                         <italic>false</italic>
                         <bold>false</bold>
@@ -1913,8 +1921,8 @@ QCheckBox::indicator:disabled {
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
-                   <height>215</height>
+                   <width>598</width>
+                   <height>532</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_73">
@@ -2175,7 +2183,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>215</height>
+                   <height>232</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_89">
@@ -2436,7 +2444,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>215</height>
+                   <height>232</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_93">
@@ -2697,7 +2705,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>385</height>
+                   <height>407</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_46">
@@ -3244,7 +3252,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>428</height>
+                   <height>450</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_47">
@@ -3807,7 +3815,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>421</height>
+                   <height>452</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_51">
@@ -4399,7 +4407,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>215</height>
+                   <height>232</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_145">
@@ -4660,7 +4668,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>215</height>
+                   <height>232</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_85">
@@ -4921,7 +4929,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>215</height>
+                   <height>232</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_117">
@@ -5182,7 +5190,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>270</height>
+                   <height>296</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_101">
@@ -5457,7 +5465,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>238</height>
+                   <height>258</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_77">
@@ -5730,7 +5738,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>238</height>
+                   <height>258</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_133">
@@ -6003,7 +6011,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>215</height>
+                   <height>232</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_141">
@@ -6264,7 +6272,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>590</width>
-                   <height>238</height>
+                   <height>258</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_97">
@@ -6537,7 +6545,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>238</height>
+                   <height>258</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_149">
@@ -6809,8 +6817,8 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>625</width>
-                   <height>533</height>
+                   <width>586</width>
+                   <height>258</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_153">
@@ -7083,7 +7091,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>238</height>
+                   <height>258</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_121">
@@ -7356,7 +7364,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>255</height>
+                   <height>278</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_105">
@@ -7630,7 +7638,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>215</height>
+                   <height>232</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_109">
@@ -7891,7 +7899,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>215</height>
+                   <height>232</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_125">
@@ -8152,7 +8160,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>238</height>
+                   <height>258</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_137">
@@ -8425,7 +8433,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>238</height>
+                   <height>258</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_129">
@@ -8698,7 +8706,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>238</height>
+                   <height>258</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_161">
@@ -8971,7 +8979,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>238</height>
+                   <height>258</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_165">
@@ -9244,7 +9252,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>238</height>
+                   <height>258</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_157">
@@ -9517,7 +9525,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>238</height>
+                   <height>258</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_113">
@@ -9790,7 +9798,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>215</height>
+                   <height>232</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_81">
@@ -10051,7 +10059,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>270</height>
+                   <height>296</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_61">
@@ -10326,7 +10334,7 @@ margin-left:18px;</string>
                    <x>0</x>
                    <y>0</y>
                    <width>586</width>
-                   <height>230</height>
+                   <height>250</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_65">
@@ -10587,8 +10595,8 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>533</height>
+                   <width>586</width>
+                   <height>250</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_69">
@@ -10812,7 +10820,7 @@ margin-left:18px;</string>
          <widget class="QWidget" name="DQH_Settings_widget">
           <property name="minimumSize">
            <size>
-            <width>90</width>
+            <width>180</width>
             <height>0</height>
            </size>
           </property>
@@ -10854,9 +10862,9 @@ margin-left:18px;</string>
                  <property name="geometry">
                   <rect>
                    <x>0</x>
-                   <y>0</y>
+                   <y>-177</y>
                    <width>586</width>
-                   <height>1015</height>
+                   <height>1157</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_25">
@@ -11049,7 +11057,7 @@ border-radius:1px;
                       </widget>
                      </item>
                      <item>
-                      <layout class="QGridLayout" name="gridLayout_5" rowstretch="0,0,0" columnstretch="5,2">
+                      <layout class="QGridLayout" name="gridLayout_5" rowstretch="0,0,0" columnstretch="5,0,0">
                        <property name="leftMargin">
                         <number>10</number>
                        </property>
@@ -11057,50 +11065,60 @@ border-radius:1px;
                         <number>10</number>
                        </property>
                        <property name="rightMargin">
-                        <number>0</number>
+                        <number>10</number>
                        </property>
                        <property name="bottomMargin">
                         <number>10</number>
                        </property>
                        <item row="2" column="1">
-                        <widget class="QLineEdit" name="serial">
-                         <property name="focusPolicy">
-                          <enum>Qt::FocusPolicy::ClickFocus</enum>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                         <property name="maxLength">
-                          <number>30</number>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignmentFlag::AlignCenter</set>
-                         </property>
+                        <widget class="QWidget" name="widget_20" native="true">
+                         <layout class="QVBoxLayout" name="verticalLayout_13">
+                          <item alignment="Qt::AlignmentFlag::AlignHCenter">
+                           <widget class="QPushButton" name="pushButton">
+                            <property name="sizePolicy">
+                             <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                              <horstretch>0</horstretch>
+                              <verstretch>0</verstretch>
+                             </sizepolicy>
+                            </property>
+                            <property name="minimumSize">
+                             <size>
+                              <width>100</width>
+                              <height>34</height>
+                             </size>
+                            </property>
+                            <property name="text">
+                             <string>串口列表</string>
+                            </property>
+                           </widget>
+                          </item>
+                          <item>
+                           <widget class="QLineEdit" name="serial">
+                            <property name="minimumSize">
+                             <size>
+                              <width>170</width>
+                              <height>0</height>
+                             </size>
+                            </property>
+                            <property name="focusPolicy">
+                             <enum>Qt::FocusPolicy::ClickFocus</enum>
+                            </property>
+                            <property name="text">
+                             <string/>
+                            </property>
+                            <property name="maxLength">
+                             <number>30</number>
+                            </property>
+                            <property name="alignment">
+                             <set>Qt::AlignmentFlag::AlignCenter</set>
+                            </property>
+                            <property name="placeholderText">
+                             <string>127.0.0.1:5555</string>
+                            </property>
+                           </widget>
+                          </item>
+                         </layout>
                         </widget>
-                       </item>
-                       <item row="2" column="0">
-                        <layout class="QVBoxLayout" name="verticalLayout_14">
-                         <item>
-                          <widget class="QLabel" name="label_106">
-                           <property name="text">
-                            <string>串口</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="label_107">
-                           <property name="styleSheet">
-                            <string notr="true">font-size:11pt;
-color:#959595;
-margin-left:18px;</string>
-                           </property>
-                           <property name="text">
-                            <string>模拟器的ADB端口地址
-如果不知道怎么获得，请鼠标悬停查看详细方法</string>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
                        </item>
                        <item row="1" column="0">
                         <layout class="QVBoxLayout" name="verticalLayout_27">
@@ -11164,6 +11182,36 @@ margin-left:18px;</string>
                          </item>
                         </widget>
                        </item>
+                       <item row="2" column="0">
+                        <layout class="QVBoxLayout" name="verticalLayout_14">
+                         <item>
+                          <widget class="QLabel" name="label_106">
+                           <property name="toolTip">
+                            <string>请先打开自己的模拟器
+点击右侧串口列表
+自行分辨哪个串口是自己正在使用的模拟器的串口
+该串口会被DroidCastRaw和U2共同使用</string>
+                           </property>
+                           <property name="text">
+                            <string>串口</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_107">
+                           <property name="styleSheet">
+                            <string notr="true">font-size:11pt;
+color:#959595;
+margin-left:18px;</string>
+                           </property>
+                           <property name="text">
+                            <string>模拟器的ADB端口地址
+鼠标悬停查看详细介绍</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
                       </layout>
                      </item>
                     </layout>
@@ -11171,6 +11219,12 @@ margin-left:18px;</string>
                   </item>
                   <item>
                    <widget class="QWidget" name="widget_23" native="true">
+                    <property name="sizePolicy">
+                     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                      <horstretch>0</horstretch>
+                      <verstretch>0</verstretch>
+                     </sizepolicy>
+                    </property>
                     <property name="styleSheet">
                      <string notr="true">QWidget {
                 background-color: #dfdfdf;  /* 背景颜色 */
@@ -11204,6 +11258,7 @@ QCheckBox::indicator:disabled {
 /* 1. 未选中（默认）状态的下边框 */
 QLineEdit {
                 /* 清除默认边框，只保留下边框 */
+				font-size:11pt;
                 border: none;
                 border-bottom: 3px solid #969696;  /* 灰色下边框 */
                 padding: 5px 0;  /* 上下下内边距，避免文字紧贴紧贴边框 */
@@ -11352,7 +11407,7 @@ border-radius:1px;
                       </widget>
                      </item>
                      <item>
-                      <layout class="QGridLayout" name="gridLayout_10" rowstretch="0" columnstretch="5,2">
+                      <layout class="QGridLayout" name="gridLayout_10" rowstretch="0" columnstretch="5,0">
                        <property name="leftMargin">
                         <number>10</number>
                        </property>
@@ -11368,6 +11423,41 @@ border-radius:1px;
                        <property name="verticalSpacing">
                         <number>0</number>
                        </property>
+                       <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
+                        <widget class="QComboBox" name="screen_mode">
+                         <property name="minimumSize">
+                          <size>
+                           <width>180</width>
+                           <height>34</height>
+                          </size>
+                         </property>
+                         <item>
+                          <property name="text">
+                           <string>DroidCastRaw</string>
+                          </property>
+                         </item>
+                         <item>
+                          <property name="text">
+                           <string>WindowCapture</string>
+                          </property>
+                         </item>
+                         <item>
+                          <property name="text">
+                           <string>U2</string>
+                          </property>
+                         </item>
+                         <item>
+                          <property name="text">
+                           <string>MuMu</string>
+                          </property>
+                         </item>
+                         <item>
+                          <property name="text">
+                           <string>LD</string>
+                          </property>
+                         </item>
+                        </widget>
+                       </item>
                        <item row="0" column="0">
                         <widget class="QWidget" name="widget_13" native="true">
                          <layout class="QVBoxLayout" name="verticalLayout_37">
@@ -11389,9 +11479,11 @@ border-radius:1px;
                           <item>
                            <widget class="QLabel" name="label_34">
                             <property name="toolTip">
-                             <string>DxCam：速度快，但是模拟器窗口必须在屏幕边界内，不能最小化或被遮挡
-MuMu：使用MuMu模拟器的接口截图，模拟器可以最小化/被遮挡
-LD：使用雷电模拟器的接口截图，模拟器可以最小化/被遮挡</string>
+                             <string>DroidCastRaw：70-100ms ，模拟器可最小化，可遮挡
+WindowCapture：10-20ms，捕获窗口位图，模拟器不可最小化，可遮挡
+U2：70-100ms，使用uiautomator2内置函数，模拟器可最小化，可遮挡
+MuMu：5-10ms，使用MuMu模拟器的接口，模拟器可最小化，可遮挡
+LD：5-10ms，使用雷电模拟器的接口，模拟器可最小化，可遮挡</string>
                             </property>
                             <property name="styleSheet">
                              <string notr="true">QLabel QToolTip {
@@ -11417,7 +11509,7 @@ color:#959595;
 margin-left:18px;</string>
                             </property>
                             <property name="text">
-                             <string>根据自己的情况决定使用哪种截图方案
+                             <string>根据自己的情况决定使用
 鼠标悬停查看详细介绍</string>
                             </property>
                             <property name="textFormat">
@@ -11431,33 +11523,14 @@ margin-left:18px;</string>
                          </layout>
                         </widget>
                        </item>
-                       <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                        <widget class="QComboBox" name="screen_mode">
-                         <item>
-                          <property name="text">
-                           <string>DxCam</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>MuMu</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>LD</string>
-                          </property>
-                         </item>
-                        </widget>
-                       </item>
                       </layout>
                      </item>
                      <item>
                       <widget class="QStackedWidget" name="screen_mode_settings_stackedWidget">
                        <property name="currentIndex">
-                        <number>2</number>
+                        <number>3</number>
                        </property>
-                       <widget class="QWidget" name="DxCam">
+                       <widget class="QWidget" name="DroidCastRaw">
                         <layout class="QVBoxLayout" name="verticalLayout_11">
                          <property name="leftMargin">
                           <number>0</number>
@@ -11471,185 +11544,10 @@ margin-left:18px;</string>
                          <property name="bottomMargin">
                           <number>9</number>
                          </property>
-                         <item>
-                          <layout class="QGridLayout" name="gridLayout" columnstretch="5,0">
-                           <property name="leftMargin">
-                            <number>10</number>
-                           </property>
-                           <property name="topMargin">
-                            <number>0</number>
-                           </property>
-                           <property name="rightMargin">
-                            <number>0</number>
-                           </property>
-                           <property name="bottomMargin">
-                            <number>0</number>
-                           </property>
-                           <property name="verticalSpacing">
-                            <number>4</number>
-                           </property>
-                           <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                            <widget class="QComboBox" name="resolution">
-                             <property name="minimumSize">
-                              <size>
-                               <width>130</width>
-                               <height>34</height>
-                              </size>
-                             </property>
-                             <property name="autoFillBackground">
-                              <bool>false</bool>
-                             </property>
-                             <property name="insertPolicy">
-                              <enum>QComboBox::InsertPolicy::InsertAtBottom</enum>
-                             </property>
-                             <property name="labelDrawingMode">
-                              <enum>QComboBox::LabelDrawingMode::UseDelegate</enum>
-                             </property>
-                             <item>
-                              <property name="text">
-                               <string>1280x720</string>
-                              </property>
-                             </item>
-                             <item>
-                              <property name="text">
-                               <string>1600x900</string>
-                              </property>
-                             </item>
-                             <item>
-                              <property name="text">
-                               <string>1920x1080</string>
-                              </property>
-                             </item>
-                             <item>
-                              <property name="text">
-                               <string>2560x1440</string>
-                              </property>
-                             </item>
-                            </widget>
-                           </item>
-                           <item row="1" column="0">
-                            <widget class="QWidget" name="widget_25" native="true">
-                             <layout class="QVBoxLayout" name="verticalLayout_42">
-                              <property name="leftMargin">
-                               <number>0</number>
-                              </property>
-                              <property name="topMargin">
-                               <number>0</number>
-                              </property>
-                              <property name="rightMargin">
-                               <number>0</number>
-                              </property>
-                              <property name="bottomMargin">
-                               <number>0</number>
-                              </property>
-                              <item>
-                               <widget class="QLabel" name="label_7">
-                                <property name="text">
-                                 <string>视频流帧率</string>
-                                </property>
-                               </widget>
-                              </item>
-                              <item>
-                               <widget class="QLabel" name="label_37">
-                                <property name="styleSheet">
-                                 <string notr="true">font-size:11pt;
-color:#959595;
-margin-left:18px;</string>
-                                </property>
-                                <property name="text">
-                                 <string>建议不低于60帧，否则决斗场相关任务可能出现异常</string>
-                                </property>
-                                <property name="textFormat">
-                                 <enum>Qt::TextFormat::AutoText</enum>
-                                </property>
-                                <property name="wordWrap">
-                                 <bool>true</bool>
-                                </property>
-                               </widget>
-                              </item>
-                             </layout>
-                            </widget>
-                           </item>
-                           <item row="0" column="0">
-                            <widget class="QWidget" name="widget_31" native="true">
-                             <layout class="QVBoxLayout" name="verticalLayout_43">
-                              <property name="leftMargin">
-                               <number>0</number>
-                              </property>
-                              <property name="topMargin">
-                               <number>0</number>
-                              </property>
-                              <property name="rightMargin">
-                               <number>0</number>
-                              </property>
-                              <property name="bottomMargin">
-                               <number>0</number>
-                              </property>
-                              <item>
-                               <widget class="QLabel" name="label_6">
-                                <property name="text">
-                                 <string>模拟器分辨率</string>
-                                </property>
-                               </widget>
-                              </item>
-                              <item>
-                               <widget class="QLabel" name="label_36">
-                                <property name="styleSheet">
-                                 <string notr="true">font-size:11pt;
-color:#959595;
-margin-left:18px;</string>
-                                </property>
-                                <property name="text">
-                                 <string>选择和模拟器设置内相同的分辨率
-作者使用1600x900制作该程序
-对其他分辨率仅保证程序上兼容</string>
-                                </property>
-                                <property name="textFormat">
-                                 <enum>Qt::TextFormat::AutoText</enum>
-                                </property>
-                                <property name="wordWrap">
-                                 <bool>true</bool>
-                                </property>
-                               </widget>
-                              </item>
-                             </layout>
-                            </widget>
-                           </item>
-                           <item row="1" column="1" alignment="Qt::AlignmentFlag::AlignHCenter">
-                            <widget class="QSpinBox" name="video_fps">
-                             <property name="minimumSize">
-                              <size>
-                               <width>90</width>
-                               <height>34</height>
-                              </size>
-                             </property>
-                             <property name="maximumSize">
-                              <size>
-                               <width>90</width>
-                               <height>35</height>
-                              </size>
-                             </property>
-                             <property name="wrapping">
-                              <bool>false</bool>
-                             </property>
-                             <property name="frame">
-                              <bool>true</bool>
-                             </property>
-                             <property name="suffix">
-                              <string> 帧</string>
-                             </property>
-                             <property name="maximum">
-                              <number>300</number>
-                             </property>
-                             <property name="value">
-                              <number>60</number>
-                             </property>
-                            </widget>
-                           </item>
-                          </layout>
-                         </item>
                         </layout>
                        </widget>
+                       <widget class="QWidget" name="WindowCapture"/>
+                       <widget class="QWidget" name="U2"/>
                        <widget class="QWidget" name="MuMu">
                         <layout class="QVBoxLayout" name="verticalLayout_39">
                          <property name="leftMargin">
@@ -11710,6 +11608,15 @@ margin-left:18px;</string>
                              </property>
                              <property name="focusPolicy">
                               <enum>Qt::FocusPolicy::ClickFocus</enum>
+                             </property>
+                             <property name="text">
+                              <string/>
+                             </property>
+                             <property name="readOnly">
+                              <bool>true</bool>
+                             </property>
+                             <property name="placeholderText">
+                              <string>.../MuMuPlayer-12.0(该文件夹下须有shell文件夹）</string>
                              </property>
                             </widget>
                            </item>
@@ -11853,6 +11760,15 @@ margin-left:18px;</string>
                              </property>
                              <property name="focusPolicy">
                               <enum>Qt::FocusPolicy::ClickFocus</enum>
+                             </property>
+                             <property name="text">
+                              <string/>
+                             </property>
+                             <property name="readOnly">
+                              <bool>true</bool>
+                             </property>
+                             <property name="placeholderText">
+                              <string>.../leidian/LDPlayer9(该文件夹下须有ld.exe文件夹）</string>
                              </property>
                             </widget>
                            </item>
@@ -12672,12 +12588,28 @@ margin-left:18px;</string>
                          <property name="dragEnabled">
                           <bool>false</bool>
                          </property>
+                         <property name="placeholderText">
+                          <string>必须为六位</string>
+                         </property>
                         </widget>
                        </item>
                       </layout>
                      </item>
                     </layout>
                    </widget>
+                  </item>
+                  <item>
+                   <spacer name="verticalSpacer_32">
+                    <property name="orientation">
+                     <enum>Qt::Orientation::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
                   </item>
                  </layout>
                 </widget>
@@ -13108,7 +13040,7 @@ border-radius:1px;
                       </widget>
                      </item>
                      <item>
-                      <layout class="QGridLayout" name="gridLayout_49" rowstretch="0,0" columnstretch="5,0">
+                      <layout class="QGridLayout" name="gridLayout_49" rowstretch="0" columnstretch="5,0">
                        <property name="leftMargin">
                         <number>10</number>
                        </property>
@@ -13123,6 +13055,12 @@ border-radius:1px;
                        </property>
                        <item row="0" column="1">
                         <widget class="QComboBox" name="ZhuangBeiHeCheng_target_armor">
+                         <property name="minimumSize">
+                          <size>
+                           <width>100</width>
+                           <height>34</height>
+                          </size>
+                         </property>
                          <property name="focusPolicy">
                           <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
@@ -13230,5 +13168,22 @@ margin-left:18px;</string>
   </widget>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>screen_mode</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>screen_mode_settings_stackedWidget</receiver>
+   <slot>setCurrentIndex(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>818</x>
+     <y>315</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>852</x>
+     <y>444</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

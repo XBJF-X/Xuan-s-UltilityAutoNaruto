@@ -326,7 +326,15 @@ class Scheduler(QObject):
         self.clear_ui()
 
         # 释放设备资源
-        self.device = None
+        if self.device.controller:
+            self.device.controller.release()
+            self.device.controller=None
+        if self.device.screener:
+            self.device.screener.release()
+            self.device.screener=None
+        if self.device:
+            self.device = None
+
         self.UI.start_schedule_button.setEnabled(True)
         self.UI.start_schedule_button.setText("启动")
         self.logger.info("调度器已完全停止")

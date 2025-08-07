@@ -73,11 +73,6 @@ class DailyQuestsHelper(QMainWindow):
         app.aboutToQuit.connect(self._on_about_to_quit)
         # self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
 
-    def _on_about_to_quit(self):
-        self.scheduler.timer_thread.stop()
-        self.scheduler.stop()
-        self.logger.debug("日常助手退出")
-
     def alloc_ui_ref_map(self):
         # 日志窗口设置
         layout = QVBoxLayout(self.UI.logs_container)
@@ -91,8 +86,6 @@ class DailyQuestsHelper(QMainWindow):
         self.UI.serial.setText(self.config.get_config('串口', "127.0.0.1:5555"))
         self.UI.screen_mode.setCurrentIndex(self.config.get_config('截图模式', 0))
         self.UI.screen_mode_settings_stackedWidget.setCurrentIndex(self.config.get_config('截图模式', 0))
-        self.UI.resolution.setCurrentIndex(self.config.get_config('模拟器分辨率', 0))
-        self.UI.video_fps.setValue(self.config.get_config('视频流帧率', 60))
         self.UI.LD_install_path.setText(self.config.get_config('雷电安装路径', ""))
         self.UI.LD_instance_index.setValue(self.config.get_config('雷电实例索引', 0))
         self.UI.MuMu_install_path.setText(self.config.get_config('MuMu安装路径', ""))
@@ -115,8 +108,6 @@ class DailyQuestsHelper(QMainWindow):
         self.UI.screen_mode.currentIndexChanged.connect(self._on_screen_mode_change)
         self.UI.control_mode.currentIndexChanged.connect(self._on_control_mode_change)
         self.UI.serial.editingFinished.connect(lambda w=self.UI.serial: self.config.set_config("串口", w.text()))
-        self.UI.resolution.currentIndexChanged.connect(self._on_resolution_change)
-        self.UI.video_fps.valueChanged.connect(lambda index: self.config.set_config('视频流帧率', index))
         self.UI.LD_install_path.editingFinished.connect(lambda path: self.config.set_config('雷电安装路径', path))
         self.UI.LD_install_path_browse.clicked.connect(lambda: self._on_filepath_browse_clicked("雷电"))
         self.UI.LD_instance_index.valueChanged.connect(lambda index: self.config.set_config('雷电实例索引', index))
@@ -144,6 +135,7 @@ class DailyQuestsHelper(QMainWindow):
                         self.task_common_control_ref_map[key]["CheckBox"] = widget
                         widget.setChecked(self.config.get_task_config(key, "是否启用"))
                         widget.toggled.connect(lambda state, task_name=key: self.scheduler.toggle_task_activation(state, task_name))
+
                         break
                     elif f"{value}_next_execute_time" == widget_name:
                         self.task_common_control_ref_map[key]["LineEdit"] = widget
@@ -208,7 +200,7 @@ class DailyQuestsHelper(QMainWindow):
         self.config.set_config('调试模式', int(flag))
 
     def _on_screen_mode_change(self, index):
-        self.UI.screen_mode_settings_stackedWidget.setCurrentIndex(index)
+        # self.UI.screen_mode_settings_stackedWidget.setCurrentIndex(index)
         self.config.set_config("截图模式", index)
 
     def _on_control_mode_change(self, index):
@@ -235,6 +227,11 @@ class DailyQuestsHelper(QMainWindow):
             elif name == "雷电":
                 self.UI.LD_install_path.setText(folder)
                 self.config.set_config("雷电安装路径", folder)
+
+    def _on_about_to_quit(self):
+        self.scheduler.timer_thread.stop()
+        self.scheduler.stop()
+        self.logger.debug("日常助手退出")
 
 
 if __name__ == "__main__":

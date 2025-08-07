@@ -7,6 +7,7 @@ from PySide6.QtCore import QThread
 from StaticFunctions import get_real_path
 from utils.Config import Config
 
+
 class U2:
     """
     使用uiautomator2进行控制的控制方案
@@ -14,7 +15,7 @@ class U2:
 
     def __init__(self, config: Config):
         try:
-            self.logger = logging.getLogger(self.__class__.__name__)
+            self.logger = logging.getLogger(self.__class__.__name__+"_Control")
             self.config = config
             self.serial = config.get_config("串口")
             self.screen_size = None

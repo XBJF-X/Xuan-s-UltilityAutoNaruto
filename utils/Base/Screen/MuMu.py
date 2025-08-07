@@ -123,6 +123,10 @@ class MuMu:
         # 转换为 OpenCV 图像
         raw = np.frombuffer(self.display_buffer, dtype=np.uint8).reshape(self.display_height, self.display_width, 4)
         bgr = cv2.cvtColor(raw, cv2.COLOR_RGBA2BGR)
+        if bgr.shape[:2] < (900, 1600):
+            bgr = cv2.resize(bgr, (1600, 900), interpolation=cv2.INTER_CUBIC)
+        elif bgr.shape[:2] > (900, 1600):
+            bgr = cv2.resize(bgr, (1600, 900), interpolation=cv2.INTER_AREA)
         dst = cv2.flip(bgr, 0)  # 垂直翻转
 
         return dst

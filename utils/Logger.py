@@ -142,7 +142,7 @@ class LogWindow(QWidget):
         root_logger.addHandler(file_handler)
 
         # 禁用指定logger的日志
-        stop_logger = ["comtypes", "uiautomator2", "adbutils"]
+        stop_logger = ["comtypes", "uiautomator2", "adbutils","urllib3"]
         for logger in stop_logger:
             logger_instance = logging.getLogger(logger)
             logger_instance.setLevel(logging.WARNING)

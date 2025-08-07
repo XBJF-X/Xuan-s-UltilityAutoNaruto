@@ -88,7 +88,8 @@ class RenWuJiHuiSuo(BaseTask):
                     {'type': "ELEMENT", 'name': "任务集会所-今天所有任务已经领完"}
                 ],
                 [],
-                search_max_time=3,
+                once_max_time=1,
+                search_max_time=2,
                 bool_debug=True
         ):
             # 点掉所有的接取按钮，直到出现任务栏已满的提示
@@ -128,7 +129,7 @@ class RenWuJiHuiSuo(BaseTask):
                     task_sum += 1
                     self.logger.info(f"已接取 {task_sum} 个任务")
             if self.click_and_wait(
-                    {'type': "ELEMENT",'name': "任务集会所-超影免费"},
+                    {'type': "ELEMENT", 'name': "任务集会所-超影免费"},
                     auto_raise=False
             ):
                 self.logger.info("刷新任务列表")

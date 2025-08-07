@@ -169,3 +169,5 @@ log/
 /confidence_heat/
 /raw_src/
 /output.py
+/profile.svg
+/test2.py

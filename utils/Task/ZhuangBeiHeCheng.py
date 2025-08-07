@@ -48,7 +48,10 @@ class ZhuangBeiHeCheng(BaseTask):
                 auto_raise=False
         ):
             # 可装备的一键添加
-            if self.detect_and_wait({'type': "ELEMENT", 'name': "装备-可装备"}):
+            if self.detect_and_wait(
+                    {'type': "ELEMENT", 'name': "装备-可装备"},
+                    auto_raise=False
+            ):
                 self.click_and_wait({'type': "ELEMENT", 'name': "装备-一键添加"})
                 self.logger.warning("存在[可装备]装备，已一键装备")
 
@@ -69,8 +72,8 @@ class ZhuangBeiHeCheng(BaseTask):
 
             # 点击开始扫荡
             self.click_and_wait(
-                    {'type': "ELEMENT", 'name': "装备-开始扫荡"},
-                    wait_time=0
+                {'type': "ELEMENT", 'name': "装备-开始扫荡"},
+                wait_time=0
             )
             # 检测是否体力不足
             if self.detect_and_wait(
@@ -85,7 +88,11 @@ class ZhuangBeiHeCheng(BaseTask):
                 # 点掉弹窗
                 self.click_and_wait({'type': "COORDINATE", 'coordinate': (1400, 456)})
                 # 检查能不能点击合成按钮
-                self.click_and_wait({'type': "ELEMENT", 'name': "装备-合成"})
+                if self.click_and_wait(
+                    {'type': "ELEMENT", 'name': "装备-合成"},
+                    auto_raise=False
+                ):
+                    self.logger.debug("可合成，点击合成")
                 # 返回装备界面
                 self.click_and_wait({'type': "COORDINATE", 'coordinate': (1400, 456)})
                 break
@@ -102,7 +109,11 @@ class ZhuangBeiHeCheng(BaseTask):
                     # 点掉扫荡弹窗
                     self.click_and_wait({'type': "COORDINATE", 'coordinate': (1400, 456)})
                     # 检查能不能点击合成按钮
-                    self.click_and_wait({'type': "ELEMENT", 'name': "装备-合成"})
+                    if self.click_and_wait(
+                            {'type': "ELEMENT", 'name': "装备-合成"},
+                            auto_raise=False
+                    ):
+                        self.logger.debug("可合成，点击合成")
                     # 点一下返回装备界面
                     self.click_and_wait({'type': "COORDINATE", 'coordinate': (1400, 456)})
                     continue
@@ -125,7 +136,11 @@ class ZhuangBeiHeCheng(BaseTask):
                         # 点掉弹窗
                         self.click_and_wait({'type': "COORDINATE", 'coordinate': (1400, 456)})
                         # 检查能不能点击合成按钮
-                        self.click_and_wait({'type': "ELEMENT", 'name': "装备-合成"})
+                        if self.click_and_wait(
+                                {'type': "ELEMENT", 'name': "装备-合成"},
+                                auto_raise=False
+                        ):
+                            self.logger.debug("可合成，点击合成")
                         # 返回装备界面
                         self.click_and_wait({'type': "COORDINATE", 'coordinate': (1400, 456)})
                         break
@@ -142,7 +157,11 @@ class ZhuangBeiHeCheng(BaseTask):
                             # 点掉扫荡弹窗
                             self.click_and_wait({'type': "COORDINATE", 'coordinate': (1400, 456)})
                             # 检查能不能点击合成按钮
-                            self.click_and_wait({'type': "ELEMENT", 'name': "装备-合成"})
+                            if self.click_and_wait(
+                                    {'type': "ELEMENT", 'name': "装备-合成"},
+                                    auto_raise=False
+                            ):
+                                self.logger.debug("可合成，点击合成")
                             # 点一下返回装备界面
                             self.click_and_wait({'type': "COORDINATE", 'coordinate': (1400, 456)})
                         continue

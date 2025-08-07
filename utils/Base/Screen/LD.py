@@ -115,6 +115,10 @@ class LD:
         self.screenshot_instance = None  # IScreenShotClass 实例
         self.emu_info = LDLIST2()  # 模拟器信息
 
+    def init(self):
+        self.set_ld_path()
+        self.connect_emu()
+
     def __del__(self):
         """析构函数，释放资源"""
         self.release()
@@ -218,12 +222,12 @@ class LD:
             # 转换为 numpy 数组并重塑为图像尺寸
             img = np.frombuffer(pixels_array, dtype=np.uint8)
             img = img.reshape((height, width, 3))
-
+            if img.shape[:2] < (900, 1600):
+                img = cv2.resize(img, (1600, 900), interpolation=cv2.INTER_CUBIC)
+            elif img.shape[:2] > (900, 1600):
+                img = cv2.resize(img, (1600, 900), interpolation=cv2.INTER_AREA)
             # 垂直翻转图像（与 C++ 代码一致）
             img = cv2.flip(img, 0)
-
-            # # 转换颜色空间（BGR -> RGB）
-            # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
             return img
 

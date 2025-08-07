@@ -3,18 +3,21 @@ import logging
 
 from PySide6.QtWidgets import QMessageBox
 
-from utils.Base.Screen.Dxcam import Dxcam
+from utils.Base.Screen.DroidCastRaw import DroidCastRaw
 from utils.Base.Screen.LD import LD
 from utils.Base.Screen.MuMu import MuMu
+from utils.Base.Screen.U2 import U2
+from utils.Base.Screen.WindowCapture import WindowCapture
 from utils.Config import Config
 
 
 class ScreenMode(enum.IntEnum):
     """截图模式枚举"""
-    Dxcam = 0
-    MuMu = 1
-    LD = 2
-
+    DroidCastRaw = 0
+    WindowCapture = 1
+    U2 = 2
+    MuMu = 3
+    LD = 4
 
 class Screen:
     """
@@ -39,41 +42,30 @@ class Screen:
     def init_screen_instance(self, initial=False):
         self.logger.info(f"当前截图模式：[{self.screen_mode.name}]")
         try:
-            if self.screen_mode == ScreenMode.Dxcam:
-                self.screen_instance = Dxcam(self.config)
-                if not initial:
-                    QMessageBox.information(None, "", f"[Common]初始化截图实例初始化完毕", QMessageBox.Ok)
-                self.logger.info("Common截图实例初始化完毕")
+            if self.screen_mode == ScreenMode.DroidCastRaw:
+                self.screen_instance = DroidCastRaw(self.config)
             elif self.screen_mode == ScreenMode.MuMu:
                 self.screen_instance = MuMu(self.config)
-                self.screen_instance.init()
-                if not initial:
-                    QMessageBox.information(None, "", f"[MuMu]初始化截图实例初始化完毕", QMessageBox.Ok)
-                self.logger.info("MuMu模拟器截图实例初始化完毕")
             elif self.screen_mode == ScreenMode.LD:
                 self.screen_instance = LD(self.config)
-                self.screen_instance.set_ld_path()
-                self.screen_instance.connect_emu()
-                if not initial:
-                    QMessageBox.information(None, "", f"[LD]初始化截图实例初始化完毕", QMessageBox.Ok)
-                self.logger.info("LD模拟器截图实例初始化完毕")
+            elif self.screen_mode == ScreenMode.WindowCapture:
+                self.screen_instance = WindowCapture(self.config)
+            elif self.screen_mode == ScreenMode.U2:
+                self.screen_instance = U2(self.config)
+            self.screen_instance.init()
+            if not initial:
+                QMessageBox.information(None, "", f"[{self.screen_mode.name}]截图实例初始化完毕", QMessageBox.StandardButton.Ok)
+            self.logger.info(f"[{self.screen_mode.name}]截图实例初始化完毕")
             self.screen_instance_ready = True
             self.config.set_config('截图模式', self.screen_mode)
         except Exception as e:
-            QMessageBox.warning(None, "", f"[{self.screen_mode.name}]初始化截图实例出错，将启用[Common]方案", QMessageBox.Ok)
-            self.logger.error(f"[%s]初始化截图实例出错，将启用[Common]方案", self.screen_mode.name)
-            try:
-                self.screen_mode = ScreenMode.Dxcam
-                self.screen_instance = Dxcam(self.config)
-                self.screen_instance_ready = True
-                self.config.set_config('截图模式', self.screen_mode)
-            except Exception as e:
-                self.logger.error("初始化通用截图实例依旧出错")
+            QMessageBox.warning(None, "", f"[{self.screen_mode.name}]初始化截图实例出错", QMessageBox.StandardButton.Ok)
+            self.logger.error(f"[{self.screen_mode.name}]初始化截图实例出错{e}")
 
     def switch_screen_mode(self, new_mode: ScreenMode):
         self.logger.info(f"即将切换截图模式：[{new_mode.name}]")
         if new_mode == self.screen_mode:
-            QMessageBox.information(None, "", f"已经是[{new_mode.name}]模式了", QMessageBox.Ok)
+            QMessageBox.information(None, "", f"已经是[{new_mode.name}]模式了", QMessageBox.StandardButton.Ok)
             self.logger.info(f"已经是[{new_mode.name}]模式了")
             return
         self.screen_mode = new_mode
