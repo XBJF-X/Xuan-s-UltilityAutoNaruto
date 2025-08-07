@@ -27,6 +27,7 @@ from .XiaoDuiTuXi import XiaoDuiTuXi
 from .XiuXingZhiLu import XiuXingZhiLu
 from .YaoSaiZhengDuoZhan import YaoSaiZhengDuoZhan
 from .YiLeWaiMai import YiLeWaiMai
+from .ZhuangBeiHeCheng import ZhuangBeiHeCheng
 from .ZuZhiQiFu import ZuZhiQiFu
 
 TASK_TYPE_MAP = {
@@ -60,6 +61,7 @@ TASK_TYPE_MAP = {
     '要塞争夺战': YaoSaiZhengDuoZhan,
     '叛忍来袭': PanRenLaiXi,
     '跨服争霸赛': KuaFuZhengBaSai,
+    '装备合成': ZhuangBeiHeCheng,
 }
 
 TASK_NAME_CN2EN_MAP = {
@@ -93,6 +95,7 @@ TASK_NAME_CN2EN_MAP = {
     '要塞争夺战': 'YaoSaiZhengDuoZhan',
     '叛忍来袭': 'PanRenLaiXi',
     '跨服争霸赛': 'KuaFuZhengBaSai',
+    '装备合成': 'ZhuangBeiHeCheng',
 }
 TREE_INDEX_DIC = {
     '登录奖励': 1,
@@ -126,4 +129,5 @@ TREE_INDEX_DIC = {
     '赛季胜场': 29,
     '更多玩法': 30,
     '助手设置': 31,
+    '装备合成': 32,
 }

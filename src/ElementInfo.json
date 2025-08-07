@@ -109,7 +109,7 @@
         "threshold": 0.9,
         "ratio": [1,0.8]
     },
-        "普通招募-确定": {
+    "普通招募-确定": {
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
         "threshold": 0.9,
@@ -559,13 +559,13 @@
     "情报站-点赞-未点": {
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
-        "threshold": 0.9,
+        "threshold": 0.78,
         "ratio": [0.5,0.5]
     },
     "情报站-点赞-已点": {
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
-        "threshold": 0.9,
+        "threshold": 0.78,
         "ratio": [0.5,0.5]
     },
     "任务集会所-接取-推荐小队": {
@@ -638,84 +638,84 @@
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
         "threshold": 0.9,
-        "ratio": [0.5,0.5],
+        "ratio": [0.5,0.3],
         "match_way": "SIFT"
     },
     "主场景-战区赛事": {
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
         "threshold": 0.9,
-        "ratio": [0.5,0.5],
+        "ratio": [0.5,0.3],
         "match_way": "SIFT"
     },
     "主场景-忍话剧": {
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
         "threshold": 0.9,
-        "ratio": [0.5,0.5],
+        "ratio": [0.5,0.3],
         "match_way": "SIFT"
     },
     "主场景-积分赛": {
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
         "threshold": 0.9,
-        "ratio": [0.5,0.5],
+        "ratio": [0.5,0.3],
         "match_way": "SIFT"
     },
     "主场景-任务集会所": {
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
         "threshold": 0.9,
-        "ratio": [0.5,0.5],
+        "ratio": [0.5,0.3],
         "match_way": "SIFT"
     },
     "主场景-排行榜": {
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
         "threshold": 0.9,
-        "ratio": [0.5,0.5],
+        "ratio": [0.5,0.3],
         "match_way": "SIFT"
     },
     "主场景-组织": {
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
         "threshold": 0.9,
-        "ratio": [0.5,0.5],
+        "ratio": [0.5,0.3],
         "match_way": "SIFT"
     },
     "主场景-决斗场": {
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
         "threshold": 0.9,
-        "ratio": [0.5,0.5],
+        "ratio": [0.5,0.3],
         "match_way": "SIFT"
     },
     "主场景-丰饶之间": {
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
         "threshold": 0.9,
-        "ratio": [0.5,0.5],
+        "ratio": [0.5,0.3],
         "match_way": "SIFT"
     },
     "主场景-试炼之地": {
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
         "threshold": 0.9,
-        "ratio": [0.5,0.5],
+        "ratio": [0.5,0.3],
         "match_way": "SIFT"
     },
     "主场景-忍者挑战": {
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
         "threshold": 0.9,
-        "ratio": [0.5,0.5],
+        "ratio": [0.5,0.3],
         "match_way": "SIFT"
     },
     "主场景-小队突袭": {
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
         "threshold": 0.9,
-        "ratio": [0.5,0.5],
+        "ratio": [0.5,0.3],
         "match_way": "SIFT"
     },
     "小队突袭-扫荡": {
@@ -1139,6 +1139,95 @@
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
         "roi": [48,230,806,875],
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "秘境探险-匹配-离开队伍-确定": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "主场景-装备": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "主场景-装备-装备": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "装备-进阶": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "roi": [1357,1567,640,740],
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "装备-可装备": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "roi": [857,1567,500,640],
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "装备-可扫荡": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "roi": [857,1567,500,640],
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "装备-一键添加": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "roi": [1357,1567,640,740],
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "装备-扫荡": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "装备-扫荡40次-选中": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.87,0.5]
+    },
+    "装备-开始扫荡": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "装备-体力不足": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "装备-合成": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "装备-已足够": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "roi": [800,1100,450,800],
+        "threshold": 0.8,
+        "ratio": [0.5,0.5]
+    },
+    "装备-继续扫荡": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
         "threshold": 0.8,
         "ratio": [0.5,0.5]
     }

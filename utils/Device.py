@@ -47,7 +47,7 @@ class Device:
             else:
                 return False
 
-    def click_position(self, coordinate, resolution=(1600, 900), times=1):
+    def click_position(self, coordinate, resolution, times=1):
         scale = self.screen_size[0] / resolution[0]
         x, y = int(scale * coordinate[0]), int(scale * coordinate[1])
         for _ in range(times):

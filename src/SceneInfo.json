@@ -92,32 +92,32 @@
     "情报站-首页": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "情报站-卷轴": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "情报站-村口": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "福利站-签到弹窗": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "福利站-签到成功": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "福利站": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "邮件": {
         "resolution": [1600, 900],
@@ -172,7 +172,7 @@
     "情报站-忍者站": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "排行榜": {
         "resolution": [1600, 900],
@@ -200,6 +200,11 @@
         "threshold": 0.9
     },
     "秘境探险-匹配": {
+        "resolution": [1600, 900],
+        "path": "src\\Template\\Scene\\",
+        "threshold": 0.9
+    },
+    "装备": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
         "threshold": 0.9

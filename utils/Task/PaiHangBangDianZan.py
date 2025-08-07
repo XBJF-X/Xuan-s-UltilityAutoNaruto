@@ -27,33 +27,23 @@ class PaiHangBangDianZan(BaseTask):
 
         ):
             if not self.search_and_click(
-                    [
-                        {"type": "ELEMENT", "name": "主场景-排行榜"}
-                    ],
-                    [
-                        {
-                            "swipe": {
-                                "start_coordinate": [344, 340],
-                                "end_coordinate": [1400, 340],
-                                "duration": 1
-                            }
+                [
+                    {"type": "ELEMENT", "name": "主场景-排行榜"}
+                ],
+                [
+                    {
+                        "swipe": {
+                            "start_coordinate": [344, 340],
+                            "end_coordinate": [1400, 340],
+                            "duration": 1
                         }
-                    ],
-                    max_attempts=2
-
+                    }
+                ],
+                max_attempts=2
             ):
                 raise self.StepFailedError("无法进入[排行榜]")
-        if not self.detect_and_wait({
-            'type': "SCENE",
-            'name': "排行榜"
-        }):
-            raise self.StepFailedError("未进入[排行榜]")
+        self.detect_and_wait({'type': "SCENE",'name': "排行榜"})
         self.logger.info("点赞")
-        if not self.click_and_wait({
-            'type': "ELEMENT",
-            'name': "排行榜-点赞"
-        }):
-            raise self.StepFailedError("点赞未成功，可能是已经点赞过了")
-        else:
-            self.logger.info("点赞成功")
+        self.click_and_wait({'type': "ELEMENT",'name': "排行榜-点赞"})
+        self.logger.info("点赞成功")
         self._update_next_execute_time(time_offset=timedelta(hours=8))

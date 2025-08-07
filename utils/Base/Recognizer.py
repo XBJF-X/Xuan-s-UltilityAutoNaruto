@@ -113,6 +113,11 @@ class Recognizer:
         # 1. 读取图像
         template_gray = template_data['GRAY']
         scene_gray = cv2.cvtColor(scene_img, cv2.COLOR_BGR2GRAY).astype(np.uint8)
+        if scene_img.shape[:2] < (900, 1600):
+            scene_gray = cv2.resize(scene_gray, (1600, 900), interpolation=cv2.INTER_CUBIC)
+        elif scene_img.shape[:2] > (900, 1600):
+            scene_gray = cv2.resize(scene_gray, (1600, 900), interpolation=cv2.INTER_AREA)
+
         h, w = template_gray.shape[:2]  # 模板尺寸
         # 2. 初始化SIFT检测器
         sift = cv2.SIFT_create()

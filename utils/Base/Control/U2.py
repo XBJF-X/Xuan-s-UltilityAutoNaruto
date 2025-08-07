@@ -1,8 +1,11 @@
+import logging
+import os
+
 import uiautomator2 as u2
 from PySide6.QtCore import QThread
 
+from StaticFunctions import get_real_path
 from utils.Config import Config
-
 
 class U2:
     """
@@ -11,19 +14,23 @@ class U2:
 
     def __init__(self, config: Config):
         try:
+            self.logger = logging.getLogger(self.__class__.__name__)
             self.config = config
             self.serial = config.get_config("串口")
             self.screen_size = None
             self.u2_device: u2.Device = None
             self.u2_device = u2.connect(self.serial)
             self.screen_size = self.u2_device.window_size()  # (width, height)
+            print(self.u2_device.info)
         except Exception as e:
             print(e)
 
     def click(self, x, y, duration=200):
         self.u2_device.touch.down(x, y)
+        self.logger.debug(f"[PressDown] ({x},{y})")
         QThread.msleep(duration)
         self.u2_device.touch.up(x, y)
+        self.logger.debug(f"[PressUp] ({x},{y})")
         # self.u2_device.click(x, y)
 
     def swipe(self, start_coordinate, end_coordinate, duration=0.5):
@@ -53,5 +60,5 @@ class U2:
 
     def long_press(self, x, y, duration):
         self.u2_device.touch.down(x, y)
-        QThread.msleep(int(duration*1000))
+        QThread.msleep(int(duration * 1000))
         self.u2_device.touch.up(x, y)

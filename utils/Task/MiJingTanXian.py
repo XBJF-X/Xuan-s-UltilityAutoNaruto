@@ -34,22 +34,15 @@ class MiJingTanXian(BaseTask):
             raise self.EndEarly("无法跳转到[秘境探险]，可能已经完成")
 
         # 确认[秘境探险-首页]界面出现
-        if not self.detect_and_wait(
-                {"type": "SCENE", "name": "秘境探险-首页"},
-                max_time=5,
-                wait_time=3
-        ):
-            raise self.StepFailedError("[秘境探险]界面未出现")
+        self.detect_and_wait(
+            {"type": "SCENE", "name": "秘境探险-首页"},
+            max_time=5,
+            wait_time=3
+        )
 
         # 点击创建房间，进入[秘境探险-匹配]
-        if not self.click_and_wait(
-                {"type": "ELEMENT", "name": "秘境探险-首页-创建房间"}
-        ):
-            raise self.StepFailedError("创建房间失败")
-        if not self.detect_and_wait(
-                {"type": "SCENE", "name": "秘境探险-匹配"}
-        ):
-            raise self.StepFailedError("[秘境探险-匹配]未出现")
+        self.click_and_wait({"type": "ELEMENT", "name": "秘境探险-首页-创建房间"})
+        self.detect_and_wait({"type": "SCENE", "name": "秘境探险-匹配"})
 
         self.mijingtanxian_implement()
 
@@ -59,17 +52,16 @@ class MiJingTanXian(BaseTask):
         # 剩余挑战券!=0的时候
         while not self.detect_and_wait(
                 {"type": "ELEMENT", "name": "秘境探险-匹配-剩余挑战券-0"},
-                max_time=2
+                max_time=2,
+                auto_raise=False
         ):
             self.logger.info("挑战券不为0，继续出战")
             # 点击出战
-            if not self.click_and_wait(
-                    {"type": "ELEMENT", "name": "秘境探险-匹配-出战"},
-                    wait_time=5
-            ):
-                raise self.StepFailedError("出战失败")
+            self.click_and_wait({"type": "ELEMENT", "name": "秘境探险-匹配-出战"})
             if self.click_and_wait(
-                    {"type": "ELEMENT", "name": "秘境探险-匹配-出战"},
+                    {"type": "ELEMENT", "name": "秘境探险-匹配-出战-继续挑战-确定"},
+                    wait_time=3,
+                    auto_raise=False
             ):
                 self.logger.debug("确认出战")
             # 等待检测到[落岩秘境]，如果检测到别的就退
@@ -113,48 +105,50 @@ class MiJingTanXian(BaseTask):
                     raise self.StepFailedError("落岩秘境通过超时")
                 elif flag == 1:
                     if not self.search_and_detect(
-                        [
-                            {"type": "SCENE", "name": "秘境探险-匹配"}
-                        ],
-                        [
-                            {'type': "COORDINATE", 'coordinate': (800, 854)}
-                        ],
-                        search_max_time=60
+                            [
+                                {"type": "SCENE", "name": "秘境探险-匹配"}
+                            ],
+                            [
+                                {'click': {'type': "COORDINATE", 'coordinate': (800, 854)}}
+                            ],
+                            search_max_time=60,
+                            bool_debug=True
                     ):
                         raise self.StepFailedError("秘境胜利[无奖励]，回退匹配界面失败")
                 elif flag == 2:
-                    if not self.click_and_wait(
+                    self.click_and_wait(
                         {"type": "ELEMENT", "name": "秘境探险-匹配-返回"},
-                        wait_time=3,
                         max_time=3
-                    ):
-                        raise self.StepFailedError("[秘境探险-匹配-返回]点击失败")
+                    )
                     if not self.search_and_detect(
-                        [
-                            {"type": "SCENE", "name": "秘境探险-匹配"}
-                        ],
-                        [
-                            {'type': "COORDINATE", 'coordinate': (800, 854)}
-                        ],
-                        search_max_time=60
+                            [
+                                {"type": "SCENE", "name": "秘境探险-匹配"}
+                            ],
+                            [
+                                {'click': {'type': "COORDINATE", 'coordinate': (800, 854)}}
+                            ],
+                            search_max_time=60,
+                            once_max_time=1,
+                            bool_debug=True
                     ):
                         raise self.StepFailedError("秘境胜利，回退匹配界面失败")
 
             else:
                 self.logger.info("不是落岩秘境，退出战斗")
                 # 点暂停，退出，确认
-                if not self.click_and_wait({"type": "ELEMENT", "name": "秘境探险-匹配-暂停"}):
-                    raise self.StepFailedError("点击[暂停]按钮失败")
-                if not self.click_and_wait({"type": "ELEMENT", "name": "秘境探险-匹配-暂停-退出战斗"}):
-                    raise self.StepFailedError("点击[暂停-退出战斗]按钮失败")
-                if not self.click_and_wait({"type": "ELEMENT",
-                                               "name": "秘境探险-匹配-暂停-退出战斗-确定"}):
-                    raise self.StepFailedError("点击[暂停-退出战斗-确定]按钮失败")
+                self.click_and_wait({"type": "ELEMENT", "name": "秘境探险-匹配-暂停"})
+                self.click_and_wait({"type": "ELEMENT", "name": "秘境探险-匹配-暂停-退出战斗"})
+                self.click_and_wait({"type": "ELEMENT", "name": "秘境探险-匹配-暂停-退出战斗-确定"})
 
             # 等待[秘境探险-匹配]界面出现，继续检测挑战券数量
-            if not self.detect_and_wait(
-                    {"type": "SCENE", "name": "秘境探险-匹配"},
-                    max_time=30
-            ):
-                raise self.StepFailedError("退出战斗，[秘境探险-匹配]未出现")
+            self.detect_and_wait(
+                {"type": "SCENE", "name": "秘境探险-匹配"},
+                max_time=30
+            )
             self.logger.info("挑战券清空，结束执行")
+        # 退回到 秘境探险-首页
+        self.esc()
+        self.click_and_wait(
+            {"type": "ELEMENT", "name": "秘境探险-匹配-离开队伍-确定"},
+            wait_time=3
+        )

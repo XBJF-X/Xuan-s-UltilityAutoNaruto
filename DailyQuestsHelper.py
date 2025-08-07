@@ -65,7 +65,8 @@ class DailyQuestsHelper(QMainWindow):
         os.environ.pop("QT_DEVICE_PIXEL_RATIO", None)
         os.environ.pop("QT_DPI_OVERRIDE", None)
         os.environ.pop("QT_FONT_DPI", None)
-
+        # 临时把adb目录添加进环境目录
+        os.environ['PATH'] = os.pathsep.join([get_real_path('bin/adb'), os.environ.get('PATH', '')])
         cv2.ocl.setUseOpenCL(True)
         self.setWindowIcon(QIcon(resource_path("src/ASDS.ico")))
         self.resize(1400, 800)
@@ -104,6 +105,7 @@ class DailyQuestsHelper(QMainWindow):
         self.UI.XiaoDuiTuXi_4rewards_times.setValue(self.config.get_task_config("小队突袭", "四倍奖励次数"))
         self.UI.JinBiZhaoCai_times.setValue(self.config.get_task_config("金币招财", "招财次数"))
         self.UI.GouMaiTiLi_times.setValue(self.config.get_task_config("购买体力", "购买体力次数"))
+        self.UI.ZhuangBeiHeCheng_target_armor.setCurrentIndex(self.config.get_task_config("装备合成", "合成目标装备"))
 
     def connect_ui2function(self):
         self.UI.start_schedule_button.clicked.connect(self._on_start_schedule_button_clicked)
@@ -124,6 +126,7 @@ class DailyQuestsHelper(QMainWindow):
         self.UI.scan_inerval.valueChanged.connect(lambda index: self.config.set_config('扫描间隔', index))
         self.UI.secondary_password.editingFinished.connect(lambda w=self.UI.secondary_password: self.config.set_config("二级密码", w.text()))
         self.UI.key_map_configuration_button.clicked.connect(self._on_key_map_configuration_button_clicked)
+        self.UI.ZhuangBeiHeCheng_target_armor.currentIndexChanged.connect(lambda index: self.config.set_task_config('装备合成', '合成目标装备', index))
 
     def process_common_task_settings_control(self):
         # 处理所有任务相关的通用设置控件的响应

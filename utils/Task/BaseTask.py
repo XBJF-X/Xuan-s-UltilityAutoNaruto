@@ -4,7 +4,7 @@ import logging
 import threading
 import time
 from datetime import datetime, timedelta
-from typing import Dict, List, Callable, Tuple
+from typing import Dict, List, Callable, Tuple, Any
 from zoneinfo import ZoneInfo
 
 from PySide6.QtCore import QThread
@@ -166,29 +166,40 @@ class BaseTask(metaclass=TaskMeta):
         Args:
             params: 检测条件（如{"type": "SCENE", "name": "..."}）
             ** kwargs: 可选参数：
+            - auto_raise: 是否自动抛出异常，默认为True
             - wait_time: 检测到之后的等待时间
             - max_time: 最大尝试时间，默认为2.0
             - max_attempts: 最大尝试次数，如果定义则优先，不定义则按最大时间
             - bool_debug：是否打印调试日志（默认True）
         """
+        auto_raise: bool = kwargs.get("auto_raise", True)
         wait_time: float = kwargs.get("wait_time", 1.0)
         max_time: float = kwargs.get("max_time", 2.0)
         max_attempts: int | None = kwargs.get("max_attempts")
         bool_debug: bool = kwargs.get("bool_debug", True)
 
         start_time = time.perf_counter()
+        success = False
         if max_attempts is not None:
             for i in range(max_attempts):
                 if self.device.detect(params, bool_debug):
                     QThread.msleep(int(wait_time * 1000))
-                    return True
-            return False
+                    success = True
+                    break
         else:
             while time.perf_counter() - start_time < max_time:
                 if self.device.detect(params, bool_debug):
                     QThread.msleep(int(wait_time * 1000))
-                    return True
-            return False
+                    success = True
+                    break
+        # 根据auto_raise参数决定是抛出异常还是返回结果
+        if not success and auto_raise:
+            if params['type'] == "ELEMENT":
+                raise self.StepFailedError(f"元素 [{params['name']}] 未出现")
+            elif params['type'] == "SCENE":
+                raise self.StepFailedError(f"界面 [{params['name']}] 未出现")
+
+        return success
 
     def click_and_wait(self, params, **kwargs):
         """
@@ -196,28 +207,42 @@ class BaseTask(metaclass=TaskMeta):
         Args:
             params: 点击参数（如{"type": "ELEMENT", "name": "..."}）
             ** kwargs: 可选参数：
+            - auto_raise: 是否自动抛出异常，默认为True,对于试探性的点击一定要设置成False
             - wait_time: 检测到之后的等待时间
             - max_time: 最大尝试时间，默认为2.0
             - max_attempts: 最大尝试次数，如果定义则优先，不定义则按最大时间
             - click_times：点击次数，默认为1
         """
+        auto_raise: bool = kwargs.get("auto_raise", True)
         wait_time: float = kwargs.get("wait_time", 1.5)
         max_time: float = kwargs.get("max_time", 2.0)
         max_attempts: int | None = kwargs.get("max_attempts")
         click_times: int = kwargs.get("click_times", 1)
+
         start_time = time.perf_counter()
+        success = False
         if max_attempts:
             for i in range(max_attempts):
                 if self.device.click(params, self.resolution, times=click_times):
                     QThread.msleep(int(wait_time * 1000))
-                    return True
-            return False
+                    success = True
+                    break
         else:
             while time.perf_counter() - start_time < max_time:
                 if self.device.click(params, self.resolution, times=click_times):
                     QThread.msleep(int(wait_time * 1000))
-                    return True
-            return False
+                    success = True
+                    break
+
+        # 根据auto_raise参数决定是抛出异常还是返回结果
+        if not success and auto_raise:
+            if params['type'] == "ELEMENT":
+                raise self.StepFailedError(f"点击元素 [{params['name']}] 失败")
+            elif params['type'] == "COORDINATE":
+                coor = params['coordinate']
+                raise self.StepFailedError(f"点击坐标 ({coor[0]},{coor[1]}) 失败")
+
+        return success
 
     def swipe_and_wait(self, start_coordinate, end_coordinate, **kwargs):
         """
@@ -298,10 +323,13 @@ class BaseTask(metaclass=TaskMeta):
                         if self._should_stop():
                             stop_event.set()
                             raise self.Stop
-                        if self.detect_and_wait(stop_condition,
-                                                wait_time=0,
-                                                max_attempts=1,
-                                                bool_debug=bool_debug):
+                        if self.detect_and_wait(
+                                stop_condition,
+                                wait_time=0,
+                                max_attempts=1,
+                                bool_debug=bool_debug,
+                                auto_raise=False
+                        ):
                             stop_event.set()
                             stop_result = index + 1  # 存储1-based索引
                             self.logger.debug(f"判定条件{index + 1}成立，点击停止")
@@ -396,13 +424,22 @@ class BaseTask(metaclass=TaskMeta):
             for index, params in enumerate(params_list):
                 if self._should_stop():
                     raise self.Stop
-                if self.click_and_wait(params, wait_time=wait_time, max_time=once_max_time):
+                if self.click_and_wait(
+                        params,
+                        wait_time=wait_time,
+                        max_time=once_max_time,
+                        auto_raise=False
+                ):
                     return index + 1
             for action in search_actions:
                 if self._should_stop():
                     raise self.Stop
                 if "click" in action:
-                    self.click_and_wait(action['click'], max_time=1)
+                    self.click_and_wait(
+                        action['click'],
+                        max_time=1,
+                        auto_raise=False
+                    )
                 elif "swipe" in action:
                     self.device.swipe(
                         action['swipe']['start_coordinate'],
@@ -449,10 +486,13 @@ class BaseTask(metaclass=TaskMeta):
             for index, params in enumerate(params_list):
                 if self._should_stop():
                     raise self.Stop
-                if self.detect_and_wait(params,
-                                        wait_time=wait_time,
-                                        max_time=once_max_time,
-                                        bool_debug=bool_debug):
+                if self.detect_and_wait(
+                        params,
+                        wait_time=wait_time,
+                        max_time=once_max_time,
+                        bool_debug=bool_debug,
+                        auto_raise=False
+                ):
                     return index + 1
             if search_max_time:
                 if time.perf_counter() - start > search_max_time:
@@ -466,7 +506,11 @@ class BaseTask(metaclass=TaskMeta):
                 if self._should_stop():
                     raise self.Stop
                 if "click" in action:
-                    self.click_and_wait(action['click'], max_time=1)
+                    self.click_and_wait(
+                        action['click'],
+                        max_time=1,
+                        auto_raise=False
+                    )
                 elif "swipe" in action:
                     self.device.swipe(
                         action['swipe']['start_coordinate'],
@@ -479,9 +523,15 @@ class BaseTask(metaclass=TaskMeta):
         """
         第一个参数为需要点击的输入框的参数，第二个为要输入的文字
         """
-        if self.click_and_wait(input_edit_params):
+        if self.click_and_wait(
+                input_edit_params,
+                auto_raise=False
+        ):
             self.device.input(input_text)
-            self.click_and_wait(input_edit_params)
+            self.click_and_wait(
+                input_edit_params,
+                auto_raise=False
+            )
             return True
         return False
 
@@ -490,25 +540,25 @@ class BaseTask(metaclass=TaskMeta):
         过二级密码的通用函数,返回True表示检测到了二级密码的弹窗,反之没有
         """
         # 可能有二级密码，用户输入密码
-        if self.detect_and_wait({
-            "type": "SCENE",
-            "name": "二级密码"
-        }):
+        if self.detect_and_wait(
+                {"type": "SCENE", "name": "二级密码"},
+                auto_raise=False
+        ):
             self.logger.debug("出现二级密码窗口")
             passward = self.config.get_config("二级密码")
             if len(passward) != 6:
                 raise self.StepFailedError("请检查二级密码！")
 
             # 输入操作
-            self.click_and_input({
-                "type": "ELEMENT",
-                "name": "二级密码-输入框"
-            }, passward)
+            self.click_and_input(
+                {"type": "ELEMENT", "name": "二级密码-输入框"},
+                passward
+            )
             # 点击二级密码-确定
-            if not self.click_and_wait({
-                "type": "ELEMENT",
-                "name": "二级密码-确定"
-            }):
+            if not self.click_and_wait(
+                    {"type": "ELEMENT", "name": "二级密码-确定"},
+                    auto_raise=False
+            ):
                 raise self.StepFailedError("二级密码验证失败")
             self.logger.debug("验证二级密码结束")
             return True
@@ -520,14 +570,12 @@ class BaseTask(metaclass=TaskMeta):
         回退一次，默认点击X，毕竟你游大部分情况下都能点X返回上一步，也可自定义返回点击的元素
         """
         if x_names is None:
-            x_names = ["决斗场-X", "X", "招募-X", "情报站-X"]
+            x_names = ["X", "决斗场-X", "招募-X", "情报站-X"]
         for x_name in x_names:
             if self.click_and_wait(
-                    {
-                        'type': "ELEMENT",
-                        'name': x_name
-                    },
-                    max_time=0.4
+                    {'type': "ELEMENT", 'name': x_name},
+                    max_time=0.4,
+                    auto_raise=False
             ):
                 return True
         return False
@@ -552,14 +600,13 @@ class BaseTask(metaclass=TaskMeta):
         max_time: float = kwargs.get("max_time", 30.0)
 
         if x_names is None:
-            x_names = ["决斗场-X", "X", "招募-X", "情报站-X"]
+            x_names = ["X", "决斗场-X", "招募-X", "情报站-X"]
         self.logger.debug(f"回退至[{home_name}]")
         attempt = 0
         start = time.perf_counter()
-        while not self.device.detect({
-            'type': "SCENE",
-            'name': home_name
-        }):
+        while not self.device.detect(
+                {'type': "SCENE", 'name': home_name},
+        ):
             attempt += 1
             if attempt > 1:
                 self.device.click_position([1526, 44], self.resolution)
