@@ -16,85 +16,6 @@ user32 = ctypes.WinDLL("user32", use_last_error=True)
 user32.PrintWindow.argtypes = [wintypes.HWND, wintypes.HDC, wintypes.UINT]
 user32.PrintWindow.restype = wintypes.BOOL
 
-# 定义钩子回调函数类型
-HOOKPROC = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.wintypes.WPARAM, ctypes.wintypes.LPARAM)
-
-
-class WindowSizeListener:
-    def __init__(self, hwnd):
-        self.hwnd = hwnd  # 目标窗口句柄
-        self.hook_id = None  # 钩子ID
-        self.running = False  # 监听状态
-        self.old_width = 0
-        self.old_height = 0
-
-        # 初始化窗口初始大小
-        rect = win32gui.GetWindowRect(self.hwnd)
-        self.old_width = rect[2] - rect[0]
-        self.old_height = rect[3] - rect[1]
-
-    def hook_callback(self, nCode, wParam, lParam):
-        """钩子回调函数，处理消息"""
-        if nCode >= 0:
-            # 解析消息结构
-            msg = ctypes.wintypes.MSG.from_address(lParam)
-
-            # 检测WM_SIZE消息
-            if msg.hwnd == self.hwnd and msg.message == win32con.WM_SIZE:
-                # 获取新的窗口尺寸
-                new_width = ctypes.wintypes.LOWORD(msg.lParam)
-                new_height = ctypes.wintypes.HIWORD(msg.lParam)
-
-                # 只在尺寸实际改变时触发
-                if new_width != self.old_width or new_height != self.old_height:
-                    print(f"窗口大小改变: {self.old_width}x{self.old_height} → {new_width}x{new_height}")
-                    self.old_width = new_width
-                    self.old_height = new_height
-
-        # 传递消息给下一个钩子
-        return ctypes.windll.user32.CallNextHookEx(self.hook_id, nCode, wParam, lParam)
-
-    def start_listening(self):
-        """开始监听消息"""
-        self.running = True
-
-        # 创建钩子回调函数
-        self.hook_func = HOOKPROC(self.hook_callback)
-
-        # 设置WH_GETMESSAGE钩子，监听所有消息
-        self.hook_id = ctypes.windll.user32.SetWindowsHookExW(
-            win32con.WH_GETMESSAGE,  # 消息钩子类型
-            self.hook_func,
-            None,
-            ctypes.windll.kernel32.GetCurrentThreadId()  # 监听当前线程消息
-        )
-
-        if not self.hook_id:
-            raise ctypes.WinError(ctypes.get_last_error())
-
-        print(f"开始监听窗口(句柄: {self.hwnd})的大小变化...")
-
-        # 启动消息循环
-        self.msg_loop()
-
-    def msg_loop(self):
-        """消息循环，持续获取并处理消息"""
-        msg = ctypes.wintypes.MSG()
-        while self.running and ctypes.windll.user32.GetMessageW(ctypes.byref(msg), None, 0, 0) > 0:
-            ctypes.windll.user32.TranslateMessage(ctypes.byref(msg))
-            ctypes.windll.user32.DispatchMessageW(ctypes.byref(msg))
-
-    def stop_listening(self):
-        """停止监听并清理资源"""
-        self.running = False
-        if self.hook_id:
-            ctypes.windll.user32.UnhookWindowsHookEx(self.hook_id)
-            self.hook_id = None
-        print("已停止监听窗口大小变化")
-
-    def __del__(self):
-        self.stop_listening()
-
 
 class WindowCapture:
 
@@ -198,16 +119,16 @@ class WindowCapture:
         for window_title in self.config.get_config("窗口标题"):
             hwnd = win32gui.FindWindow(None, window_title)
             if not hwnd:
-                self.logger.warning(f"未找到窗口: 标题={window_title}")
+                self.logger.warning(f"未找到窗口: 标题：{window_title}")
             else:
-                self.logger.info(f"找到窗口: 标题={window_title}")
+                self.logger.info(f"找到窗口: 标题：{window_title}")
                 return hwnd
         for window_class in self.config.get_config("窗口类名"):
             hwnd = win32gui.FindWindow(window_class, None)
             if not hwnd:
-                self.logger.warning(f"未找到窗口: 类名={window_class}")
+                self.logger.warning(f"未找到窗口: 类名：{window_class}")
             else:
-                self.logger.info(f"找到窗口: 类名={window_class}")
+                self.logger.info(f"找到窗口: 类名：{window_class}")
                 return hwnd
 
         return None
@@ -300,6 +221,3 @@ if __name__ == "__main__":
         cv2.destroyAllWindows()
         capture.release()
 
-# if __name__ == "__main__":
-#     l = WindowSizeListener(hwnd=win32gui.FindWindow(None, "雷电模拟器"))
-#     l.start_listening()

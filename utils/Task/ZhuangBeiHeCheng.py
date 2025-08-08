@@ -197,7 +197,7 @@ def get_min_time_delta():
     """
     计算时间差并按照规则返回结果：
     - 小于今天5点：返回False和0
-    - 今天5点到16点之间：返回到16点的时间差与5小时的最小值
+    - 今天5点到16点之间：返回到16点的时间差与3小时的最小值
     - 过了今天16点：返回False和0
     """
     # 获取当前时间
@@ -215,7 +215,7 @@ def get_min_time_delta():
     # 情况2：当前时间在今天5点到16点之间
     elif today_5am <= now < today_16pm:
         to_16pm = today_16pm - now
-        five_hours = timedelta(hours=5)
+        five_hours = timedelta(hours=3)
         return True, min(to_16pm, five_hours)
 
     # 情况3：当前时间过了今天16点
