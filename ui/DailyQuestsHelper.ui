@@ -11074,7 +11074,7 @@ border-radius:1px;
                         <widget class="QWidget" name="widget_20" native="true">
                          <layout class="QVBoxLayout" name="verticalLayout_13">
                           <item alignment="Qt::AlignmentFlag::AlignHCenter">
-                           <widget class="QPushButton" name="pushButton">
+                           <widget class="QPushButton" name="serial_list_button">
                             <property name="sizePolicy">
                              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                               <horstretch>0</horstretch>

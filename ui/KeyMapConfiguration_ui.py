@@ -24,7 +24,10 @@ class Ui_KeyMapConfiguration(object):
         if not KeyMapConfiguration.objectName():
             KeyMapConfiguration.setObjectName(u"KeyMapConfiguration")
         KeyMapConfiguration.resize(928, 459)
-        KeyMapConfiguration.setStyleSheet(u"font: 15pt \"\u9ed1\u4f53\";")
+        KeyMapConfiguration.setStyleSheet(u"font-family:\"Consolas\",\"\u9ed1\u4f53\";\n"
+"font-size:15pt;\n"
+"\n"
+"")
         self.horizontalLayout = QHBoxLayout(KeyMapConfiguration)
         self.horizontalLayout.setSpacing(0)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
