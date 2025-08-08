@@ -26,19 +26,21 @@ class HuoYueDuJiangLi(BaseTask):
         # 点击待领取的宝箱
         self.logger.info(f"[{num}活跃度宝箱] 开始领取")
         if not self.click_and_wait(
-                {'type': "ELEMENT", 'name': f"每日活跃度-{num}-待领取"},
-                wait_time=2,
-                max_time=2,
-                auto_raise=False
+            {'type': "ELEMENT", 'name': f"每日活跃度-{num}-待领取"},
+            wait_time=2,
+            max_time=4,
+            auto_raise=False
         ):
             if self.detect_and_wait(
-                    {'type': "ELEMENT", 'name': f"每日活跃度-{num}-未领取"},
-                    auto_raise=False
+                {'type': "ELEMENT", 'name': f"每日活跃度-{num}-未领取"},
+                max_time=0.7,
+                auto_raise=False
             ):
                 self.logger.info(f"[{num}活跃度宝箱] 活跃度不足")
                 return False
             if self.detect_and_wait(
                     {'type': "ELEMENT", 'name': f"每日活跃度-{num}-已领取"},
+                    max_time=0.7,
                     auto_raise=False
             ):
                 self.logger.info(f"[{num}活跃度宝箱] 已被领取")

@@ -52,7 +52,7 @@ class MiJingTanXian(BaseTask):
         # 剩余挑战券!=0的时候
         while not self.detect_and_wait(
                 {"type": "ELEMENT", "name": "秘境探险-匹配-剩余挑战券-0"},
-                max_time=2,
+                max_time=0.7,
                 auto_raise=False
         ):
             self.logger.info("挑战券不为0，继续出战")

@@ -19,6 +19,7 @@ class ScreenMode(enum.IntEnum):
     MuMu = 3
     LD = 4
 
+
 class Screen:
     """
     根据用户选择的方案获取Screen

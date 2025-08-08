@@ -29,6 +29,7 @@ class ShengCunTiaoZhan(BaseTask):
                 ],
                 max_attempts=3
         ):
+            self._update_next_execute_time()
             raise self.EndEarly("无法跳转到[生存挑战]，可能已经完成")
         # 确认生存挑战界面出现
         self.detect_and_wait({"type": "SCENE", "name": "生存挑战"})
@@ -39,16 +40,20 @@ class ShengCunTiaoZhan(BaseTask):
         self.logger.info("开始扫荡")
         # 点击开始扫荡图标
         self.click_and_wait({'type': "ELEMENT", 'name': "生存挑战-开始扫荡"})
-        self.detect_and_wait(
+        if self.detect_and_wait(
             {'type': "ELEMENT", 'name': "生存挑战-没有可以出战的忍者"},
-            max_time=2
-        )
-        self.logger.warning("没有可出战的忍者，将进行重置")
-        if self.click_and_wait({'type': "ELEMENT", 'name': "生存挑战-重置"}):
-            self.click_and_wait({'type': "ELEMENT", 'name': "生存挑战-重置-确认"})
-            # 随便点一下把自动打的弹窗点掉
-            self.click_and_wait({"type": "COORDINATE", "coordinate": [800, 750]})
-            self.click_and_wait({"type": "COORDINATE", "coordinate": [800, 750]})
+            max_time=2,
+            auto_raise=False
+        ):
+            self.logger.warning("没有可出战的忍者，将进行重置")
+            if self.click_and_wait(
+                {'type': "ELEMENT", 'name': "生存挑战-重置"},
+                auto_raise=False
+            ):
+                self.click_and_wait({'type': "ELEMENT", 'name': "生存挑战-重置-确认"})
+                # 随便点一下把自动打的弹窗点掉
+                self.click_and_wait({"type": "COORDINATE", "coordinate": [800, 750]})
+                self.click_and_wait({"type": "COORDINATE", "coordinate": [800, 750]})
 
         # 点击准备就绪
         self.click_and_wait({'type': "ELEMENT", 'name': "生存挑战-准备就绪"})

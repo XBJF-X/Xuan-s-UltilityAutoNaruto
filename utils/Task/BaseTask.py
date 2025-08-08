@@ -208,7 +208,7 @@ class BaseTask(metaclass=TaskMeta):
             params: 点击参数（如{"type": "ELEMENT", "name": "..."}）
             ** kwargs: 可选参数：
             - auto_raise: 是否自动抛出异常，默认为True,对于试探性的点击一定要设置成False
-            - wait_time: 检测到之后的等待时间
+            - wait_time: 检测到之后的等待时间，默认为1.5
             - max_time: 最大尝试时间，默认为2.0
             - max_attempts: 最大尝试次数，如果定义则优先，不定义则按最大时间
             - click_times：点击次数，默认为1
@@ -460,9 +460,9 @@ class BaseTask(metaclass=TaskMeta):
             **kwargs:
             - search_max_time: (float): 搜索尝试的最大时间，默认None，即不限时间
             - max_attempts: (int):尝试搜索的最大次数，默认None，即不限次数
-            - once_max_time: (float):单次搜索的最大时长，定义与detect_and_wait()一致
-            - wait_time: (int): 如果寻找到了，要等待几秒
-            - bool_debug: (bool): 是否输出调试日志
+            - once_max_time: (float):单次搜索的最大时长，默认1.0，定义与detect_and_wait()一致
+            - wait_time: (int): 如果寻找到了，要等待几秒，默认1.0
+            - bool_debug: (bool): 是否输出调试日志，默认False
 
         Returns:
             int: 未找到返回0，找到返回1-based索引，表示找到了params_list中哪个元素
@@ -649,7 +649,9 @@ class BaseTask(metaclass=TaskMeta):
         """
         重启火影忍者
         """
+        self.logger.info("重启火影忍者")
         self.device.restart()
+        self.logger.info("等待开始游戏出现")
         if not self.search_and_click(
                 [
                     {'type': "ELEMENT", 'name': "进入游戏-开始游戏"}
@@ -658,6 +660,7 @@ class BaseTask(metaclass=TaskMeta):
                 search_max_time=300
         ):
             raise self.StepFailedError("重启游戏失败，未出现开始游戏按钮，请检查登录状态")
+        self.logger.info("等待游戏加载进入，等待时间50秒，并非卡死")
         QThread.msleep(50000)  # 等待游戏进入，定为50秒
         self.logger.info("成功进入游戏")
 

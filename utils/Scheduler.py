@@ -27,7 +27,6 @@ class PriorityQueue(Generic[T]):
     def __init__(self):
         self.heap: List[T] = []  # 存储 Task 的列表
         self.task_dic: Dict[str:T] = {}
-
     def enqueue(self, item: T):
         heapq.heappush(self.heap, item)  # 插入元素，自动维护堆序
         self.task_dic[item.task_name] = item
@@ -167,6 +166,7 @@ class TaskWidgetList(Generic[W]):
     @staticmethod
     def _compare_tasks(task1: T, task2: T) -> int:
         """比较两个任务的优先级"""
+
         # 比较执行时间
         if task1.next_execute_time != task2.next_execute_time:
             return -1 if task1.next_execute_time < task2.next_execute_time else 1
@@ -538,6 +538,9 @@ class Scheduler(QObject):
     def save_screen(self):
         """保存截图到文件"""
         try:
+            if self.device is None:
+                self.logger.warning("设备未初始化，无法截图")
+                return
             screen = self.device.screen_cap()
             if screen is None or screen.size == 0:
                 self.logger.warning("图像数据为空，无法保存")

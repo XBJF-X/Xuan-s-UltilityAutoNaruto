@@ -2,92 +2,92 @@
     "主场景": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.85
+        "threshold": 0.8
     },
     "奖励": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "组织祈福": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "招募": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "招财": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "任务集会所": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "生存挑战": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "丰饶之间": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "组织": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "好友": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "积分赛": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "积分赛-选择对手": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "战区赛事": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "活动": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "商城": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "忍法帖": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "忍法帖-排行榜": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "忍法帖-分享": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "情报站-首页": {
         "resolution": [1600, 900],
@@ -97,7 +97,7 @@
     "情报站-卷轴": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.8
+        "threshold": 0.75
     },
     "情报站-村口": {
         "resolution": [1600, 900],
@@ -122,52 +122,52 @@
     "邮件": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "决斗场-首页": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "决斗场-忍术对战-单人模式": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "决斗场-更多玩法": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "决斗场-更多玩法-任务": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "决斗场-练习": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "小队突袭": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "小队突袭-组织助战": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "登录奖励": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "二级密码": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "情报站-忍者站": {
         "resolution": [1600, 900],
@@ -177,7 +177,7 @@
     "排行榜": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "决斗场-忍术对战-单人模式-决斗任务": {
         "resolution": [1600, 900],
@@ -192,21 +192,21 @@
     "购买体力": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "秘境探险-首页": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "秘境探险-匹配": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     },
     "装备": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",
-        "threshold": 0.9
+        "threshold": 0.8
     }
 }

@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime, time, date
 
 from utils.Task.BaseTask import BaseTask
 
@@ -38,27 +38,37 @@ class ZhuangBeiHeCheng(BaseTask):
             self.click_and_wait({'type': "ELEMENT", 'name': "装备-一键添加"})
             self.logger.warning("存在[可装备]装备，已一键装备")
 
-        # # 先看看当前装备能不能进阶，毕竟进阶说明没有能扫荡的了
-        # if self.click_and_wait({'type': "ELEMENT", 'name': "装备-进阶"}):
-        #     self.logger.info("当前装备可进阶，已点击进阶")
-
-        while self.click_and_wait(
-                {'type': "ELEMENT", 'name': "装备-可扫荡"},
-                wait_time=0,
+        # 先看看当前装备能不能进阶，毕竟进阶说明没有能扫荡的了
+        if self.click_and_wait(
+                {'type': "ELEMENT", 'name': "装备-进阶"},
                 auto_raise=False
         ):
-            # 可装备的一键添加
-            if self.detect_and_wait(
-                    {'type': "ELEMENT", 'name': "装备-可装备"},
-                    auto_raise=False
-            ):
+            self.logger.info("当前装备可进阶，已点击进阶")
+
+        flag = self.search_and_detect(
+            [
+                {'type': "ELEMENT", 'name': "装备-可扫荡"},
+                {'type': "ELEMENT", 'name': "装备-可装备"},
+            ],
+            [],
+            wait_time=0,
+            once_max_time=1,
+            bool_debug=True
+        )
+        while flag:
+            if flag == 2:
                 self.click_and_wait({'type': "ELEMENT", 'name': "装备-一键添加"})
                 self.logger.warning("存在[可装备]装备，已一键装备")
 
-            # # 先看看当前装备能不能进阶，毕竟进阶说明没有能扫荡的了
-            # if self.click_and_wait({'type': "ELEMENT", 'name': "装备-进阶"}):
-            #     self.logger.info("当前装备可进阶，已点击进阶")
+            # 先看看当前装备能不能进阶，毕竟进阶说明没有能扫荡的了
+            if self.click_and_wait(
+                    {'type': "ELEMENT", 'name': "装备-进阶"},
+                    auto_raise=False
+            ):
+                self.logger.info("当前装备可进阶，已点击进阶")
 
+            # 如果当前装备存在可以扫荡的，先点击扫荡
+            self.click_and_wait({'type': "ELEMENT", 'name': "装备-可扫荡"})
             # 如果当前装备存在可以扫荡的，先点击扫荡
             self.click_and_wait({'type': "ELEMENT", 'name': "装备-扫荡"})
 
@@ -73,12 +83,13 @@ class ZhuangBeiHeCheng(BaseTask):
             # 点击开始扫荡
             self.click_and_wait(
                 {'type': "ELEMENT", 'name': "装备-开始扫荡"},
-                wait_time=0
+                wait_time=1
             )
             # 检测是否体力不足
             if self.detect_and_wait(
                     {'type': "ELEMENT", 'name': "装备-体力不足"},
                     max_time=1,
+                    wait_time=1,
                     auto_raise=False
             ):
                 # 检测到体力不足
@@ -89,8 +100,8 @@ class ZhuangBeiHeCheng(BaseTask):
                 self.click_and_wait({'type': "COORDINATE", 'coordinate': (1400, 456)})
                 # 检查能不能点击合成按钮
                 if self.click_and_wait(
-                    {'type': "ELEMENT", 'name': "装备-合成"},
-                    auto_raise=False
+                        {'type': "ELEMENT", 'name': "装备-合成"},
+                        auto_raise=False
                 ):
                     self.logger.debug("可合成，点击合成")
                 # 返回装备界面
@@ -164,6 +175,49 @@ class ZhuangBeiHeCheng(BaseTask):
                                 self.logger.debug("可合成，点击合成")
                             # 点一下返回装备界面
                             self.click_and_wait({'type': "COORDINATE", 'coordinate': (1400, 456)})
-                        continue
+            flag = self.search_and_detect(
+                [
+                    {'type': "ELEMENT", 'name': "装备-可扫荡"},
+                    {'type': "ELEMENT", 'name': "装备-可装备"},
+                ],
+                [],
+                wait_time=0,
+                once_max_time=1,
+                bool_debug=True
+            )
 
-        self._update_next_execute_time(delta=timedelta(hours=5))
+        flag, min_time_delta = get_min_time_delta()
+        if flag:
+            self._update_next_execute_time(delta=min_time_delta)
+        else:
+            self._update_next_execute_time()
+
+
+def get_min_time_delta():
+    """
+    计算时间差并按照规则返回结果：
+    - 小于今天5点：返回False和0
+    - 今天5点到16点之间：返回到16点的时间差与5小时的最小值
+    - 过了今天16点：返回False和0
+    """
+    # 获取当前时间
+    now = datetime.now()
+    today = date.today()
+
+    # 创建今天5点和16点的datetime对象
+    today_5am = datetime.combine(today, time(5, 0))
+    today_16pm = datetime.combine(today, time(16, 0))
+
+    # 情况1：当前时间小于今天5点
+    if now < today_5am:
+        return False, timedelta(0)
+
+    # 情况2：当前时间在今天5点到16点之间
+    elif today_5am <= now < today_16pm:
+        to_16pm = today_16pm - now
+        five_hours = timedelta(hours=5)
+        return True, min(to_16pm, five_hours)
+
+    # 情况3：当前时间过了今天16点
+    else:  # now >= today_16pm
+        return False, timedelta(0)

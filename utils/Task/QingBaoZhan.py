@@ -166,15 +166,20 @@ class QingBaoZhan(BaseTask):
                     {'type': "ELEMENT", 'name': "福利站-立即签到"},
                     wait_time=3
                 )
+                # 签到成功，点击我知道了
+                self.click_and_wait(
+                    {'type': "ELEMENT", 'name': "福利站-我知道了"},
+                    wait_time=3
+                )
             else:
                 self.logger.warning("手动点击一键签到失败，可能已经签到过")
         else:
             self.logger.info("自动弹出窗口，点击立即签到")
-        # 签到成功，点击我知道了
-        self.click_and_wait(
-            {'type': "ELEMENT", 'name': "福利站-我知道了"},
-            wait_time=3
-        )
+            # 签到成功，点击我知道了
+            self.click_and_wait(
+                {'type': "ELEMENT", 'name': "福利站-我知道了"},
+                wait_time=3
+            )
         # 确认福利站页面已出现
         self.detect_and_wait(
             {'type': "SCENE", 'name': "福利站"},
@@ -197,13 +202,15 @@ class QingBaoZhan(BaseTask):
                         }
                     }
                 ],
-                max_attempts=5
+                max_attempts=2
         ):
-            raise self.StepFailedError("未找到[福利站-今日查看金币助手-去完成]，进入金币助手失败")
-
-        # 一段时间后，直接输入返回指令（因为竖屏不好识别）
-        self.logger.info("返回福利站")
-        self.press_key("back", wait_time=7)
+            self.logger.warning("进入金币助手失败，可能导致活跃度不足")
+            self.swipe_and_wait((600, 290), (600, 850), duration=1)
+            self.swipe_and_wait((600, 290), (600, 850), duration=1)
+        else:
+            # 一段时间后，直接输入返回指令（因为竖屏不好识别）
+            self.logger.info("返回福利站")
+            self.press_key("back", wait_time=7)
         self.logger.info("领取活跃度奖励")
         # 点击所有的领取按钮
         while self.click_and_wait(
