@@ -30,6 +30,22 @@ class ZhuangBeiHeCheng(BaseTask):
                 'coordinate': armor_coodinates[self.data.get("合成目标装备", 0)]
             }
         )
+
+
+        # 所有可合成的逐个点击
+        while self.click_and_wait(
+                {'type': "ELEMENT", 'name': "装备-可合成"},
+                auto_raise=False
+        ):
+            # 检查能不能点击合成按钮
+            if self.click_and_wait(
+                    {'type': "ELEMENT", 'name': "装备-合成"},
+                    auto_raise=False
+            ):
+                self.logger.debug("可合成，点击合成")
+            # 返回装备界面
+            self.click_and_wait({'type': "COORDINATE", 'coordinate': (1400, 456)})
+
         # 可装备的一键添加
         if self.detect_and_wait(
                 {'type': "ELEMENT", 'name': "装备-可装备"},
