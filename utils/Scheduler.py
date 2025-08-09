@@ -297,7 +297,8 @@ class Scheduler(QObject):
 
             self.waiting_queue.enqueue(task_instance)
             self.create_task_ui(task_instance, 2)
-
+        # for task in self.waiting_queue.peek()[:]:
+        #     self.logger.debug(task)
         self.timer_thread.trigger(self.config.get_config("扫描间隔"), 1000)
         self.UI.start_schedule_button.setEnabled(True)
         self.UI.start_schedule_button.setText("暂停")
@@ -450,6 +451,7 @@ class Scheduler(QObject):
         1.扫描等待队列中的任务，如果可以执行则放入就绪队列
         2.扫描就绪队列，如果执行队列为空且就绪队列不为空，则从就绪队列中取出优先级最高的Task交给Executor执行
         """
+        # self.logger.debug("开始检查")
         start = time.perf_counter()
         if self.UI.bool_save_img.isChecked():
             threading.Thread(target=self.save_screen).start()
@@ -458,7 +460,9 @@ class Scheduler(QObject):
 
         # 扫描等待队列，检查任务是否可以执行
         waiting_tasks = self.waiting_queue.peek()[:]  # 复制一份当前等待队列
+        # self.logger.debug(len(waiting_tasks))
         for task in waiting_tasks:
+            # self.logger.debug(f"检查{task}")
             if not task.is_activated:  # 不处理未启用的任务
                 continue
             if task.current_status != 2:  # 只处理等待状态的任务
@@ -468,7 +472,9 @@ class Scheduler(QObject):
             should_execute = task.next_execute_time <= datetime.now(ZoneInfo("Asia/Shanghai"))
             # 如果满足执行条件，将任务从等待队列移至就绪队列
             if should_execute:
-                self.waiting_queue.dequeue()  # 从等待队列移除
+                # self.logger.debug(f"{task.task_name}满足")
+                self.waiting_queue.remove(task.task_name)  # 从等待队列移除
+                # self.waiting_queue.dequeue()  # 从等待队列移除
                 self.remove_task_ui_signal.emit(task, 2)
                 task.current_status = 1  # 更新状态为就绪
                 self.ready_queue.enqueue(task)  # 添加到就绪队列
@@ -487,26 +493,29 @@ class Scheduler(QObject):
         if self.running_queue.is_empty() and not self.ready_queue.is_empty():
             # 移除就绪队列中的任务
             task_to_execute = self.ready_queue.dequeue()
-            self.logger.info(f"[{task_to_execute.task_name}]-[{task_to_execute.task_id}] 移出就绪队列")
             self.remove_task_ui_signal.emit(task_to_execute, 1)
+            self.logger.info(f"[{task_to_execute.task_name}]-[{task_to_execute.task_id}] 移出就绪队列")
+
             # 检查任务是否仍处于启用状态
             if not task_to_execute.is_activated:
                 # 如果已被禁用，将其移至等待队列
                 task_to_execute.current_status = 2
                 self.waiting_queue.enqueue(task_to_execute)
-                self.logger.info(f"[{task_to_execute.task_name}]-[{task_to_execute.task_id}] 进入等待队列")
                 self.add_task_ui_signal.emit(task_to_execute, 2)
+                self.logger.info(f"[{task_to_execute.task_name}]-[{task_to_execute.task_id}] 进入等待队列")
                 if self.running:
                     # 继续下一次扫描
                     wait_time = max(100, self.config.get_config("扫描间隔") - 1000 * (
                             time.perf_counter() - start))
                     self.timer_thread.trigger(int(wait_time))  # 每秒扫描一次
                     return
-            task_to_execute.current_status = 0  # 更新状态为执行中
+
             # 增加运行队列中的任务
+            task_to_execute.current_status = 0  # 更新状态为执行中
             self.running_queue.enqueue(task_to_execute)
-            self.logger.info(f"[{task_to_execute.task_name}]-[{task_to_execute.task_id}] 进入执行队列")
             self.add_task_ui_signal.emit(task_to_execute, 0)
+            self.logger.info(f"[{task_to_execute.task_name}]-[{task_to_execute.task_id}] 进入执行队列")
+
             task_to_execute.run()
 
         if self.running:
@@ -519,8 +528,8 @@ class Scheduler(QObject):
         lineedit = self.task_common_control_ref_map[task.task_name]["LineEdit"]
         lineedit.setText(task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
         self.running_queue.dequeue()
-        self.logger.info(f"[{task.task_name}]-[{task.task_id}] 移出执行队列")
         self.remove_task_ui_signal.emit(task, 0)
+        self.logger.info(f"[{task.task_name}]-[{task.task_id}] 移出执行队列")
         # 只有启用的非临时任务才会回到等待队列
         if task.is_activated and self.running:
             if task.cycle_type == CycleType.TEMP:

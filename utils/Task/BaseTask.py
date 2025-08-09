@@ -121,6 +121,7 @@ class BaseTask(metaclass=TaskMeta):
     def __repr__(self):
         info_text = (f"任务名称: {self.task_name},"
                      f"任务ID:{self.task_id},"
+                     f"是否启用:{self.is_activated},"
                      f"任务状态:{self.current_status},"
                      f"周期类型:{CycleType(self.cycle_type)},"
                      f"下次执行时间:{self.next_execute_time}"

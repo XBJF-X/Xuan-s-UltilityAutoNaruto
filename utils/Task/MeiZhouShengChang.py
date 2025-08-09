@@ -62,7 +62,7 @@ class MeiZhouShengChang(MeiRiShengChang):
         # 假如周胜场没满，则继续挂周胜
         while not self.detect_and_wait(
                 {'type': "ELEMENT", 'name': "决斗任务-满胜场"},
-                max_time=5,
+                max_time=1,
                 auto_raise=False
         ):
             self.logger.warning("周胜场未满，继续执行")
@@ -70,14 +70,8 @@ class MeiZhouShengChang(MeiRiShengChang):
             self.click_and_wait({'type': "COORDINATE", 'coordinate': [1523, 45]})
             self.fight()
             self.logger.info("查看[决斗场-忍术对战-单人模式-决斗任务]")
-            self.click_and_wait(
-                {'type': "ELEMENT", 'name': "决斗场-忍术对战-单人模式-决斗任务"},
-                max_time=3
-            )
-            self.detect_and_wait(
-                {'type': "SCENE", 'name': "决斗场-忍术对战-单人模式-决斗任务"},
-                max_time=5
-            )
+            self.click_and_wait({'type': "ELEMENT", 'name': "决斗场-忍术对战-单人模式-决斗任务"})
+            self.detect_and_wait({'type': "SCENE", 'name': "决斗场-忍术对战-单人模式-决斗任务"})
             self.logger.info("领取所有待领取的决斗任务宝箱")
             while self.click_and_wait(
                     {'type': "ELEMENT", 'name': "决斗任务-宝箱-待领取"},

@@ -57,7 +57,8 @@ class ZhuangBeiHeCheng(BaseTask):
         # 先看看当前装备能不能进阶，毕竟进阶说明没有能扫荡的了
         if self.click_and_wait(
                 {'type': "ELEMENT", 'name': "装备-进阶"},
-                auto_raise=False
+                auto_raise=False,
+                max_time=0.5
         ):
             self.logger.info("当前装备可进阶，已点击进阶")
 
@@ -68,7 +69,7 @@ class ZhuangBeiHeCheng(BaseTask):
             ],
             [],
             wait_time=0,
-            once_max_time=1,
+            once_max_time=0.5,
             bool_debug=True
         )
         while flag:
@@ -79,7 +80,8 @@ class ZhuangBeiHeCheng(BaseTask):
             # 先看看当前装备能不能进阶，毕竟进阶说明没有能扫荡的了
             if self.click_and_wait(
                     {'type': "ELEMENT", 'name': "装备-进阶"},
-                    auto_raise=False
+                    auto_raise=False,
+                    max_time=0.5
             ):
                 self.logger.info("当前装备可进阶，已点击进阶")
 

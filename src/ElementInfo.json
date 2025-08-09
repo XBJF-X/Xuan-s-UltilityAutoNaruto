@@ -854,7 +854,7 @@
     "决斗任务-满胜场": {
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
-        "threshold": 0.8,
+        "threshold": 0.9,
         "ratio": [0.5,0.5]
     },
     "决斗场-60": {
