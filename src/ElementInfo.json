@@ -867,6 +867,7 @@
     "决斗场-胜者": {
         "resolution": [1600,900],
         "path": "src\\Template\\Element\\",
+        "roi": [608, 723, 613, 677],
         "threshold": 0.8,
         "ratio": [0.5,0.5]
     },
@@ -1238,5 +1239,53 @@
         "path": "src\\Template\\Element\\",
         "threshold": 0.8,
         "ratio": [0.5,0.5]
+    },
+    "主场景-组织-组织祈福-前往": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.5,0.92]
+    },
+    "主场景-组织-组织祈愿-前往": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.5,0.92]
+    },
+    "主场景-组织-叛忍来袭-前往": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.5,0.92]
+    },
+    "主场景-组织-追击晓组织-前往": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.5,0.92]
+    },
+    "主场景-组织-组织商店-前往": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.5,0.92]
+    },
+    "主场景-组织-天地战场-前往": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.5,0.92]
+    },
+    "主场景-组织-要塞争夺战-前往": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.5,0.92]
+    },
+    "主场景-组织-组织购买-前往": {
+        "resolution": [1600,900],
+        "path": "src\\Template\\Element\\",
+        "threshold": 0.8,
+        "ratio": [0.5,0.92]
     }
 }

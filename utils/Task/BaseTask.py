@@ -728,3 +728,29 @@ class BaseTask(metaclass=TaskMeta):
             self.config.set_task_config(self.task_name, "下次执行时间", 0)
         else:
             self.logger.warning(f"{CycleType(self.cycle_type)}任务")
+
+    # def _update_next_execute_time(self, flag: int = 0, delta: timedelta = None):
+    #     """
+    #     用于更新本任务的下次执行时间，默认需要派生类自己重载
+    #
+    #     Args:
+    #         flag: 告诉函数需要按照哪种模式更新下次执行时间
+    #             0：正常执行完毕，更新为下次执行的时间
+    #             1：创建任务时使用，需要读取config中的事件，按照空/已存在下次执行时间分别处理
+    #             2：立刻执行，通常把时间重置到能保证很快执行即可，不同的任务分别处理
+    #             3：把执行时间推迟delta时间，要求 delta!=None
+    #
+    #     Returns:
+    #
+    #     """
+    #     match flag:
+    #         case 0:
+    #             pass
+    #         case 1:
+    #             pass
+    #         case 2:
+    #             pass
+    #         case 3:
+    #             pass
+    #         case _:
+    #             self.logger.warning(f"请检查update_next_execute_time传入的参数：flag={flag},delta{delta}")

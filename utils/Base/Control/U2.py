@@ -28,10 +28,10 @@ class U2:
 
     def click(self, x, y, duration=200):
         self.u2_device.touch.down(x, y)
-        self.logger.debug(f"[PressDown] ({x},{y})")
+        # self.logger.debug(f"[PressDown] ({x},{y})")
         QThread.msleep(duration)
         self.u2_device.touch.up(x, y)
-        self.logger.debug(f"[PressUp] ({x},{y})")
+        # self.logger.debug(f"[PressUp] ({x},{y})")
         # self.u2_device.click(x, y)
 
     def swipe(self, start_coordinate, end_coordinate, duration=0.5):

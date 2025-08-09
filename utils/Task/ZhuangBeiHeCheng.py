@@ -1,4 +1,5 @@
 from datetime import timedelta, datetime, time, date
+from zoneinfo import ZoneInfo
 
 from utils.Task.BaseTask import BaseTask
 
@@ -30,7 +31,6 @@ class ZhuangBeiHeCheng(BaseTask):
                 'coordinate': armor_coodinates[self.data.get("合成目标装备", 0)]
             }
         )
-
 
         # 所有可合成的逐个点击
         while self.click_and_wait(
@@ -217,12 +217,12 @@ def get_min_time_delta():
     - 过了今天16点：返回False和0
     """
     # 获取当前时间
-    now = datetime.now()
+    now = datetime.now(ZoneInfo("Asia/Shanghai"))
     today = date.today()
 
     # 创建今天5点和16点的datetime对象
-    today_5am = datetime.combine(today, time(5, 0))
-    today_16pm = datetime.combine(today, time(16, 0))
+    today_5am = datetime.combine(today, time(5, 0), tzinfo=ZoneInfo("Asia/Shanghai"))
+    today_16pm = datetime.combine(today, time(16, 0), tzinfo=ZoneInfo("Asia/Shanghai"))
 
     # 情况1：当前时间小于今天5点
     if now < today_5am:

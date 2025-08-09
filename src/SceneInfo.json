@@ -44,6 +44,11 @@
         "path": "src\\Template\\Scene\\",
         "threshold": 0.8
     },
+    "主场景-组织": {
+        "resolution": [1600, 900],
+        "path": "src\\Template\\Scene\\",
+        "threshold": 0.8
+    },
     "好友": {
         "resolution": [1600, 900],
         "path": "src\\Template\\Scene\\",

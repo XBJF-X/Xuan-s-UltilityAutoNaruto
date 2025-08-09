@@ -1,11 +1,11 @@
 # XUAN（Xuan's UltilityAutoNaruto）
 
-### 火影忍者自动化日常工具
+### [火影忍者自动化日常工具](https://github.com/XBJF-X/Xuan-s-UltilityAutoNaruto)
 
 ## 项目原理
 
-基于**图像检测**识别信息+调度器自动调度任务
-**（不涉及修改内存！）**
+基于**图像检测**识别信息+最小堆调度器自动调度任务
+**（不涉及任何读取和修改游戏内存数据！）**
 ### 参考项目：
 - [Alas（截图和控制方案来源）](https://github.com/LmeSzinc/AzurLaneAutoScript)
 - [DroidCastRaw](https://github.com/Torther/DroidCast_raw)

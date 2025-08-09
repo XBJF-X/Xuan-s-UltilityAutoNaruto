@@ -41,6 +41,7 @@ class Recognizer:
         mask = template_data['MASK']
         threshold = template_data['threshold']
         scene_gray = cv2.cvtColor(scene_img, cv2.COLOR_BGR2GRAY).astype(np.uint8)
+
         # 验证scene_img是否为有效的NumPy数组
         if not isinstance(scene_img, np.ndarray) or scene_img.size == 0:
             self.logger.error("场景图像不是有效的NumPy数组或为空")
