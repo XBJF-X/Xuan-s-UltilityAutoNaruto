@@ -27,6 +27,7 @@ class PriorityQueue(Generic[T]):
     def __init__(self):
         self.heap: List[T] = []  # 存储 Task 的列表
         self.task_dic: Dict[str:T] = {}
+
     def enqueue(self, item: T):
         heapq.heappush(self.heap, item)  # 插入元素，自动维护堆序
         self.task_dic[item.task_name] = item
@@ -252,7 +253,6 @@ class Scheduler(QObject):
         self.running_queue = PriorityQueue[BaseTask]()  # 执行队列
         self.ready_queue = PriorityQueue[BaseTask]()  # 就绪队列
         self.waiting_queue = PriorityQueue[BaseTask]()  # 等待队列
-        self.all_tasks = {}  # 存储所有任务，包括未启用的
 
         # 初始化UI相关属性
         self.init_scroll_area_layouts()  # 初始化滚动区域布局
@@ -283,6 +283,7 @@ class Scheduler(QObject):
 
         for task_info in self.config.tasks.values():
             task_name = task_info.get('任务名称')
+            self.logger.debug(f"[{task_name}]任务准备进入调度器")
             task_class = TASK_TYPE_MAP.get(task_name, None)
             if not task_class:
                 self.logger.warning(f"[{task_name}] 任务创建出错")
@@ -293,7 +294,6 @@ class Scheduler(QObject):
                 self.device,
                 self._execute_done_callback
             )
-            self.all_tasks[task_name] = task_instance  # 添加到所有任务集合
 
             self.waiting_queue.enqueue(task_instance)
             self.create_task_ui(task_instance, 2)
@@ -320,20 +320,18 @@ class Scheduler(QObject):
         self.running_queue = PriorityQueue[BaseTask]()
         self.ready_queue = PriorityQueue[BaseTask]()
         self.waiting_queue = PriorityQueue[BaseTask]()
-        self.all_tasks.clear()
 
         # 清空UI显示
         self.clear_ui()
-
-        # 释放设备资源
-        if self.device.controller:
-            self.device.controller.release()
-            self.device.controller=None
-        if self.device.screener:
-            self.device.screener.release()
-            self.device.screener=None
         if self.device:
-            self.device = None
+            # 释放设备资源
+            if self.device.controller:
+                self.device.controller.release()
+                self.device.controller = None
+            if self.device.screener:
+                self.device.screener.release()
+                self.device.screener = None
+                self.device = None
 
         self.UI.start_schedule_button.setEnabled(True)
         self.UI.start_schedule_button.setText("启动")
@@ -363,9 +361,6 @@ class Scheduler(QObject):
         checkbox_widget.setEnabled(True)
         self.logger.info(f"任务 {task_name} {'已启用' if is_activated else '已禁用'}")
 
-        # 触发一次扫描
-        self.timer_thread.trigger(0)
-
     def task_next_execute_time_editfinished(self, task_name):
         """如果清空则立即执行任务"""
         lineedit_widget = self.task_common_control_ref_map[task_name]["LineEdit"]
@@ -393,9 +388,6 @@ class Scheduler(QObject):
             self.waiting_widget_list.update_task_widget(task_name, next_execute_time=net)
         lineedit_widget.setEnabled(True)
         self.logger.info(f"任务 {task_name} 已放入等待队列等待立即执行")
-
-        # 触发一次扫描
-        self.timer_thread.trigger(0)
 
     def clear_ui(self):
         """清空所有UI队列显示"""
@@ -482,39 +474,44 @@ class Scheduler(QObject):
                 self.ready_queue.enqueue(task)  # 添加到就绪队列
                 self.add_task_ui_signal.emit(task, 1)
                 moved_tasks.append(task)
-                self.logger.info(f"[{task.task_name}]-[{task.task_id}] 就绪")
+                self.logger.info(f"[{task.task_name}]-[{task.task_id}] 进入就绪队列")
 
         # 如果有任务被移动，重新触发扫描以检查就绪队列
         if moved_tasks:
             if self.running:
-                self.timer_thread.trigger(0)  # 立即触发下一次扫描
+                self.logger.debug("有任务被移动，重新触发扫描以检查就绪队列")
+                self.timer_thread.trigger(100)  # 立即触发下一次扫描
+                return
 
         # 扫描就绪队列，当执行队列为空时将就绪队列中的任务移至执行队列
         if self.running_queue.is_empty() and not self.ready_queue.is_empty():
             # 移除就绪队列中的任务
             task_to_execute = self.ready_queue.dequeue()
+            self.logger.info(f"[{task_to_execute.task_name}]-[{task_to_execute.task_id}] 移出就绪队列")
             self.remove_task_ui_signal.emit(task_to_execute, 1)
             # 检查任务是否仍处于启用状态
             if not task_to_execute.is_activated:
                 # 如果已被禁用，将其移至等待队列
                 task_to_execute.current_status = 2
                 self.waiting_queue.enqueue(task_to_execute)
+                self.logger.info(f"[{task_to_execute.task_name}]-[{task_to_execute.task_id}] 进入等待队列")
                 self.add_task_ui_signal.emit(task_to_execute, 2)
                 if self.running:
                     # 继续下一次扫描
-                    wait_time = max(0.0, self.config.get_config("扫描间隔") - 1000 * (
+                    wait_time = max(100, self.config.get_config("扫描间隔") - 1000 * (
                             time.perf_counter() - start))
                     self.timer_thread.trigger(int(wait_time))  # 每秒扫描一次
-                return
+                    return
             task_to_execute.current_status = 0  # 更新状态为执行中
             # 增加运行队列中的任务
             self.running_queue.enqueue(task_to_execute)
+            self.logger.info(f"[{task_to_execute.task_name}]-[{task_to_execute.task_id}] 进入执行队列")
             self.add_task_ui_signal.emit(task_to_execute, 0)
             task_to_execute.run()
 
         if self.running:
             # 继续下一次扫描
-            wait_time = max(0.0, self.config.get_config("扫描间隔") - 1000 * (
+            wait_time = max(100, self.config.get_config("扫描间隔") - 1000 * (
                     time.perf_counter() - start))
             self.timer_thread.trigger(int(wait_time))  # 每秒扫描一次
 
@@ -522,6 +519,7 @@ class Scheduler(QObject):
         lineedit = self.task_common_control_ref_map[task.task_name]["LineEdit"]
         lineedit.setText(task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
         self.running_queue.dequeue()
+        self.logger.info(f"[{task.task_name}]-[{task.task_id}] 移出执行队列")
         self.remove_task_ui_signal.emit(task, 0)
         # 只有启用的非临时任务才会回到等待队列
         if task.is_activated and self.running:
@@ -533,6 +531,7 @@ class Scheduler(QObject):
             task.create_time = datetime.now(ZoneInfo("Asia/Shanghai"))
             # 添加到等待队列
             self.waiting_queue.enqueue(task)
+            self.logger.info(f"[{task.task_name}]-[{task.task_id}] 进入等待队列")
             self.add_task_ui_signal.emit(task, 2)
 
     def save_screen(self):

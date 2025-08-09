@@ -222,78 +222,8 @@ class DailyQuestsHelper(QMainWindow):
         device = None
 
     def _on_serial_list_button_clicked(self):
-        editor = SerialChoose(self.config, self.get_adb_devices(),self)
+        editor = SerialChoose(self.config, self)
         editor.exec()
-
-    def get_adb_devices(self) -> List[str]:
-        """
-        执行 adb devices 命令并返回连接的设备列表
-
-        返回:
-            List[str]: 已连接的设备序列号列表
-        """
-        # 创建命令列表（推荐使用列表形式，避免shell注入风险）
-        command = ["adb", "devices"]
-
-        try:
-            # 执行命令并捕获输出
-            self.logger.info(f"执行命令: {' '.join(command)}")
-            result = subprocess.run(
-                command,
-                stdout=subprocess.PIPE,  # 捕获标准输出
-                stderr=subprocess.PIPE,  # 捕获标准错误
-                text=True,  # 以文本形式返回结果
-                timeout=15,  # 设置超时时间（秒）
-                check=True  # 检查命令是否成功执行
-            )
-            # # 记录完整输出（调试用）
-            # self.logger.debug(f"完整输出:\n{result.stdout}")
-
-            # 解析输出，提取设备序列号
-            devices = []
-            for line in result.stdout.splitlines():
-                # 跳过空行和标题行
-                if not line.strip() or line.strip().startswith("List of devices attached"):
-                    continue
-
-                # 提取设备序列号（格式：<serial>\t<status>）
-                parts = line.split()
-                if len(parts) >= 2:
-                    serial = parts[0]
-                    status = parts[1]
-
-                    # 只添加状态为 "device" 的设备（已授权）
-                    if status == "device":
-                        devices.append(serial)
-                        self.logger.info(f"找到设备: {serial} (状态: {status})")
-                    else:
-                        self.logger.warning(f"设备 {serial} 状态异常: {status}")
-
-            if not devices:
-                self.logger.warning("未找到任何已连接的ADB设备")
-
-            return devices
-
-        except subprocess.CalledProcessError as e:
-            # 命令执行失败
-            self.logger.error(f"命令执行失败，退出码: {e.returncode}")
-            self.logger.error(f"错误输出:\n{e.stderr}")
-            return []
-
-        except subprocess.TimeoutExpired:
-            # 命令执行超时
-            self.logger.error("命令执行超时，请检查ADB服务是否正常")
-            return []
-
-        except FileNotFoundError:
-            # ADB命令未找到
-            self.logger.error("未找到adb命令，请确保ADB已安装并添加到PATH环境变量")
-            return []
-
-        except Exception as e:
-            # 其他未知异常
-            self.logger.exception(f"执行adb devices时发生未知错误: {str(e)}")
-            return []
 
     def _on_filepath_browse_clicked(self, name):
         folder = QFileDialog.getExistingDirectory(self, f"选择{name}模拟器安装目录")

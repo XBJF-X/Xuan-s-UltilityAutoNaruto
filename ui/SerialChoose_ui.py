@@ -16,8 +16,8 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QApplication, QDialog, QHBoxLayout, QListWidget,
-    QListWidgetItem, QPushButton, QSizePolicy, QVBoxLayout,
-    QWidget)
+    QListWidgetItem, QPushButton, QSizePolicy, QSpacerItem,
+    QVBoxLayout, QWidget)
 
 class Ui_SerialChoose(object):
     def setupUi(self, SerialChoose):
@@ -55,6 +55,33 @@ class Ui_SerialChoose(object):
 "QLabel{color:#0f322f;}")
         self.verticalLayout = QVBoxLayout(self.widget_2)
         self.verticalLayout.setObjectName(u"verticalLayout")
+        self.verticalSpacer = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
+
+        self.verticalLayout.addItem(self.verticalSpacer)
+
+        self.kill_and_restart_adb = QPushButton(self.widget_2)
+        self.kill_and_restart_adb.setObjectName(u"kill_and_restart_adb")
+        self.kill_and_restart_adb.setStyleSheet(u"QPushButton{\n"
+"border: 2px solid #b5b5b5;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
+"background-color: rgb(255, 255, 255);\n"
+"border-radius:10px;\n"
+"outline:none;\n"
+"color:#0f322f;\n"
+"padding-top:2px;\n"
+"padding-bottom:2px;\n"
+"}\n"
+"QPushButton::hover {\n"
+"border: 2px solid #39C5BB;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
+"background-color: rgb(255, 255, 255);\n"
+"border-radius:10px;\n"
+"outline:none;\n"
+"padding-top:2px;\n"
+"color:#39C5BB;\n"
+"padding-bottom:2px;\n"
+"}")
+
+        self.verticalLayout.addWidget(self.kill_and_restart_adb, 0, Qt.AlignmentFlag.AlignBottom)
+
         self.ok = QPushButton(self.widget_2)
         self.ok.setObjectName(u"ok")
         self.ok.setStyleSheet(u"QPushButton{\n"
@@ -89,6 +116,10 @@ class Ui_SerialChoose(object):
 
     def retranslateUi(self, SerialChoose):
         SerialChoose.setWindowTitle(QCoreApplication.translate("SerialChoose", u"\u4e32\u53e3\u5217\u8868", None))
+#if QT_CONFIG(tooltip)
+        self.kill_and_restart_adb.setToolTip(QCoreApplication.translate("SerialChoose", u"\u5f53\u4e32\u53e3\u5217\u8868\u4e3a\u7a7a\u7684\u65f6\u5019\u4f7f\u7528", None))
+#endif // QT_CONFIG(tooltip)
+        self.kill_and_restart_adb.setText(QCoreApplication.translate("SerialChoose", u"\u91cd\u542fADB", None))
         self.ok.setText(QCoreApplication.translate("SerialChoose", u"\u786e\u5b9a", None))
     # retranslateUi
 

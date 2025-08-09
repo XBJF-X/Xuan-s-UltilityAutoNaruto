@@ -77,6 +77,49 @@ QLabel{color:#0f322f;}</string>
 QLabel{color:#0f322f;}</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Orientation::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item alignment="Qt::AlignmentFlag::AlignBottom">
+       <widget class="QPushButton" name="kill_and_restart_adb">
+        <property name="toolTip">
+         <string>当串口列表为空的时候使用</string>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton{
+border: 2px solid #b5b5b5;  /* 2px宽的深灰色实线边框 */
+background-color: rgb(255, 255, 255);
+border-radius:10px;
+outline:none;
+color:#0f322f;
+padding-top:2px;
+padding-bottom:2px;
+}
+QPushButton::hover {
+border: 2px solid #39C5BB;  /* 2px宽的深灰色实线边框 */
+background-color: rgb(255, 255, 255);
+border-radius:10px;
+outline:none;
+padding-top:2px;
+color:#39C5BB;
+padding-bottom:2px;
+}</string>
+        </property>
+        <property name="text">
+         <string>重启ADB</string>
+        </property>
+       </widget>
+      </item>
       <item alignment="Qt::AlignmentFlag::AlignBottom">
        <widget class="QPushButton" name="ok">
         <property name="styleSheet">
