@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Callable, Tuple, Any
 from zoneinfo import ZoneInfo
 
-from PySide6.QtCore import QThread
+from PySide6.QtCore import QThread, Signal
 
 from utils.Config import Config
 from utils.Device import Device
@@ -83,6 +83,7 @@ class BaseTask(metaclass=TaskMeta):
         task_name: str,
         config: Config,
         device: Device,
+        activate_another_task_signal: Signal(str),
         callback: Callable
     ):
         # 任务信息
@@ -104,6 +105,7 @@ class BaseTask(metaclass=TaskMeta):
         self._update_next_execute_time(0)
         # 任务执行需要的组件
         self.device = device
+        self.activate_another_task_signal = activate_another_task_signal
         self.callback = callback
 
     def __lt__(self, other):
@@ -659,70 +661,17 @@ class BaseTask(metaclass=TaskMeta):
         QThread.msleep(50000)  # 等待游戏进入，定为50秒
         self.logger.info("成功进入游戏")
 
-    # def update_next_execute_time(self, **kwargs):
-    #     """
-    #     用于更新下次执行时间，不传入参数则更新为自己周期的第一天的五点
-    #     传入delta对象可以自定义延迟，即当前时间后多久再次执行
-    #     Args:
-    #         **kwargs:
-    #         - time_offset(timedelta): 自己周期内第一天的几点几时几分偏移量
-    #         - delta(timedelta|None): 自定义延迟，即当前时间后多久再次执行，默认None，如果传入则time_offset失效
-    #
-    #     Returns:
-    #
-    #     """
-    #     time_offset: timedelta = kwargs.get("time_offset", timedelta(hours=5))
-    #     delta: timedelta | None = kwargs.get("delta")
-    #
-    #     # 明确指定中国时区（带时区的当前时间）
-    #     china_tz = ZoneInfo("Asia/Shanghai")
-    #     current_time = datetime.now(china_tz)
-    #
-    #     if delta is not None:
-    #         self.next_execute_time = current_time + delta
-    #         self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
-    #         self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
-    #         return
-    #     if self.cycle_type == CycleType.DAILY:
-    #         next_day = current_time + timedelta(days=1)
-    #         # 新建时间时指定时区（与current_time一致）
-    #         self.next_execute_time = datetime(
-    #             next_day.year, next_day.month, next_day.day, 0, 0,
-    #             tzinfo=china_tz  # 关键：添加时区信息
-    #         ) + time_offset
-    #         self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
-    #         self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
-    #
-    #     elif self.cycle_type == CycleType.WEEKLY:
-    #         days_ahead = 7 - current_time.weekday()
-    #         if days_ahead == 0:
-    #             days_ahead = 7
-    #         next_monday = current_time + timedelta(days=days_ahead)
-    #         self.next_execute_time = datetime(
-    #             next_monday.year, next_monday.month, next_monday.day, 0, 0,
-    #             tzinfo=china_tz
-    #         ) + time_offset
-    #         self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
-    #         self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
-    #
-    #     elif self.cycle_type == CycleType.MONTHLY:
-    #         year = current_time.year
-    #         month = current_time.month + 1
-    #         if month > 12:
-    #             month = 1
-    #             year += 1
-    #         self.next_execute_time = datetime(
-    #             year, month, 1, 0, 0,
-    #             tzinfo=china_tz  # 关键：添加时区信息
-    #         ) + time_offset
-    #         self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
-    #         self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
-    #     elif self.cycle_type == CycleType.TEMP:
-    #         self.logger.warning(f"临时任务 {self.task_name} 执行时间已重置")
-    #         self.next_execute_time = datetime(0, 0, 0, tzinfo=china_tz)
-    #         self.config.set_task_config(self.task_name, "下次执行时间", 0)
-    #     else:
-    #         self.logger.warning(f"{CycleType(self.cycle_type)}任务")
+    def _activate_another_task(self, task_name: str):
+        """
+        立即执行某一任务
+        Args:
+            task_name(str):需要立即执行的任务名称
+
+        Returns:
+
+        """
+        self.logger.debug(f"{task_name}被激活，将立即执行")
+        self.activate_another_task_signal.emit(task_name)
 
     def _update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         """

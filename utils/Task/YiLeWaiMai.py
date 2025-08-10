@@ -32,6 +32,7 @@ class YiLeWaiMai(BaseTask):
             takeout_sum += 1
             self.logger.info(f"已领取了 {takeout_sum} 份外卖")
             continue
+        self._activate_another_task("装备合成")
         self._update_next_execute_time()
 
     def _update_next_execute_time(self, flag: int = 1, delta: timedelta = None):

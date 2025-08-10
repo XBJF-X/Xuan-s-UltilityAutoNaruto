@@ -16,6 +16,7 @@ class DengLuJiangLi(BaseTask):
             }, wait_time=3)
         else:
             self.logger.info(f"登录奖励已领取或由于没有重新登录导致未刷新")
+        self._activate_another_task("装备合成")
         self._update_next_execute_time()
 
     def _update_next_execute_time(self, flag: int = 1, delta: timedelta = None):

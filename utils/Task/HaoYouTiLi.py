@@ -43,6 +43,7 @@ class HaoYouTiLi(BaseTask):
             self.logger.info("QQ好友体力领取成功")
         else:
             self.logger.warning("未能领取QQ好友体力")
+        self._activate_another_task("装备合成")
         self._update_next_execute_time()
 
     def _update_next_execute_time(self, flag: int = 1, delta: timedelta = None):

@@ -241,6 +241,7 @@ class TimerThread(QThread):
 class Scheduler(QObject):
     add_task_ui_signal = Signal(BaseTask, int)
     remove_task_ui_signal = Signal(BaseTask, int)
+    activate_another_task_signal = Signal(str)
 
     def __init__(self, ui: Ui_DailyQuestsHelper, recognizer: Recognizer, config: Config, ref_map: Dict):
         super().__init__()
@@ -263,6 +264,7 @@ class Scheduler(QObject):
         # 连接信号到槽
         self.add_task_ui_signal.connect(self.create_task_ui)
         self.remove_task_ui_signal.connect(self.remove_task_ui)
+        self.activate_another_task_signal.connect(self.activate_another_task_implement)
 
         self.device: Device = None
 
@@ -292,6 +294,7 @@ class Scheduler(QObject):
                 task_name,
                 self.config,
                 self.device,
+                self.activate_another_task_signal,
                 self._execute_done_callback
             )
 
@@ -388,6 +391,27 @@ class Scheduler(QObject):
         else:
             self.waiting_widget_list.update_task_widget(task_name, next_execute_time=net)
         lineedit_widget.setEnabled(True)
+        self.logger.info(f"任务 {task_name} 已放入等待队列等待立即执行")
+
+    def activate_another_task_implement(self, task_name):
+        """任务调用其他任务立刻执行"""
+        self.config.set_task_config(task_name, "下次执行时间", int(datetime.now(ZoneInfo("Asia/Shanghai")).timestamp()))
+
+        if not self.running:
+            return
+
+        net = datetime.now(ZoneInfo("Asia/Shanghai"))
+        if not self.waiting_queue.update(task_name, next_execute_time=net):
+            if not self.ready_queue.update(task_name, next_execute_time=net):
+                if not self.running_queue.update(task_name, next_execute_time=net):
+                    self.logger.error(f"任务 {task_name} 放入等待队列等待立即执行失败")
+                    return
+                else:
+                    self.running_widget_list.update_task_widget(task_name, next_execute_time=net)
+            else:
+                self.ready_widget_list.update_task_widget(task_name, next_execute_time=net)
+        else:
+            self.waiting_widget_list.update_task_widget(task_name, next_execute_time=net)
         self.logger.info(f"任务 {task_name} 已放入等待队列等待立即执行")
 
     def clear_ui(self):
