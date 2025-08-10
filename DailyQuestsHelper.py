@@ -188,8 +188,10 @@ class DailyQuestsHelper(QMainWindow):
 
     def _on_start_schedule_button_clicked(self):
         if not self.scheduler.running:
+            self.config = Config()
             self.scheduler.start()
         else:
+            self.config = None
             self.scheduler.stop()
 
     def _on_tree_item_clicked(self, item, column):

@@ -1,21 +1,17 @@
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from utils.Task.BaseTask import BaseTask
 
 
-class DengLuJiangLi(BaseTask):
+class ShangChengJiangLi(BaseTask):
     def _execute(self):
-        self.restart()
-        # 确定在登录奖励界面
-        if self.home(home_name="登录奖励", max_attempts=5):
-            # 点击领取
-            self.click_and_wait({
-                "type": "ELEMENT",
-                "name": "登录奖励-领取"
-            }, wait_time=3)
-        else:
-            self.logger.info(f"登录奖励已领取或由于没有重新登录导致未刷新")
+        # 确定在主场景
+        if not self.home():
+            raise self.StepFailedError("无法回到[主场景]")
+
+        # 执行逻辑部分
+
         self._update_next_execute_time()
 
     def _update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
@@ -35,12 +31,7 @@ class DengLuJiangLi(BaseTask):
                     self.next_execute_time = datetime.fromtimestamp(next_exec_ts, tz=ZoneInfo("Asia/Shanghai"))
 
             case 1:  # 正常执行完毕，更新为下次执行的时间
-                next_day = current_time + timedelta(days=1)
-                # 新建时间时指定时区（与current_time一致）
-                self.next_execute_time = datetime(
-                    next_day.year, next_day.month, next_day.day, 5, 0,
-                    tzinfo=china_tz  # 关键：添加时区信息
-                )
+                pass
 
             case 2:  # 立刻执行，通常把时间重置到能保证第二天之前即可，不同的任务分别处理
                 self.next_execute_time = datetime.now(ZoneInfo("Asia/Shanghai"))

@@ -4,7 +4,7 @@ from utils.KeyMapConfiguration import KEY_INDEX
 from utils.Task.BaseTask import BaseTask
 
 
-class YaoSaiZhengDuoZhan(BaseTask):
+class BenFuYaoSaiZhan(BaseTask):
     def _execute(self):
         # 确定在主场景
         if not self.home():

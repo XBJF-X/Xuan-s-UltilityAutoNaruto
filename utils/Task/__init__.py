@@ -1,4 +1,5 @@
 from .DengLuJiangLi import DengLuJiangLi
+from .DianFengDuiJue import DianFengDuiJue
 from .FengRaoZhiJian import FengRaoZhiJian
 from .GaoJiRenZheZhaoMu import GaoJiRenZheZhaoMu
 from .GengDuoWanFa import GengDuoWanFa
@@ -6,7 +7,7 @@ from .GouMaiTiLi import GouMaiTiLi
 from .HaoYouTiLi import HaoYouTiLi
 from .HuoYueDuJiangLi import HuoYueDuJiangLi
 from .JinBiZhaoCai import JinBiZhaoCai
-from .KuaFuZhengBaSai import KuaFuZhengBaSai
+from .KuaFuYaoSaiZhan import KuaFuYaoSaiZhan
 from .MaoXianFuBen import MaoXianFuBen
 from .MeiRiFenXiang import MeiRiFenXiang
 from .MeiRiShengChang import MeiRiShengChang
@@ -21,86 +22,106 @@ from .QingKongYouJian import QingKongYouJian
 from .RenFaTieDianZanFenXiang import RenFaTieDianZanFenXiang
 from .RenWuJiHuiSuo import RenWuJiHuiSuo
 from .SaiJiShengChang import SaiJiShengChang
+from .ShangChengJiangLi import ShangChengJiangLi
 from .ShengCunTiaoZhan import ShengCunTiaoZhan
+from .TianDiZhanChang import TianDiZhanChang
 from .TuanBen import TuanBen
 from .XiaoDuiTuXi import XiaoDuiTuXi
 from .XiuXingZhiLu import XiuXingZhiLu
-from .YaoSaiZhengDuoZhan import YaoSaiZhengDuoZhan
+from .BenFuYaoSaiZhan import BenFuYaoSaiZhan
 from .YiLeWaiMai import YiLeWaiMai
 from .ZhuangBeiHeCheng import ZhuangBeiHeCheng
+from .ZhuiJiXiaoZuZhi import ZhuiJiXiaoZuZhi
 from .ZuZhiQiFu import ZuZhiQiFu
+from .ZuZhiZhengBa import ZuZhiZhengBa
 
 TASK_TYPE_MAP = {
     '登录奖励': DengLuJiangLi,
-    '丰饶之间': FengRaoZhiJian,
-    '金币招财': JinBiZhaoCai,
-    '好友体力': HaoYouTiLi,
-    '购买体力': GouMaiTiLi,
-    '组织祈福': ZuZhiQiFu,
-    '高级忍者招募': GaoJiRenZheZhaoMu,
-    '普通忍者招募': PuTongRenZheZhaoMu,
-    '情报站': QingBaoZhan,
-    '生存挑战': ShengCunTiaoZhan,
-    '小队突袭': XiaoDuiTuXi,
-    '清空邮件': QingKongYouJian,
-    '任务集会所': RenWuJiHuiSuo,
-    '冒险副本': MaoXianFuBen,
-    '每日分享': MeiRiFenXiang,
-    '更多玩法': GengDuoWanFa,
-    '活跃度奖励': HuoYueDuJiangLi,
-    '团本': TuanBen,
-    '修行之路': XiuXingZhiLu,
-    '秘境探险': MiJingTanXian,
-    "每日胜场": MeiRiShengChang,
-    "每周胜场": MeiZhouShengChang,
-    "赛季胜场": SaiJiShengChang,
     "排行榜点赞": PaiHangBangDianZan,
-    "一乐外卖": YiLeWaiMai,
     "每月签到": MeiYueQianDao,
+    '购买体力': GouMaiTiLi,
+    '金币招财': JinBiZhaoCai,
+    '小队突袭': XiaoDuiTuXi,
+    '组织祈福': ZuZhiQiFu,
+    '好友体力': HaoYouTiLi,
+    '普通忍者招募': PuTongRenZheZhaoMu,
+    '每日分享': MeiRiFenXiang,
+    '丰饶之间': FengRaoZhiJian,
+    '任务集会所': RenWuJiHuiSuo,
+    "一乐外卖": YiLeWaiMai,
+    "每日胜场": MeiRiShengChang,
+    '生存挑战': ShengCunTiaoZhan,
+    '秘境探险': MiJingTanXian,
+    '商城奖励': ShangChengJiangLi,
+    '情报站': QingBaoZhan,
+    '冒险副本': MaoXianFuBen,
+    '活跃度奖励': HuoYueDuJiangLi,
+    '清空邮件': QingKongYouJian,
+
+    '修行之路': XiuXingZhiLu,
+    "每周胜场": MeiZhouShengChang,
     "忍法帖点赞分享": RenFaTieDianZanFenXiang,
-    '要塞争夺战': YaoSaiZhengDuoZhan,
+    '更多玩法': GengDuoWanFa,
+    '团本': TuanBen,
+    '本服要塞战': BenFuYaoSaiZhan,
     '叛忍来袭': PanRenLaiXi,
-    '跨服争霸赛': KuaFuZhengBaSai,
+    '天地战场': TianDiZhanChang,
+    '追击晓组织': ZhuiJiXiaoZuZhi,
+
+    '跨服要塞战': KuaFuYaoSaiZhan,
+    '巅峰对决': DianFengDuiJue,
+    '组织争霸': ZuZhiZhengBa,
+    "赛季胜场": SaiJiShengChang,
+
     '装备合成': ZhuangBeiHeCheng,
+    '高级忍者招募': GaoJiRenZheZhaoMu,
 }
 
 TASK_NAME_CN2EN_MAP = {
     '登录奖励': "DengLuJiangLi",
-    '丰饶之间': "FengRaoZhiJian",
-    '金币招财': "JinBiZhaoCai",
-    '好友体力': "HaoYouTiLi",
-    '购买体力': "GouMaiTiLi",
-    '组织祈福': "ZuZhiQiFu",
-    '高级忍者招募': "GaoJiRenZheZhaoMu",
-    '普通忍者招募': "PuTongRenZheZhaoMu",
-    '情报站': "QingBaoZhan",
-    '生存挑战': "ShengCunTiaoZhan",
-    '小队突袭': "XiaoDuiTuXi",
-    '清空邮件': "QingKongYouJian",
-    '任务集会所': "RenWuJiHuiSuo",
-    '冒险副本': "MaoXianFuBen",
-    '每日分享': "MeiRiFenXiang",
-    '更多玩法': "GengDuoWanFa",
-    '活跃度奖励': "HuoYueDuJiangLi",
-    '团本': "TuanBen",
-    '修行之路': "XiuXingZhiLu",
-    '秘境探险': "MiJingTanXian",
-    "每日胜场": "MeiRiShengChang",
-    "每周胜场": "MeiZhouShengChang",
-    "赛季胜场": "SaiJiShengChang",
     "排行榜点赞": "PaiHangBangDianZan",
-    "一乐外卖": "YiLeWaiMai",
     "每月签到": "MeiYueQianDao",
+    '购买体力': "GouMaiTiLi",
+    '金币招财': "JinBiZhaoCai",
+    '小队突袭': "XiaoDuiTuXi",
+    '组织祈福': "ZuZhiQiFu",
+    '好友体力': "HaoYouTiLi",
+    '普通忍者招募': "PuTongRenZheZhaoMu",
+    '每日分享': "MeiRiFenXiang",
+    '丰饶之间': "FengRaoZhiJian",
+    '任务集会所': "RenWuJiHuiSuo",
+    "一乐外卖": "YiLeWaiMai",
+    "每日胜场": "MeiRiShengChang",
+    '生存挑战': "ShengCunTiaoZhan",
+    '商城奖励': "ShangChengJiangLi",
+    '秘境探险': "MiJingTanXian",
+    '情报站': "QingBaoZhan",
+    '冒险副本': "MaoXianFuBen",
+    '活跃度奖励': "HuoYueDuJiangLi",
+    '清空邮件': "QingKongYouJian",
+
+    '修行之路': "XiuXingZhiLu",
+    "每周胜场": "MeiZhouShengChang",
     "忍法帖点赞分享": "RenFaTieDianZanFenXiang",
-    '要塞争夺战': 'YaoSaiZhengDuoZhan',
-    '叛忍来袭': 'PanRenLaiXi',
-    '跨服争霸赛': 'KuaFuZhengBaSai',
-    '装备合成': 'ZhuangBeiHeCheng',
+    '更多玩法': "GengDuoWanFa",
+    '团本': "TuanBen",
+    '本服要塞战': "BenFuYaoSaiZhan",
+    '叛忍来袭': "PanRenLaiXi",
+    '天地战场': "TianDiZhanChang",
+    '追击晓组织': "ZhuiJiXiaoZuZhi",
+
+    '跨服要塞战': "KuaFuYaoSaiZhan",
+    '巅峰对决': "DianFengDuiJue",
+    '组织争霸': "ZuZhiZhengBa",
+    "赛季胜场": "SaiJiShengChang",
+
+    '装备合成': "ZhuangBeiHeCheng",
+    '高级忍者招募': "GaoJiRenZheZhaoMu",
 }
 TREE_INDEX_DIC = {
     '登录奖励': 1,
-    '排行榜点赞': 2,
-    '每月签到': 3,
+    "排行榜点赞": 2,
+    "每月签到": 3,
     '购买体力': 4,
     '金币招财': 5,
     '小队突袭': 6,
@@ -110,24 +131,32 @@ TREE_INDEX_DIC = {
     '每日分享': 10,
     '丰饶之间': 11,
     '任务集会所': 12,
-    '一乐外卖': 13,
-    '每日胜场': 14,
+    "一乐外卖": 13,
+    "每日胜场": 14,
     '生存挑战': 15,
     '秘境探险': 16,
-    '情报站': 17,
-    '冒险副本': 18,
-    '活跃度奖励': 19,
-    '清空邮件': 20,
-    '修行之路': 21,
-    '忍法帖点赞分享': 22,
-    '团本': 23,
-    '要塞争夺战': 24,
-    '叛忍来袭': 25,
-    '跨服争霸赛': 26,
-    '高级忍者招募': 27,
-    '每周胜场': 28,
-    '赛季胜场': 29,
-    '更多玩法': 30,
-    '助手设置': 31,
-    '装备合成': 32,
+    '商城奖励': 17,
+    '情报站': 18,
+    '冒险副本': 19,
+    '活跃度奖励': 20,
+    '清空邮件': 21,
+
+    '修行之路': 22,
+    "每周胜场": 23,
+    "忍法帖点赞分享": 24,
+    '更多玩法': 25,
+    '团本': 26,
+    '本服要塞战': 27,
+    '叛忍来袭': 28,
+    '天地战场': 29,
+    '追击晓组织': 30,
+
+    '跨服要塞战': 31,
+    '巅峰对决': 32,
+    '组织争霸': 33,
+    "赛季胜场": 34,
+
+    '装备合成': 35,
+    '高级忍者招募': 36,
+    '助手设置': 37,
 }

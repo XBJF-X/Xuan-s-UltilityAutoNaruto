@@ -487,17 +487,17 @@ QTreeWidget QScrollBar::add-line:vertical {
              </item>
              <item>
               <property name="text">
+               <string>商城奖励</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
                <string>情报站</string>
               </property>
              </item>
              <item>
               <property name="text">
                <string>冒险副本</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>装备合成</string>
               </property>
              </item>
              <item>
@@ -522,7 +522,17 @@ QTreeWidget QScrollBar::add-line:vertical {
              </item>
              <item>
               <property name="text">
+               <string>每周胜场</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
                <string>忍法帖点赞分享</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>更多玩法</string>
               </property>
              </item>
              <item>
@@ -532,12 +542,22 @@ QTreeWidget QScrollBar::add-line:vertical {
              </item>
              <item>
               <property name="text">
-               <string>要塞争夺战</string>
+               <string>本服要塞战</string>
               </property>
              </item>
              <item>
               <property name="text">
                <string>叛忍来袭</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>天地战场</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>追击晓组织</string>
               </property>
              </item>
             </item>
@@ -547,7 +567,22 @@ QTreeWidget QScrollBar::add-line:vertical {
              </property>
              <item>
               <property name="text">
-               <string>跨服争霸赛</string>
+               <string>跨服要塞战</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>巅峰对决</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>组织争霸</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>赛季胜场</string>
               </property>
              </item>
             </item>
@@ -557,27 +592,12 @@ QTreeWidget QScrollBar::add-line:vertical {
              </property>
              <item>
               <property name="text">
+               <string>装备合成</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
                <string>高级忍者招募</string>
-              </property>
-             </item>
-            </item>
-            <item>
-             <property name="text">
-              <string>临时任务</string>
-             </property>
-             <item>
-              <property name="text">
-               <string>每周胜场</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>赛季胜场</string>
-              </property>
-             </item>
-             <item>
-              <property name="text">
-               <string>更多玩法</string>
               </property>
              </item>
             </item>
@@ -1231,8 +1251,8 @@ QScrollArea &gt; QWidget &gt; QWidget {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>232</width>
-                      <height>63</height>
+                      <width>84</width>
+                      <height>20</height>
                      </rect>
                     </property>
                    </widget>
@@ -1470,8 +1490,8 @@ QScrollArea &gt; QWidget &gt; QWidget {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>232</width>
-                      <height>71</height>
+                      <width>84</width>
+                      <height>20</height>
                      </rect>
                     </property>
                    </widget>
@@ -1704,8 +1724,8 @@ QScrollArea &gt; QWidget &gt; QWidget {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>232</width>
-                      <height>161</height>
+                      <width>84</width>
+                      <height>20</height>
                      </rect>
                     </property>
                    </widget>
@@ -1921,8 +1941,8 @@ QCheckBox::indicator:disabled {
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>598</width>
-                   <height>532</height>
+                   <width>585</width>
+                   <height>232</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_73">
@@ -2182,7 +2202,7 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
+                   <width>585</width>
                    <height>232</height>
                   </rect>
                  </property>
@@ -2443,7 +2463,7 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
+                   <width>585</width>
                    <height>232</height>
                   </rect>
                  </property>
@@ -2704,8 +2724,8 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
-                   <height>407</height>
+                   <width>598</width>
+                   <height>532</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_46">
@@ -3164,7 +3184,7 @@ margin-left:18px;</string>
                           <string/>
                          </property>
                          <property name="maximum">
-                          <number>20</number>
+                          <number>30</number>
                          </property>
                          <property name="value">
                           <number>0</number>
@@ -3251,7 +3271,7 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
+                   <width>585</width>
                    <height>450</height>
                   </rect>
                  </property>
@@ -3727,7 +3747,7 @@ margin-left:18px;</string>
                           <string/>
                          </property>
                          <property name="maximum">
-                          <number>20</number>
+                          <number>120</number>
                          </property>
                          <property name="value">
                           <number>0</number>
@@ -3814,7 +3834,7 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
+                   <width>585</width>
                    <height>452</height>
                   </rect>
                  </property>
@@ -4271,7 +4291,7 @@ border-radius:1px;
                           <string/>
                          </property>
                          <property name="maximum">
-                          <number>20</number>
+                          <number>2</number>
                          </property>
                          <property name="value">
                           <number>0</number>
@@ -4406,7 +4426,7 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
+                   <width>585</width>
                    <height>232</height>
                   </rect>
                  </property>
@@ -4667,8 +4687,8 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
-                   <height>232</height>
+                   <width>598</width>
+                   <height>532</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_85">
@@ -4928,8 +4948,8 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
-                   <height>232</height>
+                   <width>598</width>
+                   <height>532</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_117">
@@ -5189,7 +5209,7 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
+                   <width>585</width>
                    <height>296</height>
                   </rect>
                  </property>
@@ -5464,8 +5484,8 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
-                   <height>258</height>
+                   <width>598</width>
+                   <height>532</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_77">
@@ -5737,8 +5757,8 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
-                   <height>258</height>
+                   <width>598</width>
+                   <height>532</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_133">
@@ -6010,8 +6030,8 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
-                   <height>232</height>
+                   <width>598</width>
+                   <height>532</height>
                   </rect>
                  </property>
                  <layout class="QVBoxLayout" name="verticalLayout_141">
@@ -6544,7 +6564,7 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
+                   <width>585</width>
                    <height>258</height>
                   </rect>
                  </property>
@@ -6817,7 +6837,7 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
+                   <width>585</width>
                    <height>258</height>
                   </rect>
                  </property>
@@ -7050,6 +7070,7 @@ margin-left:18px;</string>
            </item>
           </layout>
          </widget>
+         <widget class="QWidget" name="ShangChengJiangLi_widget"/>
          <widget class="QWidget" name="QingBaoZhan_widget">
           <layout class="QHBoxLayout" name="horizontalLayout_50">
            <item>
@@ -7090,7 +7111,7 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
+                   <width>585</width>
                    <height>258</height>
                   </rect>
                  </property>
@@ -7363,7 +7384,7 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
+                   <width>585</width>
                    <height>278</height>
                   </rect>
                  </property>
@@ -7637,7 +7658,7 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
+                   <width>585</width>
                    <height>232</height>
                   </rect>
                  </property>
@@ -7898,7 +7919,7 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
+                   <width>585</width>
                    <height>232</height>
                   </rect>
                  </property>
@@ -8159,7 +8180,7 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
+                   <width>585</width>
                    <height>258</height>
                   </rect>
                  </property>
@@ -8392,1632 +8413,6 @@ margin-left:18px;</string>
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="RenFaTieDianZanFenXiang_widget">
-          <layout class="QHBoxLayout" name="horizontalLayout_58">
-           <item>
-            <widget class="QWidget" name="widget_72" native="true">
-             <property name="styleSheet">
-              <string notr="true"/>
-             </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_54" stretch="1,5,1">
-              <item>
-               <spacer name="horizontalSpacer_51">
-                <property name="orientation">
-                 <enum>Qt::Orientation::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QScrollArea" name="scrollArea_29">
-                <property name="minimumSize">
-                 <size>
-                  <width>600</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="widgetResizable">
-                 <bool>true</bool>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-                </property>
-                <widget class="QWidget" name="scrollAreaWidgetContents_26">
-                 <property name="geometry">
-                  <rect>
-                   <x>0</x>
-                   <y>0</y>
-                   <width>586</width>
-                   <height>258</height>
-                  </rect>
-                 </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_129">
-                  <property name="spacing">
-                   <number>20</number>
-                  </property>
-                  <item>
-                   <widget class="QWidget" name="widget_73" native="true">
-                    <property name="styleSheet">
-                     <string notr="true">QWidget {
-                background-color: #dfdfdf;  /* 背景颜色 */
-				border-radius:10px;
-            }
-/* 调整勾选框的大小 */
-QCheckBox::indicator {
-	width: 20px;      /* 勾选框宽度 */
-	height: 20px;     /* 勾选框高度 */
-	outline:none;
-border:none;
-}
-
-/* 可选：设置勾选框不同状态的样式 */
-QCheckBox::indicator:unchecked {
-	border: 2px solid #0f322f;
-	border-radius: 3px;
-}
-QCheckBox::indicator:checked {
-	background-color:#39C5BB;
-	border: 2px solid #0f322f;
-	border-radius: 3px;
-	
-}
-
-/* 禁用状态 */
-QCheckBox::indicator:disabled {
-	background-color: #f0f0f0;
-	border-color: #cccccc;
-}
-/* 1. 未选中（默认）状态的下边框 */
-            QLineEdit {
-                /* 清除默认边框，只保留下边框 */
-                border: none;
-                border-bottom: 3px solid #969696;  /* 灰色下边框 */
-                padding: 5px 0;  /* 上下下内边距，避免文字紧贴紧贴边框 */
-				border-radius:0px;
-                background: transparent;  /* 背景透明，只显示下边框 */
-            }
-            
-            /* 2. 选中（获得焦点点）状态的下边框 */
-            QLineEdit:focus {
-                border-bottom: 4px solid #39C5BB;  /* 蓝色下边框（突出显示） */
-                outline: none;  /* 去除系统默认的聚焦外边框 */
-            }
-            
-            /* 3. 鼠标略过（悬停）状态的下边框 */
-            QLineEdit:hover {
-                border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
-            }</string>
-                    </property>
-                    <layout class="QVBoxLayout" name="verticalLayout_130">
-                     <property name="topMargin">
-                      <number>7</number>
-                     </property>
-                     <item>
-                      <widget class="QLabel" name="label_167">
-                       <property name="styleSheet">
-                        <string notr="true">font-size:20pt;
-border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string>任务设置</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="label_51">
-                       <property name="styleSheet">
-                        <string notr="true">font-size:13pt;
-color:rgba(255, 0, 0, 100);
-margin-left:18px;</string>
-                       </property>
-                       <property name="text">
-                        <string>模拟器需要安装QQ</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QFrame" name="frame_33">
-                       <property name="styleSheet">
-                        <string notr="true">QWidget QFrame{
-border:2px solid #969696;
-border-radius:1px;
-            }</string>
-                       </property>
-                       <property name="frameShape">
-                        <enum>QFrame::Shape::HLine</enum>
-                       </property>
-                       <property name="frameShadow">
-                        <enum>QFrame::Shadow::Raised</enum>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <layout class="QGridLayout" name="gridLayout_38" rowstretch="0,0" columnstretch="5,2">
-                       <property name="leftMargin">
-                        <number>10</number>
-                       </property>
-                       <property name="topMargin">
-                        <number>10</number>
-                       </property>
-                       <property name="rightMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="bottomMargin">
-                        <number>10</number>
-                       </property>
-                       <item row="0" column="0">
-                        <layout class="QVBoxLayout" name="verticalLayout_131">
-                         <item>
-                          <widget class="QLabel" name="label_168">
-                           <property name="text">
-                            <string>启用任务</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="label_169">
-                           <property name="styleSheet">
-                            <string notr="true">font-size:11pt;
-color:#959595;
-margin-left:18px;</string>
-                           </property>
-                           <property name="text">
-                            <string>将这个任务加入调度器</string>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </item>
-                       <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="RenFaTieDianZanFenXiang_Enable">
-                         <property name="focusPolicy">
-                          <enum>Qt::FocusPolicy::ClickFocus</enum>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true"/>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="1" column="0">
-                        <layout class="QVBoxLayout" name="verticalLayout_132">
-                         <item>
-                          <widget class="QLabel" name="label_170">
-                           <property name="text">
-                            <string>下次执行时间</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="label_171">
-                           <property name="styleSheet">
-                            <string notr="true">font-size:11pt;
-color:#959595;
-margin-left:18px;</string>
-                           </property>
-                           <property name="text">
-                            <string>自动计算得出，无须修改，清空则立刻运行</string>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </item>
-                       <item row="1" column="1">
-                        <widget class="QLineEdit" name="RenFaTieDianZanFenXiang_next_execute_time">
-                         <property name="minimumSize">
-                          <size>
-                           <width>200</width>
-                           <height>0</height>
-                          </size>
-                         </property>
-                         <property name="focusPolicy">
-                          <enum>Qt::FocusPolicy::ClickFocus</enum>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignmentFlag::AlignCenter</set>
-                         </property>
-                        </widget>
-                       </item>
-                      </layout>
-                     </item>
-                    </layout>
-                   </widget>
-                  </item>
-                  <item>
-                   <spacer name="verticalSpacer_21">
-                    <property name="orientation">
-                     <enum>Qt::Orientation::Vertical</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>20</width>
-                      <height>40</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                 </layout>
-                </widget>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_52">
-                <property name="orientation">
-                 <enum>Qt::Orientation::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="TuanBen_widget">
-          <layout class="QHBoxLayout" name="horizontalLayout_67">
-           <item>
-            <widget class="QWidget" name="widget_88" native="true">
-             <property name="styleSheet">
-              <string notr="true"/>
-             </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_55" stretch="1,5,1">
-              <item>
-               <spacer name="horizontalSpacer_67">
-                <property name="orientation">
-                 <enum>Qt::Orientation::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QScrollArea" name="scrollArea_37">
-                <property name="minimumSize">
-                 <size>
-                  <width>600</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="widgetResizable">
-                 <bool>true</bool>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-                </property>
-                <widget class="QWidget" name="scrollAreaWidgetContents_34">
-                 <property name="geometry">
-                  <rect>
-                   <x>0</x>
-                   <y>0</y>
-                   <width>586</width>
-                   <height>258</height>
-                  </rect>
-                 </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_161">
-                  <property name="spacing">
-                   <number>20</number>
-                  </property>
-                  <item>
-                   <widget class="QWidget" name="widget_89" native="true">
-                    <property name="styleSheet">
-                     <string notr="true">QWidget {
-                background-color: #dfdfdf;  /* 背景颜色 */
-				border-radius:10px;
-            }
-/* 调整勾选框的大小 */
-QCheckBox::indicator {
-	width: 20px;      /* 勾选框宽度 */
-	height: 20px;     /* 勾选框高度 */
-	outline:none;
-border:none;
-}
-
-/* 可选：设置勾选框不同状态的样式 */
-QCheckBox::indicator:unchecked {
-	border: 2px solid #0f322f;
-	border-radius: 3px;
-}
-QCheckBox::indicator:checked {
-	background-color:#39C5BB;
-	border: 2px solid #0f322f;
-	border-radius: 3px;
-	
-}
-
-/* 禁用状态 */
-QCheckBox::indicator:disabled {
-	background-color: #f0f0f0;
-	border-color: #cccccc;
-}
-/* 1. 未选中（默认）状态的下边框 */
-            QLineEdit {
-                /* 清除默认边框，只保留下边框 */
-                border: none;
-                border-bottom: 3px solid #969696;  /* 灰色下边框 */
-                padding: 5px 0;  /* 上下下内边距，避免文字紧贴紧贴边框 */
-				border-radius:0px;
-                background: transparent;  /* 背景透明，只显示下边框 */
-            }
-            
-            /* 2. 选中（获得焦点点）状态的下边框 */
-            QLineEdit:focus {
-                border-bottom: 4px solid #39C5BB;  /* 蓝色下边框（突出显示） */
-                outline: none;  /* 去除系统默认的聚焦外边框 */
-            }
-            
-            /* 3. 鼠标略过（悬停）状态的下边框 */
-            QLineEdit:hover {
-                border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
-            }</string>
-                    </property>
-                    <layout class="QVBoxLayout" name="verticalLayout_162">
-                     <property name="topMargin">
-                      <number>7</number>
-                     </property>
-                     <item>
-                      <widget class="QLabel" name="label_208">
-                       <property name="styleSheet">
-                        <string notr="true">font-size:20pt;
-border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string>任务设置</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="label_209">
-                       <property name="styleSheet">
-                        <string notr="true">font-size:13pt;
-color:rgba(255, 0, 0, 100);
-margin-left:18px;</string>
-                       </property>
-                       <property name="text">
-                        <string>待开发</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QFrame" name="frame_41">
-                       <property name="styleSheet">
-                        <string notr="true">QWidget QFrame{
-border:2px solid #969696;
-border-radius:1px;
-            }</string>
-                       </property>
-                       <property name="frameShape">
-                        <enum>QFrame::Shape::HLine</enum>
-                       </property>
-                       <property name="frameShadow">
-                        <enum>QFrame::Shadow::Raised</enum>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <layout class="QGridLayout" name="gridLayout_46" rowstretch="0,0" columnstretch="5,2">
-                       <property name="leftMargin">
-                        <number>10</number>
-                       </property>
-                       <property name="topMargin">
-                        <number>10</number>
-                       </property>
-                       <property name="rightMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="bottomMargin">
-                        <number>10</number>
-                       </property>
-                       <item row="0" column="0">
-                        <layout class="QVBoxLayout" name="verticalLayout_163">
-                         <item>
-                          <widget class="QLabel" name="label_210">
-                           <property name="text">
-                            <string>启用任务</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="label_211">
-                           <property name="styleSheet">
-                            <string notr="true">font-size:11pt;
-color:#959595;
-margin-left:18px;</string>
-                           </property>
-                           <property name="text">
-                            <string>将这个任务加入调度器</string>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </item>
-                       <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="TuanBen_Enable">
-                         <property name="focusPolicy">
-                          <enum>Qt::FocusPolicy::ClickFocus</enum>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true"/>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="1" column="0">
-                        <layout class="QVBoxLayout" name="verticalLayout_164">
-                         <item>
-                          <widget class="QLabel" name="label_212">
-                           <property name="text">
-                            <string>下次执行时间</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="label_213">
-                           <property name="styleSheet">
-                            <string notr="true">font-size:11pt;
-color:#959595;
-margin-left:18px;</string>
-                           </property>
-                           <property name="text">
-                            <string>自动计算得出，无须修改，清空则立刻运行</string>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </item>
-                       <item row="1" column="1">
-                        <widget class="QLineEdit" name="TuanBen_next_execute_time">
-                         <property name="minimumSize">
-                          <size>
-                           <width>200</width>
-                           <height>0</height>
-                          </size>
-                         </property>
-                         <property name="focusPolicy">
-                          <enum>Qt::FocusPolicy::ClickFocus</enum>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignmentFlag::AlignCenter</set>
-                         </property>
-                        </widget>
-                       </item>
-                      </layout>
-                     </item>
-                    </layout>
-                   </widget>
-                  </item>
-                  <item>
-                   <spacer name="verticalSpacer_29">
-                    <property name="orientation">
-                     <enum>Qt::Orientation::Vertical</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>20</width>
-                      <height>40</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                 </layout>
-                </widget>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_68">
-                <property name="orientation">
-                 <enum>Qt::Orientation::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="YaoSaiZhengDuoZhan_widget">
-          <layout class="QHBoxLayout" name="horizontalLayout_68">
-           <item>
-            <widget class="QWidget" name="widget_90" native="true">
-             <property name="styleSheet">
-              <string notr="true"/>
-             </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_56" stretch="1,5,1">
-              <item>
-               <spacer name="horizontalSpacer_69">
-                <property name="orientation">
-                 <enum>Qt::Orientation::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QScrollArea" name="scrollArea_38">
-                <property name="minimumSize">
-                 <size>
-                  <width>600</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="widgetResizable">
-                 <bool>true</bool>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-                </property>
-                <widget class="QWidget" name="scrollAreaWidgetContents_35">
-                 <property name="geometry">
-                  <rect>
-                   <x>0</x>
-                   <y>0</y>
-                   <width>586</width>
-                   <height>258</height>
-                  </rect>
-                 </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_165">
-                  <property name="spacing">
-                   <number>20</number>
-                  </property>
-                  <item>
-                   <widget class="QWidget" name="widget_91" native="true">
-                    <property name="styleSheet">
-                     <string notr="true">QWidget {
-                background-color: #dfdfdf;  /* 背景颜色 */
-				border-radius:10px;
-            }
-/* 调整勾选框的大小 */
-QCheckBox::indicator {
-	width: 20px;      /* 勾选框宽度 */
-	height: 20px;     /* 勾选框高度 */
-	outline:none;
-border:none;
-}
-
-/* 可选：设置勾选框不同状态的样式 */
-QCheckBox::indicator:unchecked {
-	border: 2px solid #0f322f;
-	border-radius: 3px;
-}
-QCheckBox::indicator:checked {
-	background-color:#39C5BB;
-	border: 2px solid #0f322f;
-	border-radius: 3px;
-	
-}
-
-/* 禁用状态 */
-QCheckBox::indicator:disabled {
-	background-color: #f0f0f0;
-	border-color: #cccccc;
-}
-/* 1. 未选中（默认）状态的下边框 */
-            QLineEdit {
-                /* 清除默认边框，只保留下边框 */
-                border: none;
-                border-bottom: 3px solid #969696;  /* 灰色下边框 */
-                padding: 5px 0;  /* 上下下内边距，避免文字紧贴紧贴边框 */
-				border-radius:0px;
-                background: transparent;  /* 背景透明，只显示下边框 */
-            }
-            
-            /* 2. 选中（获得焦点点）状态的下边框 */
-            QLineEdit:focus {
-                border-bottom: 4px solid #39C5BB;  /* 蓝色下边框（突出显示） */
-                outline: none;  /* 去除系统默认的聚焦外边框 */
-            }
-            
-            /* 3. 鼠标略过（悬停）状态的下边框 */
-            QLineEdit:hover {
-                border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
-            }</string>
-                    </property>
-                    <layout class="QVBoxLayout" name="verticalLayout_166">
-                     <property name="topMargin">
-                      <number>7</number>
-                     </property>
-                     <item>
-                      <widget class="QLabel" name="label_214">
-                       <property name="styleSheet">
-                        <string notr="true">font-size:20pt;
-border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string>任务设置</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="label_215">
-                       <property name="styleSheet">
-                        <string notr="true">font-size:13pt;
-color:rgba(255, 0, 0, 100);
-margin-left:18px;</string>
-                       </property>
-                       <property name="text">
-                        <string>待开发</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QFrame" name="frame_42">
-                       <property name="styleSheet">
-                        <string notr="true">QWidget QFrame{
-border:2px solid #969696;
-border-radius:1px;
-            }</string>
-                       </property>
-                       <property name="frameShape">
-                        <enum>QFrame::Shape::HLine</enum>
-                       </property>
-                       <property name="frameShadow">
-                        <enum>QFrame::Shadow::Raised</enum>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <layout class="QGridLayout" name="gridLayout_47" rowstretch="0,0" columnstretch="5,2">
-                       <property name="leftMargin">
-                        <number>10</number>
-                       </property>
-                       <property name="topMargin">
-                        <number>10</number>
-                       </property>
-                       <property name="rightMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="bottomMargin">
-                        <number>10</number>
-                       </property>
-                       <item row="0" column="0">
-                        <layout class="QVBoxLayout" name="verticalLayout_167">
-                         <item>
-                          <widget class="QLabel" name="label_216">
-                           <property name="text">
-                            <string>启用任务</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="label_217">
-                           <property name="styleSheet">
-                            <string notr="true">font-size:11pt;
-color:#959595;
-margin-left:18px;</string>
-                           </property>
-                           <property name="text">
-                            <string>将这个任务加入调度器</string>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </item>
-                       <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="YaoSaiZhengDuoZhan_Enable">
-                         <property name="focusPolicy">
-                          <enum>Qt::FocusPolicy::ClickFocus</enum>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true"/>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="1" column="0">
-                        <layout class="QVBoxLayout" name="verticalLayout_168">
-                         <item>
-                          <widget class="QLabel" name="label_218">
-                           <property name="text">
-                            <string>下次执行时间</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="label_219">
-                           <property name="styleSheet">
-                            <string notr="true">font-size:11pt;
-color:#959595;
-margin-left:18px;</string>
-                           </property>
-                           <property name="text">
-                            <string>自动计算得出，无须修改，清空则立刻运行</string>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </item>
-                       <item row="1" column="1">
-                        <widget class="QLineEdit" name="YaoSaiZhengDuoZhan_next_execute_time">
-                         <property name="minimumSize">
-                          <size>
-                           <width>200</width>
-                           <height>0</height>
-                          </size>
-                         </property>
-                         <property name="focusPolicy">
-                          <enum>Qt::FocusPolicy::ClickFocus</enum>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignmentFlag::AlignCenter</set>
-                         </property>
-                        </widget>
-                       </item>
-                      </layout>
-                     </item>
-                    </layout>
-                   </widget>
-                  </item>
-                  <item>
-                   <spacer name="verticalSpacer_30">
-                    <property name="orientation">
-                     <enum>Qt::Orientation::Vertical</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>20</width>
-                      <height>40</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                 </layout>
-                </widget>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_70">
-                <property name="orientation">
-                 <enum>Qt::Orientation::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="PanRenLaiXi_widget">
-          <layout class="QHBoxLayout" name="horizontalLayout_66">
-           <item>
-            <widget class="QWidget" name="widget_86" native="true">
-             <property name="styleSheet">
-              <string notr="true"/>
-             </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_57" stretch="1,5,1">
-              <item>
-               <spacer name="horizontalSpacer_65">
-                <property name="orientation">
-                 <enum>Qt::Orientation::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QScrollArea" name="scrollArea_36">
-                <property name="minimumSize">
-                 <size>
-                  <width>600</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="widgetResizable">
-                 <bool>true</bool>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-                </property>
-                <widget class="QWidget" name="scrollAreaWidgetContents_33">
-                 <property name="geometry">
-                  <rect>
-                   <x>0</x>
-                   <y>0</y>
-                   <width>586</width>
-                   <height>258</height>
-                  </rect>
-                 </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_157">
-                  <property name="spacing">
-                   <number>20</number>
-                  </property>
-                  <item>
-                   <widget class="QWidget" name="widget_87" native="true">
-                    <property name="styleSheet">
-                     <string notr="true">QWidget {
-                background-color: #dfdfdf;  /* 背景颜色 */
-				border-radius:10px;
-            }
-/* 调整勾选框的大小 */
-QCheckBox::indicator {
-	width: 20px;      /* 勾选框宽度 */
-	height: 20px;     /* 勾选框高度 */
-	outline:none;
-border:none;
-}
-
-/* 可选：设置勾选框不同状态的样式 */
-QCheckBox::indicator:unchecked {
-	border: 2px solid #0f322f;
-	border-radius: 3px;
-}
-QCheckBox::indicator:checked {
-	background-color:#39C5BB;
-	border: 2px solid #0f322f;
-	border-radius: 3px;
-	
-}
-
-/* 禁用状态 */
-QCheckBox::indicator:disabled {
-	background-color: #f0f0f0;
-	border-color: #cccccc;
-}
-/* 1. 未选中（默认）状态的下边框 */
-            QLineEdit {
-                /* 清除默认边框，只保留下边框 */
-                border: none;
-                border-bottom: 3px solid #969696;  /* 灰色下边框 */
-                padding: 5px 0;  /* 上下下内边距，避免文字紧贴紧贴边框 */
-				border-radius:0px;
-                background: transparent;  /* 背景透明，只显示下边框 */
-            }
-            
-            /* 2. 选中（获得焦点点）状态的下边框 */
-            QLineEdit:focus {
-                border-bottom: 4px solid #39C5BB;  /* 蓝色下边框（突出显示） */
-                outline: none;  /* 去除系统默认的聚焦外边框 */
-            }
-            
-            /* 3. 鼠标略过（悬停）状态的下边框 */
-            QLineEdit:hover {
-                border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
-            }</string>
-                    </property>
-                    <layout class="QVBoxLayout" name="verticalLayout_158">
-                     <property name="topMargin">
-                      <number>7</number>
-                     </property>
-                     <item>
-                      <widget class="QLabel" name="label_202">
-                       <property name="styleSheet">
-                        <string notr="true">font-size:20pt;
-border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string>任务设置</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="label_203">
-                       <property name="styleSheet">
-                        <string notr="true">font-size:13pt;
-color:rgba(255, 0, 0, 100);
-margin-left:18px;</string>
-                       </property>
-                       <property name="text">
-                        <string>待开发</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QFrame" name="frame_40">
-                       <property name="styleSheet">
-                        <string notr="true">QWidget QFrame{
-border:2px solid #969696;
-border-radius:1px;
-            }</string>
-                       </property>
-                       <property name="frameShape">
-                        <enum>QFrame::Shape::HLine</enum>
-                       </property>
-                       <property name="frameShadow">
-                        <enum>QFrame::Shadow::Raised</enum>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <layout class="QGridLayout" name="gridLayout_45" rowstretch="0,0" columnstretch="5,2">
-                       <property name="leftMargin">
-                        <number>10</number>
-                       </property>
-                       <property name="topMargin">
-                        <number>10</number>
-                       </property>
-                       <property name="rightMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="bottomMargin">
-                        <number>10</number>
-                       </property>
-                       <item row="0" column="0">
-                        <layout class="QVBoxLayout" name="verticalLayout_159">
-                         <item>
-                          <widget class="QLabel" name="label_204">
-                           <property name="text">
-                            <string>启用任务</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="label_205">
-                           <property name="styleSheet">
-                            <string notr="true">font-size:11pt;
-color:#959595;
-margin-left:18px;</string>
-                           </property>
-                           <property name="text">
-                            <string>将这个任务加入调度器</string>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </item>
-                       <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="PanRenLaiXi_Enable">
-                         <property name="focusPolicy">
-                          <enum>Qt::FocusPolicy::ClickFocus</enum>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true"/>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="1" column="0">
-                        <layout class="QVBoxLayout" name="verticalLayout_160">
-                         <item>
-                          <widget class="QLabel" name="label_206">
-                           <property name="text">
-                            <string>下次执行时间</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="label_207">
-                           <property name="styleSheet">
-                            <string notr="true">font-size:11pt;
-color:#959595;
-margin-left:18px;</string>
-                           </property>
-                           <property name="text">
-                            <string>自动计算得出，无须修改，清空则立刻运行</string>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </item>
-                       <item row="1" column="1">
-                        <widget class="QLineEdit" name="PanRenLaiXi_next_execute_time">
-                         <property name="minimumSize">
-                          <size>
-                           <width>200</width>
-                           <height>0</height>
-                          </size>
-                         </property>
-                         <property name="focusPolicy">
-                          <enum>Qt::FocusPolicy::ClickFocus</enum>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignmentFlag::AlignCenter</set>
-                         </property>
-                        </widget>
-                       </item>
-                      </layout>
-                     </item>
-                    </layout>
-                   </widget>
-                  </item>
-                  <item>
-                   <spacer name="verticalSpacer_28">
-                    <property name="orientation">
-                     <enum>Qt::Orientation::Vertical</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>20</width>
-                      <height>40</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                 </layout>
-                </widget>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_66">
-                <property name="orientation">
-                 <enum>Qt::Orientation::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="KuaFuZhengBaSai_widget">
-          <layout class="QHBoxLayout" name="horizontalLayout_46">
-           <item>
-            <widget class="QWidget" name="widget_64" native="true">
-             <property name="styleSheet">
-              <string notr="true"/>
-             </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_43" stretch="1,5,1">
-              <item>
-               <spacer name="horizontalSpacer_43">
-                <property name="orientation">
-                 <enum>Qt::Orientation::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QScrollArea" name="scrollArea_25">
-                <property name="minimumSize">
-                 <size>
-                  <width>600</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="widgetResizable">
-                 <bool>true</bool>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-                </property>
-                <widget class="QWidget" name="scrollAreaWidgetContents_22">
-                 <property name="geometry">
-                  <rect>
-                   <x>0</x>
-                   <y>0</y>
-                   <width>586</width>
-                   <height>258</height>
-                  </rect>
-                 </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_113">
-                  <property name="spacing">
-                   <number>20</number>
-                  </property>
-                  <item>
-                   <widget class="QWidget" name="widget_65" native="true">
-                    <property name="styleSheet">
-                     <string notr="true">QWidget {
-                background-color: #dfdfdf;  /* 背景颜色 */
-				border-radius:10px;
-            }
-/* 调整勾选框的大小 */
-QCheckBox::indicator {
-	width: 20px;      /* 勾选框宽度 */
-	height: 20px;     /* 勾选框高度 */
-	outline:none;
-border:none;
-}
-
-/* 可选：设置勾选框不同状态的样式 */
-QCheckBox::indicator:unchecked {
-	border: 2px solid #0f322f;
-	border-radius: 3px;
-}
-QCheckBox::indicator:checked {
-	background-color:#39C5BB;
-	border: 2px solid #0f322f;
-	border-radius: 3px;
-	
-}
-
-/* 禁用状态 */
-QCheckBox::indicator:disabled {
-	background-color: #f0f0f0;
-	border-color: #cccccc;
-}
-/* 1. 未选中（默认）状态的下边框 */
-            QLineEdit {
-                /* 清除默认边框，只保留下边框 */
-                border: none;
-                border-bottom: 3px solid #969696;  /* 灰色下边框 */
-                padding: 5px 0;  /* 上下下内边距，避免文字紧贴紧贴边框 */
-				border-radius:0px;
-                background: transparent;  /* 背景透明，只显示下边框 */
-            }
-            
-            /* 2. 选中（获得焦点点）状态的下边框 */
-            QLineEdit:focus {
-                border-bottom: 4px solid #39C5BB;  /* 蓝色下边框（突出显示） */
-                outline: none;  /* 去除系统默认的聚焦外边框 */
-            }
-            
-            /* 3. 鼠标略过（悬停）状态的下边框 */
-            QLineEdit:hover {
-                border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
-            }</string>
-                    </property>
-                    <layout class="QVBoxLayout" name="verticalLayout_114">
-                     <property name="topMargin">
-                      <number>7</number>
-                     </property>
-                     <item>
-                      <widget class="QLabel" name="label_103">
-                       <property name="styleSheet">
-                        <string notr="true">font-size:20pt;
-border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string>任务设置</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QLabel" name="label_39">
-                       <property name="styleSheet">
-                        <string notr="true">font-size:13pt;
-color:rgba(255, 0, 0, 100);
-margin-left:18px;</string>
-                       </property>
-                       <property name="text">
-                        <string>待开发</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QFrame" name="frame_29">
-                       <property name="styleSheet">
-                        <string notr="true">QWidget QFrame{
-border:2px solid #969696;
-border-radius:1px;
-            }</string>
-                       </property>
-                       <property name="frameShape">
-                        <enum>QFrame::Shape::HLine</enum>
-                       </property>
-                       <property name="frameShadow">
-                        <enum>QFrame::Shadow::Raised</enum>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <layout class="QGridLayout" name="gridLayout_34" rowstretch="0,0" columnstretch="5,2">
-                       <property name="leftMargin">
-                        <number>10</number>
-                       </property>
-                       <property name="topMargin">
-                        <number>10</number>
-                       </property>
-                       <property name="rightMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="bottomMargin">
-                        <number>10</number>
-                       </property>
-                       <item row="0" column="0">
-                        <layout class="QVBoxLayout" name="verticalLayout_115">
-                         <item>
-                          <widget class="QLabel" name="label_116">
-                           <property name="text">
-                            <string>启用任务</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="label_117">
-                           <property name="styleSheet">
-                            <string notr="true">font-size:11pt;
-color:#959595;
-margin-left:18px;</string>
-                           </property>
-                           <property name="text">
-                            <string>将这个任务加入调度器</string>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </item>
-                       <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="KuaFuZhengBaSai_Enable">
-                         <property name="focusPolicy">
-                          <enum>Qt::FocusPolicy::ClickFocus</enum>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true"/>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="1" column="0">
-                        <layout class="QVBoxLayout" name="verticalLayout_116">
-                         <item>
-                          <widget class="QLabel" name="label_152">
-                           <property name="text">
-                            <string>下次执行时间</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="label_153">
-                           <property name="styleSheet">
-                            <string notr="true">font-size:11pt;
-color:#959595;
-margin-left:18px;</string>
-                           </property>
-                           <property name="text">
-                            <string>自动计算得出，无须修改，清空则立刻运行</string>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </item>
-                       <item row="1" column="1">
-                        <widget class="QLineEdit" name="KuaFuZhengBaSai_next_execute_time">
-                         <property name="minimumSize">
-                          <size>
-                           <width>200</width>
-                           <height>0</height>
-                          </size>
-                         </property>
-                         <property name="focusPolicy">
-                          <enum>Qt::FocusPolicy::ClickFocus</enum>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignmentFlag::AlignCenter</set>
-                         </property>
-                        </widget>
-                       </item>
-                      </layout>
-                     </item>
-                    </layout>
-                   </widget>
-                  </item>
-                  <item>
-                   <spacer name="verticalSpacer_17">
-                    <property name="orientation">
-                     <enum>Qt::Orientation::Vertical</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>20</width>
-                      <height>40</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                 </layout>
-                </widget>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_44">
-                <property name="orientation">
-                 <enum>Qt::Orientation::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="GaoJiRenZheZhaoMu_widget">
-          <layout class="QHBoxLayout" name="horizontalLayout_29">
-           <item>
-            <widget class="QWidget" name="widget_48" native="true">
-             <property name="styleSheet">
-              <string notr="true"/>
-             </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_28" stretch="1,5,1">
-              <item>
-               <spacer name="horizontalSpacer_27">
-                <property name="orientation">
-                 <enum>Qt::Orientation::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QScrollArea" name="scrollArea_17">
-                <property name="minimumSize">
-                 <size>
-                  <width>600</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="widgetResizable">
-                 <bool>true</bool>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-                </property>
-                <widget class="QWidget" name="scrollAreaWidgetContents_14">
-                 <property name="geometry">
-                  <rect>
-                   <x>0</x>
-                   <y>0</y>
-                   <width>586</width>
-                   <height>232</height>
-                  </rect>
-                 </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_81">
-                  <property name="spacing">
-                   <number>20</number>
-                  </property>
-                  <item>
-                   <widget class="QWidget" name="widget_49" native="true">
-                    <property name="styleSheet">
-                     <string notr="true">QWidget {
-                background-color: #dfdfdf;  /* 背景颜色 */
-				border-radius:10px;
-            }
-/* 调整勾选框的大小 */
-QCheckBox::indicator {
-	width: 20px;      /* 勾选框宽度 */
-	height: 20px;     /* 勾选框高度 */
-	outline:none;
-border:none;
-}
-
-/* 可选：设置勾选框不同状态的样式 */
-QCheckBox::indicator:unchecked {
-	border: 2px solid #0f322f;
-	border-radius: 3px;
-}
-QCheckBox::indicator:checked {
-	background-color:#39C5BB;
-	border: 2px solid #0f322f;
-	border-radius: 3px;
-	
-}
-
-/* 禁用状态 */
-QCheckBox::indicator:disabled {
-	background-color: #f0f0f0;
-	border-color: #cccccc;
-}
-/* 1. 未选中（默认）状态的下边框 */
-            QLineEdit {
-                /* 清除默认边框，只保留下边框 */
-                border: none;
-                border-bottom: 3px solid #969696;  /* 灰色下边框 */
-                padding: 5px 0;  /* 上下下内边距，避免文字紧贴紧贴边框 */
-				border-radius:0px;
-                background: transparent;  /* 背景透明，只显示下边框 */
-            }
-            
-            /* 2. 选中（获得焦点点）状态的下边框 */
-            QLineEdit:focus {
-                border-bottom: 4px solid #39C5BB;  /* 蓝色下边框（突出显示） */
-                outline: none;  /* 去除系统默认的聚焦外边框 */
-            }
-            
-            /* 3. 鼠标略过（悬停）状态的下边框 */
-            QLineEdit:hover {
-                border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
-            }</string>
-                    </property>
-                    <layout class="QVBoxLayout" name="verticalLayout_82">
-                     <property name="topMargin">
-                      <number>7</number>
-                     </property>
-                     <item>
-                      <widget class="QLabel" name="label_79">
-                       <property name="styleSheet">
-                        <string notr="true">font-size:20pt;
-border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string>任务设置</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QFrame" name="frame_21">
-                       <property name="styleSheet">
-                        <string notr="true">QWidget QFrame{
-border:2px solid #969696;
-border-radius:1px;
-            }</string>
-                       </property>
-                       <property name="frameShape">
-                        <enum>QFrame::Shape::HLine</enum>
-                       </property>
-                       <property name="frameShadow">
-                        <enum>QFrame::Shadow::Raised</enum>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <layout class="QGridLayout" name="gridLayout_26" rowstretch="0,0" columnstretch="5,2">
-                       <property name="leftMargin">
-                        <number>10</number>
-                       </property>
-                       <property name="topMargin">
-                        <number>10</number>
-                       </property>
-                       <property name="rightMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="bottomMargin">
-                        <number>10</number>
-                       </property>
-                       <item row="0" column="0">
-                        <layout class="QVBoxLayout" name="verticalLayout_83">
-                         <item>
-                          <widget class="QLabel" name="label_80">
-                           <property name="text">
-                            <string>启用任务</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="label_81">
-                           <property name="styleSheet">
-                            <string notr="true">font-size:11pt;
-color:#959595;
-margin-left:18px;</string>
-                           </property>
-                           <property name="text">
-                            <string>将这个任务加入调度器</string>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </item>
-                       <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="GaoJiRenZheZhaoMu_Enable">
-                         <property name="focusPolicy">
-                          <enum>Qt::FocusPolicy::ClickFocus</enum>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true"/>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="1" column="0">
-                        <layout class="QVBoxLayout" name="verticalLayout_84">
-                         <item>
-                          <widget class="QLabel" name="label_136">
-                           <property name="text">
-                            <string>下次执行时间</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="label_137">
-                           <property name="styleSheet">
-                            <string notr="true">font-size:11pt;
-color:#959595;
-margin-left:18px;</string>
-                           </property>
-                           <property name="text">
-                            <string>自动计算得出，无须修改，清空则立刻运行</string>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </item>
-                       <item row="1" column="1">
-                        <widget class="QLineEdit" name="GaoJiRenZheZhaoMu_next_execute_time">
-                         <property name="minimumSize">
-                          <size>
-                           <width>200</width>
-                           <height>0</height>
-                          </size>
-                         </property>
-                         <property name="focusPolicy">
-                          <enum>Qt::FocusPolicy::ClickFocus</enum>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignmentFlag::AlignCenter</set>
-                         </property>
-                        </widget>
-                       </item>
-                      </layout>
-                     </item>
-                    </layout>
-                   </widget>
-                  </item>
-                  <item>
-                   <spacer name="verticalSpacer_9">
-                    <property name="orientation">
-                     <enum>Qt::Orientation::Vertical</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>20</width>
-                      <height>40</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                 </layout>
-                </widget>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_28">
-                <property name="orientation">
-                 <enum>Qt::Orientation::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </widget>
-           </item>
-          </layout>
-         </widget>
          <widget class="QWidget" name="MeiZhouShengChang_widget">
           <layout class="QHBoxLayout" name="horizontalLayout_19">
            <item>
@@ -10058,7 +8453,7 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
+                   <width>585</width>
                    <height>296</height>
                   </rect>
                  </property>
@@ -10293,6 +8688,1365 @@ margin-left:18px;</string>
            </item>
           </layout>
          </widget>
+         <widget class="QWidget" name="RenFaTieDianZanFenXiang_widget">
+          <layout class="QHBoxLayout" name="horizontalLayout_58">
+           <item>
+            <widget class="QWidget" name="widget_72" native="true">
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_54" stretch="1,5,1">
+              <item>
+               <spacer name="horizontalSpacer_51">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QScrollArea" name="scrollArea_29">
+                <property name="minimumSize">
+                 <size>
+                  <width>600</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="widgetResizable">
+                 <bool>true</bool>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+                </property>
+                <widget class="QWidget" name="scrollAreaWidgetContents_26">
+                 <property name="geometry">
+                  <rect>
+                   <x>0</x>
+                   <y>0</y>
+                   <width>585</width>
+                   <height>258</height>
+                  </rect>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_129">
+                  <property name="spacing">
+                   <number>20</number>
+                  </property>
+                  <item>
+                   <widget class="QWidget" name="widget_73" native="true">
+                    <property name="styleSheet">
+                     <string notr="true">QWidget {
+                background-color: #dfdfdf;  /* 背景颜色 */
+				border-radius:10px;
+            }
+/* 调整勾选框的大小 */
+QCheckBox::indicator {
+	width: 20px;      /* 勾选框宽度 */
+	height: 20px;     /* 勾选框高度 */
+	outline:none;
+border:none;
+}
+
+/* 可选：设置勾选框不同状态的样式 */
+QCheckBox::indicator:unchecked {
+	border: 2px solid #0f322f;
+	border-radius: 3px;
+}
+QCheckBox::indicator:checked {
+	background-color:#39C5BB;
+	border: 2px solid #0f322f;
+	border-radius: 3px;
+	
+}
+
+/* 禁用状态 */
+QCheckBox::indicator:disabled {
+	background-color: #f0f0f0;
+	border-color: #cccccc;
+}
+/* 1. 未选中（默认）状态的下边框 */
+            QLineEdit {
+                /* 清除默认边框，只保留下边框 */
+                border: none;
+                border-bottom: 3px solid #969696;  /* 灰色下边框 */
+                padding: 5px 0;  /* 上下下内边距，避免文字紧贴紧贴边框 */
+				border-radius:0px;
+                background: transparent;  /* 背景透明，只显示下边框 */
+            }
+            
+            /* 2. 选中（获得焦点点）状态的下边框 */
+            QLineEdit:focus {
+                border-bottom: 4px solid #39C5BB;  /* 蓝色下边框（突出显示） */
+                outline: none;  /* 去除系统默认的聚焦外边框 */
+            }
+            
+            /* 3. 鼠标略过（悬停）状态的下边框 */
+            QLineEdit:hover {
+                border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
+            }</string>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_130">
+                     <property name="topMargin">
+                      <number>7</number>
+                     </property>
+                     <item>
+                      <widget class="QLabel" name="label_167">
+                       <property name="styleSheet">
+                        <string notr="true">font-size:20pt;
+border:none;</string>
+                       </property>
+                       <property name="text">
+                        <string>任务设置</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="label_51">
+                       <property name="styleSheet">
+                        <string notr="true">font-size:13pt;
+color:rgba(255, 0, 0, 100);
+margin-left:18px;</string>
+                       </property>
+                       <property name="text">
+                        <string>模拟器需要安装QQ</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QFrame" name="frame_33">
+                       <property name="styleSheet">
+                        <string notr="true">QWidget QFrame{
+border:2px solid #969696;
+border-radius:1px;
+            }</string>
+                       </property>
+                       <property name="frameShape">
+                        <enum>QFrame::Shape::HLine</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Shadow::Raised</enum>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <layout class="QGridLayout" name="gridLayout_38" rowstretch="0,0" columnstretch="5,2">
+                       <property name="leftMargin">
+                        <number>10</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>10</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>10</number>
+                       </property>
+                       <item row="0" column="0">
+                        <layout class="QVBoxLayout" name="verticalLayout_131">
+                         <item>
+                          <widget class="QLabel" name="label_168">
+                           <property name="text">
+                            <string>启用任务</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_169">
+                           <property name="styleSheet">
+                            <string notr="true">font-size:11pt;
+color:#959595;
+margin-left:18px;</string>
+                           </property>
+                           <property name="text">
+                            <string>将这个任务加入调度器</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+                        <widget class="QCheckBox" name="RenFaTieDianZanFenXiang_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true"/>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="1" column="0">
+                        <layout class="QVBoxLayout" name="verticalLayout_132">
+                         <item>
+                          <widget class="QLabel" name="label_170">
+                           <property name="text">
+                            <string>下次执行时间</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_171">
+                           <property name="styleSheet">
+                            <string notr="true">font-size:11pt;
+color:#959595;
+margin-left:18px;</string>
+                           </property>
+                           <property name="text">
+                            <string>自动计算得出，无须修改，清空则立刻运行</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="RenFaTieDianZanFenXiang_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignmentFlag::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="verticalSpacer_21">
+                    <property name="orientation">
+                     <enum>Qt::Orientation::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </widget>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_52">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="GengDuoWanFa_widget">
+          <layout class="QHBoxLayout" name="horizontalLayout_23">
+           <item>
+            <widget class="QWidget" name="widget_42" native="true">
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_22" stretch="1,5,1">
+              <item>
+               <spacer name="horizontalSpacer_21">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QScrollArea" name="scrollArea_14">
+                <property name="minimumSize">
+                 <size>
+                  <width>600</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="widgetResizable">
+                 <bool>true</bool>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+                </property>
+                <widget class="QWidget" name="scrollAreaWidgetContents_11">
+                 <property name="geometry">
+                  <rect>
+                   <x>0</x>
+                   <y>0</y>
+                   <width>598</width>
+                   <height>532</height>
+                  </rect>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_69">
+                  <property name="spacing">
+                   <number>20</number>
+                  </property>
+                  <item>
+                   <widget class="QWidget" name="widget_43" native="true">
+                    <property name="styleSheet">
+                     <string notr="true">QWidget {
+                background-color: #dfdfdf;  /* 背景颜色 */
+				border-radius:10px;
+            }
+/* 调整勾选框的大小 */
+QCheckBox::indicator {
+	width: 20px;      /* 勾选框宽度 */
+	height: 20px;     /* 勾选框高度 */
+	outline:none;
+border:none;
+}
+
+/* 可选：设置勾选框不同状态的样式 */
+QCheckBox::indicator:unchecked {
+	border: 2px solid #0f322f;
+	border-radius: 3px;
+}
+QCheckBox::indicator:checked {
+	background-color:#39C5BB;
+	border: 2px solid #0f322f;
+	border-radius: 3px;
+	
+}
+
+/* 禁用状态 */
+QCheckBox::indicator:disabled {
+	background-color: #f0f0f0;
+	border-color: #cccccc;
+}
+/* 1. 未选中（默认）状态的下边框 */
+            QLineEdit {
+                /* 清除默认边框，只保留下边框 */
+                border: none;
+                border-bottom: 3px solid #969696;  /* 灰色下边框 */
+                padding: 5px 0;  /* 上下下内边距，避免文字紧贴紧贴边框 */
+				border-radius:0px;
+                background: transparent;  /* 背景透明，只显示下边框 */
+            }
+            
+            /* 2. 选中（获得焦点点）状态的下边框 */
+            QLineEdit:focus {
+                border-bottom: 4px solid #39C5BB;  /* 蓝色下边框（突出显示） */
+                outline: none;  /* 去除系统默认的聚焦外边框 */
+            }
+            
+            /* 3. 鼠标略过（悬停）状态的下边框 */
+            QLineEdit:hover {
+                border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
+            }</string>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_70">
+                     <property name="topMargin">
+                      <number>7</number>
+                     </property>
+                     <item>
+                      <widget class="QLabel" name="label_70">
+                       <property name="styleSheet">
+                        <string notr="true">font-size:20pt;
+border:none;</string>
+                       </property>
+                       <property name="text">
+                        <string>任务设置</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QFrame" name="frame_18">
+                       <property name="styleSheet">
+                        <string notr="true">QWidget QFrame{
+border:2px solid #969696;
+border-radius:1px;
+            }</string>
+                       </property>
+                       <property name="frameShape">
+                        <enum>QFrame::Shape::HLine</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Shadow::Raised</enum>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <layout class="QGridLayout" name="gridLayout_23" rowstretch="0,0" columnstretch="5,2">
+                       <property name="leftMargin">
+                        <number>10</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>10</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>10</number>
+                       </property>
+                       <item row="0" column="0">
+                        <layout class="QVBoxLayout" name="verticalLayout_71">
+                         <item>
+                          <widget class="QLabel" name="label_71">
+                           <property name="text">
+                            <string>启用任务</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_72">
+                           <property name="styleSheet">
+                            <string notr="true">font-size:11pt;
+color:#959595;
+margin-left:18px;</string>
+                           </property>
+                           <property name="text">
+                            <string>将这个任务加入调度器
+临时任务会在结束后自动禁用任务</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+                        <widget class="QCheckBox" name="GengDuoWanFa_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true"/>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="1" column="0">
+                        <layout class="QVBoxLayout" name="verticalLayout_72">
+                         <item>
+                          <widget class="QLabel" name="label_130">
+                           <property name="text">
+                            <string>下次执行时间</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_131">
+                           <property name="styleSheet">
+                            <string notr="true">font-size:11pt;
+color:#959595;
+margin-left:18px;</string>
+                           </property>
+                           <property name="text">
+                            <string>自动计算得出，无须修改，清空则立刻运行</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="GengDuoWanFa_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignmentFlag::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="verticalSpacer_6">
+                    <property name="orientation">
+                     <enum>Qt::Orientation::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </widget>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_22">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="TuanBen_widget">
+          <layout class="QHBoxLayout" name="horizontalLayout_67">
+           <item>
+            <widget class="QWidget" name="widget_88" native="true">
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_55" stretch="1,5,1">
+              <item>
+               <spacer name="horizontalSpacer_67">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QScrollArea" name="scrollArea_37">
+                <property name="minimumSize">
+                 <size>
+                  <width>600</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="widgetResizable">
+                 <bool>true</bool>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+                </property>
+                <widget class="QWidget" name="scrollAreaWidgetContents_34">
+                 <property name="geometry">
+                  <rect>
+                   <x>0</x>
+                   <y>0</y>
+                   <width>585</width>
+                   <height>258</height>
+                  </rect>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_161">
+                  <property name="spacing">
+                   <number>20</number>
+                  </property>
+                  <item>
+                   <widget class="QWidget" name="widget_89" native="true">
+                    <property name="styleSheet">
+                     <string notr="true">QWidget {
+                background-color: #dfdfdf;  /* 背景颜色 */
+				border-radius:10px;
+            }
+/* 调整勾选框的大小 */
+QCheckBox::indicator {
+	width: 20px;      /* 勾选框宽度 */
+	height: 20px;     /* 勾选框高度 */
+	outline:none;
+border:none;
+}
+
+/* 可选：设置勾选框不同状态的样式 */
+QCheckBox::indicator:unchecked {
+	border: 2px solid #0f322f;
+	border-radius: 3px;
+}
+QCheckBox::indicator:checked {
+	background-color:#39C5BB;
+	border: 2px solid #0f322f;
+	border-radius: 3px;
+	
+}
+
+/* 禁用状态 */
+QCheckBox::indicator:disabled {
+	background-color: #f0f0f0;
+	border-color: #cccccc;
+}
+/* 1. 未选中（默认）状态的下边框 */
+            QLineEdit {
+                /* 清除默认边框，只保留下边框 */
+                border: none;
+                border-bottom: 3px solid #969696;  /* 灰色下边框 */
+                padding: 5px 0;  /* 上下下内边距，避免文字紧贴紧贴边框 */
+				border-radius:0px;
+                background: transparent;  /* 背景透明，只显示下边框 */
+            }
+            
+            /* 2. 选中（获得焦点点）状态的下边框 */
+            QLineEdit:focus {
+                border-bottom: 4px solid #39C5BB;  /* 蓝色下边框（突出显示） */
+                outline: none;  /* 去除系统默认的聚焦外边框 */
+            }
+            
+            /* 3. 鼠标略过（悬停）状态的下边框 */
+            QLineEdit:hover {
+                border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
+            }</string>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_162">
+                     <property name="topMargin">
+                      <number>7</number>
+                     </property>
+                     <item>
+                      <widget class="QLabel" name="label_208">
+                       <property name="styleSheet">
+                        <string notr="true">font-size:20pt;
+border:none;</string>
+                       </property>
+                       <property name="text">
+                        <string>任务设置</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="label_209">
+                       <property name="styleSheet">
+                        <string notr="true">font-size:13pt;
+color:rgba(255, 0, 0, 100);
+margin-left:18px;</string>
+                       </property>
+                       <property name="text">
+                        <string>待开发</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QFrame" name="frame_41">
+                       <property name="styleSheet">
+                        <string notr="true">QWidget QFrame{
+border:2px solid #969696;
+border-radius:1px;
+            }</string>
+                       </property>
+                       <property name="frameShape">
+                        <enum>QFrame::Shape::HLine</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Shadow::Raised</enum>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <layout class="QGridLayout" name="gridLayout_46" rowstretch="0,0" columnstretch="5,2">
+                       <property name="leftMargin">
+                        <number>10</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>10</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>10</number>
+                       </property>
+                       <item row="0" column="0">
+                        <layout class="QVBoxLayout" name="verticalLayout_163">
+                         <item>
+                          <widget class="QLabel" name="label_210">
+                           <property name="text">
+                            <string>启用任务</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_211">
+                           <property name="styleSheet">
+                            <string notr="true">font-size:11pt;
+color:#959595;
+margin-left:18px;</string>
+                           </property>
+                           <property name="text">
+                            <string>将这个任务加入调度器</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+                        <widget class="QCheckBox" name="TuanBen_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true"/>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="1" column="0">
+                        <layout class="QVBoxLayout" name="verticalLayout_164">
+                         <item>
+                          <widget class="QLabel" name="label_212">
+                           <property name="text">
+                            <string>下次执行时间</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_213">
+                           <property name="styleSheet">
+                            <string notr="true">font-size:11pt;
+color:#959595;
+margin-left:18px;</string>
+                           </property>
+                           <property name="text">
+                            <string>自动计算得出，无须修改，清空则立刻运行</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="TuanBen_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignmentFlag::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="verticalSpacer_29">
+                    <property name="orientation">
+                     <enum>Qt::Orientation::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </widget>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_68">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="BenFuYaoSaiZhan_widget"/>
+         <widget class="QWidget" name="PanRenLaiXi_widget">
+          <layout class="QHBoxLayout" name="horizontalLayout_66">
+           <item>
+            <widget class="QWidget" name="widget_86" native="true">
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_57" stretch="1,5,1">
+              <item>
+               <spacer name="horizontalSpacer_65">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QScrollArea" name="scrollArea_36">
+                <property name="minimumSize">
+                 <size>
+                  <width>600</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="widgetResizable">
+                 <bool>true</bool>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+                </property>
+                <widget class="QWidget" name="scrollAreaWidgetContents_33">
+                 <property name="geometry">
+                  <rect>
+                   <x>0</x>
+                   <y>0</y>
+                   <width>585</width>
+                   <height>258</height>
+                  </rect>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_157">
+                  <property name="spacing">
+                   <number>20</number>
+                  </property>
+                  <item>
+                   <widget class="QWidget" name="widget_87" native="true">
+                    <property name="styleSheet">
+                     <string notr="true">QWidget {
+                background-color: #dfdfdf;  /* 背景颜色 */
+				border-radius:10px;
+            }
+/* 调整勾选框的大小 */
+QCheckBox::indicator {
+	width: 20px;      /* 勾选框宽度 */
+	height: 20px;     /* 勾选框高度 */
+	outline:none;
+border:none;
+}
+
+/* 可选：设置勾选框不同状态的样式 */
+QCheckBox::indicator:unchecked {
+	border: 2px solid #0f322f;
+	border-radius: 3px;
+}
+QCheckBox::indicator:checked {
+	background-color:#39C5BB;
+	border: 2px solid #0f322f;
+	border-radius: 3px;
+	
+}
+
+/* 禁用状态 */
+QCheckBox::indicator:disabled {
+	background-color: #f0f0f0;
+	border-color: #cccccc;
+}
+/* 1. 未选中（默认）状态的下边框 */
+            QLineEdit {
+                /* 清除默认边框，只保留下边框 */
+                border: none;
+                border-bottom: 3px solid #969696;  /* 灰色下边框 */
+                padding: 5px 0;  /* 上下下内边距，避免文字紧贴紧贴边框 */
+				border-radius:0px;
+                background: transparent;  /* 背景透明，只显示下边框 */
+            }
+            
+            /* 2. 选中（获得焦点点）状态的下边框 */
+            QLineEdit:focus {
+                border-bottom: 4px solid #39C5BB;  /* 蓝色下边框（突出显示） */
+                outline: none;  /* 去除系统默认的聚焦外边框 */
+            }
+            
+            /* 3. 鼠标略过（悬停）状态的下边框 */
+            QLineEdit:hover {
+                border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
+            }</string>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_158">
+                     <property name="topMargin">
+                      <number>7</number>
+                     </property>
+                     <item>
+                      <widget class="QLabel" name="label_202">
+                       <property name="styleSheet">
+                        <string notr="true">font-size:20pt;
+border:none;</string>
+                       </property>
+                       <property name="text">
+                        <string>任务设置</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="label_203">
+                       <property name="styleSheet">
+                        <string notr="true">font-size:13pt;
+color:rgba(255, 0, 0, 100);
+margin-left:18px;</string>
+                       </property>
+                       <property name="text">
+                        <string>待开发</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QFrame" name="frame_40">
+                       <property name="styleSheet">
+                        <string notr="true">QWidget QFrame{
+border:2px solid #969696;
+border-radius:1px;
+            }</string>
+                       </property>
+                       <property name="frameShape">
+                        <enum>QFrame::Shape::HLine</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Shadow::Raised</enum>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <layout class="QGridLayout" name="gridLayout_45" rowstretch="0,0" columnstretch="5,2">
+                       <property name="leftMargin">
+                        <number>10</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>10</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>10</number>
+                       </property>
+                       <item row="0" column="0">
+                        <layout class="QVBoxLayout" name="verticalLayout_159">
+                         <item>
+                          <widget class="QLabel" name="label_204">
+                           <property name="text">
+                            <string>启用任务</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_205">
+                           <property name="styleSheet">
+                            <string notr="true">font-size:11pt;
+color:#959595;
+margin-left:18px;</string>
+                           </property>
+                           <property name="text">
+                            <string>将这个任务加入调度器</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+                        <widget class="QCheckBox" name="PanRenLaiXi_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true"/>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="1" column="0">
+                        <layout class="QVBoxLayout" name="verticalLayout_160">
+                         <item>
+                          <widget class="QLabel" name="label_206">
+                           <property name="text">
+                            <string>下次执行时间</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_207">
+                           <property name="styleSheet">
+                            <string notr="true">font-size:11pt;
+color:#959595;
+margin-left:18px;</string>
+                           </property>
+                           <property name="text">
+                            <string>自动计算得出，无须修改，清空则立刻运行</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="PanRenLaiXi_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignmentFlag::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="verticalSpacer_28">
+                    <property name="orientation">
+                     <enum>Qt::Orientation::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </widget>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_66">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="TianDiZhanChangwidget"/>
+         <widget class="QWidget" name="ZhuiJiXiaoZuZhi_widget"/>
+         <widget class="QWidget" name="KuaFuYaoSaiZhan_widget"/>
+         <widget class="QWidget" name="DianFengDuiJue_widget"/>
+         <widget class="QWidget" name="ZuZhiZhengBa_widget">
+          <layout class="QHBoxLayout" name="horizontalLayout_46">
+           <item>
+            <widget class="QWidget" name="widget_64" native="true">
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_43" stretch="1,5,1">
+              <item>
+               <spacer name="horizontalSpacer_43">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QScrollArea" name="scrollArea_25">
+                <property name="minimumSize">
+                 <size>
+                  <width>600</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="widgetResizable">
+                 <bool>true</bool>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+                </property>
+                <widget class="QWidget" name="scrollAreaWidgetContents_22">
+                 <property name="geometry">
+                  <rect>
+                   <x>0</x>
+                   <y>0</y>
+                   <width>598</width>
+                   <height>532</height>
+                  </rect>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_113">
+                  <property name="spacing">
+                   <number>20</number>
+                  </property>
+                  <item>
+                   <widget class="QWidget" name="widget_65" native="true">
+                    <property name="styleSheet">
+                     <string notr="true">QWidget {
+                background-color: #dfdfdf;  /* 背景颜色 */
+				border-radius:10px;
+            }
+/* 调整勾选框的大小 */
+QCheckBox::indicator {
+	width: 20px;      /* 勾选框宽度 */
+	height: 20px;     /* 勾选框高度 */
+	outline:none;
+border:none;
+}
+
+/* 可选：设置勾选框不同状态的样式 */
+QCheckBox::indicator:unchecked {
+	border: 2px solid #0f322f;
+	border-radius: 3px;
+}
+QCheckBox::indicator:checked {
+	background-color:#39C5BB;
+	border: 2px solid #0f322f;
+	border-radius: 3px;
+	
+}
+
+/* 禁用状态 */
+QCheckBox::indicator:disabled {
+	background-color: #f0f0f0;
+	border-color: #cccccc;
+}
+/* 1. 未选中（默认）状态的下边框 */
+            QLineEdit {
+                /* 清除默认边框，只保留下边框 */
+                border: none;
+                border-bottom: 3px solid #969696;  /* 灰色下边框 */
+                padding: 5px 0;  /* 上下下内边距，避免文字紧贴紧贴边框 */
+				border-radius:0px;
+                background: transparent;  /* 背景透明，只显示下边框 */
+            }
+            
+            /* 2. 选中（获得焦点点）状态的下边框 */
+            QLineEdit:focus {
+                border-bottom: 4px solid #39C5BB;  /* 蓝色下边框（突出显示） */
+                outline: none;  /* 去除系统默认的聚焦外边框 */
+            }
+            
+            /* 3. 鼠标略过（悬停）状态的下边框 */
+            QLineEdit:hover {
+                border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
+            }</string>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_114">
+                     <property name="topMargin">
+                      <number>7</number>
+                     </property>
+                     <item>
+                      <widget class="QLabel" name="label_103">
+                       <property name="styleSheet">
+                        <string notr="true">font-size:20pt;
+border:none;</string>
+                       </property>
+                       <property name="text">
+                        <string>任务设置</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QLabel" name="label_39">
+                       <property name="styleSheet">
+                        <string notr="true">font-size:13pt;
+color:rgba(255, 0, 0, 100);
+margin-left:18px;</string>
+                       </property>
+                       <property name="text">
+                        <string>待开发</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QFrame" name="frame_29">
+                       <property name="styleSheet">
+                        <string notr="true">QWidget QFrame{
+border:2px solid #969696;
+border-radius:1px;
+            }</string>
+                       </property>
+                       <property name="frameShape">
+                        <enum>QFrame::Shape::HLine</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Shadow::Raised</enum>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <layout class="QGridLayout" name="gridLayout_34" rowstretch="0,0" columnstretch="5,2">
+                       <property name="leftMargin">
+                        <number>10</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>10</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>10</number>
+                       </property>
+                       <item row="0" column="0">
+                        <layout class="QVBoxLayout" name="verticalLayout_115">
+                         <item>
+                          <widget class="QLabel" name="label_116">
+                           <property name="text">
+                            <string>启用任务</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_117">
+                           <property name="styleSheet">
+                            <string notr="true">font-size:11pt;
+color:#959595;
+margin-left:18px;</string>
+                           </property>
+                           <property name="text">
+                            <string>将这个任务加入调度器</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+                        <widget class="QCheckBox" name="ZuZhiZhengBa_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true"/>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="1" column="0">
+                        <layout class="QVBoxLayout" name="verticalLayout_116">
+                         <item>
+                          <widget class="QLabel" name="label_152">
+                           <property name="text">
+                            <string>下次执行时间</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_153">
+                           <property name="styleSheet">
+                            <string notr="true">font-size:11pt;
+color:#959595;
+margin-left:18px;</string>
+                           </property>
+                           <property name="text">
+                            <string>自动计算得出，无须修改，清空则立刻运行</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="ZuZhiZhengBa_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignmentFlag::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="verticalSpacer_17">
+                    <property name="orientation">
+                     <enum>Qt::Orientation::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </widget>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_44">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
          <widget class="QWidget" name="SaiJiShengChang_widget">
           <layout class="QHBoxLayout" name="horizontalLayout_21">
            <item>
@@ -10333,7 +10087,7 @@ margin-left:18px;</string>
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
+                   <width>585</width>
                    <height>250</height>
                   </rect>
                  </property>
@@ -10555,16 +10309,16 @@ margin-left:18px;</string>
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="GengDuoWanFa_widget">
-          <layout class="QHBoxLayout" name="horizontalLayout_23">
+         <widget class="QWidget" name="ZhuangBeiHeCheng">
+          <layout class="QHBoxLayout" name="horizontalLayout_10">
            <item>
-            <widget class="QWidget" name="widget_42" native="true">
+            <widget class="QWidget" name="widget_92" native="true">
              <property name="styleSheet">
               <string notr="true"/>
              </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_22" stretch="1,5,1">
+             <layout class="QHBoxLayout" name="horizontalLayout_69" stretch="1,5,1">
               <item>
-               <spacer name="horizontalSpacer_21">
+               <spacer name="horizontalSpacer_71">
                 <property name="orientation">
                  <enum>Qt::Orientation::Horizontal</enum>
                 </property>
@@ -10577,7 +10331,7 @@ margin-left:18px;</string>
                </spacer>
               </item>
               <item>
-               <widget class="QScrollArea" name="scrollArea_14">
+               <widget class="QScrollArea" name="scrollArea_39">
                 <property name="minimumSize">
                  <size>
                   <width>600</width>
@@ -10590,21 +10344,21 @@ margin-left:18px;</string>
                 <property name="alignment">
                  <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
                 </property>
-                <widget class="QWidget" name="scrollAreaWidgetContents_11">
+                <widget class="QWidget" name="scrollAreaWidgetContents_36">
                  <property name="geometry">
                   <rect>
                    <x>0</x>
                    <y>0</y>
-                   <width>586</width>
-                   <height>250</height>
+                   <width>598</width>
+                   <height>532</height>
                   </rect>
                  </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_69">
+                 <layout class="QVBoxLayout" name="verticalLayout_169">
                   <property name="spacing">
                    <number>20</number>
                   </property>
                   <item>
-                   <widget class="QWidget" name="widget_43" native="true">
+                   <widget class="QWidget" name="widget_93" native="true">
                     <property name="styleSheet">
                      <string notr="true">QWidget {
                 background-color: #dfdfdf;  /* 背景颜色 */
@@ -10656,12 +10410,12 @@ QCheckBox::indicator:disabled {
                 border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
             }</string>
                     </property>
-                    <layout class="QVBoxLayout" name="verticalLayout_70">
+                    <layout class="QVBoxLayout" name="verticalLayout_170">
                      <property name="topMargin">
                       <number>7</number>
                      </property>
                      <item>
-                      <widget class="QLabel" name="label_70">
+                      <widget class="QLabel" name="label_104">
                        <property name="styleSheet">
                         <string notr="true">font-size:20pt;
 border:none;</string>
@@ -10672,7 +10426,7 @@ border:none;</string>
                       </widget>
                      </item>
                      <item>
-                      <widget class="QFrame" name="frame_18">
+                      <widget class="QFrame" name="frame_43">
                        <property name="styleSheet">
                         <string notr="true">QWidget QFrame{
 border:2px solid #969696;
@@ -10688,7 +10442,7 @@ border-radius:1px;
                       </widget>
                      </item>
                      <item>
-                      <layout class="QGridLayout" name="gridLayout_23" rowstretch="0,0" columnstretch="5,2">
+                      <layout class="QGridLayout" name="gridLayout_48" rowstretch="0,0" columnstretch="5,2">
                        <property name="leftMargin">
                         <number>10</number>
                        </property>
@@ -10702,16 +10456,16 @@ border-radius:1px;
                         <number>10</number>
                        </property>
                        <item row="0" column="0">
-                        <layout class="QVBoxLayout" name="verticalLayout_71">
+                        <layout class="QVBoxLayout" name="verticalLayout_171">
                          <item>
-                          <widget class="QLabel" name="label_71">
+                          <widget class="QLabel" name="label_105">
                            <property name="text">
                             <string>启用任务</string>
                            </property>
                           </widget>
                          </item>
                          <item>
-                          <widget class="QLabel" name="label_72">
+                          <widget class="QLabel" name="label_108">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
 color:#959595;
@@ -10726,7 +10480,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="GengDuoWanFa_Enable">
+                        <widget class="QCheckBox" name="ZhuangBeiHeCheng_Enable">
                          <property name="focusPolicy">
                           <enum>Qt::FocusPolicy::ClickFocus</enum>
                          </property>
@@ -10739,16 +10493,16 @@ margin-left:18px;</string>
                         </widget>
                        </item>
                        <item row="1" column="0">
-                        <layout class="QVBoxLayout" name="verticalLayout_72">
+                        <layout class="QVBoxLayout" name="verticalLayout_172">
                          <item>
-                          <widget class="QLabel" name="label_130">
+                          <widget class="QLabel" name="label_221">
                            <property name="text">
                             <string>下次执行时间</string>
                            </property>
                           </widget>
                          </item>
                          <item>
-                          <widget class="QLabel" name="label_131">
+                          <widget class="QLabel" name="label_222">
                            <property name="styleSheet">
                             <string notr="true">font-size:11pt;
 color:#959595;
@@ -10762,7 +10516,7 @@ margin-left:18px;</string>
                         </layout>
                        </item>
                        <item row="1" column="1">
-                        <widget class="QLineEdit" name="GengDuoWanFa_next_execute_time">
+                        <widget class="QLineEdit" name="ZhuangBeiHeCheng_next_execute_time">
                          <property name="minimumSize">
                           <size>
                            <width>200</width>
@@ -10783,7 +10537,271 @@ margin-left:18px;</string>
                    </widget>
                   </item>
                   <item>
-                   <spacer name="verticalSpacer_6">
+                   <widget class="QWidget" name="widget_96" native="true">
+                    <property name="styleSheet">
+                     <string notr="true">QWidget {
+                background-color: #dfdfdf;  /* 背景颜色 */
+				border-radius:10px;
+            }
+/* 调整勾选框的大小 */
+QCheckBox::indicator {
+	width: 20px;      /* 勾选框宽度 */
+	height: 20px;     /* 勾选框高度 */
+	outline:none;
+border:none;
+}
+
+/* 可选：设置勾选框不同状态的样式 */
+QCheckBox::indicator:unchecked {
+	border: 2px solid #0f322f;
+	border-radius: 3px;
+}
+QCheckBox::indicator:checked {
+	background-color:#39C5BB;
+	border: 2px solid #0f322f;
+	border-radius: 3px;
+	
+}
+
+/* 禁用状态 */
+QCheckBox::indicator:disabled {
+	background-color: #f0f0f0;
+	border-color: #cccccc;
+}
+/* 1. 未选中（默认）状态的下边框 */
+QLineEdit {
+                /* 清除默认边框，只保留下边框 */
+                border: none;
+                border-bottom: 3px solid #969696;  /* 灰色下边框 */
+                padding: 5px 0;  /* 上下下内边距，避免文字紧贴紧贴边框 */
+				border-radius:0px;
+                background: transparent;  /* 背景透明，只显示下边框 */
+            }
+            
+            /* 2. 选中（获得焦点点）状态的下边框 */
+QLineEdit:focus {
+                border-bottom: 4px solid #39C5BB;  /* 蓝色下边框（突出显示） */
+                outline: none;  /* 去除系统默认的聚焦外边框 */
+            }
+            
+            /* 3. 鼠标略过（悬停）状态的下边框 */
+QLineEdit:hover {
+                border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
+            }
+/* QComboBox 样式 */
+QComboBox {
+    border: 2px solid #0f322f;  /* 边框颜色与CheckBox保持一致 */
+    border-radius: 3px;
+    padding: 5px 0px 5px 10px;  /* 右侧预留空间给自定义箭头 */
+    background-color: #e7e7e7;
+    min-height: 20px;
+}
+
+/* 隐藏QComboBox默认下拉按钮 */
+QComboBox::drop-down {
+    border: none;  /* 去除默认按钮边框 */
+
+}
+
+/* 自定义下拉箭头（使用三角形字符模拟） */
+QComboBox::down-arrow {
+    image: none;  /* 去除默认箭头 */
+}
+
+QComboBox::down-arrow:on {
+    image: none;  /* 下拉状态也不显示默认箭头 */
+}
+
+/* 下拉列表样式 */
+QComboBox QAbstractItemView {
+    border: 2px solid #b5b5b5;
+    border-radius: 3px;
+    background-color: #e7e7e7;
+    padding: 5px;
+    selection-background-color: #39C5BB;  /* 选中项背景色 */
+    selection-color: #000000;
+}
+
+/* 悬停和选中状态 */
+QComboBox:hover {
+    border-color: #39C5BB;
+}
+
+QComboBox:focus {
+    border-color: #39C5BB;
+    outline: none;
+}
+
+/* QSpinBox 样式 */
+QSpinBox {
+    border: 2px solid #0f322f;
+    border-radius: 3px;
+    padding: 5px 10px 5px 10px;  /* 右侧预留空间给自定义按钮 */
+    background-color: #e7e7e7;
+    min-height: 20px;
+}
+
+/* 隐藏QSpinBox默认上下按钮 */
+QSpinBox::up-button, QSpinBox::down-button {
+    border: none;
+    width: 0;  /* 隐藏默认按钮 */
+    height: 0;
+}
+
+
+
+/* 悬停和选中状态 */
+QSpinBox:hover {
+    border-color: #39C5BB;
+}
+
+QSpinBox:focus {
+    border-color: #39C5BB;
+    outline: none;
+}
+
+/* 解决QSpinBox编辑区域与整体样式冲突 */
+QSpinBox::edit-focus {
+    background-color: transparent;
+    border: none;
+    outline: none;
+}
+
+QPushButton{
+min-height: 26px;
+border: 2px solid #0f322f;  /* 2px宽的深灰色实线边框 */
+background-color: #e7e7e7;
+border-radius:3px;
+outline:none;
+color:#0f322f;
+padding-top:2px;
+padding-bottom:2px;
+}
+QPushButton::hover {
+border: 2px solid #39C5BB;  /* 2px宽的深灰色实线边框 */
+outline:none;
+color:#39C5BB;
+}
+</string>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_177">
+                     <property name="topMargin">
+                      <number>7</number>
+                     </property>
+                     <item>
+                      <widget class="QLabel" name="label_109">
+                       <property name="styleSheet">
+                        <string notr="true">font-size:20pt;
+border:none;</string>
+                       </property>
+                       <property name="text">
+                        <string>装备合成</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QFrame" name="frame_45">
+                       <property name="styleSheet">
+                        <string notr="true">QWidget QFrame{
+border:2px solid #969696;
+border-radius:1px;
+            }</string>
+                       </property>
+                       <property name="frameShape">
+                        <enum>QFrame::Shape::HLine</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Shadow::Raised</enum>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <layout class="QGridLayout" name="gridLayout_49" rowstretch="0" columnstretch="5,0">
+                       <property name="leftMargin">
+                        <number>10</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>10</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>10</number>
+                       </property>
+                       <item row="0" column="1">
+                        <widget class="QComboBox" name="ZhuangBeiHeCheng_target_armor">
+                         <property name="minimumSize">
+                          <size>
+                           <width>100</width>
+                           <height>34</height>
+                          </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
+                         <item>
+                          <property name="text">
+                           <string>武器</string>
+                          </property>
+                         </item>
+                         <item>
+                          <property name="text">
+                           <string>头盔</string>
+                          </property>
+                         </item>
+                         <item>
+                          <property name="text">
+                           <string>胸甲</string>
+                          </property>
+                         </item>
+                         <item>
+                          <property name="text">
+                           <string>忍之书</string>
+                          </property>
+                         </item>
+                         <item>
+                          <property name="text">
+                           <string>项链</string>
+                          </property>
+                         </item>
+                         <item>
+                          <property name="text">
+                           <string>戒指</string>
+                          </property>
+                         </item>
+                        </widget>
+                       </item>
+                       <item row="0" column="0">
+                        <layout class="QVBoxLayout" name="verticalLayout_178">
+                         <item>
+                          <widget class="QLabel" name="label_110">
+                           <property name="text">
+                            <string>合成目标装备</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_111">
+                           <property name="styleSheet">
+                            <string notr="true">font-size:11pt;
+color:#959595;
+margin-left:18px;</string>
+                           </property>
+                           <property name="text">
+                            <string>将体力消耗在该部位装备的材料扫荡和进阶上</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                      </layout>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="verticalSpacer_31">
                     <property name="orientation">
                      <enum>Qt::Orientation::Vertical</enum>
                     </property>
@@ -10800,7 +10818,268 @@ margin-left:18px;</string>
                </widget>
               </item>
               <item>
-               <spacer name="horizontalSpacer_22">
+               <spacer name="horizontalSpacer_72">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+             </layout>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="GaoJiRenZheZhaoMu_widget">
+          <layout class="QHBoxLayout" name="horizontalLayout_29">
+           <item>
+            <widget class="QWidget" name="widget_48" native="true">
+             <property name="styleSheet">
+              <string notr="true"/>
+             </property>
+             <layout class="QHBoxLayout" name="horizontalLayout_28" stretch="1,5,1">
+              <item>
+               <spacer name="horizontalSpacer_27">
+                <property name="orientation">
+                 <enum>Qt::Orientation::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QScrollArea" name="scrollArea_17">
+                <property name="minimumSize">
+                 <size>
+                  <width>600</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="widgetResizable">
+                 <bool>true</bool>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
+                </property>
+                <widget class="QWidget" name="scrollAreaWidgetContents_14">
+                 <property name="geometry">
+                  <rect>
+                   <x>0</x>
+                   <y>0</y>
+                   <width>598</width>
+                   <height>532</height>
+                  </rect>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_81">
+                  <property name="spacing">
+                   <number>20</number>
+                  </property>
+                  <item>
+                   <widget class="QWidget" name="widget_49" native="true">
+                    <property name="styleSheet">
+                     <string notr="true">QWidget {
+                background-color: #dfdfdf;  /* 背景颜色 */
+				border-radius:10px;
+            }
+/* 调整勾选框的大小 */
+QCheckBox::indicator {
+	width: 20px;      /* 勾选框宽度 */
+	height: 20px;     /* 勾选框高度 */
+	outline:none;
+border:none;
+}
+
+/* 可选：设置勾选框不同状态的样式 */
+QCheckBox::indicator:unchecked {
+	border: 2px solid #0f322f;
+	border-radius: 3px;
+}
+QCheckBox::indicator:checked {
+	background-color:#39C5BB;
+	border: 2px solid #0f322f;
+	border-radius: 3px;
+	
+}
+
+/* 禁用状态 */
+QCheckBox::indicator:disabled {
+	background-color: #f0f0f0;
+	border-color: #cccccc;
+}
+/* 1. 未选中（默认）状态的下边框 */
+            QLineEdit {
+                /* 清除默认边框，只保留下边框 */
+                border: none;
+                border-bottom: 3px solid #969696;  /* 灰色下边框 */
+                padding: 5px 0;  /* 上下下内边距，避免文字紧贴紧贴边框 */
+				border-radius:0px;
+                background: transparent;  /* 背景透明，只显示下边框 */
+            }
+            
+            /* 2. 选中（获得焦点点）状态的下边框 */
+            QLineEdit:focus {
+                border-bottom: 4px solid #39C5BB;  /* 蓝色下边框（突出显示） */
+                outline: none;  /* 去除系统默认的聚焦外边框 */
+            }
+            
+            /* 3. 鼠标略过（悬停）状态的下边框 */
+            QLineEdit:hover {
+                border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
+            }</string>
+                    </property>
+                    <layout class="QVBoxLayout" name="verticalLayout_82">
+                     <property name="topMargin">
+                      <number>7</number>
+                     </property>
+                     <item>
+                      <widget class="QLabel" name="label_79">
+                       <property name="styleSheet">
+                        <string notr="true">font-size:20pt;
+border:none;</string>
+                       </property>
+                       <property name="text">
+                        <string>任务设置</string>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <widget class="QFrame" name="frame_21">
+                       <property name="styleSheet">
+                        <string notr="true">QWidget QFrame{
+border:2px solid #969696;
+border-radius:1px;
+            }</string>
+                       </property>
+                       <property name="frameShape">
+                        <enum>QFrame::Shape::HLine</enum>
+                       </property>
+                       <property name="frameShadow">
+                        <enum>QFrame::Shadow::Raised</enum>
+                       </property>
+                      </widget>
+                     </item>
+                     <item>
+                      <layout class="QGridLayout" name="gridLayout_26" rowstretch="0,0" columnstretch="5,2">
+                       <property name="leftMargin">
+                        <number>10</number>
+                       </property>
+                       <property name="topMargin">
+                        <number>10</number>
+                       </property>
+                       <property name="rightMargin">
+                        <number>0</number>
+                       </property>
+                       <property name="bottomMargin">
+                        <number>10</number>
+                       </property>
+                       <item row="0" column="0">
+                        <layout class="QVBoxLayout" name="verticalLayout_83">
+                         <item>
+                          <widget class="QLabel" name="label_80">
+                           <property name="text">
+                            <string>启用任务</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_81">
+                           <property name="styleSheet">
+                            <string notr="true">font-size:11pt;
+color:#959595;
+margin-left:18px;</string>
+                           </property>
+                           <property name="text">
+                            <string>将这个任务加入调度器</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
+                        <widget class="QCheckBox" name="GaoJiRenZheZhaoMu_Enable">
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
+                         <property name="styleSheet">
+                          <string notr="true"/>
+                         </property>
+                         <property name="text">
+                          <string/>
+                         </property>
+                        </widget>
+                       </item>
+                       <item row="1" column="0">
+                        <layout class="QVBoxLayout" name="verticalLayout_84">
+                         <item>
+                          <widget class="QLabel" name="label_136">
+                           <property name="text">
+                            <string>下次执行时间</string>
+                           </property>
+                          </widget>
+                         </item>
+                         <item>
+                          <widget class="QLabel" name="label_137">
+                           <property name="styleSheet">
+                            <string notr="true">font-size:11pt;
+color:#959595;
+margin-left:18px;</string>
+                           </property>
+                           <property name="text">
+                            <string>自动计算得出，无须修改，清空则立刻运行</string>
+                           </property>
+                          </widget>
+                         </item>
+                        </layout>
+                       </item>
+                       <item row="1" column="1">
+                        <widget class="QLineEdit" name="GaoJiRenZheZhaoMu_next_execute_time">
+                         <property name="minimumSize">
+                          <size>
+                           <width>200</width>
+                           <height>0</height>
+                          </size>
+                         </property>
+                         <property name="focusPolicy">
+                          <enum>Qt::FocusPolicy::ClickFocus</enum>
+                         </property>
+                         <property name="alignment">
+                          <set>Qt::AlignmentFlag::AlignCenter</set>
+                         </property>
+                        </widget>
+                       </item>
+                      </layout>
+                     </item>
+                    </layout>
+                   </widget>
+                  </item>
+                  <item>
+                   <spacer name="verticalSpacer_9">
+                    <property name="orientation">
+                     <enum>Qt::Orientation::Vertical</enum>
+                    </property>
+                    <property name="sizeHint" stdset="0">
+                     <size>
+                      <width>20</width>
+                      <height>40</height>
+                     </size>
+                    </property>
+                   </spacer>
+                  </item>
+                 </layout>
+                </widget>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_28">
                 <property name="orientation">
                  <enum>Qt::Orientation::Horizontal</enum>
                 </property>
@@ -10862,7 +11141,7 @@ margin-left:18px;</string>
                  <property name="geometry">
                   <rect>
                    <x>0</x>
-                   <y>-177</y>
+                   <y>0</y>
                    <width>586</width>
                    <height>1157</height>
                   </rect>
@@ -11057,7 +11336,7 @@ border-radius:1px;
                       </widget>
                      </item>
                      <item>
-                      <layout class="QGridLayout" name="gridLayout_5" rowstretch="0,0,0" columnstretch="5,0,0">
+                      <layout class="QGridLayout" name="gridLayout_5" rowstretch="0,0,0" columnstretch="5,0">
                        <property name="leftMargin">
                         <number>10</number>
                        </property>
@@ -12617,532 +12896,6 @@ margin-left:18px;</string>
               </item>
               <item>
                <spacer name="horizontalSpacer_10">
-                <property name="orientation">
-                 <enum>Qt::Orientation::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-             </layout>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-         <widget class="QWidget" name="ZhuangBeiHeCheng">
-          <layout class="QHBoxLayout" name="horizontalLayout_10">
-           <item>
-            <widget class="QWidget" name="widget_92" native="true">
-             <property name="styleSheet">
-              <string notr="true"/>
-             </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_69" stretch="1,5,1">
-              <item>
-               <spacer name="horizontalSpacer_71">
-                <property name="orientation">
-                 <enum>Qt::Orientation::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QScrollArea" name="scrollArea_39">
-                <property name="minimumSize">
-                 <size>
-                  <width>600</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="widgetResizable">
-                 <bool>true</bool>
-                </property>
-                <property name="alignment">
-                 <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
-                </property>
-                <widget class="QWidget" name="scrollAreaWidgetContents_36">
-                 <property name="geometry">
-                  <rect>
-                   <x>0</x>
-                   <y>0</y>
-                   <width>598</width>
-                   <height>533</height>
-                  </rect>
-                 </property>
-                 <layout class="QVBoxLayout" name="verticalLayout_169">
-                  <property name="spacing">
-                   <number>20</number>
-                  </property>
-                  <item>
-                   <widget class="QWidget" name="widget_93" native="true">
-                    <property name="styleSheet">
-                     <string notr="true">QWidget {
-                background-color: #dfdfdf;  /* 背景颜色 */
-				border-radius:10px;
-            }
-/* 调整勾选框的大小 */
-QCheckBox::indicator {
-	width: 20px;      /* 勾选框宽度 */
-	height: 20px;     /* 勾选框高度 */
-	outline:none;
-border:none;
-}
-
-/* 可选：设置勾选框不同状态的样式 */
-QCheckBox::indicator:unchecked {
-	border: 2px solid #0f322f;
-	border-radius: 3px;
-}
-QCheckBox::indicator:checked {
-	background-color:#39C5BB;
-	border: 2px solid #0f322f;
-	border-radius: 3px;
-	
-}
-
-/* 禁用状态 */
-QCheckBox::indicator:disabled {
-	background-color: #f0f0f0;
-	border-color: #cccccc;
-}
-/* 1. 未选中（默认）状态的下边框 */
-            QLineEdit {
-                /* 清除默认边框，只保留下边框 */
-                border: none;
-                border-bottom: 3px solid #969696;  /* 灰色下边框 */
-                padding: 5px 0;  /* 上下下内边距，避免文字紧贴紧贴边框 */
-				border-radius:0px;
-                background: transparent;  /* 背景透明，只显示下边框 */
-            }
-            
-            /* 2. 选中（获得焦点点）状态的下边框 */
-            QLineEdit:focus {
-                border-bottom: 4px solid #39C5BB;  /* 蓝色下边框（突出显示） */
-                outline: none;  /* 去除系统默认的聚焦外边框 */
-            }
-            
-            /* 3. 鼠标略过（悬停）状态的下边框 */
-            QLineEdit:hover {
-                border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
-            }</string>
-                    </property>
-                    <layout class="QVBoxLayout" name="verticalLayout_170">
-                     <property name="topMargin">
-                      <number>7</number>
-                     </property>
-                     <item>
-                      <widget class="QLabel" name="label_104">
-                       <property name="styleSheet">
-                        <string notr="true">font-size:20pt;
-border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string>任务设置</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QFrame" name="frame_43">
-                       <property name="styleSheet">
-                        <string notr="true">QWidget QFrame{
-border:2px solid #969696;
-border-radius:1px;
-            }</string>
-                       </property>
-                       <property name="frameShape">
-                        <enum>QFrame::Shape::HLine</enum>
-                       </property>
-                       <property name="frameShadow">
-                        <enum>QFrame::Shadow::Raised</enum>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <layout class="QGridLayout" name="gridLayout_48" rowstretch="0,0" columnstretch="5,2">
-                       <property name="leftMargin">
-                        <number>10</number>
-                       </property>
-                       <property name="topMargin">
-                        <number>10</number>
-                       </property>
-                       <property name="rightMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="bottomMargin">
-                        <number>10</number>
-                       </property>
-                       <item row="0" column="0">
-                        <layout class="QVBoxLayout" name="verticalLayout_171">
-                         <item>
-                          <widget class="QLabel" name="label_105">
-                           <property name="text">
-                            <string>启用任务</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="label_108">
-                           <property name="styleSheet">
-                            <string notr="true">font-size:11pt;
-color:#959595;
-margin-left:18px;</string>
-                           </property>
-                           <property name="text">
-                            <string>将这个任务加入调度器
-临时任务会在结束后自动禁用任务</string>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </item>
-                       <item row="0" column="1" alignment="Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignVCenter">
-                        <widget class="QCheckBox" name="ZhuangBeiHeCheng_Enable">
-                         <property name="focusPolicy">
-                          <enum>Qt::FocusPolicy::ClickFocus</enum>
-                         </property>
-                         <property name="styleSheet">
-                          <string notr="true"/>
-                         </property>
-                         <property name="text">
-                          <string/>
-                         </property>
-                        </widget>
-                       </item>
-                       <item row="1" column="0">
-                        <layout class="QVBoxLayout" name="verticalLayout_172">
-                         <item>
-                          <widget class="QLabel" name="label_221">
-                           <property name="text">
-                            <string>下次执行时间</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="label_222">
-                           <property name="styleSheet">
-                            <string notr="true">font-size:11pt;
-color:#959595;
-margin-left:18px;</string>
-                           </property>
-                           <property name="text">
-                            <string>自动计算得出，无须修改，清空则立刻运行</string>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </item>
-                       <item row="1" column="1">
-                        <widget class="QLineEdit" name="ZhuangBeiHeCheng_next_execute_time">
-                         <property name="minimumSize">
-                          <size>
-                           <width>200</width>
-                           <height>0</height>
-                          </size>
-                         </property>
-                         <property name="focusPolicy">
-                          <enum>Qt::FocusPolicy::ClickFocus</enum>
-                         </property>
-                         <property name="alignment">
-                          <set>Qt::AlignmentFlag::AlignCenter</set>
-                         </property>
-                        </widget>
-                       </item>
-                      </layout>
-                     </item>
-                    </layout>
-                   </widget>
-                  </item>
-                  <item>
-                   <widget class="QWidget" name="widget_96" native="true">
-                    <property name="styleSheet">
-                     <string notr="true">QWidget {
-                background-color: #dfdfdf;  /* 背景颜色 */
-				border-radius:10px;
-            }
-/* 调整勾选框的大小 */
-QCheckBox::indicator {
-	width: 20px;      /* 勾选框宽度 */
-	height: 20px;     /* 勾选框高度 */
-	outline:none;
-border:none;
-}
-
-/* 可选：设置勾选框不同状态的样式 */
-QCheckBox::indicator:unchecked {
-	border: 2px solid #0f322f;
-	border-radius: 3px;
-}
-QCheckBox::indicator:checked {
-	background-color:#39C5BB;
-	border: 2px solid #0f322f;
-	border-radius: 3px;
-	
-}
-
-/* 禁用状态 */
-QCheckBox::indicator:disabled {
-	background-color: #f0f0f0;
-	border-color: #cccccc;
-}
-/* 1. 未选中（默认）状态的下边框 */
-QLineEdit {
-                /* 清除默认边框，只保留下边框 */
-                border: none;
-                border-bottom: 3px solid #969696;  /* 灰色下边框 */
-                padding: 5px 0;  /* 上下下内边距，避免文字紧贴紧贴边框 */
-				border-radius:0px;
-                background: transparent;  /* 背景透明，只显示下边框 */
-            }
-            
-            /* 2. 选中（获得焦点点）状态的下边框 */
-QLineEdit:focus {
-                border-bottom: 4px solid #39C5BB;  /* 蓝色下边框（突出显示） */
-                outline: none;  /* 去除系统默认的聚焦外边框 */
-            }
-            
-            /* 3. 鼠标略过（悬停）状态的下边框 */
-QLineEdit:hover {
-                border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
-            }
-/* QComboBox 样式 */
-QComboBox {
-    border: 2px solid #0f322f;  /* 边框颜色与CheckBox保持一致 */
-    border-radius: 3px;
-    padding: 5px 0px 5px 10px;  /* 右侧预留空间给自定义箭头 */
-    background-color: #e7e7e7;
-    min-height: 20px;
-}
-
-/* 隐藏QComboBox默认下拉按钮 */
-QComboBox::drop-down {
-    border: none;  /* 去除默认按钮边框 */
-
-}
-
-/* 自定义下拉箭头（使用三角形字符模拟） */
-QComboBox::down-arrow {
-    image: none;  /* 去除默认箭头 */
-}
-
-QComboBox::down-arrow:on {
-    image: none;  /* 下拉状态也不显示默认箭头 */
-}
-
-/* 下拉列表样式 */
-QComboBox QAbstractItemView {
-    border: 2px solid #b5b5b5;
-    border-radius: 3px;
-    background-color: #e7e7e7;
-    padding: 5px;
-    selection-background-color: #39C5BB;  /* 选中项背景色 */
-    selection-color: #000000;
-}
-
-/* 悬停和选中状态 */
-QComboBox:hover {
-    border-color: #39C5BB;
-}
-
-QComboBox:focus {
-    border-color: #39C5BB;
-    outline: none;
-}
-
-/* QSpinBox 样式 */
-QSpinBox {
-    border: 2px solid #0f322f;
-    border-radius: 3px;
-    padding: 5px 10px 5px 10px;  /* 右侧预留空间给自定义按钮 */
-    background-color: #e7e7e7;
-    min-height: 20px;
-}
-
-/* 隐藏QSpinBox默认上下按钮 */
-QSpinBox::up-button, QSpinBox::down-button {
-    border: none;
-    width: 0;  /* 隐藏默认按钮 */
-    height: 0;
-}
-
-
-
-/* 悬停和选中状态 */
-QSpinBox:hover {
-    border-color: #39C5BB;
-}
-
-QSpinBox:focus {
-    border-color: #39C5BB;
-    outline: none;
-}
-
-/* 解决QSpinBox编辑区域与整体样式冲突 */
-QSpinBox::edit-focus {
-    background-color: transparent;
-    border: none;
-    outline: none;
-}
-
-QPushButton{
-min-height: 26px;
-border: 2px solid #0f322f;  /* 2px宽的深灰色实线边框 */
-background-color: #e7e7e7;
-border-radius:3px;
-outline:none;
-color:#0f322f;
-padding-top:2px;
-padding-bottom:2px;
-}
-QPushButton::hover {
-border: 2px solid #39C5BB;  /* 2px宽的深灰色实线边框 */
-outline:none;
-color:#39C5BB;
-}
-</string>
-                    </property>
-                    <layout class="QVBoxLayout" name="verticalLayout_177">
-                     <property name="topMargin">
-                      <number>7</number>
-                     </property>
-                     <item>
-                      <widget class="QLabel" name="label_109">
-                       <property name="styleSheet">
-                        <string notr="true">font-size:20pt;
-border:none;</string>
-                       </property>
-                       <property name="text">
-                        <string>装备合成</string>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <widget class="QFrame" name="frame_45">
-                       <property name="styleSheet">
-                        <string notr="true">QWidget QFrame{
-border:2px solid #969696;
-border-radius:1px;
-            }</string>
-                       </property>
-                       <property name="frameShape">
-                        <enum>QFrame::Shape::HLine</enum>
-                       </property>
-                       <property name="frameShadow">
-                        <enum>QFrame::Shadow::Raised</enum>
-                       </property>
-                      </widget>
-                     </item>
-                     <item>
-                      <layout class="QGridLayout" name="gridLayout_49" rowstretch="0" columnstretch="5,0">
-                       <property name="leftMargin">
-                        <number>10</number>
-                       </property>
-                       <property name="topMargin">
-                        <number>10</number>
-                       </property>
-                       <property name="rightMargin">
-                        <number>0</number>
-                       </property>
-                       <property name="bottomMargin">
-                        <number>10</number>
-                       </property>
-                       <item row="0" column="1">
-                        <widget class="QComboBox" name="ZhuangBeiHeCheng_target_armor">
-                         <property name="minimumSize">
-                          <size>
-                           <width>100</width>
-                           <height>34</height>
-                          </size>
-                         </property>
-                         <property name="focusPolicy">
-                          <enum>Qt::FocusPolicy::ClickFocus</enum>
-                         </property>
-                         <item>
-                          <property name="text">
-                           <string>武器</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>头盔</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>胸甲</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>忍之书</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>项链</string>
-                          </property>
-                         </item>
-                         <item>
-                          <property name="text">
-                           <string>戒指</string>
-                          </property>
-                         </item>
-                        </widget>
-                       </item>
-                       <item row="0" column="0">
-                        <layout class="QVBoxLayout" name="verticalLayout_178">
-                         <item>
-                          <widget class="QLabel" name="label_110">
-                           <property name="text">
-                            <string>合成目标装备</string>
-                           </property>
-                          </widget>
-                         </item>
-                         <item>
-                          <widget class="QLabel" name="label_111">
-                           <property name="styleSheet">
-                            <string notr="true">font-size:11pt;
-color:#959595;
-margin-left:18px;</string>
-                           </property>
-                           <property name="text">
-                            <string>将体力消耗在该部位装备的材料扫荡和进阶上</string>
-                           </property>
-                          </widget>
-                         </item>
-                        </layout>
-                       </item>
-                      </layout>
-                     </item>
-                    </layout>
-                   </widget>
-                  </item>
-                  <item>
-                   <spacer name="verticalSpacer_31">
-                    <property name="orientation">
-                     <enum>Qt::Orientation::Vertical</enum>
-                    </property>
-                    <property name="sizeHint" stdset="0">
-                     <size>
-                      <width>20</width>
-                      <height>40</height>
-                     </size>
-                    </property>
-                   </spacer>
-                  </item>
-                 </layout>
-                </widget>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_72">
                 <property name="orientation">
                  <enum>Qt::Orientation::Horizontal</enum>
                 </property>
