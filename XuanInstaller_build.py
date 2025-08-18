@@ -7,7 +7,7 @@ import time
 from StaticFunctions import get_real_path
 
 
-def change_version(new_version, file_path=get_real_path("bin/DailyQuestsHelper.nsi")):
+def change_version(new_version, file_path=get_real_path("bin/XuanInstaller.nsi")):
     """
         更新文本文件中 PRODUCT_VERSION 定义
         :param file_path: 文本文件路径
@@ -69,26 +69,6 @@ def main(version):
         sys.exit(1)
 
     try:
-        # 1. 使用PyInstaller构建可执行文件
-        print("=" * 50)
-        print("步骤 1: 使用PyInstaller构建可执行文件")
-
-        # 验证虚拟环境中的Python解释器
-        if not venv_python.exists():
-            raise FileNotFoundError(f"虚拟环境Python解释器未找到: {venv_python}")
-
-        # 构建PyInstaller命令
-        pyinstaller_cmd = [
-            str(venv_python),
-            "-m", "PyInstaller",
-            "--upx-dir", str(upx_dir),
-            str(py_project / "DailyQuestsHelper.spec")
-        ]
-
-        print(f"执行命令: {' '.join(pyinstaller_cmd)}")
-        result = subprocess.run(pyinstaller_cmd, cwd=py_project, check=True)
-        print("PyInstaller 构建成功")
-
         # 2. 使用NSIS构建安装包
         print("\n" + "=" * 50)
         print("步骤 2: 构建NSIS安装程序")
