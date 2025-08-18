@@ -2,6 +2,7 @@ import ctypes
 import os
 import sys
 from datetime import datetime
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -37,7 +38,7 @@ def get_real_path(relative_path=""):
     获取基于可执行文件位置的绝对路径
 
     参数:
-        relative_path: 相对于可执行文件的相对路径，默认为空字符串（即返回可执行文件所在目录）
+        relative_path: 相对于可执行文件的相对路径，默认为返回可执行文件所在目录）
 
     返回:
         基于可执行文件位置的绝对路径
@@ -166,3 +167,33 @@ def create_rounded_pixmap(pixmap: QPixmap, radius: int) -> QPixmap:
 
     painter.end()
     return dest_image
+
+
+def split_gray_alpha(input_path, output_bgra_path, output_gray_path, output_mask_path):
+    """
+    将PNG分离为灰度图和掩码图（分别保存为单通道PNG）
+    """
+    try:
+        # 读取原图（保留所有通道）
+        img = cv_imread(input_path)
+        if img is None:
+            raise FileNotFoundError(f"无法读取图片: {input_path}")
+
+        # 提取灰度通道
+        if img.shape[-1] in (3, 4):  # 彩色图（带或不带Alpha）
+            gray = cv2.cvtColor(img[:, :, :3], cv2.COLOR_BGR2GRAY)
+        else:  # 已为灰度图
+            gray = img if len(img.shape) == 2 else img[:, :, 0]
+
+        # 提取或创建Alpha通道（掩码）
+        if img.shape[-1] == 4:
+            alpha = img[:, :, 3]
+        else:
+            alpha = np.ones_like(gray, dtype=np.uint8) * 255  # 全不透明
+        # 保存为单通道PNG（启用最高压缩）
+        cv_save(output_bgra_path, img, [cv2.IMWRITE_PNG_COMPRESSION, 9])  # 压缩等级0-9（9最高）
+        cv_save(output_gray_path, gray, [cv2.IMWRITE_PNG_COMPRESSION, 9])  # 压缩等级0-9（9最高）
+        cv_save(output_mask_path, alpha, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+        print(f"分离成功: {os.path.basename(input_path)} -> 灰度图 + 掩码图")
+    except Exception as e:
+        print(f"处理失败 {os.path.basename(input_path)}: {str(e)}")

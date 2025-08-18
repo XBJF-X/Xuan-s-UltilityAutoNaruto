@@ -5,13 +5,8 @@ from PySide6.QtWidgets import QMessageBox
 
 from utils.Base.Control.ADB import ADB
 from utils.Base.Control.U2 import U2
-from utils.Config import Config
-
-
-class ControlMode(enum.IntEnum):
-    """控制模式枚举"""
-    ADB = 0
-    U2 = 1
+from utils.Base.Config import Config
+from utils.Base.Enums import ControlMode
 
 
 class Control:
@@ -118,11 +113,10 @@ class Control:
         self.control_instance.press_key(key)
 
     def touch_down(self, x, y):
-        self.control_instance.touch_down(x,y)
+        self.control_instance.touch_down(x, y)
 
     def touch_up(self, x, y):
         self.control_instance.touch_up(x, y)
 
     def long_press(self, x, y, duration):
         self.control_instance.long_press(x, y, duration)
-

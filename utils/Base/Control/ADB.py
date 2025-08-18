@@ -1,4 +1,4 @@
-from utils.Config import Config
+from utils.Base.Config import Config
 
 
 class ADB:

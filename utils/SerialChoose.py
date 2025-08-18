@@ -3,19 +3,20 @@ import subprocess
 from typing import List
 
 from PySide6.QtCore import QSize
-from PySide6.QtWidgets import QDialog, QListWidgetItem, QAbstractItemView
+from PySide6.QtWidgets import QDialog, QListWidgetItem, QAbstractItemView, QLineEdit
 
-from ui.SerialChoose_ui import Ui_SerialChoose
-from utils.Config import Config
+from utils.ui.SerialChoose_ui import Ui_SerialChoose
+from utils.Base.Config import Config
 
 
 class SerialChoose(QDialog):
-    def __init__(self, config: Config, parent=None):
+    def __init__(self, config: Config, lineedit:QLineEdit,parent=None):
         super().__init__(parent)
         self.UI = Ui_SerialChoose()
         self.UI.setupUi(self)
         self.config = config
         self.logger = logging.getLogger("串口列表")
+        self.lineedit=lineedit
         self.setModal(True)
         self.resize(394, 268)
 
@@ -44,10 +45,10 @@ class SerialChoose(QDialog):
             item.setSizeHint(QSize(0, 40))  # 设置项高度
             self.UI.serial_listWidget.addItem(item)
 
-        # 默认选择第一项（如果有）
-        if serial_list:
-            self.UI.serial_listWidget.setCurrentRow(0)
-            self.selected_serial = serial_list[0]
+        # # 默认选择第一项（如果有）
+        # if serial_list:
+        #     self.UI.serial_listWidget.setCurrentRow(0)
+        #     self.selected_serial = serial_list[0]
 
     def _update_selection(self):
         """更新当前选择的串口"""
@@ -62,6 +63,7 @@ class SerialChoose(QDialog):
             self.logger.warning("未选择任何串口")
             return
         self.logger.info(f"已选择串口: {self.selected_serial}")
+        self.lineedit.setText(self.selected_serial)
         self.config.set_config("串口", self.selected_serial)
         # 关闭对话框
         self.accept()

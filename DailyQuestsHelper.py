@@ -1,4 +1,3 @@
-import subprocess
 import sys
 
 import ctypes
@@ -7,7 +6,7 @@ import logging
 import os
 from collections import defaultdict
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict
 from zoneinfo import ZoneInfo
 
 import cv2
@@ -16,15 +15,16 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QApplication, QWidget, QFileDialog
 
 from StaticFunctions import resource_path, get_real_path
-from ui.DailyQuestsHelper_ui import Ui_DailyQuestsHelper
+from utils.ui.DailyQuestsHelper_ui import Ui_DailyQuestsHelper
 from utils.Base.Recognizer import Recognizer
-from utils.Config import Config
-from utils.Device import Device
+from utils.Base.Config import Config
+from utils.Base.Device import Device
+from utils.Base.Scene.SceneGraph import SceneGraph
 from utils.KeyMapConfiguration import KeyMapConfiguration
-from utils.Logger import LogWindow
+from utils.Base.Logger import LogWindow
 from utils.Scheduler import Scheduler
 from utils.SerialChoose import SerialChoose
-from utils.Task import TREE_INDEX_DIC, TASK_NAME_CN2EN_MAP
+from utils.Base.Task import TREE_INDEX_DIC, TASK_NAME_CN2EN_MAP
 
 
 class DailyQuestsHelper(QMainWindow):
@@ -32,18 +32,27 @@ class DailyQuestsHelper(QMainWindow):
         super().__init__()
         self.UI = Ui_DailyQuestsHelper()
         self.UI.setupUi(self)
-        self.config = Config()
-        self.log_window = LogWindow(self.config)
+        self.log_window = LogWindow()
         self.logger = logging.getLogger("日常助手")
+        self.logger.info("初始化配置...")
+        self.config = Config()
+        self.logger.info("初始化环境...")
         self.init_environment()
         self.task_common_control_ref_map: Dict[str:Dict[str:QWidget]] = defaultdict(dict)  # 任务控制控件
+        self.logger.info("初始化UI...")
         self.alloc_ui_ref_map()
+        self.logger.info("初始化UI响应函数...")
         self.connect_ui2function()
-        self.scene_templates = self.preprocess_templates("src/SceneInfo.json")
-        self.element_templates = self.preprocess_templates("src/ElementInfo.json")
-        self.recognizer = Recognizer(self.scene_templates, self.element_templates)
-        self.scheduler = Scheduler(self.UI, self.recognizer, self.config, self.task_common_control_ref_map)
-
+        self.scene_graph = SceneGraph()
+        self.recognizer = Recognizer(self.scene_graph)
+        self.logger.info("初始化调度器...")
+        self.scheduler = Scheduler(
+            self.UI,
+            self.config,
+            self.scene_graph,
+            self.recognizer,
+            self.task_common_control_ref_map
+        )
         self.logger.info("初始化完成...")
 
     def init_environment(self):
@@ -120,6 +129,11 @@ class DailyQuestsHelper(QMainWindow):
         self.UI.secondary_password.editingFinished.connect(lambda w=self.UI.secondary_password: self.config.set_config("二级密码", w.text()))
         self.UI.key_map_configuration_button.clicked.connect(self._on_key_map_configuration_button_clicked)
         self.UI.serial_list_button.clicked.connect(self._on_serial_list_button_clicked)
+
+        self.UI.XiaoDuiTuXi_4rewards_Enable.toggled.connect(lambda flag: self.config.set_task_config("小队突袭", "四倍奖励勾选", flag))
+        self.UI.XiaoDuiTuXi_4rewards_times.valueChanged.connect(lambda value: self.config.set_task_config("小队突袭", "四倍奖励次数", value))
+        self.UI.JinBiZhaoCai_times.valueChanged.connect(lambda value: self.config.set_task_config("金币招财", "招财次数", value))
+        self.UI.GouMaiTiLi_times.valueChanged.connect(lambda value: self.config.set_task_config("购买体力", "购买体力次数", value))
         self.UI.ZhuangBeiHeCheng_target_armor.currentIndexChanged.connect(lambda index: self.config.set_task_config('装备合成', '合成目标装备', index))
 
     def process_common_task_settings_control(self):
@@ -136,11 +150,13 @@ class DailyQuestsHelper(QMainWindow):
                 for key, value in TASK_NAME_CN2EN_MAP.items():
                     if f"{value}_Enable" == widget_name:
                         self.task_common_control_ref_map[key]["CheckBox"] = widget
+                        self.logger.debug(f"初始化{widget_name}")
                         widget.setChecked(self.config.get_task_config(key, "是否启用"))
                         widget.toggled.connect(lambda state, task_name=key: self.scheduler.toggle_task_activation(state, task_name))
 
                         break
                     elif f"{value}_next_execute_time" == widget_name:
+                        self.logger.debug(f"初始化{widget_name}")
                         self.task_common_control_ref_map[key]["LineEdit"] = widget
                         widget.setText(
                             datetime.fromtimestamp(
@@ -211,20 +227,17 @@ class DailyQuestsHelper(QMainWindow):
     def _on_control_mode_change(self, index):
         self.config.set_config("控制模式", index)
 
-    def _on_resolution_change(self, index):
-        self.config.set_config("模拟器分辨率", index)
-
     def _on_key_map_configuration_button_clicked(self):
         if self.scheduler.device is not None:
             device = self.scheduler.device
         else:
-            device = Device(self.config, self.recognizer)
+            device = Device(self.config)
         editor = KeyMapConfiguration(self.config, device.screen_cap(), self)
         editor.exec()
         device = None
 
     def _on_serial_list_button_clicked(self):
-        editor = SerialChoose(self.config, self)
+        editor = SerialChoose(self.config, self.UI.serial, self)
         editor.exec()
 
     def _on_filepath_browse_clicked(self, name):

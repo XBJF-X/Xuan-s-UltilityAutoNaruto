@@ -1,0 +1,6529 @@
+{
+    "个人信息": {
+        "edges": [
+            "个人信息-分享",
+            "主场景"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "分享": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1205,
+                    134,
+                    188,
+                    87
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1529,
+                    49
+                ]
+            }
+        }
+    },
+    "个人信息-分享": {
+        "edges": [
+            "个人信息"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "发给好友": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1414,
+                    598,
+                    185,
+                    301
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1524,
+                    49
+                ]
+            }
+        }
+    },
+    "丰饶之间": {
+        "edges": [
+            "主场景"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "超影免费": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    458,
+                    257,
+                    667,
+                    423
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "点击任意位置关闭界面": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    595,
+                    800,
+                    417,
+                    87
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "一键完成": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    813,
+                    747,
+                    237,
+                    111
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "今日已完成挑战": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    598,
+                    621,
+                    400,
+                    95
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "挑战": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    541,
+                    742,
+                    251,
+                    107
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "丰饶之间获得奖励": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    647,
+                    256,
+                    303,
+                    61
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1526,
+                    42
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    148,
+                    848
+                ]
+            },
+            "空白点": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1248,
+                    451
+                ]
+            }
+        }
+    },
+    "主场景": {
+        "edges": [
+            "丰饶之间",
+            "主场景-组织",
+            "冒险",
+            "个人信息",
+            "决斗场-首页",
+            "商城",
+            "奖励",
+            "好友",
+            "忍法帖",
+            "情报站-首页",
+            "战区赛事",
+            "招募",
+            "招财",
+            "积分赛",
+            "装备",
+            "邮件",
+            "活动",
+            "试炼之地",
+            "排行榜",
+            "忍者挑战",
+            "小队突袭"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "积分赛": {
+                "type": 0,
+                "match_type": 1,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "组织": {
+                "type": 0,
+                "match_type": 1,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "小队突袭": {
+                "type": 0,
+                "match_type": 1,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "排行榜": {
+                "type": 0,
+                "match_type": 1,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "丰饶之间": {
+                "type": 0,
+                "match_type": 1,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "决斗场": {
+                "type": 0,
+                "match_type": 1,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "冒险": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1322,
+                    670,
+                    277,
+                    229
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "试炼之地": {
+                "type": 0,
+                "match_type": 1,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "活动": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1463,
+                    0,
+                    136,
+                    139
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "装备": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    253,
+                    724,
+                    202,
+                    175
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "任务集会所": {
+                "type": 0,
+                "match_type": 1,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "情报社": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    23,
+                    386,
+                    110,
+                    92
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "邮件": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    19,
+                    300,
+                    111,
+                    95
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "奖励": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1465,
+                    385,
+                    124,
+                    116
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "忍者大赛": {
+                "type": 0,
+                "match_type": 1,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "忍话剧": {
+                "type": 0,
+                "match_type": 1,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "好友": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    27,
+                    231,
+                    96,
+                    78
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "战区赛事": {
+                "type": 0,
+                "match_type": 1,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "忍者挑战": {
+                "type": 0,
+                "match_type": 1,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "装备-装备": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    3,
+                    628,
+                    217,
+                    128
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "招募": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1478,
+                    134,
+                    102,
+                    115
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "忍法帖": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1480,
+                    397,
+                    105,
+                    105
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "商城": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1469,
+                    250,
+                    118,
+                    128
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "体力购买": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    676,
+                    50
+                ]
+            },
+            "招财": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    949,
+                    52
+                ]
+            },
+            "个人信息": {
+                "type": 1,
+                "match_type": 1,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    111,
+                    65
+                ]
+            },
+            "体力购买-购买": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    573,
+                    460,
+                    477,
+                    207
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "体力购买-X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1092,
+                    274
+                ]
+            },
+            "公告-X": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1161,
+                    0,
+                    438,
+                    288
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "广告-X": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1141,
+                    0,
+                    458,
+                    340
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "主场景-组织": {
+        "edges": [
+            "主场景",
+            "组织祈福",
+            "追击晓组织",
+            "要塞争夺战",
+            "叛忍来袭",
+            "天地战场"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "组织祈福-前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.48,
+                    0.92
+                ],
+                "roi": [
+                    250,
+                    177,
+                    1129,
+                    658
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "追击晓组织-前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.91
+                ],
+                "roi": [
+                    234,
+                    177,
+                    1142,
+                    653
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "天地战场-前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.93
+                ],
+                "roi": [
+                    233,
+                    176,
+                    1156,
+                    656
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "组织商店-前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.52,
+                    0.91
+                ],
+                "roi": [
+                    242,
+                    179,
+                    1144,
+                    656
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "组织购买-前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.52,
+                    0.9
+                ],
+                "roi": [
+                    243,
+                    184,
+                    1135,
+                    645
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "要塞争夺战-前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.92
+                ],
+                "roi": [
+                    245,
+                    179,
+                    1127,
+                    661
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "组织祈愿-前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.91
+                ],
+                "roi": [
+                    236,
+                    182,
+                    1136,
+                    642
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "叛忍来袭-前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.92
+                ],
+                "roi": [
+                    237,
+                    177,
+                    1148,
+                    658
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "信息": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    156,
+                    271
+                ]
+            },
+            "玩法": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    158,
+                    550
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1432,
+                    85
+                ]
+            }
+        }
+    },
+    "二级密码": {
+        "edges": [],
+        "threshold": 0.8,
+        "elements": {
+            "确定": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    647,
+                    516,
+                    312,
+                    124
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "输入框": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.53,
+                    0.49
+                ],
+                "roi": [
+                    455,
+                    394,
+                    719,
+                    134
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "任务集会所": {
+        "edges": [
+            "主场景"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "超影免费": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1273,
+                    724,
+                    326,
+                    175
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "今天所有任务已经领完": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "一键领取所有奖励-确定": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "接取-推荐小队": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "恭喜你获得": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "接取-出战": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1330,
+                    671,
+                    269,
+                    228
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "可领取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    681,
+                    133,
+                    655,
+                    127
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "接取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1377,
+                    262,
+                    182,
+                    415
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "任务栏满了": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    217,
+                    351,
+                    1211,
+                    173
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1526,
+                    41
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    139,
+                    848
+                ]
+            },
+            "接取-默认忍者": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1228,
+                    576
+                ]
+            }
+        }
+    },
+    "修行之路": {
+        "edges": [
+            "试炼之地",
+            "主场景"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1524,
+                    46
+                ]
+            },
+            "重置": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    955,
+                    831
+                ]
+            },
+            "扫荡": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1112,
+                    823
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    136,
+                    855
+                ]
+            },
+            "是否将当前进度重置到第一关-确定": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    623,
+                    479,
+                    373,
+                    150
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "可以扫荡N关-扫荡": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    656,
+                    596,
+                    291,
+                    141
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "每周只能重置1次": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    461,
+                    414,
+                    697,
+                    67
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "当前没有可扫荡关卡了": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    474,
+                    414,
+                    656,
+                    69
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "冒险": {
+        "edges": [
+            "主场景",
+            "冒险-精英副本"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "精英副本": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    207,
+                    0,
+                    145,
+                    248
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1527,
+                    42
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    159,
+                    840
+                ]
+            }
+        }
+    },
+    "冒险-精英副本": {
+        "edges": [
+            "精英副本-便捷扫荡",
+            "冒险"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "便捷扫荡": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.7,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    865,
+                    740,
+                    171,
+                    151
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1526,
+                    41
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    145,
+                    845
+                ]
+            }
+        }
+    },
+    "决斗场-赛季": {
+        "edges": [
+            "决斗场-首页"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "决斗场内获得N次胜利-已领": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.9,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1066,
+                    96,
+                    493,
+                    708
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1534,
+                    47
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.9,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    142,
+                    840
+                ]
+            }
+        }
+    },
+    "决斗场-首页": {
+        "edges": [
+            "决斗场-赛季",
+            "忍术对战-单人模式",
+            "主场景",
+            "更多玩法",
+            "训练场"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "决斗场-X": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "决斗场-忍术对战": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    176,
+                    710,
+                    345,
+                    136
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1527,
+                    42
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    124,
+                    854
+                ]
+            },
+            "决斗季大奖": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "练习": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "更多玩法": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "叛忍来袭": {
+        "edges": [],
+        "threshold": 0.8,
+        "elements": {}
+    },
+    "商城": {
+        "edges": [
+            "主场景"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1527,
+                    42
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    116,
+                    854
+                ]
+            }
+        }
+    },
+    "天地战场": {
+        "edges": [
+            "天之战场",
+            "地之战场"
+        ],
+        "threshold": 0.8,
+        "elements": {}
+    },
+    "奖励": {
+        "edges": [
+            "小队突袭",
+            "主场景",
+            "丰饶之间",
+            "任务集会所",
+            "生存挑战",
+            "秘境探险-首页",
+            "组织祈福"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "完成1关生存挑战-立刻前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.48,
+                    0.95
+                ],
+                "roi": [
+                    231,
+                    100,
+                    1368,
+                    529
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "每日活跃度-10-待领取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.9,
+                "ratio": [
+                    0.67,
+                    0.38
+                ],
+                "roi": [
+                    518,
+                    676,
+                    161,
+                    113
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "周活跃礼-有红点": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.48,
+                    0.54
+                ],
+                "roi": [
+                    1462,
+                    800,
+                    128,
+                    84
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "每日活跃度-80-待领取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.9,
+                "ratio": [
+                    0.66,
+                    0.36
+                ],
+                "roi": [
+                    1148,
+                    664,
+                    177,
+                    116
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "消耗团本挑战券-立刻前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.58,
+                    0.93
+                ],
+                "roi": [
+                    227,
+                    96,
+                    1372,
+                    542
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "积分赛挑战-立刻前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.55,
+                    0.94
+                ],
+                "roi": [
+                    225,
+                    91,
+                    1374,
+                    548
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "每日活跃度-40-待领取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.93,
+                "ratio": [
+                    0.64,
+                    0.33
+                ],
+                "roi": [
+                    806,
+                    673,
+                    179,
+                    116
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "小队突袭-立刻前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.56,
+                    0.94
+                ],
+                "roi": [
+                    231,
+                    97,
+                    1368,
+                    538
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "完成秘境探险-立刻前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.58,
+                    0.94
+                ],
+                "roi": [
+                    238,
+                    106,
+                    1361,
+                    515
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "完成集会所任务-立刻前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.55,
+                    0.93
+                ],
+                "roi": [
+                    229,
+                    101,
+                    1370,
+                    535
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "进行1次金币招财-有免费次数-立刻前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.59,
+                    0.94
+                ],
+                "roi": [
+                    235,
+                    96,
+                    1364,
+                    540
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "冒险副本挑战-立刻前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.52,
+                    0.93
+                ],
+                "roi": [
+                    230,
+                    109,
+                    1369,
+                    529
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "决斗场击败1名忍者-立刻前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.56,
+                    0.93
+                ],
+                "roi": [
+                    227,
+                    91,
+                    1372,
+                    545
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "忍者招募-立刻前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.58,
+                    0.94
+                ],
+                "roi": [
+                    233,
+                    91,
+                    1366,
+                    533
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "每日活跃度-100-待领取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.9,
+                "ratio": [
+                    0.63,
+                    0.36
+                ],
+                "roi": [
+                    1337,
+                    673,
+                    184,
+                    111
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "完成1关修行之路-立刻前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.54,
+                    0.94
+                ],
+                "roi": [
+                    239,
+                    109,
+                    1360,
+                    523
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "完成更多玩法任务-立刻前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.58,
+                    0.94
+                ],
+                "roi": [
+                    239,
+                    106,
+                    1360,
+                    523
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "组织祈福-已完成": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    231,
+                    92,
+                    1368,
+                    533
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "进行1次金币招财-立刻前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.51,
+                    0.95
+                ],
+                "roi": [
+                    235,
+                    104,
+                    1364,
+                    532
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "成功分享-立刻前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.57,
+                    0.94
+                ],
+                "roi": [
+                    242,
+                    96,
+                    1357,
+                    537
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "挑战丰饶之间-立刻前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.58,
+                    0.94
+                ],
+                "roi": [
+                    230,
+                    89,
+                    1369,
+                    538
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "周活跃大礼-领取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    494,
+                    240,
+                    747,
+                    566
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1524,
+                    41
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    147,
+                    843
+                ]
+            },
+            "组织祈福-立刻前往": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.52,
+                    0.95
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "每日活跃度-10-已领取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    536,
+                    616,
+                    190,
+                    179
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "每日活跃度-40-已领取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    791,
+                    618,
+                    239,
+                    193
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "每日活跃度-80-已领取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1176,
+                    605,
+                    200,
+                    197
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "每日活跃度-100-已领取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1365,
+                    590,
+                    205,
+                    208
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "好友": {
+        "edges": [
+            "主场景"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "一键领取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    616,
+                    702,
+                    236,
+                    102
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "一键赠送": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    403,
+                    699,
+                    223,
+                    98
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "领取成功-确认": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    595,
+                    461,
+                    414,
+                    176
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1379,
+                    158
+                ]
+            },
+            "游戏好友": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    302,
+                    297
+                ]
+            },
+            "QQ好友": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    300,
+                    427
+                ]
+            }
+        }
+    },
+    "小队突袭": {
+        "edges": [
+            "小队突袭-组织助战",
+            "主场景"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "离开队伍-确定": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "组织助战": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1156,
+                    728,
+                    208,
+                    171
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "扫荡": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1268,
+                    547,
+                    331,
+                    352
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "今日收益次数已达上限": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    647,
+                    817,
+                    352,
+                    75
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1524,
+                    42
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    136,
+                    860
+                ]
+            }
+        }
+    },
+    "小队突袭-组织助战": {
+        "edges": [
+            "组织助战-助战忍者",
+            "小队突袭"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "四倍奖励-选中": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.85,
+                "ratio": [
+                    0.33,
+                    0.5
+                ],
+                "roi": [
+                    575,
+                    811,
+                    246,
+                    88
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "出战": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1334,
+                    615,
+                    265,
+                    284
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "四倍奖励-未选中": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.85,
+                "ratio": [
+                    0.33,
+                    0.54
+                ],
+                "roi": [
+                    573,
+                    806,
+                    228,
+                    93
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "我的助战": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    997,
+                    733,
+                    207,
+                    166
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1527,
+                    42
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    139,
+                    845
+                ]
+            },
+            "离开队伍-确定": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    484,
+                    199,
+                    785,
+                    470
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "今日收益次数已达上限": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "忍法帖": {
+        "edges": [
+            "忍法帖-排行榜",
+            "主场景"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "排行榜": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "忍法帖-分享": {
+        "edges": [
+            "忍法帖-排行榜"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "发给好友": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "忍法帖-排行榜": {
+        "edges": [
+            "忍法帖-分享",
+            "忍法帖"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "点赞": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "分享": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "忍者挑战": {
+        "edges": [
+            "秘境探险-首页",
+            "主场景"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "秘境探险": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "团队副本": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "情报站-卷轴": {
+        "edges": [
+            "情报站-村口"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1474,
+                    32
+                ]
+            },
+            "村口": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1474,
+                    575
+                ]
+            },
+            "首页": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1477,
+                    153
+                ]
+            },
+            "后退": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1349,
+                    35
+                ]
+            }
+        }
+    },
+    "情报站-忍者站": {
+        "edges": [
+            "主场景",
+            "情报站-首页"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1480,
+                    26
+                ]
+            },
+            "首页": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    283,
+                    36
+                ]
+            },
+            "卷轴": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1475,
+                    374
+                ]
+            },
+            "村口": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1477,
+                    576
+                ]
+            }
+        }
+    },
+    "情报站-村口": {
+        "edges": [
+            "情报站-首页"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "点赞-已点": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    714,
+                    167,
+                    176,
+                    732
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1359,
+                    0,
+                    240,
+                    111
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "点赞-未点": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    699,
+                    158,
+                    200,
+                    741
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "首页": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1474,
+                    162
+                ]
+            },
+            "卷轴": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1475,
+                    369
+                ]
+            }
+        }
+    },
+    "情报站-首页": {
+        "edges": [
+            "情报站-忍者站",
+            "主场景",
+            "福利站",
+            "情报站-卷轴"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "金币助手": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    891,
+                    251,
+                    543,
+                    139
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "福利站": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    876,
+                    252,
+                    557,
+                    132
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1397,
+                    0,
+                    202,
+                    128
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "卷轴": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1473,
+                    371
+                ]
+            },
+            "村口": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1477,
+                    581
+                ]
+            },
+            "忍者站": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    407,
+                    34
+                ]
+            }
+        }
+    },
+    "战区赛事": {
+        "edges": [
+            "主场景"
+        ],
+        "threshold": 0.8,
+        "elements": {}
+    },
+    "招募": {
+        "edges": [
+            "主场景"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "普通招募-确定": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    444,
+                    604,
+                    437,
+                    182
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "普通招募-免费": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    860,
+                    599,
+                    371,
+                    200
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "高级招募-免费": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    943,
+                    655,
+                    280,
+                    154
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "高级招募-确定": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1529,
+                    44
+                ]
+            },
+            "高级招募": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    159,
+                    214,
+                    625
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "普通招募": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1,
+                    153,
+                    216,
+                    668
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "招财": {
+        "edges": [
+            "主场景"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "免费一次": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    728,
+                    665,
+                    332,
+                    139
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1349,
+                    145
+                ]
+            },
+            "付费招财": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    886,
+                    733
+                ]
+            }
+        }
+    },
+    "排行榜": {
+        "edges": [
+            "主场景"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "点赞": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1414,
+                    125,
+                    171,
+                    621
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1527,
+                    44
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    158,
+                    843
+                ]
+            }
+        }
+    },
+    "更多玩法": {
+        "edges": [
+            "更多玩法-任务",
+            "决斗场-首页"
+        ],
+        "threshold": 0.8,
+        "elements": {}
+    },
+    "更多玩法-任务": {
+        "edges": [
+            "更多玩法"
+        ],
+        "threshold": 0.8,
+        "elements": {}
+    },
+    "本服要塞战": {
+        "edges": [
+            "要塞战略图"
+        ],
+        "threshold": 0.8,
+        "elements": {}
+    },
+    "活动": {
+        "edges": [
+            "主场景"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "一乐外卖-待领取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "一乐外卖-未选中": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1,
+                    141,
+                    217,
+                    758
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "每月签到-签到": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "一乐外卖-选中": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    141,
+                    217,
+                    758
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "每月签到-未选中": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1,
+                    141,
+                    239,
+                    758
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "每月签到-选中": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    145,
+                    217,
+                    754
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1520,
+                    58
+                ]
+            }
+        }
+    },
+    "生存挑战": {
+        "edges": [
+            "主场景",
+            "试炼之地"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "没有可以出战的忍者": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    504,
+                    408,
+                    595,
+                    82
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "开始扫荡": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    875,
+                    727,
+                    176,
+                    169
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "已通过所有关卡": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    605,
+                    385,
+                    369,
+                    113
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "准备就绪-确定": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    589,
+                    460,
+                    457,
+                    185
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "重置": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1037,
+                    725,
+                    169,
+                    174
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "重置-确认": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    579,
+                    447,
+                    474,
+                    191
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "准备就绪-确定-确定": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    472,
+                    447,
+                    656,
+                    185
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "准备就绪": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    612,
+                    655,
+                    385,
+                    165
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1546,
+                    43
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    161,
+                    843
+                ]
+            },
+            "空白点": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1193,
+                    64
+                ]
+            },
+            "生存挑战今天已经不能再重置了": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    497,
+                    409,
+                    586,
+                    79
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "可出战的忍者不足": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "登录": {
+        "edges": [],
+        "threshold": 0.8,
+        "elements": {
+            "开始游戏": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    561,
+                    690,
+                    487,
+                    151
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1466,
+                    62
+                ]
+            }
+        }
+    },
+    "登录奖励": {
+        "edges": [],
+        "threshold": 0.8,
+        "elements": {
+            "领取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    602,
+                    665,
+                    403,
+                    150
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "空白点": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    998,
+                    846
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1515,
+                    62
+                ]
+            }
+        }
+    },
+    "福利站": {
+        "edges": [
+            "情报站-首页",
+            "主场景"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "活跃度任务-今日已领取过该奖励": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    457,
+                    404,
+                    647,
+                    179
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "活跃度任务-100": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    633,
+                    556,
+                    223,
+                    61
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "一键签到": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    688,
+                    67,
+                    176,
+                    87
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "活跃度任务-100-我知道了": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.75,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    673,
+                    546,
+                    273,
+                    85
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "活跃度任务-40-确定": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.75,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    797,
+                    470,
+                    217,
+                    96
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "活跃度任务-40-我知道了": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.75,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    690,
+                    546,
+                    223,
+                    73
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "立即签到": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    691,
+                    636,
+                    213,
+                    107
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "活跃度任务-领取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    673,
+                    79,
+                    751,
+                    820
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "活跃度任务-60-我知道了": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.75,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    697,
+                    515,
+                    207,
+                    99
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "活跃度任务-100-确定": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.75,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    809,
+                    474,
+                    197,
+                    85
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "活跃度任务-40": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    242,
+                    538,
+                    277,
+                    84
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "我知道了": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    659,
+                    671,
+                    262,
+                    90
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "活跃度任务-60": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    457,
+                    481,
+                    240,
+                    138
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "今日查看金币助手-去完成": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.96,
+                    0.35
+                ],
+                "roi": [
+                    9,
+                    62,
+                    829,
+                    837
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1478,
+                    29
+                ]
+            }
+        }
+    },
+    "秘境探险-匹配": {
+        "edges": [
+            "秘境探险-首页"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "剩余挑战券-0": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    552,
+                    774,
+                    128,
+                    72
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "胜利": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "暂停-退出战斗": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    449,
+                    211,
+                    697,
+                    427
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "暂停-退出战斗-确定": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "毒风秘境": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "烈炎秘境": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "返回": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    21,
+                    793,
+                    269,
+                    101
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "暂停": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "落岩秘境": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "水牢秘境": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "罡体秘境": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "恭喜你获得": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    539,
+                    119,
+                    501,
+                    176
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "离开队伍-确定": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    613,
+                    467,
+                    391,
+                    164
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "出战": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "雷霆秘境": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "阴阳秘境": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "出战-继续挑战-确定": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    619,
+                    449,
+                    360,
+                    204
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "秘境探险-首页": {
+        "edges": [
+            "秘境探险-匹配",
+            "忍者挑战"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "创建房间": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "积分赛": {
+        "edges": [
+            "积分赛-选择对手",
+            "主场景"
+        ],
+        "threshold": 0.8,
+        "elements": {}
+    },
+    "积分赛-选择对手": {
+        "edges": [
+            "积分赛"
+        ],
+        "threshold": 0.8,
+        "elements": {}
+    },
+    "装备": {
+        "edges": [
+            "主场景"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "扫荡40次-选中": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.69,
+                    0.54
+                ],
+                "roi": [
+                    705,
+                    547,
+                    306,
+                    285
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "开始扫荡": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    863,
+                    549,
+                    447,
+                    188
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "扫荡": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    843,
+                    609,
+                    398,
+                    179
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "已足够": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    852,
+                    593,
+                    150,
+                    84
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "进阶": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1310,
+                    619,
+                    257,
+                    134
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "体力不足": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    609,
+                    320,
+                    377,
+                    286
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "继续扫荡": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    967,
+                    705,
+                    250,
+                    101
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "合成": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    817,
+                    575,
+                    437,
+                    197
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "可装备": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    869,
+                    510,
+                    682,
+                    122
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "可合成": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    862,
+                    507,
+                    690,
+                    131
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "可扫荡": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    865,
+                    510,
+                    687,
+                    124
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "一键添加": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1342,
+                    610,
+                    230,
+                    139
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1527,
+                    42
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    147,
+                    848
+                ]
+            },
+            "武器": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    231,
+                    308
+                ]
+            },
+            "忍之书": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    222,
+                    507
+                ]
+            },
+            "头盔": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    437,
+                    299
+                ]
+            },
+            "胸甲": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    648,
+                    302
+                ]
+            },
+            "项链": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    437,
+                    513
+                ]
+            },
+            "戒指": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    653,
+                    515
+                ]
+            },
+            "空白点": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1371,
+                    452
+                ]
+            }
+        }
+    },
+    "要塞争夺战": {
+        "edges": [
+            "本服要塞战",
+            "跨服要塞战"
+        ],
+        "threshold": 0.8,
+        "elements": {}
+    },
+    "跨服要塞战": {
+        "edges": [],
+        "threshold": 0.8,
+        "elements": {}
+    },
+    "追击晓组织": {
+        "edges": [],
+        "threshold": 0.8,
+        "elements": {}
+    },
+    "邮件": {
+        "edges": [
+            "主场景"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "一键提取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    424,
+                    733,
+                    256,
+                    101
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "一键删除": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    115,
+                    734,
+                    305,
+                    101
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1466,
+                    148
+                ]
+            }
+        }
+    },
+    "训练场": {
+        "edges": [],
+        "threshold": 0.8,
+        "elements": {
+            "暂停": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "要塞战略图": {
+        "edges": [
+            "X之要塞"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1540,
+                    61
+                ]
+            }
+        }
+    },
+    "X之要塞": {
+        "edges": [],
+        "threshold": 0.8,
+        "elements": {}
+    },
+    "天之战场": {
+        "edges": [],
+        "threshold": 0.8,
+        "elements": {
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1550,
+                    52
+                ]
+            }
+        }
+    },
+    "地之战场": {
+        "edges": [],
+        "threshold": 0.8,
+        "elements": {
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1549,
+                    49
+                ]
+            }
+        }
+    },
+    "忍术对战-单人模式": {
+        "edges": [
+            "忍术对战-单人模式-决斗任务",
+            "忍术对战-单人模式-调整阵容",
+            "忍术对战-单人模式-战斗中"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "你的对手离开了游戏": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "决斗任务": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    894,
+                    722,
+                    213,
+                    177
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "开战": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1339,
+                    595,
+                    260,
+                    304
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1526,
+                    42
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    142,
+                    845
+                ]
+            },
+            "正在寻找旗鼓相当的对手": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "取消匹配": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "此玩法所有玩家战斗力一致": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "调整阵容": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1207,
+                    734,
+                    219,
+                    165
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "忍术对战-单人模式-决斗任务": {
+        "edges": [
+            "忍术对战-单人模式"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "宝箱-过期": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    651,
+                    150,
+                    662,
+                    493
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "满胜场": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    520,
+                    650,
+                    852,
+                    141
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "宝箱-待领取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1336,
+                    159,
+                    167,
+                    501
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "宝箱-未达成": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1311,
+                    150,
+                    202,
+                    507
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1523,
+                    44
+                ]
+            }
+        }
+    },
+    "忍术对战-单人模式-调整阵容": {
+        "edges": [
+            "忍术对战-单人模式"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1526,
+                    44
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    134,
+                    846
+                ]
+            }
+        }
+    },
+    "组织助战-助战忍者": {
+        "edges": [
+            "小队突袭-组织助战"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "领取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    662,
+                    667,
+                    299,
+                    127
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1527,
+                    44
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    151,
+                    846
+                ]
+            }
+        }
+    },
+    "忍术对战-单人模式-战斗中": {
+        "edges": [
+            "忍术对战-单人模式"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "60": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    681,
+                    58,
+                    237,
+                    105
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "举报反馈": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    802,
+                    0,
+                    797,
+                    69
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "胜者": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    566,
+                    590,
+                    194,
+                    110
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "精英副本-便捷扫荡": {
+        "edges": [
+            "冒险-精英副本"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "勾选上次扫荡副本-选中": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.4,
+                    0.49
+                ],
+                "roi": [
+                    857,
+                    705,
+                    326,
+                    90
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "扫荡结束-确定": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "扫荡": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1181,
+                    685,
+                    237,
+                    113
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "一键全选-未选中": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.34,
+                    0.46
+                ],
+                "roi": [
+                    664,
+                    704,
+                    208,
+                    92
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "勾选上次扫荡副本-未选中": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.41,
+                    0.49
+                ],
+                "roi": [
+                    860,
+                    710,
+                    326,
+                    84
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "体力不足": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "扫荡-继续扫荡": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "扫荡-请选中至少一个需要扫荡的副本": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "一键全选-选中": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.34,
+                    0.5
+                ],
+                "roi": [
+                    661,
+                    707,
+                    204,
+                    82
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "勾选的副本都已经扫荡完毕": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    533,
+                    409,
+                    516,
+                    81
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1362,
+                    150
+                ]
+            }
+        }
+    },
+    "组织祈福": {
+        "edges": [
+            "组织"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "超影免费": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    570,
+                    605,
+                    897,
+                    193
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "昨日奖励": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    469,
+                    159,
+                    177,
+                    167
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "今日次数已达上限-确定": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    586,
+                    486,
+                    472,
+                    148
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "焚香祈福": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    564,
+                    630,
+                    306,
+                    170
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "昨日奖励-领取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    903,
+                    202,
+                    200,
+                    595
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "恭喜你获得": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    569,
+                    138,
+                    438,
+                    138
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1526,
+                    44
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    139,
+                    846
+                ]
+            },
+            "空白点": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1403,
+                    380
+                ]
+            },
+            "蛤蟆存钱罐": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            }
+        }
+    },
+    "组织": {
+        "edges": [
+            "主场景"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1532,
+                    50
+                ]
+            }
+        }
+    },
+    "试炼之地": {
+        "edges": [
+            "主场景",
+            "生存挑战",
+            "修行之路"
+        ],
+        "threshold": 0.8,
+        "elements": {
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1540,
+                    49
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    154,
+                    852
+                ]
+            },
+            "修行之路": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    385,
+                    131,
+                    239,
+                    524
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "生存挑战": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    943,
+                    118,
+                    317,
+                    503
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "空白点": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1253,
+                    58
+                ]
+            }
+        }
+    }
+}

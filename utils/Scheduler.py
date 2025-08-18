@@ -12,12 +12,16 @@ from PySide6.QtCore import QThread, Signal, QMutex, QWaitCondition, Qt, QObject,
 from PySide6.QtWidgets import QWidget, QLabel, QBoxLayout, QVBoxLayout
 
 from StaticFunctions import get_real_path, cv_save
-from ui.DailyQuestsHelper_ui import Ui_DailyQuestsHelper
+from utils.ui.DailyQuestsHelper_ui import Ui_DailyQuestsHelper
+from utils.Base.Enums import CycleType
+from utils.Base.Operationer import Operationer
 from utils.Base.Recognizer import Recognizer
-from utils.Config import Config
-from utils.Device import Device
-from utils.Task import TASK_TYPE_MAP
-from utils.Task.BaseTask import BaseTask, CycleType
+from utils.Base.Config import Config
+from utils.Base.Device import Device
+from utils.Base.Scene.SceneGraph import SceneGraph
+from utils.Base.Scene.TransitionManager import TransitionManager
+from utils.Base.Task import TASK_TYPE_MAP
+from utils.Base.Task.BaseTask import BaseTask
 
 T = TypeVar('T', bound=BaseTask)
 W = TypeVar('W', bound=QWidget)
@@ -242,15 +246,24 @@ class Scheduler(QObject):
     add_task_ui_signal = Signal(BaseTask, int)
     remove_task_ui_signal = Signal(BaseTask, int)
     activate_another_task_signal = Signal(str)
+    screen_save_signal = Signal(str)
 
-    def __init__(self, ui: Ui_DailyQuestsHelper, recognizer: Recognizer, config: Config, ref_map: Dict):
+    def __init__(self,
+                 ui: Ui_DailyQuestsHelper,
+                 config: Config,
+                 scene_graph: SceneGraph,
+                 recognizer: Recognizer,
+                 ref_map: Dict
+                 ):
         super().__init__()
         self.logger = logging.getLogger("调度器")
         self.running = False
         self.UI = ui
         self.config = config
         self.task_common_control_ref_map = ref_map
+        self.scene_graph = scene_graph
         self.recognizer = recognizer
+        self.transition_manager = TransitionManager(self.config, self.scene_graph.scenes)
         self.running_queue = PriorityQueue[BaseTask]()  # 执行队列
         self.ready_queue = PriorityQueue[BaseTask]()  # 就绪队列
         self.waiting_queue = PriorityQueue[BaseTask]()  # 等待队列
@@ -265,8 +278,9 @@ class Scheduler(QObject):
         self.add_task_ui_signal.connect(self.create_task_ui)
         self.remove_task_ui_signal.connect(self.remove_task_ui)
         self.activate_another_task_signal.connect(self.activate_another_task_implement)
+        self.screen_save_signal.connect(self._handle_screen_save)
 
-        self.device: Device = None
+        self.device: Device | None = None
 
         self.timer_thread = TimerThread()
         self.timer_thread.timeout.connect(self.scan)
@@ -281,7 +295,7 @@ class Scheduler(QObject):
         self.logger.info("正在启动调度器...")
         self.UI.start_schedule_button.setEnabled(False)
         self.running = True
-        self.device = Device(self.config, self.recognizer)
+        self.device = Device(self.config)
 
         for task_info in self.config.tasks.values():
             task_name = task_info.get('任务名称')
@@ -290,14 +304,24 @@ class Scheduler(QObject):
             if not task_class:
                 self.logger.warning(f"[{task_name}] 任务创建出错")
                 continue
-            task_instance = task_class(
+            operationer_instance = Operationer(
                 task_name,
                 self.config,
                 self.device,
+                self.recognizer,
+                self.scene_graph,
+                self.screen_save_signal
+            )
+            task_instance = task_class(
+                task_name,
+                self.config,
+                self.scene_graph,
+                self.transition_manager,
+                self.recognizer,
+                operationer_instance,
                 self.activate_another_task_signal,
                 self._execute_done_callback
             )
-
             self.waiting_queue.enqueue(task_instance)
             self.create_task_ui(task_instance, 2)
         # for task in self.waiting_queue.peek()[:]:
@@ -470,6 +494,9 @@ class Scheduler(QObject):
         elif status == 2:  # 等待中
             self.waiting_widget_list.remove_widget(task.task_name)
 
+    def _handle_screen_save(self, task_name):
+        threading.Thread(target=self.save_screen, args=(task_name,)).start()
+
     def scan(self):
         """
         1.扫描等待队列中的任务，如果可以执行则放入就绪队列
@@ -478,7 +505,7 @@ class Scheduler(QObject):
         # self.logger.debug("开始检查")
         start = time.perf_counter()
         if self.UI.bool_save_img.isChecked():
-            threading.Thread(target=self.save_screen).start()
+            self.screen_save_signal.emit("扫描")
 
         moved_tasks = []  # 记录从等待队列移动到就绪队列的任务
 
@@ -567,7 +594,7 @@ class Scheduler(QObject):
             self.logger.info(f"[{task.task_name}]-[{task.task_id}] 进入等待队列")
             self.add_task_ui_signal.emit(task, 2)
 
-    def save_screen(self):
+    def save_screen(self, name):
         """保存截图到文件"""
         try:
             if self.device is None:
@@ -581,7 +608,10 @@ class Scheduler(QObject):
             image_dir = get_real_path("image")
             os.makedirs(image_dir, exist_ok=True)
             timestamp = datetime.now().strftime('%Y-%m-%d_%H-%M-%S.%f')
-            save_path = os.path.join(image_dir, f"{timestamp}.png")
+            save_dir = os.path.join(image_dir, name)
+            save_path = os.path.join(image_dir, name, f"{timestamp}.png")
+            if not os.path.exists(save_dir):
+                os.makedirs(save_dir, exist_ok=True)
             cv_save(save_path, screen)
             self.logger.info("截图保存到%s", save_path)
 

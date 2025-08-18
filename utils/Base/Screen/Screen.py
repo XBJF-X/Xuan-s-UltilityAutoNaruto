@@ -3,21 +3,13 @@ import logging
 
 from PySide6.QtWidgets import QMessageBox
 
+from utils.Base.Enums import ScreenMode
 from utils.Base.Screen.DroidCastRaw import DroidCastRaw
 from utils.Base.Screen.LD import LD
 from utils.Base.Screen.MuMu import MuMu
 from utils.Base.Screen.U2 import U2
 from utils.Base.Screen.WindowCapture import WindowCapture
-from utils.Config import Config
-
-
-class ScreenMode(enum.IntEnum):
-    """截图模式枚举"""
-    DroidCastRaw = 0
-    WindowCapture = 1
-    U2 = 2
-    MuMu = 3
-    LD = 4
+from utils.Base.Config import Config
 
 
 class Screen:

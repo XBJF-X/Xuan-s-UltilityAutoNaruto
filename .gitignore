@@ -148,7 +148,7 @@ log/
 /release/
 /ColosseumHelper_build.py
 /nsis/
-/config/
+/config/Config.json
 /test3.py
 /ninja_image/
 /分析模拟器窗口.py
@@ -171,3 +171,6 @@ log/
 /output.py
 /profile.svg
 /test2.py
+/refactor_src/
+/package/
+/tool/

@@ -6,7 +6,7 @@ from ctypes import wintypes, c_char_p, c_ubyte
 import cv2
 import numpy as np
 
-from utils.Config import Config
+from utils.Base.Config import Config
 
 
 class MuMu:

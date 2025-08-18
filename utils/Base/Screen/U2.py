@@ -1,10 +1,9 @@
 import logging
 
 import cv2
-import numpy as np
 import uiautomator2 as u2
 
-from utils.Config import Config
+from utils.Base.Config import Config
 
 
 class U2:

@@ -2,14 +2,13 @@ import logging
 
 import win32gui
 import win32ui
-import win32con
 import numpy as np
 import cv2
 import time
 import ctypes
-from ctypes import windll, WinDLL, wintypes
+from ctypes import wintypes
 
-from utils.Config import Config
+from utils.Base.Config import Config
 
 # 提前加载user32库并定义PrintWindow函数（减少每次调用的开销）
 user32 = ctypes.WinDLL("user32", use_last_error=True)

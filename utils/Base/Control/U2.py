@@ -1,11 +1,9 @@
 import logging
-import os
 
 import uiautomator2 as u2
 from PySide6.QtCore import QThread
 
-from StaticFunctions import get_real_path
-from utils.Config import Config
+from utils.Base.Config import Config
 
 
 class U2:

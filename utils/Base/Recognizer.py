@@ -5,6 +5,12 @@ from typing import Tuple, List, Dict
 import cv2
 import numpy as np
 
+from StaticFunctions import get_real_path, cv_imread
+from utils.Base.Enums import MatchType
+from utils.Base.Scene.Element import Element
+from utils.Base.Scene.Scene import Scene
+from utils.Base.Scene.SceneGraph import SceneGraph
+
 
 def visualize_confidence_heatmap(result, template_name):
     """使用OpenCV绘制置信度热力图"""
@@ -22,49 +28,156 @@ def visualize_confidence_heatmap(result, template_name):
 
 
 class Recognizer:
-    def __init__(self, scene_templates: Dict, element_templates: Dict):
+    def __init__(self, scene_graph: SceneGraph):
         self.logger = logging.getLogger("识别器")
-        self.scene_templates = scene_templates
-        self.element_templates = element_templates
+        self.scene_graph = scene_graph
 
-    def scene_match(self, scene_img: np.ndarray, template_name: str, bool_debug:bool=True) -> Tuple[
-        bool, float]:
+    def scene(self, scene_img, bool_debug=True):
         """
         结合Alpha通道的模板匹配，忽略透明区域
-        :param scene_img: 场景图（BGR格式，numpy数组）
-        :param template_name: 模板图像名称（str）
-        :return: (是否匹配成功，匹配成功的置信度)
+
+        Args:
+            scene_img(np.ndarray): 需要识别的图像
+            bool_debug(bool): 是否回报日志
+
+        Returns:
+            (Scene):检测到的场景实例
         """
-        # start = time.perf_counter()
-        template_data = self.scene_templates[template_name]
-        template_img = template_data['GRAY']
-        mask = template_data['MASK']
-        threshold = template_data['threshold']
-        scene_gray = cv2.cvtColor(scene_img, cv2.COLOR_BGR2GRAY).astype(np.uint8)
+        best_match_id = None
+        best_match_score = 0.0
+        for scene_id, scene in self.scene_graph.scenes.items():
+            if scene.gray is None:
+                continue
 
-        # 验证scene_img是否为有效的NumPy数组
-        if not isinstance(scene_img, np.ndarray) or scene_img.size == 0:
-            self.logger.error("场景图像不是有效的NumPy数组或为空")
-            return False, 0.0
+            # 执行模板匹配
+            matched, match_score = self._single_template_match(
+                scene_img, scene, bool_debug
+            )
 
-        if not isinstance(template_img, np.ndarray) or template_img.size == 0:
-            self.logger.error("模板图像不是有效的NumPy数组或为空")
-            return False, 0.0
+            # 更新最佳匹配
+            if matched and match_score > best_match_score:
+                best_match_id = scene_id
+                best_match_score = match_score
 
-        if scene_img is None or template_img is None:
-            self.logger.warning("场景或模版为空")
-            return False, 0.0
+                # 如果匹配度非常高，提前终止
+                if match_score > 0.95:  # 可调阈值
+                    if bool_debug:
+                        self.logger.debug(f"提前终止: {scene_id}匹配度过高({match_score:.2f})")
+                    break
 
-        # 2. 对场景图和模板图进行模板匹配（仅使用非透明区域）
-        # 执行模板匹配（添加异常捕获）
+        # 4. 结果验证
+        if best_match_id and best_match_score >= self.scene_graph.scenes.get(best_match_id).threshold:
+            if bool_debug:
+                self.logger.info(f"匹配成功: {best_match_id} ({best_match_score:.4f})")
+            return self.scene_graph.scenes.get(best_match_id)
+
+        if bool_debug:
+            self.logger.warning("未找到匹配场景")
+        return None
+
+        start = time.perf_counter()
+        color_scores = []
+        for scene_id, scene in self.scene_graph.scenes.items():
+            scene_rgb = self._rgb_average(scene_img, scene.mask)
+            # 计算颜色相似度（欧氏距离的倒数）
+            color_dist = np.sqrt(
+                (scene_rgb[0] - scene.rgb[0]) ** 2 +
+                (scene_rgb[1] - scene.rgb[1]) ** 2 +
+                (scene_rgb[2] - scene.rgb[2]) ** 2
+            )
+            # 距离越小越相似，转换为相似度分数（0-1）
+            color_score = 1 / (1 + color_dist)
+            color_scores.append((scene_id, color_score))
+        # 按颜色相似度降序排序
+        color_scores.sort(key=lambda x: x[1], reverse=True)
+
+        # 3. 按颜色相似度顺序进行模板匹配
+        best_match_id = None
+        best_match_score = 0.0
+
+        for scene_id, color_score in color_scores:
+            scene = self.scene_graph.scenes.get(scene_id)
+
+            # 如果颜色相似度已经很低，提前终止
+            if color_score < 0.3 and best_match_score > 0:  # 可调阈值
+                if bool_debug:
+                    self.logger.debug(f"提前终止: {scene_id}颜色相似度过低({color_score:.2f})")
+                break
+
+            # 执行模板匹配
+            matched, match_score = self._single_template_match(
+                scene_img, scene, bool_debug
+            )
+
+            # 更新最佳匹配
+            if matched and match_score > best_match_score:
+                best_match_id = scene_id
+                best_match_score = match_score
+
+                # 如果匹配度非常高，提前终止
+                if match_score > 0.95:  # 可调阈值
+                    if bool_debug:
+                        self.logger.debug(f"提前终止: {scene_id}匹配度过高({match_score:.2f})")
+                    break
+
+        # 4. 结果验证
+        if best_match_id and best_match_score >= self.scene_graph.scenes.get(best_match_id).threshold:
+            if bool_debug:
+                self.logger.info(f"匹配成功: {best_match_id} ({best_match_score:.4f})")
+            return best_match_id, best_match_score
+
+        if bool_debug:
+            self.logger.warning("未找到匹配场景")
+        return None, 0.0
+
+    def _single_template_match(self, scene_img, scene, bool_debug=True):
+        """单个模板匹配实现"""
         try:
-            roi = template_data.get('roi', None)
-            if roi:
-                x1, x2, y1, y2 = roi
-                scene_gray = scene_gray[y1:y2, x1:x2]
+            # 灰度转换
+            scene_gray = cv2.cvtColor(scene_img, cv2.COLOR_BGR2GRAY)
+
+            # 带掩码的模板匹配
             result = cv2.matchTemplate(
                 scene_gray,
-                template_img,
+                scene.gray,
+                method=cv2.TM_CCOEFF_NORMED,
+                mask=scene.mask
+            )
+
+            result = np.nan_to_num(result, nan=-1.0, posinf=-1.0, neginf=-1.0)
+
+            # 获取最大匹配值
+            _, max_val, _, _ = cv2.minMaxLoc(result)
+
+            if bool_debug:
+                self.logger.debug(f"[{scene.id}] 匹配度: {max_val:.4f}")
+
+            return max_val >= scene.threshold, max_val
+
+        except Exception as e:
+            self.logger.error(f"模板匹配出错[{scene.id}]: {str(e)}")
+            return False, 0.0
+
+    def scene_match(self, scene_img, template, bool_debug=True):
+        """
+        只对传入场景进行匹配，为了与scene区分
+        Args:
+            scene_img:
+            template(Scene):
+            bool_debug:
+
+        Returns:
+
+        """
+        template_img = template.gray
+        mask = template.mask
+        threshold = template.threshold
+        scene_gray = cv2.cvtColor(scene_img, cv2.COLOR_BGR2GRAY).astype(np.uint8)
+        # 执行模板匹配（添加异常捕获）
+        try:
+            result = cv2.matchTemplate(
+                image=scene_gray,
+                templ=template_img,
                 method=cv2.TM_CCOEFF_NORMED,
                 mask=mask
             )
@@ -72,43 +185,37 @@ class Recognizer:
             result = np.nan_to_num(result, nan=-1.0, posinf=-1.0, neginf=-1.0)
         except cv2.error as e:
             self.logger.error(f"模板匹配出错：{e}")
-            return False,0.0
-
-        # 3. 判断最高匹配得分是否超过阈值
-        max_score = np.max(result)  # 获取所有位置中的最高匹配得分
-        # 检查result的统计信息
+            return []
+        # # 检查result的统计信息
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
         if bool_debug:
-            self.logger.debug(f"[{template_name}]匹配结果统计：最大值={max_val:.2f}")
-        # vis_img = visualize_confidence_heatmap(result, template_name)
-        # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:-3]  # 截取前3位毫秒
-        # # 构建带时间戳的文件名
-        # filename = f"confidence_heat/{template_name}_{timestamp}.png"
-        # cv2.imwrite(get_real_path(filename), vis_img)
-        # print(f"[SCENE_MATCH]耗时 {(time.perf_counter() - start) * 1000:.2f} ms")
-        return max_score >= threshold, max_score  # 超过阈值则认为匹配成功
+            self.logger.debug(f"[{template.id}]匹配结果统计：最大值={max_val:.2f}")
+        if max_val >= threshold:
+            return True, max_val
+        else:
+            return False, 0.0
 
-    def element_match(self, scene_img: np.ndarray, template_name: str, bool_debug: bool = True) -> List[
-        Tuple[int, int, int, int]]:
+    def element_match(self, scene_img, template, bool_debug=True):
         """
         在场景图中匹配模板元素，忽略模板的透明像素（Alpha=0区域），支持多目标和去重
 
         Args:
-            scene_img: 场景图像（BGR格式的numpy数组，如截图）
-            template_name: 模板图像名称（str）
+            scene_img(np.ndarray): 场景图像（BGR格式的numpy数组，如截图）
+            template(Element): 模板图像名称（str）
+            bool_debug(bool): 是否回报日志
 
         Returns:
+            List[Tuple[int, int, int, int]]
             目标位置列表，每个元素为(x1, y1, x2, y2)，表示匹配区域的左上角和右下角坐标
         """
-        template_data = self.element_templates[template_name]
-        if template_data.get('match_way', None) == "SIFT":
-            return self.sift_match(template_data, scene_img, template_name)
+        if template.match_type == MatchType.SIFT:
+            return self.sift_match(template, scene_img)
         else:
-            return self.template_match(template_data, scene_img, template_name, bool_debug)
+            return self.template_match(template, scene_img, bool_debug)
 
-    def sift_match(self, template_data, scene_img, template_name, min_good_matches=10, ratio=0.75):
+    def sift_match(self, template, scene_img, min_match_ratio=0.25, ratio=0.75):
         # 1. 读取图像
-        template_gray = template_data['GRAY']
+        template_gray = template.gray
         scene_gray = cv2.cvtColor(scene_img, cv2.COLOR_BGR2GRAY).astype(np.uint8)
 
         h, w = template_gray.shape[:2]  # 模板尺寸
@@ -121,12 +228,18 @@ class Recognizer:
         kp2, des2 = sift.detectAndCompute(scene_gray, None)  # 场景特征
         feature_time = time.perf_counter() - start_time
 
+        # 计算最小匹配点数（基于模板特征数量的比例）
+        num_template_features = len(kp1)
+        # 确保至少有4个匹配点（单应性矩阵计算的最小要求）
+        min_good_matches = max(4, int(num_template_features * min_match_ratio))
+        self.logger.debug(f"[{template.id}] 模板特征数: {num_template_features}, 所需最小匹配: {min_good_matches}")
+
         # 4. 匹配特征点（使用FLANN快速匹配器）
         start_time = time.perf_counter()
         # FLANN参数设置
         FLANN_INDEX_KDTREE = 1
         index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
-        search_params = dict(checks=50)  # 检查次数越多，匹配越准但越慢
+        search_params = dict(checks=70)  # 检查次数越多，匹配越准但越慢
 
         flann = cv2.FlannBasedMatcher(index_params, search_params)
         matches = flann.knnMatch(des1, des2, k=2)  # k=2返回每个特征的两个最佳匹配
@@ -137,7 +250,7 @@ class Recognizer:
         for m, n in matches:
             if m.distance < ratio * n.distance:  # 最佳匹配距离远小于次佳匹配
                 good_matches.append(m)
-        self.logger.debug(f"[{template_name}] 有效匹配点数：{len(good_matches)}")
+        self.logger.debug(f"[{template.id}] 有效匹配点数：{len(good_matches)}")
         if len(good_matches) >= min_good_matches:
             # 提取匹配点坐标
             src_pts = np.float32([kp1[m.queryIdx].pt for m in good_matches]).reshape(-1, 1, 2)
@@ -160,18 +273,18 @@ class Recognizer:
         else:
             return []
 
-    def template_match(self, template_data, scene_img, template_name, bool_debug: bool = True):
-        template_img = template_data['GRAY']
-        mask = template_data['MASK']
-        threshold = template_data['threshold']
+    def template_match(self, template: Element, scene_img, bool_debug: bool = True):
+        template_img = template.gray
+        mask = template.mask
+        threshold = template.threshold
         scene_gray = cv2.cvtColor(scene_img, cv2.COLOR_BGR2GRAY).astype(np.uint8)
-        x1, x2, y1, y2 = [0, 0, 0, 0]
+        x, y, w, h = [0, 0, 1600, 900]
         # 执行模板匹配（添加异常捕获）
         try:
-            roi = template_data.get('roi', None)
+            roi = template.roi
             if roi:
-                x1, x2, y1, y2 = roi
-                scene_gray = scene_gray[y1:y2, x1:x2]
+                x, y, w, h = roi
+                scene_gray = scene_gray[y:y + h, x:x + w]
             result = cv2.matchTemplate(
                 image=scene_gray,
                 templ=template_img,
@@ -186,7 +299,7 @@ class Recognizer:
         # # 检查result的统计信息
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
         if bool_debug:
-            self.logger.debug(f"[{template_name}]匹配结果统计：最大值={max_val:.2f}")
+            self.logger.debug(f"[{template.id}]匹配结果统计：最大值={max_val:.2f}")
         # vis_img = visualize_confidence_heatmap(result, template_name)
         # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:-3]  # 截取前3位毫秒
         # # 构建带时间戳的文件名
@@ -203,8 +316,8 @@ class Recognizer:
         h, w = template_img.shape[:2]  # 模板的高和宽
         # 构建(置信度, x1, y1, x2, y2)的列表，并按置信度降序排序
         matches_with_conf = [
-            (conf, int(x1 + x), int(y1 + y), int(x1 + x + w), int(y1 + y + h))
-            for x, y, conf in zip(locations[1], locations[0], confidences)
+            (conf, int(x + dx), int(y + dy), int(x + dx + w), int(y + dy + h))
+            for dx, dy, conf in zip(locations[1], locations[0], confidences)
         ]
         matches_with_conf.sort(reverse=True, key=lambda x: x[0])
 
@@ -258,3 +371,52 @@ class Recognizer:
 
         # print(f"匹配位置（去重）：{keep}")
         return keep
+
+    def _rgb_average(self, img, mask=None):
+        """
+        计算图像在掩码有效区域内的RGB平均颜色
+
+        参数:
+            img:
+            mask: 外部掩码（可选），若无则使用图像自带的alpha通道
+
+        返回:
+            (r, g, b) 平均颜色元组，出错返回None
+        """
+        try:
+            # 分离通道：OpenCV默认BGR(A)格式
+            channels = cv2.split(img)
+            b, g, r = channels[0:3]  # 提取BGR通道
+
+            # 确定掩码
+            if mask is not None:
+                # 使用外部传入的掩码
+                final_mask = mask
+            elif img.shape[2] == 4:
+                # 使用图像的alpha通道作为掩码
+                _, final_mask = cv2.threshold(channels[3], 1, 255, cv2.THRESH_BINARY)
+            else:
+                # 无掩码时使用全白掩码
+                final_mask = np.ones_like(b) * 255
+
+            # 确保掩码是二值单通道
+            if final_mask.ndim > 2:
+                final_mask = cv2.cvtColor(final_mask, cv2.COLOR_BGR2GRAY)
+
+            # 计算掩码区域内的平均颜色
+            masked_pixels = final_mask > 0
+            r_avg = int(np.mean(r[masked_pixels]))
+            g_avg = int(np.mean(g[masked_pixels]))
+            b_avg = int(np.mean(b[masked_pixels]))
+
+            return r_avg, g_avg, b_avg
+
+        except Exception as e:
+            self.logger.error(f"计算平均颜色时出错: {str(e)}")
+            return None
+
+
+if __name__ == "__main__":
+    rg = Recognizer(SceneGraph(get_real_path("refactor_src/Template/Scene")))
+    img = cv_imread(r"F:\PyProject\DailyQuestsHelper\image\2025-08-01_07-24-49.069996.png")
+    print(rg.scene_match(img, True))

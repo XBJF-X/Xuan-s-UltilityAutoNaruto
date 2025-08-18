@@ -9,7 +9,7 @@ import cv2
 import numpy as np
 from requests import Session
 
-from utils.Config import Config
+from utils.Base.Config import Config
 from StaticFunctions import get_real_path
 
 
@@ -205,10 +205,10 @@ class DroidCastRaw:
         cv2.add(b, m, dst=b)
         time4 = time.perf_counter()
         image = cv2.merge([b, g, r])
-        print(f"接受图像：{(time2 - time1) * 1000 / 100}ms")
-        print(f"shape：{(time3 - time2) * 1000 / 100}ms")
-        print(f"异或：{(time4 - time3) * 1000 / 100}ms")
-        print(f"merge：{(time.perf_counter() - time4) * 1000 / 100}ms")
+        # print(f"接受图像：{(time2 - time1) * 1000}ms")
+        # print(f"shape：{(time3 - time2) * 1000}ms")
+        # print(f"异或：{(time4 - time3) * 1000}ms")
+        # print(f"merge：{(time.perf_counter() - time4) * 1000}ms")
 
         return image
 

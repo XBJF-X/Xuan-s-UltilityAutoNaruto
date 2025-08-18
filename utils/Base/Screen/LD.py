@@ -8,7 +8,7 @@ from typing import List, Optional
 import cv2
 import numpy as np
 
-from utils.Config import Config
+from utils.Base.Config import Config
 
 # 定义 Windows API 函数
 kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
