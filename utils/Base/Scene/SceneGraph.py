@@ -96,7 +96,7 @@ class SceneGraph:
             (r, g, b) 平均颜色元组，出错返回None
         """
         if not path.exists():
-            self.logger.warning(f"文件不存在: {path}，可能是坐标型元素")
+            # self.logger.warning(f"文件不存在: {path}，可能是坐标型元素")
             return None
 
         try:
