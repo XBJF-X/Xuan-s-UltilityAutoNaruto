@@ -12,7 +12,6 @@ from PySide6.QtCore import QThread, Signal, QMutex, QWaitCondition, Qt, QObject,
 from PySide6.QtWidgets import QWidget, QLabel, QBoxLayout, QVBoxLayout
 
 from StaticFunctions import get_real_path, cv_save
-from utils.ui.DailyQuestsHelper_ui import Ui_DailyQuestsHelper
 from utils.Base.Enums import CycleType
 from utils.Base.Operationer import Operationer
 from utils.Base.Recognizer import Recognizer
@@ -22,6 +21,7 @@ from utils.Base.Scene.SceneGraph import SceneGraph
 from utils.Base.Scene.TransitionManager import TransitionManager
 from utils.Base.Task import TASK_TYPE_MAP
 from utils.Base.Task.BaseTask import BaseTask
+from utils.ui.Xuan_ui import Ui_Xuan
 
 T = TypeVar('T', bound=BaseTask)
 W = TypeVar('W', bound=QWidget)
@@ -249,7 +249,7 @@ class Scheduler(QObject):
     screen_save_signal = Signal(str)
 
     def __init__(self,
-                 ui: Ui_DailyQuestsHelper,
+                 ui: Ui_Xuan,
                  config: Config,
                  scene_graph: SceneGraph,
                  recognizer: Recognizer,

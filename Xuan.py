@@ -4,6 +4,7 @@ import ctypes
 import json
 import logging
 import os
+import webbrowser
 from collections import defaultdict
 from datetime import datetime
 from typing import Dict
@@ -11,11 +12,12 @@ from zoneinfo import ZoneInfo
 
 import cv2
 import numpy as np
-from PySide6.QtGui import QIcon
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QIcon, QPainter, QBrush, QColor, QRegion, QPainterPath
 from PySide6.QtWidgets import QMainWindow, QVBoxLayout, QApplication, QWidget, QFileDialog
 
 from StaticFunctions import resource_path, get_real_path
-from utils.ui.DailyQuestsHelper_ui import Ui_DailyQuestsHelper
+from utils.Base.Updater import Updater
 from utils.Base.Recognizer import Recognizer
 from utils.Base.Config import Config
 from utils.Base.Device import Device
@@ -25,24 +27,26 @@ from utils.Base.Logger import LogWindow
 from utils.Scheduler import Scheduler
 from utils.SerialChoose import SerialChoose
 from utils.Base.Task import TREE_INDEX_DIC, TASK_NAME_CN2EN_MAP
+from utils.ui.Xuan_ui import Ui_Xuan
 
 
-class DailyQuestsHelper(QMainWindow):
+class Xuan(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.UI = Ui_DailyQuestsHelper()
+        self.UI = Ui_Xuan()
         self.UI.setupUi(self)
         self.log_window = LogWindow()
         self.logger = logging.getLogger("日常助手")
         self.logger.info("初始化配置...")
         self.config = Config()
         self.logger.info("初始化环境...")
+        self.mouse_position = None
         self.init_environment()
         self.task_common_control_ref_map: Dict[str:Dict[str:QWidget]] = defaultdict(dict)  # 任务控制控件
         self.logger.info("初始化UI...")
         self.alloc_ui_ref_map()
         self.logger.info("初始化UI响应函数...")
-        self.connect_ui2function()
+        self.bind_signals()
         self.scene_graph = SceneGraph()
         self.recognizer = Recognizer(self.scene_graph)
         self.logger.info("初始化调度器...")
@@ -53,6 +57,7 @@ class DailyQuestsHelper(QMainWindow):
             self.recognizer,
             self.task_common_control_ref_map
         )
+        self.updater = Updater()
         self.logger.info("初始化完成...")
 
     def init_environment(self):
@@ -82,7 +87,48 @@ class DailyQuestsHelper(QMainWindow):
         self.setWindowIcon(QIcon(resource_path("src/ASDS.ico")))
         self.resize(1400, 800)
         app.aboutToQuit.connect(self._on_about_to_quit)
+        # 设置窗口标志
+        self.setWindowFlags(
+            Qt.WindowType.FramelessWindowHint
+        )
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+        self.setWindowIcon(QIcon(resource_path("src/ASDS.ico")))
         # self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+
+    def mousePressEvent(self, event):
+        """鼠标按下事件"""
+        if event.button() == Qt.MouseButton.LeftButton:
+            # 记录鼠标按下时的位置
+            self.mouse_position = event.globalPosition().toPoint() - self.frameGeometry(
+            ).topLeft()
+            event.accept()
+
+    def mouseMoveEvent(self, event):
+        """鼠标移动事件"""
+        if event.buttons() == Qt.MouseButton.LeftButton and self.mouse_position is not None:
+            # 计算新位置并移动窗口
+            self.move(event.globalPosition().toPoint() - self.mouse_position)
+            event.accept()
+
+    def mouseReleaseEvent(self, event):
+        """鼠标释放事件"""
+        if event.button() == Qt.MouseButton.LeftButton:
+            # 重置拖动位置
+            self.mouse_position = None
+            event.accept()
+
+    def paintEvent(self, event):
+        """重绘事件处理函数，绘制圆角窗口"""
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)  # 启用抗锯齿
+
+        # 创建圆角矩形路径
+        path = QPainterPath()
+        corner_radius = 10
+        path.addRoundedRect(self.rect(), corner_radius, corner_radius)
+        background_color = QColor(255, 255, 255)
+        # 填充背景
+        painter.fillPath(path, QBrush(background_color))
 
     def alloc_ui_ref_map(self):
         # 日志窗口设置
@@ -111,7 +157,7 @@ class DailyQuestsHelper(QMainWindow):
         self.UI.GouMaiTiLi_times.setValue(self.config.get_task_config("购买体力", "购买体力次数"))
         self.UI.ZhuangBeiHeCheng_target_armor.setCurrentIndex(self.config.get_task_config("装备合成", "合成目标装备"))
 
-    def connect_ui2function(self):
+    def bind_signals(self):
         self.UI.start_schedule_button.clicked.connect(self._on_start_schedule_button_clicked)
         self.UI.overview_panel_button.clicked.connect(lambda _: self.UI.stackedWidget.setCurrentIndex(0))
         self.UI.treeWidget.itemClicked.connect(self._on_tree_item_clicked)
@@ -129,6 +175,10 @@ class DailyQuestsHelper(QMainWindow):
         self.UI.secondary_password.editingFinished.connect(lambda w=self.UI.secondary_password: self.config.set_config("二级密码", w.text()))
         self.UI.key_map_configuration_button.clicked.connect(self._on_key_map_configuration_button_clicked)
         self.UI.serial_list_button.clicked.connect(self._on_serial_list_button_clicked)
+
+        self.UI.go_to_github_btn.clicked.connect(self._on_go_to_github_btn_clicked)
+        self.UI.update_btn.clicked.connect(self._on_update_btn_clicked)
+        self.UI.exit_btn.clicked.connect(QApplication.quit)
 
         self.UI.XiaoDuiTuXi_4rewards_Enable.toggled.connect(lambda flag: self.config.set_task_config("小队突袭", "四倍奖励勾选", flag))
         self.UI.XiaoDuiTuXi_4rewards_times.valueChanged.connect(lambda value: self.config.set_task_config("小队突袭", "四倍奖励次数", value))
@@ -240,6 +290,18 @@ class DailyQuestsHelper(QMainWindow):
         editor = SerialChoose(self.config, self.UI.serial, self)
         editor.exec()
 
+    @staticmethod
+    def _on_go_to_github_btn_clicked():
+        webbrowser.open("https://github.com/XBJF-X/Xuan-s-UltilityAutoNaruto")
+
+    def _on_update_btn_clicked(self):
+        flag, new_version = self.updater.check_update()
+        if flag:
+            self.logger.info("检查到新版本！")
+            self.updater.update(new_version)
+        else:
+            self.logger.debug("不存在新版本！")
+
     def _on_filepath_browse_clicked(self, name):
         folder = QFileDialog.getExistingDirectory(self, f"选择{name}模拟器安装目录")
         if folder:
@@ -275,6 +337,6 @@ if __name__ == "__main__":
     # 在PySide6 6.4+版本中，这步可能不需要
     # app.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
 
-    daily_quests_helper = DailyQuestsHelper()
+    daily_quests_helper = Xuan()
     daily_quests_helper.show()
     sys.exit(app.exec())

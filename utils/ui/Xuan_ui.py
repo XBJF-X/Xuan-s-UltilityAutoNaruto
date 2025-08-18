@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ################################################################################
-## Form generated from reading UI file 'DailyQuestsHelper.ui'
+## Form generated from reading UI file 'Xuan.ui'
 ##
 ## Created by: Qt User Interface Compiler version 6.9.1
 ##
@@ -22,19 +22,19 @@ from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFrame,
     QStackedWidget, QTreeWidget, QTreeWidgetItem, QVBoxLayout,
     QWidget)
 
-class Ui_DailyQuestsHelper(object):
-    def setupUi(self, DailyQuestsHelper):
-        if not DailyQuestsHelper.objectName():
-            DailyQuestsHelper.setObjectName(u"DailyQuestsHelper")
-        DailyQuestsHelper.resize(1387, 588)
-        DailyQuestsHelper.setMinimumSize(QSize(180, 0))
+class Ui_Xuan(object):
+    def setupUi(self, Xuan):
+        if not Xuan.objectName():
+            Xuan.setObjectName(u"Xuan")
+        Xuan.resize(1197, 679)
+        Xuan.setMinimumSize(QSize(180, 0))
         font = QFont()
         font.setFamilies([u"Consolas"])
         font.setPointSize(15)
         font.setBold(False)
         font.setItalic(False)
-        DailyQuestsHelper.setFont(font)
-        DailyQuestsHelper.setStyleSheet(u"/*\n"
+        Xuan.setFont(font)
+        Xuan.setStyleSheet(u"/*\n"
 "font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
 "font: 15pt \"Microsoft YaHei UI\";\n"
 "*/\n"
@@ -42,12 +42,151 @@ class Ui_DailyQuestsHelper(object):
 "font-size:15pt;\n"
 "\n"
 "")
-        self.centralwidget = QWidget(DailyQuestsHelper)
+        self.centralwidget = QWidget(Xuan)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setFont(font)
-        self.horizontalLayout = QHBoxLayout(self.centralwidget)
+        self.centralwidget.setStyleSheet(u"boader-raduis:10px;")
+        self.verticalLayout_15 = QVBoxLayout(self.centralwidget)
+        self.verticalLayout_15.setSpacing(10)
+        self.verticalLayout_15.setObjectName(u"verticalLayout_15")
+        self.verticalLayout_15.setContentsMargins(9, 9, 9, 9)
+        self.widget_25 = QWidget(self.centralwidget)
+        self.widget_25.setObjectName(u"widget_25")
+        self.widget_25.setStyleSheet(u"QWidget {\n"
+"                background-color: #dfdfdf;  /* \u80cc\u666f\u989c\u8272 */\n"
+"				border-radius:10px;\n"
+"            }")
+        self.horizontalLayout_56 = QHBoxLayout(self.widget_25)
+        self.horizontalLayout_56.setObjectName(u"horizontalLayout_56")
+        self.horizontalLayout_56.setContentsMargins(0, 0, 0, 0)
+        self.widget_90 = QWidget(self.widget_25)
+        self.widget_90.setObjectName(u"widget_90")
+        self.widget_90.setStyleSheet(u"/*\n"
+"font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
+"font: 15pt \"Microsoft YaHei UI\";\n"
+"*/\n"
+"font-family: \"Microsoft YaHei UI\", \"\u9ed1\u4f53\";\n"
+"font-size: 20pt;\n"
+"font-weight: bold;\n"
+"color: #0f322f;\n"
+"")
+        self.horizontalLayout_68 = QHBoxLayout(self.widget_90)
+        self.horizontalLayout_68.setObjectName(u"horizontalLayout_68")
+        self.label_6 = QLabel(self.widget_90)
+        self.label_6.setObjectName(u"label_6")
+
+        self.horizontalLayout_68.addWidget(self.label_6)
+
+        self.frame_53 = QFrame(self.widget_90)
+        self.frame_53.setObjectName(u"frame_53")
+        self.frame_53.setStyleSheet(u"QWidget QFrame{\n"
+"border:2px solid #969696;\n"
+"border-radius:1px;\n"
+"padding:5px;\n"
+"            }")
+        self.frame_53.setFrameShape(QFrame.Shape.VLine)
+        self.frame_53.setFrameShadow(QFrame.Shadow.Raised)
+
+        self.horizontalLayout_68.addWidget(self.frame_53)
+
+
+        self.horizontalLayout_56.addWidget(self.widget_90)
+
+        self.widget_91 = QWidget(self.widget_25)
+        self.widget_91.setObjectName(u"widget_91")
+        self.horizontalLayout_81 = QHBoxLayout(self.widget_91)
+        self.horizontalLayout_81.setSpacing(10)
+        self.horizontalLayout_81.setObjectName(u"horizontalLayout_81")
+        self.horizontalLayout_81.setContentsMargins(0, 0, 9, 0)
+        self.horizontalSpacer = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
+
+        self.horizontalLayout_81.addItem(self.horizontalSpacer)
+
+        self.go_to_github_btn = QPushButton(self.widget_91)
+        self.go_to_github_btn.setObjectName(u"go_to_github_btn")
+        self.go_to_github_btn.setMinimumSize(QSize(90, 35))
+        self.go_to_github_btn.setStyleSheet(u"QPushButton{\n"
+"border: 2px solid #b5b5b5;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
+"background-color: rgb(255, 255, 255);\n"
+"border-radius:10px;\n"
+"outline:none;\n"
+"color:#0f322f;\n"
+"padding-top:2px;\n"
+"padding-bottom:2px;\n"
+"}\n"
+"QPushButton::hover {\n"
+"border: 2px solid #39C5BB;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
+"background-color: rgb(255, 255, 255);\n"
+"border-radius:10px;\n"
+"outline:none;\n"
+"padding-top:2px;\n"
+"color:#39C5BB;\n"
+"padding-bottom:2px;\n"
+"}")
+
+        self.horizontalLayout_81.addWidget(self.go_to_github_btn)
+
+        self.update_btn = QPushButton(self.widget_91)
+        self.update_btn.setObjectName(u"update_btn")
+        self.update_btn.setMinimumSize(QSize(110, 35))
+        self.update_btn.setStyleSheet(u"QPushButton{\n"
+"border: 2px solid #b5b5b5;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
+"background-color: rgb(255, 255, 255);\n"
+"border-radius:10px;\n"
+"outline:none;\n"
+"color:#0f322f;\n"
+"padding-top:2px;\n"
+"padding-bottom:2px;\n"
+"}\n"
+"QPushButton::hover {\n"
+"border: 2px solid #39C5BB;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
+"background-color: rgb(255, 255, 255);\n"
+"border-radius:10px;\n"
+"outline:none;\n"
+"padding-top:2px;\n"
+"color:#39C5BB;\n"
+"padding-bottom:2px;\n"
+"}")
+
+        self.horizontalLayout_81.addWidget(self.update_btn)
+
+        self.exit_btn = QPushButton(self.widget_91)
+        self.exit_btn.setObjectName(u"exit_btn")
+        self.exit_btn.setMinimumSize(QSize(70, 35))
+        self.exit_btn.setStyleSheet(u"QPushButton{\n"
+"border: 2px solid #b5b5b5;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
+"background-color: rgb(255, 255, 255);\n"
+"border-radius:10px;\n"
+"outline:none;\n"
+"color:#0f322f;\n"
+"padding-top:2px;\n"
+"padding-bottom:2px;\n"
+"}\n"
+"QPushButton::hover {\n"
+"border: 2px solid #39C5BB;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
+"background-color: rgb(255, 255, 255);\n"
+"border-radius:10px;\n"
+"outline:none;\n"
+"padding-top:2px;\n"
+"color:#39C5BB;\n"
+"padding-bottom:2px;\n"
+"}")
+
+        self.horizontalLayout_81.addWidget(self.exit_btn)
+
+
+        self.horizontalLayout_56.addWidget(self.widget_91)
+
+
+        self.verticalLayout_15.addWidget(self.widget_25)
+
+        self.widget_31 = QWidget(self.centralwidget)
+        self.widget_31.setObjectName(u"widget_31")
+        self.horizontalLayout = QHBoxLayout(self.widget_31)
+        self.horizontalLayout.setSpacing(0)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.widget_10 = QWidget(self.centralwidget)
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.widget_10 = QWidget(self.widget_31)
         self.widget_10.setObjectName(u"widget_10")
         sizePolicy = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -274,7 +413,7 @@ class Ui_DailyQuestsHelper(object):
 
         self.horizontalLayout.addWidget(self.widget_10)
 
-        self.widget = QWidget(self.centralwidget)
+        self.widget = QWidget(self.widget_31)
         self.widget.setObjectName(u"widget")
         palette1 = QPalette()
         palette1.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush)
@@ -856,7 +995,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_15.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_12 = QWidget()
         self.scrollAreaWidgetContents_12.setObjectName(u"scrollAreaWidgetContents_12")
-        self.scrollAreaWidgetContents_12.setGeometry(QRect(0, 0, 585, 232))
+        self.scrollAreaWidgetContents_12.setGeometry(QRect(0, 0, 586, 232))
         self.verticalLayout_73 = QVBoxLayout(self.scrollAreaWidgetContents_12)
         self.verticalLayout_73.setSpacing(20)
         self.verticalLayout_73.setObjectName(u"verticalLayout_73")
@@ -1035,7 +1174,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_19.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_16 = QWidget()
         self.scrollAreaWidgetContents_16.setObjectName(u"scrollAreaWidgetContents_16")
-        self.scrollAreaWidgetContents_16.setGeometry(QRect(0, 0, 585, 232))
+        self.scrollAreaWidgetContents_16.setGeometry(QRect(0, 0, 586, 232))
         self.verticalLayout_89 = QVBoxLayout(self.scrollAreaWidgetContents_16)
         self.verticalLayout_89.setSpacing(20)
         self.verticalLayout_89.setObjectName(u"verticalLayout_89")
@@ -1214,7 +1353,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_20.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_17 = QWidget()
         self.scrollAreaWidgetContents_17.setObjectName(u"scrollAreaWidgetContents_17")
-        self.scrollAreaWidgetContents_17.setGeometry(QRect(0, 0, 585, 232))
+        self.scrollAreaWidgetContents_17.setGeometry(QRect(0, 0, 586, 232))
         self.verticalLayout_93 = QVBoxLayout(self.scrollAreaWidgetContents_17)
         self.verticalLayout_93.setSpacing(20)
         self.verticalLayout_93.setObjectName(u"verticalLayout_93")
@@ -1393,7 +1532,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_9.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_6 = QWidget()
         self.scrollAreaWidgetContents_6.setObjectName(u"scrollAreaWidgetContents_6")
-        self.scrollAreaWidgetContents_6.setGeometry(QRect(0, 0, 585, 413))
+        self.scrollAreaWidgetContents_6.setGeometry(QRect(0, 0, 586, 413))
         self.verticalLayout_46 = QVBoxLayout(self.scrollAreaWidgetContents_6)
         self.verticalLayout_46.setSpacing(20)
         self.verticalLayout_46.setObjectName(u"verticalLayout_46")
@@ -1791,7 +1930,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_10.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_7 = QWidget()
         self.scrollAreaWidgetContents_7.setObjectName(u"scrollAreaWidgetContents_7")
-        self.scrollAreaWidgetContents_7.setGeometry(QRect(0, 0, 585, 450))
+        self.scrollAreaWidgetContents_7.setGeometry(QRect(0, 0, 586, 450))
         self.verticalLayout_47 = QVBoxLayout(self.scrollAreaWidgetContents_7)
         self.verticalLayout_47.setSpacing(20)
         self.verticalLayout_47.setObjectName(u"verticalLayout_47")
@@ -2193,7 +2332,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_11.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_8 = QWidget()
         self.scrollAreaWidgetContents_8.setObjectName(u"scrollAreaWidgetContents_8")
-        self.scrollAreaWidgetContents_8.setGeometry(QRect(0, 0, 585, 452))
+        self.scrollAreaWidgetContents_8.setGeometry(QRect(0, 0, 586, 452))
         self.verticalLayout_51 = QVBoxLayout(self.scrollAreaWidgetContents_8)
         self.verticalLayout_51.setSpacing(20)
         self.verticalLayout_51.setObjectName(u"verticalLayout_51")
@@ -2611,7 +2750,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_33.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_30 = QWidget()
         self.scrollAreaWidgetContents_30.setObjectName(u"scrollAreaWidgetContents_30")
-        self.scrollAreaWidgetContents_30.setGeometry(QRect(0, 0, 585, 232))
+        self.scrollAreaWidgetContents_30.setGeometry(QRect(0, 0, 586, 232))
         self.verticalLayout_145 = QVBoxLayout(self.scrollAreaWidgetContents_30)
         self.verticalLayout_145.setSpacing(20)
         self.verticalLayout_145.setObjectName(u"verticalLayout_145")
@@ -2790,7 +2929,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_18.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_15 = QWidget()
         self.scrollAreaWidgetContents_15.setObjectName(u"scrollAreaWidgetContents_15")
-        self.scrollAreaWidgetContents_15.setGeometry(QRect(0, 0, 585, 232))
+        self.scrollAreaWidgetContents_15.setGeometry(QRect(0, 0, 586, 232))
         self.verticalLayout_85 = QVBoxLayout(self.scrollAreaWidgetContents_15)
         self.verticalLayout_85.setSpacing(20)
         self.verticalLayout_85.setObjectName(u"verticalLayout_85")
@@ -2969,7 +3108,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_26.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_23 = QWidget()
         self.scrollAreaWidgetContents_23.setObjectName(u"scrollAreaWidgetContents_23")
-        self.scrollAreaWidgetContents_23.setGeometry(QRect(0, 0, 585, 232))
+        self.scrollAreaWidgetContents_23.setGeometry(QRect(0, 0, 586, 232))
         self.verticalLayout_117 = QVBoxLayout(self.scrollAreaWidgetContents_23)
         self.verticalLayout_117.setSpacing(20)
         self.verticalLayout_117.setObjectName(u"verticalLayout_117")
@@ -3148,7 +3287,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_22.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_19 = QWidget()
         self.scrollAreaWidgetContents_19.setObjectName(u"scrollAreaWidgetContents_19")
-        self.scrollAreaWidgetContents_19.setGeometry(QRect(0, 0, 585, 296))
+        self.scrollAreaWidgetContents_19.setGeometry(QRect(0, 0, 586, 296))
         self.verticalLayout_101 = QVBoxLayout(self.scrollAreaWidgetContents_19)
         self.verticalLayout_101.setSpacing(20)
         self.verticalLayout_101.setObjectName(u"verticalLayout_101")
@@ -3335,7 +3474,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_16.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_13 = QWidget()
         self.scrollAreaWidgetContents_13.setObjectName(u"scrollAreaWidgetContents_13")
-        self.scrollAreaWidgetContents_13.setGeometry(QRect(0, 0, 585, 258))
+        self.scrollAreaWidgetContents_13.setGeometry(QRect(0, 0, 586, 258))
         self.verticalLayout_77 = QVBoxLayout(self.scrollAreaWidgetContents_13)
         self.verticalLayout_77.setSpacing(20)
         self.verticalLayout_77.setObjectName(u"verticalLayout_77")
@@ -3522,7 +3661,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_30.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_27 = QWidget()
         self.scrollAreaWidgetContents_27.setObjectName(u"scrollAreaWidgetContents_27")
-        self.scrollAreaWidgetContents_27.setGeometry(QRect(0, 0, 585, 258))
+        self.scrollAreaWidgetContents_27.setGeometry(QRect(0, 0, 586, 258))
         self.verticalLayout_133 = QVBoxLayout(self.scrollAreaWidgetContents_27)
         self.verticalLayout_133.setSpacing(20)
         self.verticalLayout_133.setObjectName(u"verticalLayout_133")
@@ -3709,7 +3848,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_32.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_29 = QWidget()
         self.scrollAreaWidgetContents_29.setObjectName(u"scrollAreaWidgetContents_29")
-        self.scrollAreaWidgetContents_29.setGeometry(QRect(0, 0, 585, 232))
+        self.scrollAreaWidgetContents_29.setGeometry(QRect(0, 0, 586, 232))
         self.verticalLayout_141 = QVBoxLayout(self.scrollAreaWidgetContents_29)
         self.verticalLayout_141.setSpacing(20)
         self.verticalLayout_141.setObjectName(u"verticalLayout_141")
@@ -4075,7 +4214,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_34.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_31 = QWidget()
         self.scrollAreaWidgetContents_31.setObjectName(u"scrollAreaWidgetContents_31")
-        self.scrollAreaWidgetContents_31.setGeometry(QRect(0, 0, 585, 258))
+        self.scrollAreaWidgetContents_31.setGeometry(QRect(0, 0, 586, 258))
         self.verticalLayout_149 = QVBoxLayout(self.scrollAreaWidgetContents_31)
         self.verticalLayout_149.setSpacing(20)
         self.verticalLayout_149.setObjectName(u"verticalLayout_149")
@@ -4262,7 +4401,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_35.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_32 = QWidget()
         self.scrollAreaWidgetContents_32.setObjectName(u"scrollAreaWidgetContents_32")
-        self.scrollAreaWidgetContents_32.setGeometry(QRect(0, 0, 773, 532))
+        self.scrollAreaWidgetContents_32.setGeometry(QRect(0, 0, 586, 258))
         self.verticalLayout_153 = QVBoxLayout(self.scrollAreaWidgetContents_32)
         self.verticalLayout_153.setSpacing(20)
         self.verticalLayout_153.setObjectName(u"verticalLayout_153")
@@ -4449,7 +4588,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_45.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_42 = QWidget()
         self.scrollAreaWidgetContents_42.setObjectName(u"scrollAreaWidgetContents_42")
-        self.scrollAreaWidgetContents_42.setGeometry(QRect(0, 0, 773, 532))
+        self.scrollAreaWidgetContents_42.setGeometry(QRect(0, 0, 586, 258))
         self.verticalLayout_199 = QVBoxLayout(self.scrollAreaWidgetContents_42)
         self.verticalLayout_199.setSpacing(20)
         self.verticalLayout_199.setObjectName(u"verticalLayout_199")
@@ -4636,7 +4775,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_27.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_24 = QWidget()
         self.scrollAreaWidgetContents_24.setObjectName(u"scrollAreaWidgetContents_24")
-        self.scrollAreaWidgetContents_24.setGeometry(QRect(0, 0, 585, 258))
+        self.scrollAreaWidgetContents_24.setGeometry(QRect(0, 0, 586, 258))
         self.verticalLayout_121 = QVBoxLayout(self.scrollAreaWidgetContents_24)
         self.verticalLayout_121.setSpacing(20)
         self.verticalLayout_121.setObjectName(u"verticalLayout_121")
@@ -4823,7 +4962,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_23.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_20 = QWidget()
         self.scrollAreaWidgetContents_20.setObjectName(u"scrollAreaWidgetContents_20")
-        self.scrollAreaWidgetContents_20.setGeometry(QRect(0, 0, 585, 278))
+        self.scrollAreaWidgetContents_20.setGeometry(QRect(0, 0, 586, 278))
         self.verticalLayout_105 = QVBoxLayout(self.scrollAreaWidgetContents_20)
         self.verticalLayout_105.setSpacing(20)
         self.verticalLayout_105.setObjectName(u"verticalLayout_105")
@@ -5010,7 +5149,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_24.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_21 = QWidget()
         self.scrollAreaWidgetContents_21.setObjectName(u"scrollAreaWidgetContents_21")
-        self.scrollAreaWidgetContents_21.setGeometry(QRect(0, 0, 585, 232))
+        self.scrollAreaWidgetContents_21.setGeometry(QRect(0, 0, 586, 232))
         self.verticalLayout_109 = QVBoxLayout(self.scrollAreaWidgetContents_21)
         self.verticalLayout_109.setSpacing(20)
         self.verticalLayout_109.setObjectName(u"verticalLayout_109")
@@ -5189,7 +5328,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_28.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_25 = QWidget()
         self.scrollAreaWidgetContents_25.setObjectName(u"scrollAreaWidgetContents_25")
-        self.scrollAreaWidgetContents_25.setGeometry(QRect(0, 0, 585, 232))
+        self.scrollAreaWidgetContents_25.setGeometry(QRect(0, 0, 586, 232))
         self.verticalLayout_125 = QVBoxLayout(self.scrollAreaWidgetContents_25)
         self.verticalLayout_125.setSpacing(20)
         self.verticalLayout_125.setObjectName(u"verticalLayout_125")
@@ -5368,7 +5507,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_31.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_28 = QWidget()
         self.scrollAreaWidgetContents_28.setObjectName(u"scrollAreaWidgetContents_28")
-        self.scrollAreaWidgetContents_28.setGeometry(QRect(0, 0, 585, 258))
+        self.scrollAreaWidgetContents_28.setGeometry(QRect(0, 0, 586, 258))
         self.verticalLayout_137 = QVBoxLayout(self.scrollAreaWidgetContents_28)
         self.verticalLayout_137.setSpacing(20)
         self.verticalLayout_137.setObjectName(u"verticalLayout_137")
@@ -5555,7 +5694,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_12.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_9 = QWidget()
         self.scrollAreaWidgetContents_9.setObjectName(u"scrollAreaWidgetContents_9")
-        self.scrollAreaWidgetContents_9.setGeometry(QRect(0, 0, 585, 250))
+        self.scrollAreaWidgetContents_9.setGeometry(QRect(0, 0, 586, 250))
         self.verticalLayout_61 = QVBoxLayout(self.scrollAreaWidgetContents_9)
         self.verticalLayout_61.setSpacing(20)
         self.verticalLayout_61.setObjectName(u"verticalLayout_61")
@@ -5734,7 +5873,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_29.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_26 = QWidget()
         self.scrollAreaWidgetContents_26.setObjectName(u"scrollAreaWidgetContents_26")
-        self.scrollAreaWidgetContents_26.setGeometry(QRect(0, 0, 585, 258))
+        self.scrollAreaWidgetContents_26.setGeometry(QRect(0, 0, 586, 258))
         self.verticalLayout_129 = QVBoxLayout(self.scrollAreaWidgetContents_26)
         self.verticalLayout_129.setSpacing(20)
         self.verticalLayout_129.setObjectName(u"verticalLayout_129")
@@ -5921,7 +6060,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_14.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_11 = QWidget()
         self.scrollAreaWidgetContents_11.setObjectName(u"scrollAreaWidgetContents_11")
-        self.scrollAreaWidgetContents_11.setGeometry(QRect(0, 0, 585, 250))
+        self.scrollAreaWidgetContents_11.setGeometry(QRect(0, 0, 586, 250))
         self.verticalLayout_69 = QVBoxLayout(self.scrollAreaWidgetContents_11)
         self.verticalLayout_69.setSpacing(20)
         self.verticalLayout_69.setObjectName(u"verticalLayout_69")
@@ -6100,7 +6239,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_37.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_34 = QWidget()
         self.scrollAreaWidgetContents_34.setObjectName(u"scrollAreaWidgetContents_34")
-        self.scrollAreaWidgetContents_34.setGeometry(QRect(0, 0, 585, 258))
+        self.scrollAreaWidgetContents_34.setGeometry(QRect(0, 0, 586, 258))
         self.verticalLayout_161 = QVBoxLayout(self.scrollAreaWidgetContents_34)
         self.verticalLayout_161.setSpacing(20)
         self.verticalLayout_161.setObjectName(u"verticalLayout_161")
@@ -6287,7 +6426,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_42.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_39 = QWidget()
         self.scrollAreaWidgetContents_39.setObjectName(u"scrollAreaWidgetContents_39")
-        self.scrollAreaWidgetContents_39.setGeometry(QRect(0, 0, 773, 532))
+        self.scrollAreaWidgetContents_39.setGeometry(QRect(0, 0, 641, 561))
         self.verticalLayout_187 = QVBoxLayout(self.scrollAreaWidgetContents_39)
         self.verticalLayout_187.setSpacing(20)
         self.verticalLayout_187.setObjectName(u"verticalLayout_187")
@@ -6474,7 +6613,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_36.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_33 = QWidget()
         self.scrollAreaWidgetContents_33.setObjectName(u"scrollAreaWidgetContents_33")
-        self.scrollAreaWidgetContents_33.setGeometry(QRect(0, 0, 773, 532))
+        self.scrollAreaWidgetContents_33.setGeometry(QRect(0, 0, 586, 258))
         self.verticalLayout_157 = QVBoxLayout(self.scrollAreaWidgetContents_33)
         self.verticalLayout_157.setSpacing(20)
         self.verticalLayout_157.setObjectName(u"verticalLayout_157")
@@ -6661,7 +6800,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_43.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_40 = QWidget()
         self.scrollAreaWidgetContents_40.setObjectName(u"scrollAreaWidgetContents_40")
-        self.scrollAreaWidgetContents_40.setGeometry(QRect(0, 0, 585, 258))
+        self.scrollAreaWidgetContents_40.setGeometry(QRect(0, 0, 586, 258))
         self.verticalLayout_191 = QVBoxLayout(self.scrollAreaWidgetContents_40)
         self.verticalLayout_191.setSpacing(20)
         self.verticalLayout_191.setObjectName(u"verticalLayout_191")
@@ -6848,7 +6987,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_44.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_41 = QWidget()
         self.scrollAreaWidgetContents_41.setObjectName(u"scrollAreaWidgetContents_41")
-        self.scrollAreaWidgetContents_41.setGeometry(QRect(0, 0, 585, 258))
+        self.scrollAreaWidgetContents_41.setGeometry(QRect(0, 0, 586, 258))
         self.verticalLayout_195 = QVBoxLayout(self.scrollAreaWidgetContents_41)
         self.verticalLayout_195.setSpacing(20)
         self.verticalLayout_195.setObjectName(u"verticalLayout_195")
@@ -7035,7 +7174,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_41.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_38 = QWidget()
         self.scrollAreaWidgetContents_38.setObjectName(u"scrollAreaWidgetContents_38")
-        self.scrollAreaWidgetContents_38.setGeometry(QRect(0, 0, 585, 258))
+        self.scrollAreaWidgetContents_38.setGeometry(QRect(0, 0, 586, 258))
         self.verticalLayout_183 = QVBoxLayout(self.scrollAreaWidgetContents_38)
         self.verticalLayout_183.setSpacing(20)
         self.verticalLayout_183.setObjectName(u"verticalLayout_183")
@@ -7222,7 +7361,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_40.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_37 = QWidget()
         self.scrollAreaWidgetContents_37.setObjectName(u"scrollAreaWidgetContents_37")
-        self.scrollAreaWidgetContents_37.setGeometry(QRect(0, 0, 585, 258))
+        self.scrollAreaWidgetContents_37.setGeometry(QRect(0, 0, 586, 258))
         self.verticalLayout_179 = QVBoxLayout(self.scrollAreaWidgetContents_37)
         self.verticalLayout_179.setSpacing(20)
         self.verticalLayout_179.setObjectName(u"verticalLayout_179")
@@ -7409,7 +7548,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_25.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_22 = QWidget()
         self.scrollAreaWidgetContents_22.setObjectName(u"scrollAreaWidgetContents_22")
-        self.scrollAreaWidgetContents_22.setGeometry(QRect(0, 0, 773, 532))
+        self.scrollAreaWidgetContents_22.setGeometry(QRect(0, 0, 586, 258))
         self.verticalLayout_113 = QVBoxLayout(self.scrollAreaWidgetContents_22)
         self.verticalLayout_113.setSpacing(20)
         self.verticalLayout_113.setObjectName(u"verticalLayout_113")
@@ -7596,7 +7735,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_13.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_10 = QWidget()
         self.scrollAreaWidgetContents_10.setObjectName(u"scrollAreaWidgetContents_10")
-        self.scrollAreaWidgetContents_10.setGeometry(QRect(0, 0, 585, 250))
+        self.scrollAreaWidgetContents_10.setGeometry(QRect(0, 0, 586, 250))
         self.verticalLayout_65 = QVBoxLayout(self.scrollAreaWidgetContents_10)
         self.verticalLayout_65.setSpacing(20)
         self.verticalLayout_65.setObjectName(u"verticalLayout_65")
@@ -7775,7 +7914,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_39.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_36 = QWidget()
         self.scrollAreaWidgetContents_36.setObjectName(u"scrollAreaWidgetContents_36")
-        self.scrollAreaWidgetContents_36.setGeometry(QRect(0, 0, 585, 409))
+        self.scrollAreaWidgetContents_36.setGeometry(QRect(0, 0, 586, 409))
         self.verticalLayout_169 = QVBoxLayout(self.scrollAreaWidgetContents_36)
         self.verticalLayout_169.setSpacing(20)
         self.verticalLayout_169.setObjectName(u"verticalLayout_169")
@@ -8166,7 +8305,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_17.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_14 = QWidget()
         self.scrollAreaWidgetContents_14.setObjectName(u"scrollAreaWidgetContents_14")
-        self.scrollAreaWidgetContents_14.setGeometry(QRect(0, 0, 585, 232))
+        self.scrollAreaWidgetContents_14.setGeometry(QRect(0, 0, 586, 232))
         self.verticalLayout_81 = QVBoxLayout(self.scrollAreaWidgetContents_14)
         self.verticalLayout_81.setSpacing(20)
         self.verticalLayout_81.setObjectName(u"verticalLayout_81")
@@ -8346,7 +8485,7 @@ class Ui_DailyQuestsHelper(object):
         self.scrollArea_8.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_5 = QWidget()
         self.scrollAreaWidgetContents_5.setObjectName(u"scrollAreaWidgetContents_5")
-        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 533, 1157))
+        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 586, 1157))
         self.verticalLayout_25 = QVBoxLayout(self.scrollAreaWidgetContents_5)
         self.verticalLayout_25.setSpacing(20)
         self.verticalLayout_25.setObjectName(u"verticalLayout_25")
@@ -9580,497 +9719,504 @@ class Ui_DailyQuestsHelper(object):
 
         self.horizontalLayout.addWidget(self.widget)
 
-        DailyQuestsHelper.setCentralWidget(self.centralwidget)
 
-        self.retranslateUi(DailyQuestsHelper)
+        self.verticalLayout_15.addWidget(self.widget_31)
+
+        Xuan.setCentralWidget(self.centralwidget)
+
+        self.retranslateUi(Xuan)
         self.screen_mode.currentIndexChanged.connect(self.screen_mode_settings_stackedWidget.setCurrentIndex)
 
         self.overview_panel_button.setDefault(False)
-        self.stackedWidget.setCurrentIndex(28)
-        self.screen_mode_settings_stackedWidget.setCurrentIndex(3)
+        self.stackedWidget.setCurrentIndex(27)
+        self.screen_mode_settings_stackedWidget.setCurrentIndex(2)
 
 
-        QMetaObject.connectSlotsByName(DailyQuestsHelper)
+        QMetaObject.connectSlotsByName(Xuan)
     # setupUi
 
-    def retranslateUi(self, DailyQuestsHelper):
-        DailyQuestsHelper.setWindowTitle(QCoreApplication.translate("DailyQuestsHelper", u"XUAN\uff08Xuan's UtilityAutoNaruto\uff09", None))
-        self.overview_panel_button.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u603b\u89c8\u9762\u677f", None))
+    def retranslateUi(self, Xuan):
+        Xuan.setWindowTitle(QCoreApplication.translate("Xuan", u"XUAN\uff08Xuan's UtilityAutoNaruto\uff09", None))
+        self.label_6.setText(QCoreApplication.translate("Xuan", u"   Xuan\u2018s Utility Auto Naruto   ", None))
+        self.go_to_github_btn.setText(QCoreApplication.translate("Xuan", u"Github", None))
+        self.update_btn.setText(QCoreApplication.translate("Xuan", u"\u68c0\u67e5\u66f4\u65b0", None))
+        self.exit_btn.setText(QCoreApplication.translate("Xuan", u"\u9000\u51fa", None))
+        self.overview_panel_button.setText(QCoreApplication.translate("Xuan", u"\u603b\u89c8\u9762\u677f", None))
         ___qtreewidgetitem = self.treeWidget.headerItem()
-        ___qtreewidgetitem.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u914d\u7f6e", None));
+        ___qtreewidgetitem.setText(0, QCoreApplication.translate("Xuan", u"\u914d\u7f6e", None));
 
         __sortingEnabled = self.treeWidget.isSortingEnabled()
         self.treeWidget.setSortingEnabled(False)
         ___qtreewidgetitem1 = self.treeWidget.topLevelItem(0)
-        ___qtreewidgetitem1.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u6bcf\u65e5\u4efb\u52a1", None));
+        ___qtreewidgetitem1.setText(0, QCoreApplication.translate("Xuan", u"\u6bcf\u65e5\u4efb\u52a1", None));
         ___qtreewidgetitem2 = ___qtreewidgetitem1.child(0)
-        ___qtreewidgetitem2.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u767b\u5f55\u5956\u52b1", None));
+        ___qtreewidgetitem2.setText(0, QCoreApplication.translate("Xuan", u"\u767b\u5f55\u5956\u52b1", None));
         ___qtreewidgetitem3 = ___qtreewidgetitem1.child(1)
-        ___qtreewidgetitem3.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u6392\u884c\u699c\u70b9\u8d5e", None));
+        ___qtreewidgetitem3.setText(0, QCoreApplication.translate("Xuan", u"\u6392\u884c\u699c\u70b9\u8d5e", None));
         ___qtreewidgetitem4 = ___qtreewidgetitem1.child(2)
-        ___qtreewidgetitem4.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u6bcf\u6708\u7b7e\u5230", None));
+        ___qtreewidgetitem4.setText(0, QCoreApplication.translate("Xuan", u"\u6bcf\u6708\u7b7e\u5230", None));
         ___qtreewidgetitem5 = ___qtreewidgetitem1.child(3)
-        ___qtreewidgetitem5.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u8d2d\u4e70\u4f53\u529b", None));
+        ___qtreewidgetitem5.setText(0, QCoreApplication.translate("Xuan", u"\u8d2d\u4e70\u4f53\u529b", None));
         ___qtreewidgetitem6 = ___qtreewidgetitem1.child(4)
-        ___qtreewidgetitem6.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u91d1\u5e01\u62db\u8d22", None));
+        ___qtreewidgetitem6.setText(0, QCoreApplication.translate("Xuan", u"\u91d1\u5e01\u62db\u8d22", None));
         ___qtreewidgetitem7 = ___qtreewidgetitem1.child(5)
-        ___qtreewidgetitem7.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u5c0f\u961f\u7a81\u88ad", None));
+        ___qtreewidgetitem7.setText(0, QCoreApplication.translate("Xuan", u"\u5c0f\u961f\u7a81\u88ad", None));
         ___qtreewidgetitem8 = ___qtreewidgetitem1.child(6)
-        ___qtreewidgetitem8.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u7ec4\u7ec7\u7948\u798f", None));
+        ___qtreewidgetitem8.setText(0, QCoreApplication.translate("Xuan", u"\u7ec4\u7ec7\u7948\u798f", None));
         ___qtreewidgetitem9 = ___qtreewidgetitem1.child(7)
-        ___qtreewidgetitem9.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u597d\u53cb\u4f53\u529b", None));
+        ___qtreewidgetitem9.setText(0, QCoreApplication.translate("Xuan", u"\u597d\u53cb\u4f53\u529b", None));
         ___qtreewidgetitem10 = ___qtreewidgetitem1.child(8)
-        ___qtreewidgetitem10.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u666e\u901a\u5fcd\u8005\u62db\u52df", None));
+        ___qtreewidgetitem10.setText(0, QCoreApplication.translate("Xuan", u"\u666e\u901a\u5fcd\u8005\u62db\u52df", None));
         ___qtreewidgetitem11 = ___qtreewidgetitem1.child(9)
-        ___qtreewidgetitem11.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u6bcf\u65e5\u5206\u4eab", None));
+        ___qtreewidgetitem11.setText(0, QCoreApplication.translate("Xuan", u"\u6bcf\u65e5\u5206\u4eab", None));
         ___qtreewidgetitem12 = ___qtreewidgetitem1.child(10)
-        ___qtreewidgetitem12.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u4e30\u9976\u4e4b\u95f4", None));
+        ___qtreewidgetitem12.setText(0, QCoreApplication.translate("Xuan", u"\u4e30\u9976\u4e4b\u95f4", None));
         ___qtreewidgetitem13 = ___qtreewidgetitem1.child(11)
-        ___qtreewidgetitem13.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u96c6\u4f1a\u6240", None));
+        ___qtreewidgetitem13.setText(0, QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u96c6\u4f1a\u6240", None));
         ___qtreewidgetitem14 = ___qtreewidgetitem1.child(12)
-        ___qtreewidgetitem14.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u4e00\u4e50\u5916\u5356", None));
+        ___qtreewidgetitem14.setText(0, QCoreApplication.translate("Xuan", u"\u4e00\u4e50\u5916\u5356", None));
         ___qtreewidgetitem15 = ___qtreewidgetitem1.child(13)
-        ___qtreewidgetitem15.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u6bcf\u65e5\u80dc\u573a", None));
+        ___qtreewidgetitem15.setText(0, QCoreApplication.translate("Xuan", u"\u6bcf\u65e5\u80dc\u573a", None));
         ___qtreewidgetitem16 = ___qtreewidgetitem1.child(14)
-        ___qtreewidgetitem16.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u751f\u5b58\u6311\u6218", None));
+        ___qtreewidgetitem16.setText(0, QCoreApplication.translate("Xuan", u"\u751f\u5b58\u6311\u6218", None));
         ___qtreewidgetitem17 = ___qtreewidgetitem1.child(15)
-        ___qtreewidgetitem17.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u79d8\u5883\u63a2\u9669", None));
+        ___qtreewidgetitem17.setText(0, QCoreApplication.translate("Xuan", u"\u79d8\u5883\u63a2\u9669", None));
         ___qtreewidgetitem18 = ___qtreewidgetitem1.child(16)
-        ___qtreewidgetitem18.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u60c5\u62a5\u7ad9", None));
+        ___qtreewidgetitem18.setText(0, QCoreApplication.translate("Xuan", u"\u60c5\u62a5\u7ad9", None));
         ___qtreewidgetitem19 = ___qtreewidgetitem1.child(17)
-        ___qtreewidgetitem19.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u5192\u9669\u526f\u672c", None));
+        ___qtreewidgetitem19.setText(0, QCoreApplication.translate("Xuan", u"\u5192\u9669\u526f\u672c", None));
         ___qtreewidgetitem20 = ___qtreewidgetitem1.child(18)
-        ___qtreewidgetitem20.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u6d3b\u8dc3\u5ea6\u5956\u52b1", None));
+        ___qtreewidgetitem20.setText(0, QCoreApplication.translate("Xuan", u"\u6d3b\u8dc3\u5ea6\u5956\u52b1", None));
         ___qtreewidgetitem21 = ___qtreewidgetitem1.child(19)
-        ___qtreewidgetitem21.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u6e05\u7a7a\u90ae\u4ef6", None));
+        ___qtreewidgetitem21.setText(0, QCoreApplication.translate("Xuan", u"\u6e05\u7a7a\u90ae\u4ef6", None));
         ___qtreewidgetitem22 = self.treeWidget.topLevelItem(1)
-        ___qtreewidgetitem22.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u6bcf\u5468\u4efb\u52a1", None));
+        ___qtreewidgetitem22.setText(0, QCoreApplication.translate("Xuan", u"\u6bcf\u5468\u4efb\u52a1", None));
         ___qtreewidgetitem23 = ___qtreewidgetitem22.child(0)
-        ___qtreewidgetitem23.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u4fee\u884c\u4e4b\u8def", None));
+        ___qtreewidgetitem23.setText(0, QCoreApplication.translate("Xuan", u"\u4fee\u884c\u4e4b\u8def", None));
         ___qtreewidgetitem24 = ___qtreewidgetitem22.child(1)
-        ___qtreewidgetitem24.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u6bcf\u5468\u80dc\u573a", None));
+        ___qtreewidgetitem24.setText(0, QCoreApplication.translate("Xuan", u"\u6bcf\u5468\u80dc\u573a", None));
         ___qtreewidgetitem25 = ___qtreewidgetitem22.child(2)
-        ___qtreewidgetitem25.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u5fcd\u6cd5\u5e16\u70b9\u8d5e\u5206\u4eab", None));
+        ___qtreewidgetitem25.setText(0, QCoreApplication.translate("Xuan", u"\u5fcd\u6cd5\u5e16\u70b9\u8d5e\u5206\u4eab", None));
         ___qtreewidgetitem26 = ___qtreewidgetitem22.child(3)
-        ___qtreewidgetitem26.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u66f4\u591a\u73a9\u6cd5", None));
+        ___qtreewidgetitem26.setText(0, QCoreApplication.translate("Xuan", u"\u66f4\u591a\u73a9\u6cd5", None));
         ___qtreewidgetitem27 = ___qtreewidgetitem22.child(4)
-        ___qtreewidgetitem27.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u56e2\u672c", None));
+        ___qtreewidgetitem27.setText(0, QCoreApplication.translate("Xuan", u"\u56e2\u672c", None));
         ___qtreewidgetitem28 = ___qtreewidgetitem22.child(5)
-        ___qtreewidgetitem28.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u672c\u670d\u8981\u585e\u6218", None));
+        ___qtreewidgetitem28.setText(0, QCoreApplication.translate("Xuan", u"\u672c\u670d\u8981\u585e\u6218", None));
         ___qtreewidgetitem29 = ___qtreewidgetitem22.child(6)
-        ___qtreewidgetitem29.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u53db\u5fcd\u6765\u88ad", None));
+        ___qtreewidgetitem29.setText(0, QCoreApplication.translate("Xuan", u"\u53db\u5fcd\u6765\u88ad", None));
         ___qtreewidgetitem30 = ___qtreewidgetitem22.child(7)
-        ___qtreewidgetitem30.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u5929\u5730\u6218\u573a", None));
+        ___qtreewidgetitem30.setText(0, QCoreApplication.translate("Xuan", u"\u5929\u5730\u6218\u573a", None));
         ___qtreewidgetitem31 = ___qtreewidgetitem22.child(8)
-        ___qtreewidgetitem31.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u8ffd\u51fb\u6653\u7ec4\u7ec7", None));
+        ___qtreewidgetitem31.setText(0, QCoreApplication.translate("Xuan", u"\u8ffd\u51fb\u6653\u7ec4\u7ec7", None));
         ___qtreewidgetitem32 = self.treeWidget.topLevelItem(2)
-        ___qtreewidgetitem32.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u6bcf\u6708\u4efb\u52a1", None));
+        ___qtreewidgetitem32.setText(0, QCoreApplication.translate("Xuan", u"\u6bcf\u6708\u4efb\u52a1", None));
         ___qtreewidgetitem33 = ___qtreewidgetitem32.child(0)
-        ___qtreewidgetitem33.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u8de8\u670d\u8981\u585e\u6218", None));
+        ___qtreewidgetitem33.setText(0, QCoreApplication.translate("Xuan", u"\u8de8\u670d\u8981\u585e\u6218", None));
         ___qtreewidgetitem34 = ___qtreewidgetitem32.child(1)
-        ___qtreewidgetitem34.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u5dc5\u5cf0\u5bf9\u51b3", None));
+        ___qtreewidgetitem34.setText(0, QCoreApplication.translate("Xuan", u"\u5dc5\u5cf0\u5bf9\u51b3", None));
         ___qtreewidgetitem35 = ___qtreewidgetitem32.child(2)
-        ___qtreewidgetitem35.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u7ec4\u7ec7\u4e89\u9738", None));
+        ___qtreewidgetitem35.setText(0, QCoreApplication.translate("Xuan", u"\u7ec4\u7ec7\u4e89\u9738", None));
         ___qtreewidgetitem36 = ___qtreewidgetitem32.child(3)
-        ___qtreewidgetitem36.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u8d5b\u5b63\u80dc\u573a", None));
+        ___qtreewidgetitem36.setText(0, QCoreApplication.translate("Xuan", u"\u8d5b\u5b63\u80dc\u573a", None));
         ___qtreewidgetitem37 = self.treeWidget.topLevelItem(3)
-        ___qtreewidgetitem37.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u5468\u671f\u4efb\u52a1", None));
+        ___qtreewidgetitem37.setText(0, QCoreApplication.translate("Xuan", u"\u5468\u671f\u4efb\u52a1", None));
         ___qtreewidgetitem38 = ___qtreewidgetitem37.child(0)
-        ___qtreewidgetitem38.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u88c5\u5907\u5408\u6210", None));
+        ___qtreewidgetitem38.setText(0, QCoreApplication.translate("Xuan", u"\u88c5\u5907\u5408\u6210", None));
         ___qtreewidgetitem39 = ___qtreewidgetitem37.child(1)
-        ___qtreewidgetitem39.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u9ad8\u7ea7\u5fcd\u8005\u62db\u52df", None));
+        ___qtreewidgetitem39.setText(0, QCoreApplication.translate("Xuan", u"\u9ad8\u7ea7\u5fcd\u8005\u62db\u52df", None));
         ___qtreewidgetitem40 = self.treeWidget.topLevelItem(4)
-        ___qtreewidgetitem40.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u6d3b\u52a8\u4efb\u52a1", None));
+        ___qtreewidgetitem40.setText(0, QCoreApplication.translate("Xuan", u"\u6d3b\u52a8\u4efb\u52a1", None));
         ___qtreewidgetitem41 = self.treeWidget.topLevelItem(5)
-        ___qtreewidgetitem41.setText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u52a9\u624b\u8bbe\u7f6e", None));
+        ___qtreewidgetitem41.setText(0, QCoreApplication.translate("Xuan", u"\u52a9\u624b\u8bbe\u7f6e", None));
         self.treeWidget.setSortingEnabled(__sortingEnabled)
 
-        self.label.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8c03\u5ea6\u5668", None))
-        self.start_schedule_button.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u52a8", None))
-        self.label_2.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8fd0\u884c\u961f\u5217", None))
-        self.label_3.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c31\u7eea\u961f\u5217", None))
-        self.label_4.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u7b49\u5f85\u961f\u5217", None))
-        self.label_5.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u65e5\u5fd7", None))
-        self.bool_debug.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8c03\u8bd5\u6a21\u5f0f", None))
-        self.bool_save_img.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4fdd\u5b58\u56fe\u50cf", None))
-        self.label_73.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_74.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_75.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label.setText(QCoreApplication.translate("Xuan", u"\u8c03\u5ea6\u5668", None))
+        self.start_schedule_button.setText(QCoreApplication.translate("Xuan", u"\u542f\u52a8", None))
+        self.label_2.setText(QCoreApplication.translate("Xuan", u"\u8fd0\u884c\u961f\u5217", None))
+        self.label_3.setText(QCoreApplication.translate("Xuan", u"\u5c31\u7eea\u961f\u5217", None))
+        self.label_4.setText(QCoreApplication.translate("Xuan", u"\u7b49\u5f85\u961f\u5217", None))
+        self.label_5.setText(QCoreApplication.translate("Xuan", u"\u65e5\u5fd7", None))
+        self.bool_debug.setText(QCoreApplication.translate("Xuan", u"\u8c03\u8bd5\u6a21\u5f0f", None))
+        self.bool_save_img.setText(QCoreApplication.translate("Xuan", u"\u4fdd\u5b58\u56fe\u50cf", None))
+        self.label_73.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_74.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_75.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.DengLuJiangLi_Enable.setText("")
-        self.label_132.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_133.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_85.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_86.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_87.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_132.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_133.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_85.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_86.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_87.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.PaiHangBangDianZan_Enable.setText("")
-        self.label_140.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_141.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_88.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_89.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_90.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_140.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_141.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_88.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_89.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_90.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.MeiYueQianDao_Enable.setText("")
-        self.label_142.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_143.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_55.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_56.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_57.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_142.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_143.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_55.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_56.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_57.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.GouMaiTiLi_Enable.setText("")
-        self.label_120.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_121.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_41.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8d2d\u4e70\u4f53\u529b", None))
+        self.label_120.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_121.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_41.setText(QCoreApplication.translate("Xuan", u"\u8d2d\u4e70\u4f53\u529b", None))
 #if QT_CONFIG(tooltip)
-        self.label_42.setToolTip(QCoreApplication.translate("DailyQuestsHelper", u"  - DxCam\n"
+        self.label_42.setToolTip(QCoreApplication.translate("Xuan", u"  - DxCam\n"
 "    \u901f\u5ea6\u5feb\uff0c\u4f46\u662f\u6a21\u62df\u5668\u7a97\u53e3\u5fc5\u987b\u5728\u5c4f\u5e55\u8fb9\u754c\u5185\uff0c\u4e0d\u80fd\u6700\u5c0f\u5316\u6216\u88ab\u906e\u6321\n"
 "  - MuMu\n"
 "    \u4f7f\u7528MuMu\u6a21\u62df\u5668\u7684\u63a5\u53e3\u622a\u56fe\uff0c\u6a21\u62df\u5668\u53ef\u4ee5\u6700\u5c0f\u5316/\u88ab\u906e\u6321\n"
 "  - LD\n"
 "    \u4f7f\u7528\u96f7\u7535\u6a21\u62df\u5668\u7684\u63a5\u53e3\u622a\u56fe\uff0c\u6a21\u62df\u5668\u53ef\u4ee5\u6700\u5c0f\u5316/\u88ab\u906e\u6321", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_42.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8d2d\u4e70\u4f53\u529b\u6b21\u6570", None))
-        self.label_43.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u9700\u8981\u8bbe\u7f6e\u52a9\u624b\u8bbe\u7f6e-\u4e8c\u7ea7\u5bc6\u7801", None))
+        self.label_42.setText(QCoreApplication.translate("Xuan", u"\u8d2d\u4e70\u4f53\u529b\u6b21\u6570", None))
+        self.label_43.setText(QCoreApplication.translate("Xuan", u"\u9700\u8981\u8bbe\u7f6e\u52a9\u624b\u8bbe\u7f6e-\u4e8c\u7ea7\u5bc6\u7801", None))
         self.GouMaiTiLi_times.setSuffix("")
-        self.label_58.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_59.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_60.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_58.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_59.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_60.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.JinBiZhaoCai_Enable.setText("")
-        self.label_122.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_123.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_44.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u91d1\u5e01\u62db\u8d22", None))
+        self.label_122.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_123.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_44.setText(QCoreApplication.translate("Xuan", u"\u91d1\u5e01\u62db\u8d22", None))
 #if QT_CONFIG(tooltip)
-        self.label_45.setToolTip(QCoreApplication.translate("DailyQuestsHelper", u"  - DxCam\n"
+        self.label_45.setToolTip(QCoreApplication.translate("Xuan", u"  - DxCam\n"
 "    \u901f\u5ea6\u5feb\uff0c\u4f46\u662f\u6a21\u62df\u5668\u7a97\u53e3\u5fc5\u987b\u5728\u5c4f\u5e55\u8fb9\u754c\u5185\uff0c\u4e0d\u80fd\u6700\u5c0f\u5316\u6216\u88ab\u906e\u6321\n"
 "  - MuMu\n"
 "    \u4f7f\u7528MuMu\u6a21\u62df\u5668\u7684\u63a5\u53e3\u622a\u56fe\uff0c\u6a21\u62df\u5668\u53ef\u4ee5\u6700\u5c0f\u5316/\u88ab\u906e\u6321\n"
 "  - LD\n"
 "    \u4f7f\u7528\u96f7\u7535\u6a21\u62df\u5668\u7684\u63a5\u53e3\u622a\u56fe\uff0c\u6a21\u62df\u5668\u53ef\u4ee5\u6700\u5c0f\u5316/\u88ab\u906e\u6321", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_45.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u62db\u8d22\u6b21\u6570", None))
-        self.label_46.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8be5\u8bbe\u7f6e\u5305\u542b\u514d\u8d39\u6b21\u6570\u5728\u5185\u7684\u6b21\u6570!!!\n"
+        self.label_45.setText(QCoreApplication.translate("Xuan", u"\u62db\u8d22\u6b21\u6570", None))
+        self.label_46.setText(QCoreApplication.translate("Xuan", u"\u8be5\u8bbe\u7f6e\u5305\u542b\u514d\u8d39\u6b21\u6570\u5728\u5185\u7684\u6b21\u6570!!!\n"
 "\u9700\u8981\u8bbe\u7f6e\u52a9\u624b\u8bbe\u7f6e-\u4e8c\u7ea7\u5bc6\u7801", None))
         self.JinBiZhaoCai_times.setSuffix("")
-        self.label_61.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_62.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_63.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_61.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_62.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_63.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.XiaoDuiTuXi_Enable.setText("")
-        self.label_124.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_125.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_47.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c0f\u961f\u7a81\u88ad", None))
+        self.label_124.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_125.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_47.setText(QCoreApplication.translate("Xuan", u"\u5c0f\u961f\u7a81\u88ad", None))
 #if QT_CONFIG(tooltip)
-        self.label_48.setToolTip(QCoreApplication.translate("DailyQuestsHelper", u"  - DxCam\n"
+        self.label_48.setToolTip(QCoreApplication.translate("Xuan", u"  - DxCam\n"
 "    \u901f\u5ea6\u5feb\uff0c\u4f46\u662f\u6a21\u62df\u5668\u7a97\u53e3\u5fc5\u987b\u5728\u5c4f\u5e55\u8fb9\u754c\u5185\uff0c\u4e0d\u80fd\u6700\u5c0f\u5316\u6216\u88ab\u906e\u6321\n"
 "  - MuMu\n"
 "    \u4f7f\u7528MuMu\u6a21\u62df\u5668\u7684\u63a5\u53e3\u622a\u56fe\uff0c\u6a21\u62df\u5668\u53ef\u4ee5\u6700\u5c0f\u5316/\u88ab\u906e\u6321\n"
 "  - LD\n"
 "    \u4f7f\u7528\u96f7\u7535\u6a21\u62df\u5668\u7684\u63a5\u53e3\u622a\u56fe\uff0c\u6a21\u62df\u5668\u53ef\u4ee5\u6700\u5c0f\u5316/\u88ab\u906e\u6321", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_48.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u56db\u500d\u5956\u52b1\u6b21\u6570", None))
+        self.label_48.setText(QCoreApplication.translate("Xuan", u"\u56db\u500d\u5956\u52b1\u6b21\u6570", None))
         self.XiaoDuiTuXi_4rewards_times.setSuffix("")
-        self.label_13.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u56db\u500d\u5956\u52b1\u52fe\u9009", None))
-        self.label_12.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u9009\u62e9\u540e\u4f1a\u81ea\u52a8\u52fe\u9009\u6536\u53d6\u56db\u500d\u5956\u52b1\n"
+        self.label_13.setText(QCoreApplication.translate("Xuan", u"\u56db\u500d\u5956\u52b1\u52fe\u9009", None))
+        self.label_12.setText(QCoreApplication.translate("Xuan", u"\u9009\u62e9\u540e\u4f1a\u81ea\u52a8\u52fe\u9009\u6536\u53d6\u56db\u500d\u5956\u52b1\n"
 "\u9700\u8981\u52a9\u624b\u8bbe\u7f6e\u4e2d\u8bbe\u7f6e\u4e8c\u7ea7\u5bc6\u7801", None))
         self.XiaoDuiTuXi_4rewards_Enable.setText("")
-        self.label_187.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_188.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_189.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_187.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_188.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_189.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.ZuZhiQiFu_Enable.setText("")
-        self.label_190.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_191.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_82.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_83.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_84.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_190.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_191.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_82.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_83.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_84.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.HaoYouTiLi_Enable.setText("")
-        self.label_138.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_139.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_118.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_119.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_154.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_138.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_139.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_118.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_119.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_154.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.PuTongRenZheZhaoMu_Enable.setText("")
-        self.label_155.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_156.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_94.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_38.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8be5\u4efb\u52a1\u53ef\u80fd\u4f1a\u56e0\u4e3a\u6a21\u62df\u5668\u706b\u5f71\u5206\u4eab\u5361\u6b7b\u95ee\u9898\u5931\u8d25\n"
+        self.label_155.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_156.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_94.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_38.setText(QCoreApplication.translate("Xuan", u"\u8be5\u4efb\u52a1\u53ef\u80fd\u4f1a\u56e0\u4e3a\u6a21\u62df\u5668\u706b\u5f71\u5206\u4eab\u5361\u6b7b\u95ee\u9898\u5931\u8d25\n"
 "\u5982\u679c\u4f60\u7684\u6a21\u62df\u5668\u51fa\u8fc7\u8fd9\u79cd\u95ee\u9898\u8bf7\u8c28\u614e\u5f00\u542f", None))
-        self.label_95.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_96.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668\n"
+        self.label_95.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_96.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668\n"
 "\u9700\u8981\u6a21\u62df\u5668\u5b89\u88c5QQ\uff08\u767b\u4e0d\u767b\u5f55\u90fd\u53ef\u4ee5\uff09", None))
         self.MeiRiFenXiang_Enable.setText("")
-        self.label_146.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_147.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_76.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_226.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u9700\u8981\u5728\u52a9\u624b\u8bbe\u7f6e\u4e2d\u914d\u7f6e\u952e\u4f4d", None))
-        self.label_77.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_78.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_146.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_147.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_76.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_226.setText(QCoreApplication.translate("Xuan", u"\u9700\u8981\u5728\u52a9\u624b\u8bbe\u7f6e\u4e2d\u914d\u7f6e\u952e\u4f4d", None))
+        self.label_77.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_78.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.FengRaoZhiJian_Enable.setText("")
-        self.label_134.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_135.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_172.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_49.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u7531\u4e8e\u63a5\u53d6\u7b97\u6cd5\u672a\u5b9e\u73b0\uff0c\u8d85\u5f71\u7279\u6743\u7528\u6237\u6536\u76ca\u4e0d\u80fd\u6700\u5927\u5316", None))
-        self.label_173.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_174.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_134.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_135.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_172.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_49.setText(QCoreApplication.translate("Xuan", u"\u7531\u4e8e\u63a5\u53d6\u7b97\u6cd5\u672a\u5b9e\u73b0\uff0c\u8d85\u5f71\u7279\u6743\u7528\u6237\u6536\u76ca\u4e0d\u80fd\u6700\u5927\u5316", None))
+        self.label_173.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_174.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.RenWuJiHuiSuo_Enable.setText("")
-        self.label_175.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_176.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_182.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_183.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_184.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_175.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_176.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_182.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_183.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_184.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.YiLeWaiMai_Enable.setText("")
-        self.label_185.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_186.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_91.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_14.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u6ce8\u610f\uff1a\u8be5\u4efb\u52a1\u4f1a\u76f4\u63a5\u4f7f\u7528\u5f53\u524d\u5339\u914d\u9635\u5bb9\uff0c\u8bf7\u63d0\u524d\u8bbe\u7f6e\u597d\u9635\u5bb9\u9632\u6b62\u6389\u80dc\u7387", None))
-        self.label_92.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_93.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_185.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_186.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_91.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_14.setText(QCoreApplication.translate("Xuan", u"\u6ce8\u610f\uff1a\u8be5\u4efb\u52a1\u4f1a\u76f4\u63a5\u4f7f\u7528\u5f53\u524d\u5339\u914d\u9635\u5bb9\uff0c\u8bf7\u63d0\u524d\u8bbe\u7f6e\u597d\u9635\u5bb9\u9632\u6b62\u6389\u80dc\u7387", None))
+        self.label_92.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_93.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.MeiRiShengChang_Enable.setText("")
-        self.label_144.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_145.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_192.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_50.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8bf7\u4fdd\u8bc1\u6218\u529b\u80fd\u626b\u8361\u8fc7\u751f\u5b58\u6311\u6218\uff0c\u5426\u5219\u6536\u76ca\u6ca1\u6709\u624b\u6253\u9ad8", None))
-        self.label_193.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_194.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_144.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_145.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_192.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_50.setText(QCoreApplication.translate("Xuan", u"\u8bf7\u4fdd\u8bc1\u6218\u529b\u80fd\u626b\u8361\u8fc7\u751f\u5b58\u6311\u6218\uff0c\u5426\u5219\u6536\u76ca\u6ca1\u6709\u624b\u6253\u9ad8", None))
+        self.label_193.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_194.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.ShengCunTiaoZhan_Enable.setText("")
-        self.label_195.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_196.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_197.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_54.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5f85\u5f00\u53d1", None))
-        self.label_198.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_199.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_195.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_196.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_197.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_54.setText(QCoreApplication.translate("Xuan", u"\u5f85\u5f00\u53d1", None))
+        self.label_198.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_199.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.MiJingTanXian_Enable.setText("")
-        self.label_200.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_201.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_259.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_260.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5f85\u5f00\u53d1", None))
-        self.label_261.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_262.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_200.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_201.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_259.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_260.setText(QCoreApplication.translate("Xuan", u"\u5f85\u5f00\u53d1", None))
+        self.label_261.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_262.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.ShangChengJiangLi_Enable.setText("")
-        self.label_263.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_264.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_157.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_40.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8be5\u4efb\u52a1\u53ef\u80fd\u56e0\u4e3a\u7f51\u7edc\u8fde\u63a5\u5dee\u5bfc\u81f4\u5931\u8d25\uff0c\u8bf7\u52a1\u5fc5\u786e\u4fdd\u7f51\u7edc\u8fde\u63a5\u6b63\u5e38", None))
-        self.label_158.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_159.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_263.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_264.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_157.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_40.setText(QCoreApplication.translate("Xuan", u"\u8be5\u4efb\u52a1\u53ef\u80fd\u56e0\u4e3a\u7f51\u7edc\u8fde\u63a5\u5dee\u5bfc\u81f4\u5931\u8d25\uff0c\u8bf7\u52a1\u5fc5\u786e\u4fdd\u7f51\u7edc\u8fde\u63a5\u6b63\u5e38", None))
+        self.label_158.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_159.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.QingBaoZhan_Enable.setText("")
-        self.label_160.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_161.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_97.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_53.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8bf7\u4fdd\u8bc1\u81ea\u5df1\u5728\u6a21\u62df\u5668\u4e0a\u624b\u52a8\u626b\u8361\u8fc7\u4e00\u6b21\u7cbe\u82f1\u526f\u672c\n"
+        self.label_160.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_161.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_97.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_53.setText(QCoreApplication.translate("Xuan", u"\u8bf7\u4fdd\u8bc1\u81ea\u5df1\u5728\u6a21\u62df\u5668\u4e0a\u624b\u52a8\u626b\u8361\u8fc7\u4e00\u6b21\u7cbe\u82f1\u526f\u672c\n"
 "\u5426\u5219\u4efb\u52a1\u4f1a\u52fe\u9009\u5168\u9009\u4ee5\u8fbe\u5230\u901a\u8fc7\u4efb\u52a1\u7684\u76ee\u7684", None))
-        self.label_98.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_99.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_98.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_99.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.MaoXianFuBen_Enable.setText("")
-        self.label_148.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_149.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_100.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_101.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_102.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_148.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_149.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_100.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_101.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_102.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.HuoYueDuJiangLi_Enable.setText("")
-        self.label_150.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_151.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_162.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_163.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_164.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_150.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_151.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_162.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_163.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_164.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.QingKongYouJian_Enable.setText("")
-        self.label_165.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_166.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_177.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_220.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5f85\u5f00\u53d1", None))
-        self.label_178.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_179.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_165.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_166.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_177.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_220.setText(QCoreApplication.translate("Xuan", u"\u5f85\u5f00\u53d1", None))
+        self.label_178.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_179.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.XiuXingZhiLu_Enable.setText("")
-        self.label_180.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_181.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_64.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_65.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_66.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668\n"
+        self.label_180.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_181.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_64.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_65.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_66.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668\n"
 "\u4e34\u65f6\u4efb\u52a1\u4f1a\u5728\u7ed3\u675f\u540e\u81ea\u52a8\u7981\u7528\u4efb\u52a1", None))
         self.MeiZhouShengChang_Enable.setText("")
-        self.label_126.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_127.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_167.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_51.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u6a21\u62df\u5668\u9700\u8981\u5b89\u88c5QQ", None))
-        self.label_168.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_169.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_126.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_127.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_167.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_51.setText(QCoreApplication.translate("Xuan", u"\u6a21\u62df\u5668\u9700\u8981\u5b89\u88c5QQ", None))
+        self.label_168.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_169.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.RenFaTieDianZanFenXiang_Enable.setText("")
-        self.label_170.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_171.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_70.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_71.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_72.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668\n"
+        self.label_170.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_171.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_70.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_71.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_72.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668\n"
 "\u4e34\u65f6\u4efb\u52a1\u4f1a\u5728\u7ed3\u675f\u540e\u81ea\u52a8\u7981\u7528\u4efb\u52a1", None))
         self.GengDuoWanFa_Enable.setText("")
-        self.label_130.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_131.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_208.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_209.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5f85\u5f00\u53d1", None))
-        self.label_210.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_211.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_130.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_131.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_208.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_209.setText(QCoreApplication.translate("Xuan", u"\u5f85\u5f00\u53d1", None))
+        self.label_210.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_211.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.TuanBen_Enable.setText("")
-        self.label_212.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_213.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_241.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_242.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5f85\u5f00\u53d1", None))
-        self.label_243.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_244.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_212.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_213.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_241.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_242.setText(QCoreApplication.translate("Xuan", u"\u5f85\u5f00\u53d1", None))
+        self.label_243.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_244.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.BenFuYaoSaiZhan_Enable.setText("")
-        self.label_245.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_246.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_202.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_203.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5f85\u5f00\u53d1", None))
-        self.label_204.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_205.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_245.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_246.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_202.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_203.setText(QCoreApplication.translate("Xuan", u"\u5f85\u5f00\u53d1", None))
+        self.label_204.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_205.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.PanRenLaiXi_Enable.setText("")
-        self.label_206.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_207.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_247.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_248.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5f85\u5f00\u53d1", None))
-        self.label_249.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_250.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_206.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_207.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_247.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_248.setText(QCoreApplication.translate("Xuan", u"\u5f85\u5f00\u53d1", None))
+        self.label_249.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_250.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.TianDiZhanChang_Enable.setText("")
-        self.label_251.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_252.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_253.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_254.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5f85\u5f00\u53d1", None))
-        self.label_255.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_256.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_251.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_252.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_253.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_254.setText(QCoreApplication.translate("Xuan", u"\u5f85\u5f00\u53d1", None))
+        self.label_255.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_256.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.ZhuiJiXiaoZuZhi_Enable.setText("")
-        self.label_257.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_258.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_236.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_113.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5f85\u5f00\u53d1", None))
-        self.label_237.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_238.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_257.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_258.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_236.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_113.setText(QCoreApplication.translate("Xuan", u"\u5f85\u5f00\u53d1", None))
+        self.label_237.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_238.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.KuaFuYaoSaiZhan_Enable.setText("")
-        self.label_239.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_240.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_223.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_112.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5f85\u5f00\u53d1", None))
-        self.label_224.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_225.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_239.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_240.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_223.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_112.setText(QCoreApplication.translate("Xuan", u"\u5f85\u5f00\u53d1", None))
+        self.label_224.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_225.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.DianFengDuiJue_Enable.setText("")
-        self.label_232.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_235.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_103.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_39.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5f85\u5f00\u53d1", None))
-        self.label_152.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_153.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_116.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_117.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_232.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_235.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_103.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_39.setText(QCoreApplication.translate("Xuan", u"\u5f85\u5f00\u53d1", None))
+        self.label_152.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_153.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_116.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_117.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.ZuZhiZhengBa_Enable.setText("")
-        self.label_67.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_68.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_69.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668\n"
+        self.label_67.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_68.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_69.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668\n"
 "\u4e34\u65f6\u4efb\u52a1\u4f1a\u5728\u7ed3\u675f\u540e\u81ea\u52a8\u7981\u7528\u4efb\u52a1", None))
         self.SaiJiShengChang_Enable.setText("")
-        self.label_128.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_129.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_104.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_105.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_108.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668\n"
+        self.label_128.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_129.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_104.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_105.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_108.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668\n"
 "\u4e34\u65f6\u4efb\u52a1\u4f1a\u5728\u7ed3\u675f\u540e\u81ea\u52a8\u7981\u7528\u4efb\u52a1", None))
         self.ZhuangBeiHeCheng_Enable.setText("")
-        self.label_221.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_222.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_109.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u88c5\u5907\u5408\u6210", None))
-        self.ZhuangBeiHeCheng_target_armor.setItemText(0, QCoreApplication.translate("DailyQuestsHelper", u"\u6b66\u5668", None))
-        self.ZhuangBeiHeCheng_target_armor.setItemText(1, QCoreApplication.translate("DailyQuestsHelper", u"\u5934\u76d4", None))
-        self.ZhuangBeiHeCheng_target_armor.setItemText(2, QCoreApplication.translate("DailyQuestsHelper", u"\u80f8\u7532", None))
-        self.ZhuangBeiHeCheng_target_armor.setItemText(3, QCoreApplication.translate("DailyQuestsHelper", u"\u5fcd\u4e4b\u4e66", None))
-        self.ZhuangBeiHeCheng_target_armor.setItemText(4, QCoreApplication.translate("DailyQuestsHelper", u"\u9879\u94fe", None))
-        self.ZhuangBeiHeCheng_target_armor.setItemText(5, QCoreApplication.translate("DailyQuestsHelper", u"\u6212\u6307", None))
+        self.label_221.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_222.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_109.setText(QCoreApplication.translate("Xuan", u"\u88c5\u5907\u5408\u6210", None))
+        self.ZhuangBeiHeCheng_target_armor.setItemText(0, QCoreApplication.translate("Xuan", u"\u6b66\u5668", None))
+        self.ZhuangBeiHeCheng_target_armor.setItemText(1, QCoreApplication.translate("Xuan", u"\u5934\u76d4", None))
+        self.ZhuangBeiHeCheng_target_armor.setItemText(2, QCoreApplication.translate("Xuan", u"\u80f8\u7532", None))
+        self.ZhuangBeiHeCheng_target_armor.setItemText(3, QCoreApplication.translate("Xuan", u"\u5fcd\u4e4b\u4e66", None))
+        self.ZhuangBeiHeCheng_target_armor.setItemText(4, QCoreApplication.translate("Xuan", u"\u9879\u94fe", None))
+        self.ZhuangBeiHeCheng_target_armor.setItemText(5, QCoreApplication.translate("Xuan", u"\u6212\u6307", None))
 
-        self.label_110.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5408\u6210\u76ee\u6807\u88c5\u5907", None))
-        self.label_111.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u4f53\u529b\u6d88\u8017\u5728\u8be5\u90e8\u4f4d\u88c5\u5907\u7684\u6750\u6599\u626b\u8361\u548c\u8fdb\u9636\u4e0a", None))
-        self.label_79.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4efb\u52a1\u8bbe\u7f6e", None))
-        self.label_80.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u542f\u7528\u4efb\u52a1", None))
-        self.label_81.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
+        self.label_110.setText(QCoreApplication.translate("Xuan", u"\u5408\u6210\u76ee\u6807\u88c5\u5907", None))
+        self.label_111.setText(QCoreApplication.translate("Xuan", u"\u5c06\u4f53\u529b\u6d88\u8017\u5728\u8be5\u90e8\u4f4d\u88c5\u5907\u7684\u6750\u6599\u626b\u8361\u548c\u8fdb\u9636\u4e0a", None))
+        self.label_79.setText(QCoreApplication.translate("Xuan", u"\u4efb\u52a1\u8bbe\u7f6e", None))
+        self.label_80.setText(QCoreApplication.translate("Xuan", u"\u542f\u7528\u4efb\u52a1", None))
+        self.label_81.setText(QCoreApplication.translate("Xuan", u"\u5c06\u8fd9\u4e2a\u4efb\u52a1\u52a0\u5165\u8c03\u5ea6\u5668", None))
         self.GaoJiRenZheZhaoMu_Enable.setText("")
-        self.label_136.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
-        self.label_137.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
-        self.label_18.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u63a7\u5236\u6a21\u5f0f", None))
-        self.serial_list_button.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e32\u53e3\u5217\u8868", None))
+        self.label_136.setText(QCoreApplication.translate("Xuan", u"\u4e0b\u6b21\u6267\u884c\u65f6\u95f4", None))
+        self.label_137.setText(QCoreApplication.translate("Xuan", u"\u81ea\u52a8\u8ba1\u7b97\u5f97\u51fa\uff0c\u65e0\u987b\u4fee\u6539\uff0c\u6e05\u7a7a\u5219\u7acb\u523b\u8fd0\u884c", None))
+        self.label_18.setText(QCoreApplication.translate("Xuan", u"\u63a7\u5236\u6a21\u5f0f", None))
+        self.serial_list_button.setText(QCoreApplication.translate("Xuan", u"\u4e32\u53e3\u5217\u8868", None))
         self.serial.setText("")
-        self.serial.setPlaceholderText(QCoreApplication.translate("DailyQuestsHelper", u"127.0.0.1:5555", None))
+        self.serial.setPlaceholderText(QCoreApplication.translate("Xuan", u"127.0.0.1:5555", None))
 #if QT_CONFIG(tooltip)
-        self.label_19.setToolTip(QCoreApplication.translate("DailyQuestsHelper", u"ADB\uff1a\u901a\u7528\u65b9\u6848\uff0c\u6027\u80fd\u4e0d\u9ad8\n"
+        self.label_19.setToolTip(QCoreApplication.translate("Xuan", u"ADB\uff1a\u901a\u7528\u65b9\u6848\uff0c\u6027\u80fd\u4e0d\u9ad8\n"
 "U2\uff1auiautomator2", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_19.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u63a7\u5236\u6a21\u5f0f\u9009\u62e9", None))
-        self.label_20.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u51b3\u5b9a\u4f7f\u7528\u54ea\u79cd\u65b9\u6848\u63a7\u5236\u6a21\u62df\u5668\n"
+        self.label_19.setText(QCoreApplication.translate("Xuan", u"\u63a7\u5236\u6a21\u5f0f\u9009\u62e9", None))
+        self.label_20.setText(QCoreApplication.translate("Xuan", u"\u51b3\u5b9a\u4f7f\u7528\u54ea\u79cd\u65b9\u6848\u63a7\u5236\u6a21\u62df\u5668\n"
 "\u9f20\u6807\u60ac\u505c\u67e5\u770b\u8be6\u7ec6\u4ecb\u7ecd", None))
-        self.control_mode.setItemText(0, QCoreApplication.translate("DailyQuestsHelper", u"ADB", None))
-        self.control_mode.setItemText(1, QCoreApplication.translate("DailyQuestsHelper", u"U2", None))
+        self.control_mode.setItemText(0, QCoreApplication.translate("Xuan", u"ADB", None))
+        self.control_mode.setItemText(1, QCoreApplication.translate("Xuan", u"U2", None))
 
 #if QT_CONFIG(tooltip)
-        self.label_106.setToolTip(QCoreApplication.translate("DailyQuestsHelper", u"\u8bf7\u5148\u6253\u5f00\u81ea\u5df1\u7684\u6a21\u62df\u5668\n"
+        self.label_106.setToolTip(QCoreApplication.translate("Xuan", u"\u8bf7\u5148\u6253\u5f00\u81ea\u5df1\u7684\u6a21\u62df\u5668\n"
 "\u70b9\u51fb\u53f3\u4fa7\u4e32\u53e3\u5217\u8868\n"
 "\u81ea\u884c\u5206\u8fa8\u54ea\u4e2a\u4e32\u53e3\u662f\u81ea\u5df1\u6b63\u5728\u4f7f\u7528\u7684\u6a21\u62df\u5668\u7684\u4e32\u53e3\n"
 "\u8be5\u4e32\u53e3\u4f1a\u88abDroidCastRaw\u548cU2\u5171\u540c\u4f7f\u7528", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_106.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e32\u53e3", None))
-        self.label_107.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u6a21\u62df\u5668\u7684ADB\u7aef\u53e3\u5730\u5740\n"
+        self.label_106.setText(QCoreApplication.translate("Xuan", u"\u4e32\u53e3", None))
+        self.label_107.setText(QCoreApplication.translate("Xuan", u"\u6a21\u62df\u5668\u7684ADB\u7aef\u53e3\u5730\u5740\n"
 "\u9f20\u6807\u60ac\u505c\u67e5\u770b\u8be6\u7ec6\u4ecb\u7ecd", None))
-        self.label_33.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u622a\u56fe\u6a21\u5f0f", None))
-        self.screen_mode.setItemText(0, QCoreApplication.translate("DailyQuestsHelper", u"DroidCastRaw", None))
-        self.screen_mode.setItemText(1, QCoreApplication.translate("DailyQuestsHelper", u"WindowCapture", None))
-        self.screen_mode.setItemText(2, QCoreApplication.translate("DailyQuestsHelper", u"U2", None))
-        self.screen_mode.setItemText(3, QCoreApplication.translate("DailyQuestsHelper", u"MuMu", None))
-        self.screen_mode.setItemText(4, QCoreApplication.translate("DailyQuestsHelper", u"LD", None))
+        self.label_33.setText(QCoreApplication.translate("Xuan", u"\u622a\u56fe\u6a21\u5f0f", None))
+        self.screen_mode.setItemText(0, QCoreApplication.translate("Xuan", u"DroidCastRaw", None))
+        self.screen_mode.setItemText(1, QCoreApplication.translate("Xuan", u"WindowCapture", None))
+        self.screen_mode.setItemText(2, QCoreApplication.translate("Xuan", u"U2", None))
+        self.screen_mode.setItemText(3, QCoreApplication.translate("Xuan", u"MuMu", None))
+        self.screen_mode.setItemText(4, QCoreApplication.translate("Xuan", u"LD", None))
 
 #if QT_CONFIG(tooltip)
-        self.label_34.setToolTip(QCoreApplication.translate("DailyQuestsHelper", u"DroidCastRaw\uff1a70-100ms \uff0c\u6a21\u62df\u5668\u53ef\u6700\u5c0f\u5316\uff0c\u53ef\u906e\u6321\n"
+        self.label_34.setToolTip(QCoreApplication.translate("Xuan", u"DroidCastRaw\uff1a70-100ms \uff0c\u6a21\u62df\u5668\u53ef\u6700\u5c0f\u5316\uff0c\u53ef\u906e\u6321\n"
 "WindowCapture\uff1a10-20ms\uff0c\u6355\u83b7\u7a97\u53e3\u4f4d\u56fe\uff0c\u6a21\u62df\u5668\u4e0d\u53ef\u6700\u5c0f\u5316\uff0c\u53ef\u906e\u6321\n"
 "U2\uff1a70-100ms\uff0c\u4f7f\u7528uiautomator2\u5185\u7f6e\u51fd\u6570\uff0c\u6a21\u62df\u5668\u53ef\u6700\u5c0f\u5316\uff0c\u53ef\u906e\u6321\n"
 "MuMu\uff1a5-10ms\uff0c\u4f7f\u7528MuMu\u6a21\u62df\u5668\u7684\u63a5\u53e3\uff0c\u6a21\u62df\u5668\u53ef\u6700\u5c0f\u5316\uff0c\u53ef\u906e\u6321\n"
 "LD\uff1a5-10ms\uff0c\u4f7f\u7528\u96f7\u7535\u6a21\u62df\u5668\u7684\u63a5\u53e3\uff0c\u6a21\u62df\u5668\u53ef\u6700\u5c0f\u5316\uff0c\u53ef\u906e\u6321", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_34.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u622a\u56fe\u6a21\u5f0f\u9009\u62e9", None))
-        self.label_35.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u6839\u636e\u81ea\u5df1\u7684\u60c5\u51b5\u51b3\u5b9a\u4f7f\u7528\n"
+        self.label_34.setText(QCoreApplication.translate("Xuan", u"\u622a\u56fe\u6a21\u5f0f\u9009\u62e9", None))
+        self.label_35.setText(QCoreApplication.translate("Xuan", u"\u6839\u636e\u81ea\u5df1\u7684\u60c5\u51b5\u51b3\u5b9a\u4f7f\u7528\n"
 "\u9f20\u6807\u60ac\u505c\u67e5\u770b\u8be6\u7ec6\u4ecb\u7ecd", None))
-        self.label_10.setText(QCoreApplication.translate("DailyQuestsHelper", u"MuMu\u6a21\u62df\u5668\u5b89\u88c5\u8def\u5f84", None))
+        self.label_10.setText(QCoreApplication.translate("Xuan", u"MuMu\u6a21\u62df\u5668\u5b89\u88c5\u8def\u5f84", None))
         self.MuMu_install_path.setText("")
-        self.MuMu_install_path.setPlaceholderText(QCoreApplication.translate("DailyQuestsHelper", u".../MuMuPlayer-12.0(\u8be5\u6587\u4ef6\u5939\u4e0b\u987b\u6709shell\u6587\u4ef6\u5939\uff09", None))
-        self.MuMu_install_path_browse.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u6d4f\u89c8", None))
-        self.label_11.setText(QCoreApplication.translate("DailyQuestsHelper", u"MuMu\u5b9e\u4f8b\u7d22\u5f15", None))
-        self.label_31.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5728MuMu\u591a\u5f00\u5668\u4e2d\u67e5\u770b\u81ea\u5df1\u6b63\u5728\u4f7f\u7528\u7684\u6a21\u62df\u5668\u5b9e\u4f8b\u7d22\u5f15\n"
+        self.MuMu_install_path.setPlaceholderText(QCoreApplication.translate("Xuan", u".../MuMuPlayer-12.0(\u8be5\u6587\u4ef6\u5939\u4e0b\u987b\u6709shell\u6587\u4ef6\u5939\uff09", None))
+        self.MuMu_install_path_browse.setText(QCoreApplication.translate("Xuan", u"\u6d4f\u89c8", None))
+        self.label_11.setText(QCoreApplication.translate("Xuan", u"MuMu\u5b9e\u4f8b\u7d22\u5f15", None))
+        self.label_31.setText(QCoreApplication.translate("Xuan", u"\u5728MuMu\u591a\u5f00\u5668\u4e2d\u67e5\u770b\u81ea\u5df1\u6b63\u5728\u4f7f\u7528\u7684\u6a21\u62df\u5668\u5b9e\u4f8b\u7d22\u5f15\n"
 "\u5982\u679c\u662f\u7b2c\u4e00\u4e2a\u6a21\u62df\u5668\u5c31\u662f0\uff0c\u4f9d\u6b21\u7c7b\u63a8", None))
-        self.label_8.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u96f7\u7535\u6a21\u62df\u5668\u5b89\u88c5\u8def\u5f84", None))
+        self.label_8.setText(QCoreApplication.translate("Xuan", u"\u96f7\u7535\u6a21\u62df\u5668\u5b89\u88c5\u8def\u5f84", None))
         self.LD_install_path.setText("")
-        self.LD_install_path.setPlaceholderText(QCoreApplication.translate("DailyQuestsHelper", u".../leidian/LDPlayer9(\u8be5\u6587\u4ef6\u5939\u4e0b\u987b\u6709ld.exe\u6587\u4ef6\u5939\uff09", None))
-        self.LD_install_path_browse.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u6d4f\u89c8", None))
-        self.label_9.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u96f7\u7535\u5b9e\u4f8b\u7d22\u5f15", None))
-        self.label_32.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5728\u96f7\u7535\u591a\u5f00\u5668\u4e2d\u67e5\u770b\u81ea\u5df1\u6b63\u5728\u4f7f\u7528\u7684\u6a21\u62df\u5668\u5b9e\u4f8b\u7d22\u5f15\n"
+        self.LD_install_path.setPlaceholderText(QCoreApplication.translate("Xuan", u".../leidian/LDPlayer9(\u8be5\u6587\u4ef6\u5939\u4e0b\u987b\u6709ld.exe\u6587\u4ef6\u5939\uff09", None))
+        self.LD_install_path_browse.setText(QCoreApplication.translate("Xuan", u"\u6d4f\u89c8", None))
+        self.label_9.setText(QCoreApplication.translate("Xuan", u"\u96f7\u7535\u5b9e\u4f8b\u7d22\u5f15", None))
+        self.label_32.setText(QCoreApplication.translate("Xuan", u"\u5728\u96f7\u7535\u591a\u5f00\u5668\u4e2d\u67e5\u770b\u81ea\u5df1\u6b63\u5728\u4f7f\u7528\u7684\u6a21\u62df\u5668\u5b9e\u4f8b\u7d22\u5f15\n"
 "\u5982\u679c\u662f\u7b2c\u4e00\u4e2a\u6a21\u62df\u5668\u5c31\u662f0\uff0c\u4f9d\u6b21\u7c7b\u63a8", None))
-        self.label_231.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8c03\u5ea6\u8bbe\u7f6e", None))
+        self.label_231.setText(QCoreApplication.translate("Xuan", u"\u8c03\u5ea6\u8bbe\u7f6e", None))
 #if QT_CONFIG(tooltip)
-        self.label_233.setToolTip(QCoreApplication.translate("DailyQuestsHelper", u"  - DxCam\n"
+        self.label_233.setToolTip(QCoreApplication.translate("Xuan", u"  - DxCam\n"
 "    \u901f\u5ea6\u5feb\uff0c\u4f46\u662f\u6a21\u62df\u5668\u7a97\u53e3\u5fc5\u987b\u5728\u5c4f\u5e55\u8fb9\u754c\u5185\uff0c\u4e0d\u80fd\u6700\u5c0f\u5316\u6216\u88ab\u906e\u6321\n"
 "  - MuMu\n"
 "    \u4f7f\u7528MuMu\u6a21\u62df\u5668\u7684\u63a5\u53e3\u622a\u56fe\uff0c\u6a21\u62df\u5668\u53ef\u4ee5\u6700\u5c0f\u5316/\u88ab\u906e\u6321\n"
 "  - LD\n"
 "    \u4f7f\u7528\u96f7\u7535\u6a21\u62df\u5668\u7684\u63a5\u53e3\u622a\u56fe\uff0c\u6a21\u62df\u5668\u53ef\u4ee5\u6700\u5c0f\u5316/\u88ab\u906e\u6321", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_233.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u626b\u63cf\u95f4\u9694", None))
-        self.label_234.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u95f4\u9694\u8d8a\u5c0f\u8c03\u5ea6\u5668\u626b\u63cf\u4efb\u52a1\u8d8a\u9891\u7e41\n"
+        self.label_233.setText(QCoreApplication.translate("Xuan", u"\u626b\u63cf\u95f4\u9694", None))
+        self.label_234.setText(QCoreApplication.translate("Xuan", u"\u95f4\u9694\u8d8a\u5c0f\u8c03\u5ea6\u5668\u626b\u63cf\u4efb\u52a1\u8d8a\u9891\u7e41\n"
 "\u4e00\u822c1000ms\u8db3\u77e3", None))
-        self.scan_inerval.setSuffix(QCoreApplication.translate("DailyQuestsHelper", u" ms", None))
-        self.label_227.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8fde\u70b9\u952e\u4f4d", None))
-        self.label_230.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u8bf8\u5982\u4e30\u9976\u4e4b\u95f4\uff0c\u6bcf\u65e5\u80dc\u573a\u7b49\u4efb\u52a1\u7684\u5fc5\u8981\u8bbe\u7f6e", None))
+        self.scan_inerval.setSuffix(QCoreApplication.translate("Xuan", u" ms", None))
+        self.label_227.setText(QCoreApplication.translate("Xuan", u"\u8fde\u70b9\u952e\u4f4d", None))
+        self.label_230.setText(QCoreApplication.translate("Xuan", u"\u8bf8\u5982\u4e30\u9976\u4e4b\u95f4\uff0c\u6bcf\u65e5\u80dc\u573a\u7b49\u4efb\u52a1\u7684\u5fc5\u8981\u8bbe\u7f6e", None))
 #if QT_CONFIG(tooltip)
-        self.label_228.setToolTip(QCoreApplication.translate("DailyQuestsHelper", u"  - DxCam\n"
+        self.label_228.setToolTip(QCoreApplication.translate("Xuan", u"  - DxCam\n"
 "    \u901f\u5ea6\u5feb\uff0c\u4f46\u662f\u6a21\u62df\u5668\u7a97\u53e3\u5fc5\u987b\u5728\u5c4f\u5e55\u8fb9\u754c\u5185\uff0c\u4e0d\u80fd\u6700\u5c0f\u5316\u6216\u88ab\u906e\u6321\n"
 "  - MuMu\n"
 "    \u4f7f\u7528MuMu\u6a21\u62df\u5668\u7684\u63a5\u53e3\u622a\u56fe\uff0c\u6a21\u62df\u5668\u53ef\u4ee5\u6700\u5c0f\u5316/\u88ab\u906e\u6321\n"
 "  - LD\n"
 "    \u4f7f\u7528\u96f7\u7535\u6a21\u62df\u5668\u7684\u63a5\u53e3\u622a\u56fe\uff0c\u6a21\u62df\u5668\u53ef\u4ee5\u6700\u5c0f\u5316/\u88ab\u906e\u6321", None))
 #endif // QT_CONFIG(tooltip)
-        self.label_228.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u952e\u4f4d\u914d\u7f6e", None))
-        self.label_229.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u5173\u95ed\u8c03\u5ea6\u5668\u4e4b\u540e\uff0c\u8fdb\u5165\u7ec3\u4e60\u573a\uff0c\u70b9\u51fb\u53f3\u4fa7\u914d\u7f6e\u6309\u94ae\n"
+        self.label_228.setText(QCoreApplication.translate("Xuan", u"\u952e\u4f4d\u914d\u7f6e", None))
+        self.label_229.setText(QCoreApplication.translate("Xuan", u"\u5173\u95ed\u8c03\u5ea6\u5668\u4e4b\u540e\uff0c\u8fdb\u5165\u7ec3\u4e60\u573a\uff0c\u70b9\u51fb\u53f3\u4fa7\u914d\u7f6e\u6309\u94ae\n"
 "\u5c06\u5f39\u51fa\u7a97\u53e3\u4e2d\u7684\u952e\u4f4d\u63a7\u4ef6\u62d6\u52a8\u5230\u56fe\u4e2d\u4f60\u7684\u5bf9\u5e94\u952e\u4f4d\u4e0a", None))
-        self.key_map_configuration_button.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u914d\u7f6e", None))
-        self.label_30.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e8c\u7ea7\u5bc6\u7801", None))
-        self.label_114.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u4e8c\u7ea7\u5bc6\u7801", None))
-        self.label_115.setText(QCoreApplication.translate("DailyQuestsHelper", u"\u7528\u6765\u81ea\u52a8\u6267\u884c\u4e00\u4e9b\u9700\u8981\u4e8c\u7ea7\u5bc6\u7801\u7684\u4efb\u52a1\n"
+        self.key_map_configuration_button.setText(QCoreApplication.translate("Xuan", u"\u914d\u7f6e", None))
+        self.label_30.setText(QCoreApplication.translate("Xuan", u"\u4e8c\u7ea7\u5bc6\u7801", None))
+        self.label_114.setText(QCoreApplication.translate("Xuan", u"\u4e8c\u7ea7\u5bc6\u7801", None))
+        self.label_115.setText(QCoreApplication.translate("Xuan", u"\u7528\u6765\u81ea\u52a8\u6267\u884c\u4e00\u4e9b\u9700\u8981\u4e8c\u7ea7\u5bc6\u7801\u7684\u4efb\u52a1\n"
 "\u53ea\u5728\u672c\u5730\u5b58\u50a8", None))
         self.secondary_password.setInputMask("")
-        self.secondary_password.setPlaceholderText(QCoreApplication.translate("DailyQuestsHelper", u"\u5fc5\u987b\u4e3a\u516d\u4f4d", None))
+        self.secondary_password.setPlaceholderText(QCoreApplication.translate("Xuan", u"\u5fc5\u987b\u4e3a\u516d\u4f4d", None))
     # retranslateUi
 
