@@ -36,7 +36,7 @@ class Xuan(QMainWindow):
         self.UI = Ui_Xuan()
         self.UI.setupUi(self)
         self.log_window = LogWindow()
-        self.logger = logging.getLogger("日常助手")
+        self.logger = logging.getLogger("Xuan")
         self.logger.info("初始化配置...")
         self.config = Config()
         self.logger.info("初始化环境...")
@@ -200,13 +200,11 @@ class Xuan(QMainWindow):
                 for key, value in TASK_NAME_CN2EN_MAP.items():
                     if f"{value}_Enable" == widget_name:
                         self.task_common_control_ref_map[key]["CheckBox"] = widget
-                        self.logger.debug(f"初始化{widget_name}")
                         widget.setChecked(self.config.get_task_config(key, "是否启用"))
                         widget.toggled.connect(lambda state, task_name=key: self.scheduler.toggle_task_activation(state, task_name))
 
                         break
                     elif f"{value}_next_execute_time" == widget_name:
-                        self.logger.debug(f"初始化{widget_name}")
                         self.task_common_control_ref_map[key]["LineEdit"] = widget
                         widget.setText(
                             datetime.fromtimestamp(

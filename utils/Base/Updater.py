@@ -8,6 +8,7 @@ from io import BytesIO
 from pathlib import Path
 
 import requests
+
 from StaticFunctions import get_real_path
 
 
@@ -21,6 +22,7 @@ class Updater:
         self.master_url = f"https://api.github.com/repos/{self.repo_owner}/{self.repo_name}/branches/{self.branch_name}"
         self.zip_url = f"https://github.com/{self.repo_owner}/{self.repo_name}/archive/refs/heads/{self.branch_name}.zip"
         self.version_file_path = Path(get_real_path("version.json"))
+        self.update_thread = None
 
     def check_update(self):
         try:
@@ -32,7 +34,7 @@ class Updater:
         except Exception as e:
             self.logger.error(f"检查更新出错：{e}")
 
-    def update(self, new_version):
+    def update_implement(self, new_version):
         try:
             # 下载zip文件
             self.logger.info(f"正在下载: {self.zip_url}")
@@ -76,3 +78,12 @@ class Updater:
 
         except Exception as e:
             self.logger.error(f"更新出错：{e}")
+
+    def update(self, new_version):
+        if self.update_thread:
+            self.logger.warning("已经存在一个更新线程了")
+            return
+        self.update_thread = threading.Thread(
+            target=self.update_implement, args=(new_version,), daemon=True)
+        self.update_thread.start()
+        self.logger.info("更新线程已启动")

@@ -74,7 +74,7 @@ class SceneGraph:
 
     def _load_template(self, path: Path):
         if not path.exists():
-            self.logger.warning(f"文件不存在: {path}，可能是坐标型元素")
+            # self.logger.warning(f"文件不存在: {path}，可能是坐标型元素")
             return None
         with open(path, 'rb') as f:
             array = np.frombuffer(f.read(), dtype=np.uint8)
