@@ -45,7 +45,7 @@ class Ui_Xuan(object):
         self.centralwidget = QWidget(Xuan)
         self.centralwidget.setObjectName(u"centralwidget")
         self.centralwidget.setFont(font)
-        self.centralwidget.setStyleSheet(u"boader-raduis:10px;")
+        self.centralwidget.setStyleSheet(u"")
         self.verticalLayout_15 = QVBoxLayout(self.centralwidget)
         self.verticalLayout_15.setSpacing(10)
         self.verticalLayout_15.setObjectName(u"verticalLayout_15")

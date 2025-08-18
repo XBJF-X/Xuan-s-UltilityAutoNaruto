@@ -47,7 +47,7 @@ font-size:15pt;
     </font>
    </property>
    <property name="styleSheet">
-    <string notr="true">boader-raduis:10px;</string>
+    <string notr="true"/>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_15">
     <property name="spacing">
