@@ -75,7 +75,7 @@ def main(version):
         change_version(version)
 
         # 直接使用makensis命令（假设已在PATH中）
-        nsis_cmd = [get_real_path("bin/NSIS/Bin/makensis.exe"), str(nsis_project / "DailyQuestsHelper.nsi")]
+        nsis_cmd = [get_real_path("bin/NSIS/Bin/makensis.exe"), str(nsis_project / "XuanInstaller.nsi")]
         print(f"执行命令: {' '.join(nsis_cmd)}")
 
         # 在NSIS项目目录执行命令
@@ -86,7 +86,7 @@ def main(version):
         print("\n" + "=" * 50)
         print("步骤 3: 移动安装程序到发布目录")
 
-        installer_src = nsis_project / "DailyQuestsHelperSetup.exe"
+        installer_src = nsis_project / "XuanInstaller.exe"
         if not installer_src.exists():
             raise FileNotFoundError(f"安装程序未生成: {installer_src}")
 
@@ -94,7 +94,7 @@ def main(version):
         release_dir = py_project / "release"
         release_dir.mkdir(parents=True, exist_ok=True)
 
-        installer_dest = release_dir / f"DailyQuestsHelperSetup_V{version}.exe"
+        installer_dest = release_dir / f"XuanInstaller_V{version}.exe"
 
         # 移动文件
         shutil.move(str(installer_src), str(installer_dest))
