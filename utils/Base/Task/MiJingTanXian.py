@@ -78,7 +78,8 @@ class MiJingTanXian(BaseTask):
                                 self.scene_graph.scenes.get("秘境探险-匹配")
                             ],
                             [
-                                {'click': {'type': "COORDINATE", 'coordinate': (800, 854)}}
+                                {'click': "空白点"},
+                                {'click': "返回"},
                             ],
                             search_max_time=60,
                             bool_debug=True
@@ -94,7 +95,8 @@ class MiJingTanXian(BaseTask):
                                 self.scene_graph.scenes.get("秘境探险-匹配")
                             ],
                             [
-                                {'click': {'type': "COORDINATE", 'coordinate': (800, 854)}}
+                                {'click': "空白点"},
+                                {'click': "返回"},
                             ],
                             search_max_time=60,
                             once_max_time=1,

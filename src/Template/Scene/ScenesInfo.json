@@ -4576,7 +4576,7 @@
             "剩余挑战券-0": {
                 "type": 0,
                 "match_type": 0,
-                "threshold": 0.8,
+                "threshold": 0.9,
                 "ratio": [
                     0.5,
                     0.5
@@ -4595,7 +4595,7 @@
             "胜利": {
                 "type": 0,
                 "match_type": 0,
-                "threshold": 0.8,
+                "threshold": 0.9,
                 "ratio": [
                     0.5,
                     0.5
@@ -4894,6 +4894,25 @@
                 "coordinate": [
                     0,
                     0
+                ]
+            },
+            "空白点": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1245,
+                    150
                 ]
             }
         }

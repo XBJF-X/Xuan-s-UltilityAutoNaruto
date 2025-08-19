@@ -28,9 +28,18 @@ class Updater:
         try:
             with open(str(self.version_file_path), 'r', encoding='utf-8') as f:
                 current_version = json.load(f)
+            self.logger.info(f"当前版本 SHA：{current_version['commit']['sha']}")
+
             response = requests.get(self.master_url, verify=False)
-            new_version = json.loads(response.content.decode("utf-8"))
-            return current_version["commit"]["sha"] != new_version["commit"]["sha"], new_version
+            self.logger.debug(f"Response Status Code：{response.status_code}")
+            if response.status_code == 200:
+                new_version = json.loads(response.content.decode("utf-8"))
+                new_commit = new_version["commit"]
+                self.logger.info(f"最新提交 SHA：{new_commit['sha']}")
+                self.logger.info(f"最新提交 Committer：{new_commit['commit']["committer"]["name"]}")
+                self.logger.info(f"最新提交 Date：{new_commit['commit']["committer"]["date"]}")
+                self.logger.info(f"最新提交 Message：{new_commit['commit']['message']}")
+                return current_version["commit"]["sha"] != new_version["commit"]["sha"], new_version
         except Exception as e:
             self.logger.error(f"检查更新出错：{e}")
 
@@ -38,6 +47,7 @@ class Updater:
         try:
             # 下载zip文件
             self.logger.info(f"正在下载: {self.zip_url}")
+            self.logger.info(f"下载时间可能较长，请耐心等候...")
             zip_response = requests.get(self.zip_url, verify=False)
             zip_response.raise_for_status()
 
