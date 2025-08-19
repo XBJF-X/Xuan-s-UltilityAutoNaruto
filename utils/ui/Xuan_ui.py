@@ -308,6 +308,7 @@ class Ui_Xuan(object):
         QTreeWidgetItem(__qtreewidgetitem)
         QTreeWidgetItem(__qtreewidgetitem)
         QTreeWidgetItem(__qtreewidgetitem)
+        QTreeWidgetItem(__qtreewidgetitem)
         __qtreewidgetitem1 = QTreeWidgetItem(self.treeWidget)
         QTreeWidgetItem(__qtreewidgetitem1)
         QTreeWidgetItem(__qtreewidgetitem1)
@@ -658,7 +659,7 @@ class Ui_Xuan(object):
         self.scrollArea.setWidgetResizable(True)
         self.scroll_area_running_content = QWidget()
         self.scroll_area_running_content.setObjectName(u"scroll_area_running_content")
-        self.scroll_area_running_content.setGeometry(QRect(0, 0, 195, 16))
+        self.scroll_area_running_content.setGeometry(QRect(0, 0, 84, 20))
         self.scrollArea.setWidget(self.scroll_area_running_content)
 
         self.verticalLayout.addWidget(self.scrollArea)
@@ -766,7 +767,7 @@ class Ui_Xuan(object):
         self.scrollArea_2.setWidgetResizable(True)
         self.scroll_area_ready_content = QWidget()
         self.scroll_area_ready_content.setObjectName(u"scroll_area_ready_content")
-        self.scroll_area_ready_content.setGeometry(QRect(0, 0, 195, 16))
+        self.scroll_area_ready_content.setGeometry(QRect(0, 0, 84, 20))
         self.scrollArea_2.setWidget(self.scroll_area_ready_content)
 
         self.verticalLayout_6.addWidget(self.scrollArea_2)
@@ -870,7 +871,7 @@ class Ui_Xuan(object):
         self.scrollArea_3.setWidgetResizable(True)
         self.scroll_area_wait_content = QWidget()
         self.scroll_area_wait_content.setObjectName(u"scroll_area_wait_content")
-        self.scroll_area_wait_content.setGeometry(QRect(0, 0, 195, 16))
+        self.scroll_area_wait_content.setGeometry(QRect(0, 0, 84, 20))
         self.scrollArea_3.setWidget(self.scroll_area_wait_content)
 
         self.verticalLayout_7.addWidget(self.scrollArea_3)
@@ -1019,7 +1020,7 @@ class Ui_Xuan(object):
         self.scrollArea_15.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_12 = QWidget()
         self.scrollAreaWidgetContents_12.setObjectName(u"scrollAreaWidgetContents_12")
-        self.scrollAreaWidgetContents_12.setGeometry(QRect(0, 0, 586, 232))
+        self.scrollAreaWidgetContents_12.setGeometry(QRect(0, 0, 585, 232))
         self.verticalLayout_73 = QVBoxLayout(self.scrollAreaWidgetContents_12)
         self.verticalLayout_73.setSpacing(20)
         self.verticalLayout_73.setObjectName(u"verticalLayout_73")
@@ -1198,7 +1199,7 @@ class Ui_Xuan(object):
         self.scrollArea_19.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_16 = QWidget()
         self.scrollAreaWidgetContents_16.setObjectName(u"scrollAreaWidgetContents_16")
-        self.scrollAreaWidgetContents_16.setGeometry(QRect(0, 0, 586, 232))
+        self.scrollAreaWidgetContents_16.setGeometry(QRect(0, 0, 585, 232))
         self.verticalLayout_89 = QVBoxLayout(self.scrollAreaWidgetContents_16)
         self.verticalLayout_89.setSpacing(20)
         self.verticalLayout_89.setObjectName(u"verticalLayout_89")
@@ -1377,7 +1378,7 @@ class Ui_Xuan(object):
         self.scrollArea_20.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_17 = QWidget()
         self.scrollAreaWidgetContents_17.setObjectName(u"scrollAreaWidgetContents_17")
-        self.scrollAreaWidgetContents_17.setGeometry(QRect(0, 0, 586, 232))
+        self.scrollAreaWidgetContents_17.setGeometry(QRect(0, 0, 585, 232))
         self.verticalLayout_93 = QVBoxLayout(self.scrollAreaWidgetContents_17)
         self.verticalLayout_93.setSpacing(20)
         self.verticalLayout_93.setObjectName(u"verticalLayout_93")
@@ -1556,7 +1557,7 @@ class Ui_Xuan(object):
         self.scrollArea_9.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_6 = QWidget()
         self.scrollAreaWidgetContents_6.setObjectName(u"scrollAreaWidgetContents_6")
-        self.scrollAreaWidgetContents_6.setGeometry(QRect(0, 0, 586, 413))
+        self.scrollAreaWidgetContents_6.setGeometry(QRect(0, 0, 585, 413))
         self.verticalLayout_46 = QVBoxLayout(self.scrollAreaWidgetContents_6)
         self.verticalLayout_46.setSpacing(20)
         self.verticalLayout_46.setObjectName(u"verticalLayout_46")
@@ -1954,7 +1955,7 @@ class Ui_Xuan(object):
         self.scrollArea_10.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_7 = QWidget()
         self.scrollAreaWidgetContents_7.setObjectName(u"scrollAreaWidgetContents_7")
-        self.scrollAreaWidgetContents_7.setGeometry(QRect(0, 0, 586, 450))
+        self.scrollAreaWidgetContents_7.setGeometry(QRect(0, 0, 585, 450))
         self.verticalLayout_47 = QVBoxLayout(self.scrollAreaWidgetContents_7)
         self.verticalLayout_47.setSpacing(20)
         self.verticalLayout_47.setObjectName(u"verticalLayout_47")
@@ -2356,7 +2357,7 @@ class Ui_Xuan(object):
         self.scrollArea_11.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_8 = QWidget()
         self.scrollAreaWidgetContents_8.setObjectName(u"scrollAreaWidgetContents_8")
-        self.scrollAreaWidgetContents_8.setGeometry(QRect(0, 0, 586, 452))
+        self.scrollAreaWidgetContents_8.setGeometry(QRect(0, 0, 641, 561))
         self.verticalLayout_51 = QVBoxLayout(self.scrollAreaWidgetContents_8)
         self.verticalLayout_51.setSpacing(20)
         self.verticalLayout_51.setObjectName(u"verticalLayout_51")
@@ -2774,7 +2775,7 @@ class Ui_Xuan(object):
         self.scrollArea_33.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_30 = QWidget()
         self.scrollAreaWidgetContents_30.setObjectName(u"scrollAreaWidgetContents_30")
-        self.scrollAreaWidgetContents_30.setGeometry(QRect(0, 0, 586, 232))
+        self.scrollAreaWidgetContents_30.setGeometry(QRect(0, 0, 585, 232))
         self.verticalLayout_145 = QVBoxLayout(self.scrollAreaWidgetContents_30)
         self.verticalLayout_145.setSpacing(20)
         self.verticalLayout_145.setObjectName(u"verticalLayout_145")
@@ -2953,7 +2954,7 @@ class Ui_Xuan(object):
         self.scrollArea_18.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_15 = QWidget()
         self.scrollAreaWidgetContents_15.setObjectName(u"scrollAreaWidgetContents_15")
-        self.scrollAreaWidgetContents_15.setGeometry(QRect(0, 0, 586, 232))
+        self.scrollAreaWidgetContents_15.setGeometry(QRect(0, 0, 585, 232))
         self.verticalLayout_85 = QVBoxLayout(self.scrollAreaWidgetContents_15)
         self.verticalLayout_85.setSpacing(20)
         self.verticalLayout_85.setObjectName(u"verticalLayout_85")
@@ -3132,7 +3133,7 @@ class Ui_Xuan(object):
         self.scrollArea_26.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_23 = QWidget()
         self.scrollAreaWidgetContents_23.setObjectName(u"scrollAreaWidgetContents_23")
-        self.scrollAreaWidgetContents_23.setGeometry(QRect(0, 0, 586, 232))
+        self.scrollAreaWidgetContents_23.setGeometry(QRect(0, 0, 585, 232))
         self.verticalLayout_117 = QVBoxLayout(self.scrollAreaWidgetContents_23)
         self.verticalLayout_117.setSpacing(20)
         self.verticalLayout_117.setObjectName(u"verticalLayout_117")
@@ -3311,7 +3312,7 @@ class Ui_Xuan(object):
         self.scrollArea_22.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_19 = QWidget()
         self.scrollAreaWidgetContents_19.setObjectName(u"scrollAreaWidgetContents_19")
-        self.scrollAreaWidgetContents_19.setGeometry(QRect(0, 0, 586, 296))
+        self.scrollAreaWidgetContents_19.setGeometry(QRect(0, 0, 585, 296))
         self.verticalLayout_101 = QVBoxLayout(self.scrollAreaWidgetContents_19)
         self.verticalLayout_101.setSpacing(20)
         self.verticalLayout_101.setObjectName(u"verticalLayout_101")
@@ -3498,7 +3499,7 @@ class Ui_Xuan(object):
         self.scrollArea_16.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_13 = QWidget()
         self.scrollAreaWidgetContents_13.setObjectName(u"scrollAreaWidgetContents_13")
-        self.scrollAreaWidgetContents_13.setGeometry(QRect(0, 0, 586, 258))
+        self.scrollAreaWidgetContents_13.setGeometry(QRect(0, 0, 585, 258))
         self.verticalLayout_77 = QVBoxLayout(self.scrollAreaWidgetContents_13)
         self.verticalLayout_77.setSpacing(20)
         self.verticalLayout_77.setObjectName(u"verticalLayout_77")
@@ -3685,7 +3686,7 @@ class Ui_Xuan(object):
         self.scrollArea_30.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_27 = QWidget()
         self.scrollAreaWidgetContents_27.setObjectName(u"scrollAreaWidgetContents_27")
-        self.scrollAreaWidgetContents_27.setGeometry(QRect(0, 0, 586, 258))
+        self.scrollAreaWidgetContents_27.setGeometry(QRect(0, 0, 585, 258))
         self.verticalLayout_133 = QVBoxLayout(self.scrollAreaWidgetContents_27)
         self.verticalLayout_133.setSpacing(20)
         self.verticalLayout_133.setObjectName(u"verticalLayout_133")
@@ -3872,7 +3873,7 @@ class Ui_Xuan(object):
         self.scrollArea_32.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_29 = QWidget()
         self.scrollAreaWidgetContents_29.setObjectName(u"scrollAreaWidgetContents_29")
-        self.scrollAreaWidgetContents_29.setGeometry(QRect(0, 0, 586, 232))
+        self.scrollAreaWidgetContents_29.setGeometry(QRect(0, 0, 585, 232))
         self.verticalLayout_141 = QVBoxLayout(self.scrollAreaWidgetContents_29)
         self.verticalLayout_141.setSpacing(20)
         self.verticalLayout_141.setObjectName(u"verticalLayout_141")
@@ -4238,7 +4239,7 @@ class Ui_Xuan(object):
         self.scrollArea_34.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_31 = QWidget()
         self.scrollAreaWidgetContents_31.setObjectName(u"scrollAreaWidgetContents_31")
-        self.scrollAreaWidgetContents_31.setGeometry(QRect(0, 0, 586, 258))
+        self.scrollAreaWidgetContents_31.setGeometry(QRect(0, 0, 585, 258))
         self.verticalLayout_149 = QVBoxLayout(self.scrollAreaWidgetContents_31)
         self.verticalLayout_149.setSpacing(20)
         self.verticalLayout_149.setObjectName(u"verticalLayout_149")
@@ -4425,7 +4426,7 @@ class Ui_Xuan(object):
         self.scrollArea_35.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_32 = QWidget()
         self.scrollAreaWidgetContents_32.setObjectName(u"scrollAreaWidgetContents_32")
-        self.scrollAreaWidgetContents_32.setGeometry(QRect(0, 0, 586, 258))
+        self.scrollAreaWidgetContents_32.setGeometry(QRect(0, 0, 585, 258))
         self.verticalLayout_153 = QVBoxLayout(self.scrollAreaWidgetContents_32)
         self.verticalLayout_153.setSpacing(20)
         self.verticalLayout_153.setObjectName(u"verticalLayout_153")
@@ -4612,7 +4613,7 @@ class Ui_Xuan(object):
         self.scrollArea_45.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_42 = QWidget()
         self.scrollAreaWidgetContents_42.setObjectName(u"scrollAreaWidgetContents_42")
-        self.scrollAreaWidgetContents_42.setGeometry(QRect(0, 0, 586, 258))
+        self.scrollAreaWidgetContents_42.setGeometry(QRect(0, 0, 641, 561))
         self.verticalLayout_199 = QVBoxLayout(self.scrollAreaWidgetContents_42)
         self.verticalLayout_199.setSpacing(20)
         self.verticalLayout_199.setObjectName(u"verticalLayout_199")
@@ -4799,7 +4800,7 @@ class Ui_Xuan(object):
         self.scrollArea_27.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_24 = QWidget()
         self.scrollAreaWidgetContents_24.setObjectName(u"scrollAreaWidgetContents_24")
-        self.scrollAreaWidgetContents_24.setGeometry(QRect(0, 0, 586, 258))
+        self.scrollAreaWidgetContents_24.setGeometry(QRect(0, 0, 585, 258))
         self.verticalLayout_121 = QVBoxLayout(self.scrollAreaWidgetContents_24)
         self.verticalLayout_121.setSpacing(20)
         self.verticalLayout_121.setObjectName(u"verticalLayout_121")
@@ -4986,7 +4987,7 @@ class Ui_Xuan(object):
         self.scrollArea_23.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_20 = QWidget()
         self.scrollAreaWidgetContents_20.setObjectName(u"scrollAreaWidgetContents_20")
-        self.scrollAreaWidgetContents_20.setGeometry(QRect(0, 0, 586, 278))
+        self.scrollAreaWidgetContents_20.setGeometry(QRect(0, 0, 585, 278))
         self.verticalLayout_105 = QVBoxLayout(self.scrollAreaWidgetContents_20)
         self.verticalLayout_105.setSpacing(20)
         self.verticalLayout_105.setObjectName(u"verticalLayout_105")
@@ -5173,7 +5174,7 @@ class Ui_Xuan(object):
         self.scrollArea_24.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_21 = QWidget()
         self.scrollAreaWidgetContents_21.setObjectName(u"scrollAreaWidgetContents_21")
-        self.scrollAreaWidgetContents_21.setGeometry(QRect(0, 0, 586, 232))
+        self.scrollAreaWidgetContents_21.setGeometry(QRect(0, 0, 585, 232))
         self.verticalLayout_109 = QVBoxLayout(self.scrollAreaWidgetContents_21)
         self.verticalLayout_109.setSpacing(20)
         self.verticalLayout_109.setObjectName(u"verticalLayout_109")
@@ -5352,7 +5353,7 @@ class Ui_Xuan(object):
         self.scrollArea_28.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_25 = QWidget()
         self.scrollAreaWidgetContents_25.setObjectName(u"scrollAreaWidgetContents_25")
-        self.scrollAreaWidgetContents_25.setGeometry(QRect(0, 0, 586, 232))
+        self.scrollAreaWidgetContents_25.setGeometry(QRect(0, 0, 585, 232))
         self.verticalLayout_125 = QVBoxLayout(self.scrollAreaWidgetContents_25)
         self.verticalLayout_125.setSpacing(20)
         self.verticalLayout_125.setObjectName(u"verticalLayout_125")
@@ -5531,7 +5532,7 @@ class Ui_Xuan(object):
         self.scrollArea_31.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_28 = QWidget()
         self.scrollAreaWidgetContents_28.setObjectName(u"scrollAreaWidgetContents_28")
-        self.scrollAreaWidgetContents_28.setGeometry(QRect(0, 0, 586, 258))
+        self.scrollAreaWidgetContents_28.setGeometry(QRect(0, 0, 585, 258))
         self.verticalLayout_137 = QVBoxLayout(self.scrollAreaWidgetContents_28)
         self.verticalLayout_137.setSpacing(20)
         self.verticalLayout_137.setObjectName(u"verticalLayout_137")
@@ -5718,7 +5719,7 @@ class Ui_Xuan(object):
         self.scrollArea_12.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_9 = QWidget()
         self.scrollAreaWidgetContents_9.setObjectName(u"scrollAreaWidgetContents_9")
-        self.scrollAreaWidgetContents_9.setGeometry(QRect(0, 0, 586, 250))
+        self.scrollAreaWidgetContents_9.setGeometry(QRect(0, 0, 585, 250))
         self.verticalLayout_61 = QVBoxLayout(self.scrollAreaWidgetContents_9)
         self.verticalLayout_61.setSpacing(20)
         self.verticalLayout_61.setObjectName(u"verticalLayout_61")
@@ -5897,7 +5898,7 @@ class Ui_Xuan(object):
         self.scrollArea_29.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_26 = QWidget()
         self.scrollAreaWidgetContents_26.setObjectName(u"scrollAreaWidgetContents_26")
-        self.scrollAreaWidgetContents_26.setGeometry(QRect(0, 0, 586, 258))
+        self.scrollAreaWidgetContents_26.setGeometry(QRect(0, 0, 585, 258))
         self.verticalLayout_129 = QVBoxLayout(self.scrollAreaWidgetContents_26)
         self.verticalLayout_129.setSpacing(20)
         self.verticalLayout_129.setObjectName(u"verticalLayout_129")
@@ -6084,7 +6085,7 @@ class Ui_Xuan(object):
         self.scrollArea_14.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_11 = QWidget()
         self.scrollAreaWidgetContents_11.setObjectName(u"scrollAreaWidgetContents_11")
-        self.scrollAreaWidgetContents_11.setGeometry(QRect(0, 0, 586, 250))
+        self.scrollAreaWidgetContents_11.setGeometry(QRect(0, 0, 585, 250))
         self.verticalLayout_69 = QVBoxLayout(self.scrollAreaWidgetContents_11)
         self.verticalLayout_69.setSpacing(20)
         self.verticalLayout_69.setObjectName(u"verticalLayout_69")
@@ -6263,7 +6264,7 @@ class Ui_Xuan(object):
         self.scrollArea_37.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_34 = QWidget()
         self.scrollAreaWidgetContents_34.setObjectName(u"scrollAreaWidgetContents_34")
-        self.scrollAreaWidgetContents_34.setGeometry(QRect(0, 0, 586, 258))
+        self.scrollAreaWidgetContents_34.setGeometry(QRect(0, 0, 585, 258))
         self.verticalLayout_161 = QVBoxLayout(self.scrollAreaWidgetContents_34)
         self.verticalLayout_161.setSpacing(20)
         self.verticalLayout_161.setObjectName(u"verticalLayout_161")
@@ -6637,7 +6638,7 @@ class Ui_Xuan(object):
         self.scrollArea_36.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_33 = QWidget()
         self.scrollAreaWidgetContents_33.setObjectName(u"scrollAreaWidgetContents_33")
-        self.scrollAreaWidgetContents_33.setGeometry(QRect(0, 0, 586, 258))
+        self.scrollAreaWidgetContents_33.setGeometry(QRect(0, 0, 585, 258))
         self.verticalLayout_157 = QVBoxLayout(self.scrollAreaWidgetContents_33)
         self.verticalLayout_157.setSpacing(20)
         self.verticalLayout_157.setObjectName(u"verticalLayout_157")
@@ -6824,7 +6825,7 @@ class Ui_Xuan(object):
         self.scrollArea_43.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_40 = QWidget()
         self.scrollAreaWidgetContents_40.setObjectName(u"scrollAreaWidgetContents_40")
-        self.scrollAreaWidgetContents_40.setGeometry(QRect(0, 0, 586, 258))
+        self.scrollAreaWidgetContents_40.setGeometry(QRect(0, 0, 585, 258))
         self.verticalLayout_191 = QVBoxLayout(self.scrollAreaWidgetContents_40)
         self.verticalLayout_191.setSpacing(20)
         self.verticalLayout_191.setObjectName(u"verticalLayout_191")
@@ -7011,7 +7012,7 @@ class Ui_Xuan(object):
         self.scrollArea_44.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_41 = QWidget()
         self.scrollAreaWidgetContents_41.setObjectName(u"scrollAreaWidgetContents_41")
-        self.scrollAreaWidgetContents_41.setGeometry(QRect(0, 0, 586, 258))
+        self.scrollAreaWidgetContents_41.setGeometry(QRect(0, 0, 585, 258))
         self.verticalLayout_195 = QVBoxLayout(self.scrollAreaWidgetContents_41)
         self.verticalLayout_195.setSpacing(20)
         self.verticalLayout_195.setObjectName(u"verticalLayout_195")
@@ -7198,7 +7199,7 @@ class Ui_Xuan(object):
         self.scrollArea_41.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_38 = QWidget()
         self.scrollAreaWidgetContents_38.setObjectName(u"scrollAreaWidgetContents_38")
-        self.scrollAreaWidgetContents_38.setGeometry(QRect(0, 0, 586, 258))
+        self.scrollAreaWidgetContents_38.setGeometry(QRect(0, 0, 585, 258))
         self.verticalLayout_183 = QVBoxLayout(self.scrollAreaWidgetContents_38)
         self.verticalLayout_183.setSpacing(20)
         self.verticalLayout_183.setObjectName(u"verticalLayout_183")
@@ -7385,7 +7386,7 @@ class Ui_Xuan(object):
         self.scrollArea_40.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_37 = QWidget()
         self.scrollAreaWidgetContents_37.setObjectName(u"scrollAreaWidgetContents_37")
-        self.scrollAreaWidgetContents_37.setGeometry(QRect(0, 0, 586, 258))
+        self.scrollAreaWidgetContents_37.setGeometry(QRect(0, 0, 585, 258))
         self.verticalLayout_179 = QVBoxLayout(self.scrollAreaWidgetContents_37)
         self.verticalLayout_179.setSpacing(20)
         self.verticalLayout_179.setObjectName(u"verticalLayout_179")
@@ -7572,7 +7573,7 @@ class Ui_Xuan(object):
         self.scrollArea_25.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_22 = QWidget()
         self.scrollAreaWidgetContents_22.setObjectName(u"scrollAreaWidgetContents_22")
-        self.scrollAreaWidgetContents_22.setGeometry(QRect(0, 0, 586, 258))
+        self.scrollAreaWidgetContents_22.setGeometry(QRect(0, 0, 585, 258))
         self.verticalLayout_113 = QVBoxLayout(self.scrollAreaWidgetContents_22)
         self.verticalLayout_113.setSpacing(20)
         self.verticalLayout_113.setObjectName(u"verticalLayout_113")
@@ -7759,7 +7760,7 @@ class Ui_Xuan(object):
         self.scrollArea_13.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_10 = QWidget()
         self.scrollAreaWidgetContents_10.setObjectName(u"scrollAreaWidgetContents_10")
-        self.scrollAreaWidgetContents_10.setGeometry(QRect(0, 0, 586, 250))
+        self.scrollAreaWidgetContents_10.setGeometry(QRect(0, 0, 585, 250))
         self.verticalLayout_65 = QVBoxLayout(self.scrollAreaWidgetContents_10)
         self.verticalLayout_65.setSpacing(20)
         self.verticalLayout_65.setObjectName(u"verticalLayout_65")
@@ -7938,7 +7939,7 @@ class Ui_Xuan(object):
         self.scrollArea_39.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_36 = QWidget()
         self.scrollAreaWidgetContents_36.setObjectName(u"scrollAreaWidgetContents_36")
-        self.scrollAreaWidgetContents_36.setGeometry(QRect(0, 0, 586, 409))
+        self.scrollAreaWidgetContents_36.setGeometry(QRect(0, 0, 585, 409))
         self.verticalLayout_169 = QVBoxLayout(self.scrollAreaWidgetContents_36)
         self.verticalLayout_169.setSpacing(20)
         self.verticalLayout_169.setObjectName(u"verticalLayout_169")
@@ -8329,7 +8330,7 @@ class Ui_Xuan(object):
         self.scrollArea_17.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_14 = QWidget()
         self.scrollAreaWidgetContents_14.setObjectName(u"scrollAreaWidgetContents_14")
-        self.scrollAreaWidgetContents_14.setGeometry(QRect(0, 0, 586, 232))
+        self.scrollAreaWidgetContents_14.setGeometry(QRect(0, 0, 585, 232))
         self.verticalLayout_81 = QVBoxLayout(self.scrollAreaWidgetContents_14)
         self.verticalLayout_81.setSpacing(20)
         self.verticalLayout_81.setObjectName(u"verticalLayout_81")
@@ -8509,7 +8510,7 @@ class Ui_Xuan(object):
         self.scrollArea_8.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_5 = QWidget()
         self.scrollAreaWidgetContents_5.setObjectName(u"scrollAreaWidgetContents_5")
-        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 586, 1157))
+        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 533, 1157))
         self.verticalLayout_25 = QVBoxLayout(self.scrollAreaWidgetContents_5)
         self.verticalLayout_25.setSpacing(20)
         self.verticalLayout_25.setObjectName(u"verticalLayout_25")
@@ -9752,7 +9753,7 @@ class Ui_Xuan(object):
         self.screen_mode.currentIndexChanged.connect(self.screen_mode_settings_stackedWidget.setCurrentIndex)
 
         self.overview_panel_button.setDefault(False)
-        self.stackedWidget.setCurrentIndex(27)
+        self.stackedWidget.setCurrentIndex(17)
         self.screen_mode_settings_stackedWidget.setCurrentIndex(2)
 
 
@@ -9807,53 +9808,55 @@ class Ui_Xuan(object):
         ___qtreewidgetitem17 = ___qtreewidgetitem1.child(15)
         ___qtreewidgetitem17.setText(0, QCoreApplication.translate("Xuan", u"\u79d8\u5883\u63a2\u9669", None));
         ___qtreewidgetitem18 = ___qtreewidgetitem1.child(16)
-        ___qtreewidgetitem18.setText(0, QCoreApplication.translate("Xuan", u"\u60c5\u62a5\u7ad9", None));
+        ___qtreewidgetitem18.setText(0, QCoreApplication.translate("Xuan", u"\u5546\u57ce\u5956\u52b1", None));
         ___qtreewidgetitem19 = ___qtreewidgetitem1.child(17)
-        ___qtreewidgetitem19.setText(0, QCoreApplication.translate("Xuan", u"\u5192\u9669\u526f\u672c", None));
+        ___qtreewidgetitem19.setText(0, QCoreApplication.translate("Xuan", u"\u60c5\u62a5\u7ad9", None));
         ___qtreewidgetitem20 = ___qtreewidgetitem1.child(18)
-        ___qtreewidgetitem20.setText(0, QCoreApplication.translate("Xuan", u"\u6d3b\u8dc3\u5ea6\u5956\u52b1", None));
+        ___qtreewidgetitem20.setText(0, QCoreApplication.translate("Xuan", u"\u5192\u9669\u526f\u672c", None));
         ___qtreewidgetitem21 = ___qtreewidgetitem1.child(19)
-        ___qtreewidgetitem21.setText(0, QCoreApplication.translate("Xuan", u"\u6e05\u7a7a\u90ae\u4ef6", None));
-        ___qtreewidgetitem22 = self.treeWidget.topLevelItem(1)
-        ___qtreewidgetitem22.setText(0, QCoreApplication.translate("Xuan", u"\u6bcf\u5468\u4efb\u52a1", None));
-        ___qtreewidgetitem23 = ___qtreewidgetitem22.child(0)
-        ___qtreewidgetitem23.setText(0, QCoreApplication.translate("Xuan", u"\u4fee\u884c\u4e4b\u8def", None));
-        ___qtreewidgetitem24 = ___qtreewidgetitem22.child(1)
-        ___qtreewidgetitem24.setText(0, QCoreApplication.translate("Xuan", u"\u6bcf\u5468\u80dc\u573a", None));
-        ___qtreewidgetitem25 = ___qtreewidgetitem22.child(2)
-        ___qtreewidgetitem25.setText(0, QCoreApplication.translate("Xuan", u"\u5fcd\u6cd5\u5e16\u70b9\u8d5e\u5206\u4eab", None));
-        ___qtreewidgetitem26 = ___qtreewidgetitem22.child(3)
-        ___qtreewidgetitem26.setText(0, QCoreApplication.translate("Xuan", u"\u66f4\u591a\u73a9\u6cd5", None));
-        ___qtreewidgetitem27 = ___qtreewidgetitem22.child(4)
-        ___qtreewidgetitem27.setText(0, QCoreApplication.translate("Xuan", u"\u56e2\u672c", None));
-        ___qtreewidgetitem28 = ___qtreewidgetitem22.child(5)
-        ___qtreewidgetitem28.setText(0, QCoreApplication.translate("Xuan", u"\u672c\u670d\u8981\u585e\u6218", None));
-        ___qtreewidgetitem29 = ___qtreewidgetitem22.child(6)
-        ___qtreewidgetitem29.setText(0, QCoreApplication.translate("Xuan", u"\u53db\u5fcd\u6765\u88ad", None));
-        ___qtreewidgetitem30 = ___qtreewidgetitem22.child(7)
-        ___qtreewidgetitem30.setText(0, QCoreApplication.translate("Xuan", u"\u5929\u5730\u6218\u573a", None));
-        ___qtreewidgetitem31 = ___qtreewidgetitem22.child(8)
-        ___qtreewidgetitem31.setText(0, QCoreApplication.translate("Xuan", u"\u8ffd\u51fb\u6653\u7ec4\u7ec7", None));
-        ___qtreewidgetitem32 = self.treeWidget.topLevelItem(2)
-        ___qtreewidgetitem32.setText(0, QCoreApplication.translate("Xuan", u"\u6bcf\u6708\u4efb\u52a1", None));
-        ___qtreewidgetitem33 = ___qtreewidgetitem32.child(0)
-        ___qtreewidgetitem33.setText(0, QCoreApplication.translate("Xuan", u"\u8de8\u670d\u8981\u585e\u6218", None));
-        ___qtreewidgetitem34 = ___qtreewidgetitem32.child(1)
-        ___qtreewidgetitem34.setText(0, QCoreApplication.translate("Xuan", u"\u5dc5\u5cf0\u5bf9\u51b3", None));
-        ___qtreewidgetitem35 = ___qtreewidgetitem32.child(2)
-        ___qtreewidgetitem35.setText(0, QCoreApplication.translate("Xuan", u"\u7ec4\u7ec7\u4e89\u9738", None));
-        ___qtreewidgetitem36 = ___qtreewidgetitem32.child(3)
-        ___qtreewidgetitem36.setText(0, QCoreApplication.translate("Xuan", u"\u8d5b\u5b63\u80dc\u573a", None));
-        ___qtreewidgetitem37 = self.treeWidget.topLevelItem(3)
-        ___qtreewidgetitem37.setText(0, QCoreApplication.translate("Xuan", u"\u5468\u671f\u4efb\u52a1", None));
-        ___qtreewidgetitem38 = ___qtreewidgetitem37.child(0)
-        ___qtreewidgetitem38.setText(0, QCoreApplication.translate("Xuan", u"\u88c5\u5907\u5408\u6210", None));
-        ___qtreewidgetitem39 = ___qtreewidgetitem37.child(1)
-        ___qtreewidgetitem39.setText(0, QCoreApplication.translate("Xuan", u"\u9ad8\u7ea7\u5fcd\u8005\u62db\u52df", None));
-        ___qtreewidgetitem40 = self.treeWidget.topLevelItem(4)
-        ___qtreewidgetitem40.setText(0, QCoreApplication.translate("Xuan", u"\u6d3b\u52a8\u4efb\u52a1", None));
-        ___qtreewidgetitem41 = self.treeWidget.topLevelItem(5)
-        ___qtreewidgetitem41.setText(0, QCoreApplication.translate("Xuan", u"\u52a9\u624b\u8bbe\u7f6e", None));
+        ___qtreewidgetitem21.setText(0, QCoreApplication.translate("Xuan", u"\u6d3b\u8dc3\u5ea6\u5956\u52b1", None));
+        ___qtreewidgetitem22 = ___qtreewidgetitem1.child(20)
+        ___qtreewidgetitem22.setText(0, QCoreApplication.translate("Xuan", u"\u6e05\u7a7a\u90ae\u4ef6", None));
+        ___qtreewidgetitem23 = self.treeWidget.topLevelItem(1)
+        ___qtreewidgetitem23.setText(0, QCoreApplication.translate("Xuan", u"\u6bcf\u5468\u4efb\u52a1", None));
+        ___qtreewidgetitem24 = ___qtreewidgetitem23.child(0)
+        ___qtreewidgetitem24.setText(0, QCoreApplication.translate("Xuan", u"\u4fee\u884c\u4e4b\u8def", None));
+        ___qtreewidgetitem25 = ___qtreewidgetitem23.child(1)
+        ___qtreewidgetitem25.setText(0, QCoreApplication.translate("Xuan", u"\u6bcf\u5468\u80dc\u573a", None));
+        ___qtreewidgetitem26 = ___qtreewidgetitem23.child(2)
+        ___qtreewidgetitem26.setText(0, QCoreApplication.translate("Xuan", u"\u5fcd\u6cd5\u5e16\u70b9\u8d5e\u5206\u4eab", None));
+        ___qtreewidgetitem27 = ___qtreewidgetitem23.child(3)
+        ___qtreewidgetitem27.setText(0, QCoreApplication.translate("Xuan", u"\u66f4\u591a\u73a9\u6cd5", None));
+        ___qtreewidgetitem28 = ___qtreewidgetitem23.child(4)
+        ___qtreewidgetitem28.setText(0, QCoreApplication.translate("Xuan", u"\u56e2\u672c", None));
+        ___qtreewidgetitem29 = ___qtreewidgetitem23.child(5)
+        ___qtreewidgetitem29.setText(0, QCoreApplication.translate("Xuan", u"\u672c\u670d\u8981\u585e\u6218", None));
+        ___qtreewidgetitem30 = ___qtreewidgetitem23.child(6)
+        ___qtreewidgetitem30.setText(0, QCoreApplication.translate("Xuan", u"\u53db\u5fcd\u6765\u88ad", None));
+        ___qtreewidgetitem31 = ___qtreewidgetitem23.child(7)
+        ___qtreewidgetitem31.setText(0, QCoreApplication.translate("Xuan", u"\u5929\u5730\u6218\u573a", None));
+        ___qtreewidgetitem32 = ___qtreewidgetitem23.child(8)
+        ___qtreewidgetitem32.setText(0, QCoreApplication.translate("Xuan", u"\u8ffd\u51fb\u6653\u7ec4\u7ec7", None));
+        ___qtreewidgetitem33 = self.treeWidget.topLevelItem(2)
+        ___qtreewidgetitem33.setText(0, QCoreApplication.translate("Xuan", u"\u6bcf\u6708\u4efb\u52a1", None));
+        ___qtreewidgetitem34 = ___qtreewidgetitem33.child(0)
+        ___qtreewidgetitem34.setText(0, QCoreApplication.translate("Xuan", u"\u8de8\u670d\u8981\u585e\u6218", None));
+        ___qtreewidgetitem35 = ___qtreewidgetitem33.child(1)
+        ___qtreewidgetitem35.setText(0, QCoreApplication.translate("Xuan", u"\u5dc5\u5cf0\u5bf9\u51b3", None));
+        ___qtreewidgetitem36 = ___qtreewidgetitem33.child(2)
+        ___qtreewidgetitem36.setText(0, QCoreApplication.translate("Xuan", u"\u7ec4\u7ec7\u4e89\u9738", None));
+        ___qtreewidgetitem37 = ___qtreewidgetitem33.child(3)
+        ___qtreewidgetitem37.setText(0, QCoreApplication.translate("Xuan", u"\u8d5b\u5b63\u80dc\u573a", None));
+        ___qtreewidgetitem38 = self.treeWidget.topLevelItem(3)
+        ___qtreewidgetitem38.setText(0, QCoreApplication.translate("Xuan", u"\u5468\u671f\u4efb\u52a1", None));
+        ___qtreewidgetitem39 = ___qtreewidgetitem38.child(0)
+        ___qtreewidgetitem39.setText(0, QCoreApplication.translate("Xuan", u"\u88c5\u5907\u5408\u6210", None));
+        ___qtreewidgetitem40 = ___qtreewidgetitem38.child(1)
+        ___qtreewidgetitem40.setText(0, QCoreApplication.translate("Xuan", u"\u9ad8\u7ea7\u5fcd\u8005\u62db\u52df", None));
+        ___qtreewidgetitem41 = self.treeWidget.topLevelItem(4)
+        ___qtreewidgetitem41.setText(0, QCoreApplication.translate("Xuan", u"\u6d3b\u52a8\u4efb\u52a1", None));
+        ___qtreewidgetitem42 = self.treeWidget.topLevelItem(5)
+        ___qtreewidgetitem42.setText(0, QCoreApplication.translate("Xuan", u"\u52a9\u624b\u8bbe\u7f6e", None));
         self.treeWidget.setSortingEnabled(__sortingEnabled)
 
         self.label.setText(QCoreApplication.translate("Xuan", u"\u8c03\u5ea6\u5668", None))

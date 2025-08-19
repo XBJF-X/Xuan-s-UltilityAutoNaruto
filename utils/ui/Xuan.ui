@@ -754,6 +754,11 @@ QTreeWidget QScrollBar::add-line:vertical {
                 </item>
                 <item>
                  <property name="text">
+                  <string>商城奖励</string>
+                 </property>
+                </item>
+                <item>
+                 <property name="text">
                   <string>情报站</string>
                  </property>
                 </item>
@@ -966,7 +971,7 @@ QTreeWidget QScrollBar::add-line:vertical {
           <item>
            <widget class="QStackedWidget" name="stackedWidget">
             <property name="currentIndex">
-             <number>27</number>
+             <number>17</number>
             </property>
             <widget class="QWidget" name="Overview_Panel_widget">
              <property name="enabled">
@@ -1513,8 +1518,8 @@ QScrollArea &gt; QWidget &gt; QWidget {
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>195</width>
-                         <height>16</height>
+                         <width>84</width>
+                         <height>20</height>
                         </rect>
                        </property>
                       </widget>
@@ -1752,8 +1757,8 @@ QScrollArea &gt; QWidget &gt; QWidget {
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>195</width>
-                         <height>16</height>
+                         <width>84</width>
+                         <height>20</height>
                         </rect>
                        </property>
                       </widget>
@@ -1986,8 +1991,8 @@ QScrollArea &gt; QWidget &gt; QWidget {
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>195</width>
-                         <height>16</height>
+                         <width>84</width>
+                         <height>20</height>
                         </rect>
                        </property>
                       </widget>
@@ -2203,7 +2208,7 @@ QCheckBox::indicator:disabled {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>232</height>
                      </rect>
                     </property>
@@ -2464,7 +2469,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>232</height>
                      </rect>
                     </property>
@@ -2725,7 +2730,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>232</height>
                      </rect>
                     </property>
@@ -2986,7 +2991,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>413</height>
                      </rect>
                     </property>
@@ -3533,7 +3538,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>450</height>
                      </rect>
                     </property>
@@ -4096,8 +4101,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
-                      <height>452</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_51">
@@ -4688,7 +4693,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>232</height>
                      </rect>
                     </property>
@@ -4949,7 +4954,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>232</height>
                      </rect>
                     </property>
@@ -5210,7 +5215,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>232</height>
                      </rect>
                     </property>
@@ -5471,7 +5476,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>296</height>
                      </rect>
                     </property>
@@ -5746,7 +5751,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>258</height>
                      </rect>
                     </property>
@@ -6019,7 +6024,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>258</height>
                      </rect>
                     </property>
@@ -6292,7 +6297,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>232</height>
                      </rect>
                     </property>
@@ -6826,7 +6831,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>258</height>
                      </rect>
                     </property>
@@ -7099,7 +7104,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>258</height>
                      </rect>
                     </property>
@@ -7372,8 +7377,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
-                      <height>258</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_199">
@@ -7645,7 +7650,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>258</height>
                      </rect>
                     </property>
@@ -7918,7 +7923,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>278</height>
                      </rect>
                     </property>
@@ -8192,7 +8197,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>232</height>
                      </rect>
                     </property>
@@ -8453,7 +8458,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>232</height>
                      </rect>
                     </property>
@@ -8714,7 +8719,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>258</height>
                      </rect>
                     </property>
@@ -8987,7 +8992,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>250</height>
                      </rect>
                     </property>
@@ -9249,7 +9254,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>258</height>
                      </rect>
                     </property>
@@ -9522,7 +9527,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>250</height>
                      </rect>
                     </property>
@@ -9784,7 +9789,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>258</height>
                      </rect>
                     </property>
@@ -10330,7 +10335,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>258</height>
                      </rect>
                     </property>
@@ -10603,7 +10608,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>258</height>
                      </rect>
                     </property>
@@ -10876,7 +10881,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>258</height>
                      </rect>
                     </property>
@@ -11149,7 +11154,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>258</height>
                      </rect>
                     </property>
@@ -11422,7 +11427,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>258</height>
                      </rect>
                     </property>
@@ -11695,7 +11700,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>258</height>
                      </rect>
                     </property>
@@ -11968,7 +11973,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>250</height>
                      </rect>
                     </property>
@@ -12230,7 +12235,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>409</height>
                      </rect>
                     </property>
@@ -12756,7 +12761,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>585</width>
                       <height>232</height>
                      </rect>
                     </property>
@@ -13023,7 +13028,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>586</width>
+                      <width>533</width>
                       <height>1157</height>
                      </rect>
                     </property>

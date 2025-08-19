@@ -134,6 +134,7 @@ class TransitionManager:
         @self.register("个人信息", "主场景")
         @self.register("活动", "主场景")
         @self.register("忍法帖", "主场景")
+        @self.register("商城", "主场景")
         @self.register("丰饶之间", "主场景")
         @self.register("决斗场-首页", "主场景")
         @self.register("忍者挑战", "主场景")
@@ -217,6 +218,10 @@ class TransitionManager:
         @self.register("主场景", "情报站-首页")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("情报社")
+
+        @self.register("主场景", "商城")
+        def _(operationer: Operationer, *args, **kwargs):
+            operationer.click_and_wait("商城")
 
         @self.register("主场景", "丰饶之间")
         def _(operationer: Operationer, *args, **kwargs):
