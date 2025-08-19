@@ -150,6 +150,30 @@ class Ui_Xuan(object):
 
         self.horizontalLayout_81.addWidget(self.update_btn)
 
+        self.min_btn = QPushButton(self.widget_91)
+        self.min_btn.setObjectName(u"min_btn")
+        self.min_btn.setMinimumSize(QSize(85, 35))
+        self.min_btn.setStyleSheet(u"QPushButton{\n"
+"border: 2px solid #b5b5b5;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
+"background-color: rgb(255, 255, 255);\n"
+"border-radius:10px;\n"
+"outline:none;\n"
+"color:#0f322f;\n"
+"padding-top:2px;\n"
+"padding-bottom:2px;\n"
+"}\n"
+"QPushButton::hover {\n"
+"border: 2px solid #39C5BB;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
+"background-color: rgb(255, 255, 255);\n"
+"border-radius:10px;\n"
+"outline:none;\n"
+"padding-top:2px;\n"
+"color:#39C5BB;\n"
+"padding-bottom:2px;\n"
+"}")
+
+        self.horizontalLayout_81.addWidget(self.min_btn)
+
         self.exit_btn = QPushButton(self.widget_91)
         self.exit_btn.setObjectName(u"exit_btn")
         self.exit_btn.setMinimumSize(QSize(70, 35))
@@ -634,7 +658,7 @@ class Ui_Xuan(object):
         self.scrollArea.setWidgetResizable(True)
         self.scroll_area_running_content = QWidget()
         self.scroll_area_running_content.setObjectName(u"scroll_area_running_content")
-        self.scroll_area_running_content.setGeometry(QRect(0, 0, 84, 20))
+        self.scroll_area_running_content.setGeometry(QRect(0, 0, 195, 16))
         self.scrollArea.setWidget(self.scroll_area_running_content)
 
         self.verticalLayout.addWidget(self.scrollArea)
@@ -742,7 +766,7 @@ class Ui_Xuan(object):
         self.scrollArea_2.setWidgetResizable(True)
         self.scroll_area_ready_content = QWidget()
         self.scroll_area_ready_content.setObjectName(u"scroll_area_ready_content")
-        self.scroll_area_ready_content.setGeometry(QRect(0, 0, 84, 20))
+        self.scroll_area_ready_content.setGeometry(QRect(0, 0, 195, 16))
         self.scrollArea_2.setWidget(self.scroll_area_ready_content)
 
         self.verticalLayout_6.addWidget(self.scrollArea_2)
@@ -846,7 +870,7 @@ class Ui_Xuan(object):
         self.scrollArea_3.setWidgetResizable(True)
         self.scroll_area_wait_content = QWidget()
         self.scroll_area_wait_content.setObjectName(u"scroll_area_wait_content")
-        self.scroll_area_wait_content.setGeometry(QRect(0, 0, 84, 20))
+        self.scroll_area_wait_content.setGeometry(QRect(0, 0, 195, 16))
         self.scrollArea_3.setWidget(self.scroll_area_wait_content)
 
         self.verticalLayout_7.addWidget(self.scrollArea_3)
@@ -9740,6 +9764,7 @@ class Ui_Xuan(object):
         self.label_6.setText(QCoreApplication.translate("Xuan", u"   Xuan\u2018s Utility Auto Naruto   ", None))
         self.go_to_github_btn.setText(QCoreApplication.translate("Xuan", u"Github", None))
         self.update_btn.setText(QCoreApplication.translate("Xuan", u"\u68c0\u67e5\u66f4\u65b0", None))
+        self.min_btn.setText(QCoreApplication.translate("Xuan", u"\u6700\u5c0f\u5316", None))
         self.exit_btn.setText(QCoreApplication.translate("Xuan", u"\u9000\u51fa", None))
         self.overview_panel_button.setText(QCoreApplication.translate("Xuan", u"\u603b\u89c8\u9762\u677f", None))
         ___qtreewidgetitem = self.treeWidget.headerItem()

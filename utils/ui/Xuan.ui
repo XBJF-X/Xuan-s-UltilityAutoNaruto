@@ -225,6 +225,39 @@ padding-bottom:2px;
            </widget>
           </item>
           <item>
+           <widget class="QPushButton" name="min_btn">
+            <property name="minimumSize">
+             <size>
+              <width>85</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton{
+border: 2px solid #b5b5b5;  /* 2px宽的深灰色实线边框 */
+background-color: rgb(255, 255, 255);
+border-radius:10px;
+outline:none;
+color:#0f322f;
+padding-top:2px;
+padding-bottom:2px;
+}
+QPushButton::hover {
+border: 2px solid #39C5BB;  /* 2px宽的深灰色实线边框 */
+background-color: rgb(255, 255, 255);
+border-radius:10px;
+outline:none;
+padding-top:2px;
+color:#39C5BB;
+padding-bottom:2px;
+}</string>
+            </property>
+            <property name="text">
+             <string>最小化</string>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="exit_btn">
             <property name="minimumSize">
              <size>
@@ -1480,8 +1513,8 @@ QScrollArea &gt; QWidget &gt; QWidget {
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>84</width>
-                         <height>20</height>
+                         <width>195</width>
+                         <height>16</height>
                         </rect>
                        </property>
                       </widget>
@@ -1719,8 +1752,8 @@ QScrollArea &gt; QWidget &gt; QWidget {
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>84</width>
-                         <height>20</height>
+                         <width>195</width>
+                         <height>16</height>
                         </rect>
                        </property>
                       </widget>
@@ -1953,8 +1986,8 @@ QScrollArea &gt; QWidget &gt; QWidget {
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>84</width>
-                         <height>20</height>
+                         <width>195</width>
+                         <height>16</height>
                         </rect>
                        </property>
                       </widget>

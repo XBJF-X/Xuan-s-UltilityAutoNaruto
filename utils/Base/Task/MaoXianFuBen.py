@@ -20,23 +20,35 @@ class MaoXianFuBen(BaseTask):
 
         self.logger.info("点击扫荡")
         self.operationer.click_and_wait("扫荡")
-        if self.operationer.detect_element(
-                "勾选的副本都已经扫荡完毕",
-                wait_time=0,
-                max_time=0.3,
-                auto_raise=False
-        ):
-            self._update_next_execute_time()
-            raise EndEarly("勾选的副本都已经扫荡完毕，提前退出执行")
-        if self.operationer.detect_element(
-                "扫荡-请选中至少一个需要扫荡的副本",
-                wait_time=0,
-                max_time=0.3,
-                auto_raise=False
-        ):
-            self.logger.warning("未勾选需要扫荡的副本，即将全选")
-            self.operationer.click_and_wait("一键全选-未选中")
-            self.operationer.click_and_wait("扫荡")
+        flag = self.operationer.search_and_detect(
+            [
+                self.operationer.current_scene.elements.get("勾选的副本都已经扫荡完毕"),
+                self.operationer.current_scene.elements.get("扫荡-请选中至少一个需要扫荡的副本"),
+                self.operationer.current_scene.elements.get("体力不足"),
+            ],
+            [],
+            search_max_time=1,
+            once_max_time=0.2,
+            wait_time=0
+        )
+        match flag:
+            case 1:
+                self._update_next_execute_time()
+                raise EndEarly("勾选的副本都已经扫荡完毕，提前退出执行")
+            case 2:
+                self.logger.warning("未勾选需要扫荡的副本，即将全选")
+                self.operationer.click_and_wait("一键全选-未选中")
+                self.operationer.click_and_wait("扫荡")
+            case 3:
+                self.logger.warning("精英副本便捷扫荡体力不足，提前退出执行")
+                # 点掉体力不足弹窗
+                self.operationer.click_and_wait("X")
+                self.logger.info("扫荡任务结束")
+                # 点掉扫荡信息弹窗
+                self.operationer.click_and_wait("X")
+                self._activate_another_task("装备合成")
+                self._update_next_execute_time()
+                return True
 
         if self.operationer.click_and_wait("扫荡-继续扫荡"):
             self.logger.info("确认继续扫荡")

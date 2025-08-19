@@ -5,7 +5,7 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
 class XiuXingZhiLu(BaseTask):
-    source_scene = "修行之路"
+    source_scene = "试炼之地"
     task_max_duration = timedelta(minutes=3)
 
     def run(self):
@@ -17,16 +17,17 @@ class XiuXingZhiLu(BaseTask):
     @TransitionOn()
     def _(self):
         if self.flag == 0:
+            self.operationer.click_and_wait("修行之路")
+            self.operationer.current_scene = self.scene_graph.scenes.get("修行之路")
             self.operationer.click_and_wait("扫荡", wait_time=0)
             # 先点击扫荡看看能不能扫荡
             if not self.operationer.detect_element("当前没有可扫荡关卡了", auto_raise=False):
-                self.operationer.click_and_wait("扫荡")
+                self.operationer.click_and_wait("可以扫荡N关-扫荡")
                 # if self.operationer.click_and_wait("超影免费完成", auto_raise=False):
                 #     self.operationer.click_and_wait("X")
                 #     self.operationer.click_and_wait("X")
                 #     self._update_next_execute_time()
                 #     return True
-                self.operationer.click_and_wait("X")
                 self.operationer.click_and_wait("X")
                 self.config.set_config("修行之路状态", 1)
                 self._update_next_execute_time(3, timedelta(hours=1, minutes=20))
@@ -37,13 +38,12 @@ class XiuXingZhiLu(BaseTask):
                 if not self.operationer.detect_element("每周只能重置1次", auto_raise=False):
                     # 如果可以重置的话
                     self.operationer.click_and_wait("是否将当前进度重置到第一关-确定")
-                    self.operationer.click_and_wait("扫荡")
+                    self.operationer.click_and_wait("可以扫荡N关-扫荡")
                     # if self.operationer.click_and_wait("超影免费完成", auto_raise=False):
                     #     self.operationer.click_and_wait("X")
                     #     self.operationer.click_and_wait("X")
                     #     self._update_next_execute_time()
                     #     return True
-                    self.operationer.click_and_wait("X")
                     self.operationer.click_and_wait("X")
                     self.config.set_config("修行之路状态", 1)
                     self._update_next_execute_time(3, timedelta(hours=1, minutes=20))
@@ -53,7 +53,9 @@ class XiuXingZhiLu(BaseTask):
                     self._update_next_execute_time()
                     return True
         elif self.flag == 1:
-            self.operationer.click_and_wait("领取")
+            self.operationer.click_and_wait("修行之路")
+            self.operationer.current_scene = self.scene_graph.scenes.get("修行之路")
+            self.operationer.click_and_wait("领取奖励")
             self.operationer.click_and_wait("X")
             self.config.set_config("修行之路状态", 0)
             self._update_next_execute_time()

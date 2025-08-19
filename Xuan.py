@@ -179,6 +179,7 @@ class Xuan(QMainWindow):
         self.UI.go_to_github_btn.clicked.connect(self._on_go_to_github_btn_clicked)
         self.UI.update_btn.clicked.connect(self._on_update_btn_clicked)
         self.UI.exit_btn.clicked.connect(QApplication.quit)
+        self.UI.min_btn.clicked.connect(self.showMinimized)
 
         self.UI.XiaoDuiTuXi_4rewards_Enable.toggled.connect(lambda flag: self.config.set_task_config("小队突袭", "四倍奖励勾选", flag))
         self.UI.XiaoDuiTuXi_4rewards_times.valueChanged.connect(lambda value: self.config.set_task_config("小队突袭", "四倍奖励次数", value))

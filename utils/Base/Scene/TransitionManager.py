@@ -149,8 +149,8 @@ class TransitionManager:
         @self.register("福利站", "主场景")
         @self.register("个人信息-分享", "个人信息")
         @self.register("精英副本-便捷扫荡", "冒险-精英副本")
-        @self.register("决斗场-忍术对战-单人模式", "决斗场-首页")
-        @self.register("决斗场-忍术对战-单人模式-决斗任务", "决斗场-忍术对战-单人模式")
+        @self.register("忍术对战-单人模式", "决斗场-首页")
+        @self.register("忍术对战-单人模式-决斗任务", "忍术对战-单人模式")
         @self.register("秘境探险-首页", "忍者挑战")
         @self.register("忍法帖-分享", "忍法帖-排行榜")
         @self.register("忍法帖-排行榜", "忍法帖")
@@ -190,15 +190,13 @@ class TransitionManager:
         @self.register("主场景", "个人信息")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("个人信息")
-            while operationer.search_and_click(
-                [
-                    operationer.scene_graph.scenes.get("主场景").elements.get("公告-X"),
-                    operationer.scene_graph.scenes.get("主场景").elements.get("广告-X"),
-                ],
-                [],
-                search_max_time=3
-            ):
-                continue
+            # if operationer.detect_element(
+            #     operationer.scene_graph.scenes.get("个人信息").elements.get(),
+            #     auto_raise=False,
+            # ):
+            #     operationer.click_and_wait(
+            #         operationer.scene_graph.scenes.get("个人信息").elements.get("X")
+            #     )
 
         @self.register("主场景", "忍法帖")
         def _(operationer: Operationer, *args, **kwargs):
@@ -376,13 +374,13 @@ class TransitionManager:
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("分享")
 
-        @self.register("决斗场-首页", "决斗场-忍术对战-单人模式")
+        @self.register("决斗场-首页", "忍术对战-单人模式")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("决斗场-忍术对战")
 
-        @self.register("决斗场-忍术对战-单人模式", "决斗场-忍术对战-单人模式-决斗任务")
+        @self.register("忍术对战-单人模式", "忍术对战-单人模式-决斗任务")
         def _(operationer: Operationer, *args, **kwargs):
-            operationer.click_and_wait("决斗场-忍术对战-单人模式-决斗任务")
+            operationer.click_and_wait("决斗任务")
 
         @self.register("冒险", "冒险-精英副本")
         def _(operationer: Operationer, *args, **kwargs):

@@ -7,9 +7,9 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 class QingBaoZhan(BaseTask):
     source_scene = "情报站-首页"
     task_max_duration = timedelta(minutes=5)
-    juanzhou_browsed = True
-    cunkou_browsed = True
-    renzhezhan_browsed = True
+    juanzhou_browsed = False
+    cunkou_browsed = False
+    renzhezhan_browsed = False
 
     @TransitionOn()
     def _(self):
@@ -22,14 +22,14 @@ class QingBaoZhan(BaseTask):
         elif not self.renzhezhan_browsed:
             self.operationer.next_scene = "情报站-忍者站"
             return False
-        self.operationer.next_scene="福利站"
+        self.operationer.next_scene = "福利站"
         return False
 
     @TransitionOn("情报站-卷轴")
     def _(self):
         if not self.juanzhou_browsed:
             self.juanzhou_browsed = True
-            self.operationer.next_scene = "情报站-首页"
+            self.operationer.next_scene = "情报站-村口"
             return False
 
     @TransitionOn("情报站-村口")
@@ -166,9 +166,9 @@ class QingBaoZhan(BaseTask):
         self.logger.info("领取活跃度奖励")
         # 点击所有的领取按钮
         while self.operationer.click_and_wait(
-            "活跃度任务-领取",
-            wait_time=3,
-            auto_raise=False
+                "活跃度任务-领取",
+                wait_time=3,
+                auto_raise=False
         ):
             continue
 

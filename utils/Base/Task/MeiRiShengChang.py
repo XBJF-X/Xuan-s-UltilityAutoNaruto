@@ -7,34 +7,48 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
 class MeiRiShengChang(BaseTask):
-    source_scene = "决斗场-忍术对战-单人模式"
+    source_scene = "忍术对战-单人模式"
     task_max_duration = timedelta(hours=2)
 
-    @TransitionOn("决斗场-忍术对战-单人模式")
-    def _(self):
-        self.logger.info("查看[决斗场-忍术对战-单人模式-决斗任务]")
-        self.operationer.next_scene = "决斗场-忍术对战-单人模式-决斗任务"
-
-    @TransitionOn("决斗场-忍术对战-单人模式-决斗任务")
+    @TransitionOn("忍术对战-单人模式")
     def _(self):
         self.logger.info("领取所有待领取的决斗任务宝箱")
+        self.operationer.click_and_wait("决斗任务")
         while self.operationer.search_and_click(
                 [
-                    "决斗任务-宝箱-待领取"
+                    "宝箱-待领取"
                 ],
-                [
-                    {'swipe':
-                        {"start_coordinate": [1095, 618], "end_coordinate": [1095, 167], "duration": 1}
-                    }
-                ],
+                [],
                 max_attempts=1,
         ):
             continue
 
-        # 假如存在未达成的宝箱，则挂周胜
-        while self.operationer.search_and_detect(
+        flag = self.operationer.search_and_detect(
+            [
+                self.operationer.current_scene.elements.get("宝箱-未达成")
+            ],
+            [
+                {'swipe':
+                    {"start_coordinate": [1095, 618], "end_coordinate": [1095, 167], "duration": 1}}
+            ],
+            max_attempts=1,
+            bool_debug=True
+        )
+        while flag:
+            self.operationer.click_and_wait("X")
+            self.fight()
+            self.operationer.click_and_wait("决斗任务")
+            while self.operationer.search_and_click(
+                    [
+                        "宝箱-待领取"
+                    ],
+                    [],
+                    max_attempts=1,
+            ):
+                continue
+            flag = self.operationer.search_and_detect(
                 [
-                    self.operationer.current_scene.elements.get("决斗任务-宝箱-未达成")
+                    self.operationer.current_scene.elements.get("宝箱-未达成")
                 ],
                 [
                     {'swipe':
@@ -42,38 +56,8 @@ class MeiRiShengChang(BaseTask):
                 ],
                 max_attempts=1,
                 bool_debug=True
-        ):
-            self.logger.info("存在未达成的每日胜场任务，继续执行")
-            self.operationer.click_and_wait("X")
-
-            self.fight()
-
-            self.logger.info("查看[决斗场-忍术对战-单人模式-决斗任务]")
-            self.operationer.click_and_wait(
-                "决斗场-忍术对战-单人模式-决斗任务",
-                max_time=3
             )
-            self.operationer.detect_scene(
-                "决斗场-忍术对战-单人模式-决斗任务",
-                max_time=5
-            )
-            self.logger.info("领取所有待领取的决斗任务宝箱")
-            while self.operationer.search_and_click(
-                    [
-                        "决斗任务-宝箱-待领取"
-                    ],
-                    [
-                        {'swipe':
-                            {"start_coordinate": [1095, 618], "end_coordinate": [1095, 167],
-                                "duration": 1}
-                        }
-                    ],
-                    max_attempts=1,
-            ):
-                continue
-
-        self.logger.info("每日胜场宝箱已领完")
-        self.operationer.click_and_wait("X")
+        self.logger.info("没有未达成的宝箱，结束执行")
         self._update_next_execute_time()
         return True
 
@@ -82,18 +66,15 @@ class MeiRiShengChang(BaseTask):
         通用的刷决斗场函数，周胜赛季胜等等都可以使用
         """
         # 进入战斗
-        self.operationer.click_and_wait("决斗场-忍术对战-单人模式-开战")
-        self.operationer.click_and_wait(
-            "决斗场-忍术对战-单人模式-开战",
-            auto_raise=False
-        )
+        self.operationer.click_and_wait("开战")
+        self.operationer.click_and_wait("开战", auto_raise=False)
         flag = self.operationer.search_and_detect(
             [
-                self.scene_graph.scenes.get("决斗场-战斗中").elements.get("60"),
-                self.scene_graph.scenes.get("决斗场-战斗中").elements.get("你的对手离开了游戏")
+                self.operationer.current_scene.elements.get("60"),
+                self.operationer.current_scene.elements.get("你的对手离开了游戏")
             ],
             [
-                {'click': {'type': "COORDINATE", 'coordinate': [800, 569]}}
+                {'click': "你的对手离开了游戏-确定"}
             ],
             search_max_time=100,
         )
@@ -107,8 +88,8 @@ class MeiRiShengChang(BaseTask):
                             self.scene_graph.scenes.get("忍术对战-单人模式")
                         ],
                         [
-                            {'click': {'type': "COORDINATE", 'coordinate': [800, 745]}},
-                            {'click': {'type': "COORDINATE", 'coordinate': [800, 569]}}
+                            {'click': "空白点"},
+                            {'click': "你的对手离开了游戏-确定"}
                         ],
                         search_max_time=30
                 ):
@@ -127,8 +108,8 @@ class MeiRiShengChang(BaseTask):
                         ("CLICK", self.config.get_config("键位")[KEY_INDEX.Substitution])
                     ],
                     stop_conditions=[
-                        self.scene_graph.scenes.get("决斗场-战斗中").elements.get("你的对手离开了游戏"),
-                        self.scene_graph.scenes.get("决斗场-战斗中").elements.get("举报反馈")
+                        self.operationer.current_scene.elements.get("你的对手离开了游戏"),
+                        self.operationer.current_scene.elements.get("举报反馈")
                     ],
                     max_workers=7
                 )
@@ -139,8 +120,8 @@ class MeiRiShengChang(BaseTask):
                     self.scene_graph.scenes.get("忍术对战-单人模式")
                 ],
                 [
-                    {'click': {'type': "COORDINATE", 'coordinate': [800, 745]}},
-                    {'click': {'type': "COORDINATE", 'coordinate': [800, 569]}}
+                    {'click': "空白点"},
+                    {'click': "你的对手离开了游戏-确定"}
                 ],
                 search_max_time=30
         ):
