@@ -57,6 +57,7 @@ class MeiRiShengChang(BaseTask):
                 max_attempts=1,
                 bool_debug=True
             )
+        self.operationer.click_and_wait("X")
         self.logger.info("没有未达成的宝箱，结束执行")
         self._update_next_execute_time()
         return True

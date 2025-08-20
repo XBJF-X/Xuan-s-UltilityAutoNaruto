@@ -971,7 +971,7 @@ QTreeWidget QScrollBar::add-line:vertical {
           <item>
            <widget class="QStackedWidget" name="stackedWidget">
             <property name="currentIndex">
-             <number>17</number>
+             <number>9</number>
             </property>
             <widget class="QWidget" name="Overview_Panel_widget">
              <property name="enabled">
@@ -1518,8 +1518,8 @@ QScrollArea &gt; QWidget &gt; QWidget {
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>84</width>
-                         <height>20</height>
+                         <width>232</width>
+                         <height>63</height>
                         </rect>
                        </property>
                       </widget>
@@ -1757,8 +1757,8 @@ QScrollArea &gt; QWidget &gt; QWidget {
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>84</width>
-                         <height>20</height>
+                         <width>232</width>
+                         <height>81</height>
                         </rect>
                        </property>
                       </widget>
@@ -1991,8 +1991,8 @@ QScrollArea &gt; QWidget &gt; QWidget {
                         <rect>
                          <x>0</x>
                          <y>0</y>
-                         <width>84</width>
-                         <height>20</height>
+                         <width>232</width>
+                         <height>176</height>
                         </rect>
                        </property>
                       </widget>
@@ -2208,8 +2208,8 @@ QCheckBox::indicator:disabled {
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>232</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_73">
@@ -2469,8 +2469,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>232</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_89">
@@ -2730,8 +2730,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>232</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_93">
@@ -2991,8 +2991,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>413</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_46">
@@ -3538,8 +3538,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>450</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_47">
@@ -4693,8 +4693,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>232</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_145">
@@ -4954,8 +4954,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>232</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_85">
@@ -5215,8 +5215,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>232</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_117">
@@ -7104,8 +7104,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>258</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_153">
@@ -7177,18 +7177,6 @@ border:none;</string>
                           </property>
                           <property name="text">
                            <string>任务设置</string>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QLabel" name="label_54">
-                          <property name="styleSheet">
-                           <string notr="true">font-size:13pt;
-color:rgba(255, 0, 0, 100);
-margin-left:18px;</string>
-                          </property>
-                          <property name="text">
-                           <string>待开发</string>
                           </property>
                          </widget>
                         </item>
@@ -7454,18 +7442,6 @@ border:none;</string>
                          </widget>
                         </item>
                         <item>
-                         <widget class="QLabel" name="label_260">
-                          <property name="styleSheet">
-                           <string notr="true">font-size:13pt;
-color:rgba(255, 0, 0, 100);
-margin-left:18px;</string>
-                          </property>
-                          <property name="text">
-                           <string>待开发</string>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
                          <widget class="QFrame" name="frame_51">
                           <property name="styleSheet">
                            <string notr="true">QWidget QFrame{
@@ -7650,8 +7626,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>258</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_121">
@@ -7923,8 +7899,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>278</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_105">
@@ -8197,8 +8173,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>232</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_109">
@@ -8458,8 +8434,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>232</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_125">
@@ -8719,8 +8695,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>258</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_137">
@@ -8792,18 +8768,6 @@ border:none;</string>
                           </property>
                           <property name="text">
                            <string>任务设置</string>
-                          </property>
-                         </widget>
-                        </item>
-                        <item>
-                         <widget class="QLabel" name="label_220">
-                          <property name="styleSheet">
-                           <string notr="true">font-size:13pt;
-color:rgba(255, 0, 0, 100);
-margin-left:18px;</string>
-                          </property>
-                          <property name="text">
-                           <string>待开发</string>
                           </property>
                          </widget>
                         </item>
@@ -8992,8 +8956,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>250</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_61">
@@ -9254,8 +9218,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>258</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_129">
@@ -9527,8 +9491,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>250</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_69">
@@ -9789,8 +9753,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>258</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_161">
@@ -10335,8 +10299,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>258</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_157">
@@ -10608,8 +10572,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>258</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_191">
@@ -10881,8 +10845,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>258</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_195">
@@ -11154,8 +11118,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>258</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_183">
@@ -11427,8 +11391,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>258</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_179">
@@ -11700,8 +11664,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>258</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_113">
@@ -11973,8 +11937,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>250</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_65">
@@ -12235,8 +12199,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>409</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_169">
@@ -12761,8 +12725,8 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>585</width>
-                      <height>232</height>
+                      <width>641</width>
+                      <height>561</height>
                      </rect>
                     </property>
                     <layout class="QVBoxLayout" name="verticalLayout_81">
@@ -13028,7 +12992,7 @@ margin-left:18px;</string>
                      <rect>
                       <x>0</x>
                       <y>0</y>
-                      <width>533</width>
+                      <width>629</width>
                       <height>1157</height>
                      </rect>
                     </property>

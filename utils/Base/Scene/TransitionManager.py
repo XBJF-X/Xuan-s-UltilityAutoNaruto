@@ -299,7 +299,6 @@ class TransitionManager:
                 max_attempts=4
             )
 
-
         @self.register("主场景", "任务集会所")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.swipe_and_wait((462, 340), (1345, 340), duration=0.5)
@@ -318,7 +317,6 @@ class TransitionManager:
                 ],
                 max_attempts=4
             )
-
 
         @self.register("主场景", "试炼之地")
         def _(operationer: Operationer, *args, **kwargs):
@@ -357,7 +355,6 @@ class TransitionManager:
                 ],
                 max_attempts=4
             )
-
 
         @self.register("主场景", "主场景-组织")
         def _(operationer: Operationer, *args, **kwargs):
@@ -493,6 +490,15 @@ class TransitionManager:
         @self.register("情报站-首页", "福利站")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("福利站")
+            operationer.search_and_detect(
+                [
+                    operationer.scene_graph.scenes.get("福利站")
+                ],
+                [
+                    {'click': operationer.scene_graph.scenes.get("福利站").elements.get("X")}
+                ],
+                search_max_time=15,
+            )
 
         @self.register("情报站-卷轴", "情报站-村口")
         def _(operationer: Operationer, *args, **kwargs):

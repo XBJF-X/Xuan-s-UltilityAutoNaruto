@@ -406,7 +406,10 @@ class Operationer:
         self.logger.debug(f"元素点击搜索内容：")
         self.logger.debug(element_list)
         for element_id in element_list:
-            self.logger.debug(f"[元素] {element_id}")
+            if isinstance(element_id,Element):
+                self.logger.debug(f"[元素] {element_id.id}")
+            else:
+                self.logger.debug(f"[元素] {element_id}")
         start = time.perf_counter()
         attempts = 0
         while True:

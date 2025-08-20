@@ -1,7 +1,7 @@
 from datetime import timedelta, datetime
 from zoneinfo import ZoneInfo
 
-from utils.Base.Exceptions import StepFailedError
+from utils.Base.Exceptions import StepFailedError, EndEarly
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -32,18 +32,18 @@ class DengLuJiangLi(BaseTask):
             search_max_time=60,
             wait_time=3
         ):
-            raise StepFailedError("未弹出登录奖励窗口")
+            self._update_next_execute_time()
+            raise EndEarly("未弹出登录奖励窗口，可能已领取")
         self.operationer.click_and_wait(self.scene_graph.scenes.get("登录奖励").elements.get("领取"))
-        while self.operationer.search_and_click(
+        self.operationer.search_and_detect(
+            [self.scene_graph.scenes.get("主场景")],
             [
-                self.scene_graph.scenes.get("主场景").elements.get("公告-X"),
-                self.scene_graph.scenes.get("主场景").elements.get("广告-X")
+                {'click': self.scene_graph.scenes.get("主场景").elements.get("公告-X")},
+                {'click': self.scene_graph.scenes.get("主场景").elements.get("广告-X")}
             ],
-            [],
-            search_max_time=4,
-            once_max_time=0.5
-        ):
-            continue
+            search_max_time=10,
+            wait_time=3
+        )
         self._update_next_execute_time()
         return True
 
