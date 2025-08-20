@@ -98,6 +98,8 @@ class RenWuJiHuiSuo(BaseTask):
                         once_max_time=1,
                         search_max_time=2
                 ):
+                    self.operationer.click_and_wait("X")
+                    self.operationer.click_and_wait("X")
                     self._update_next_execute_time(3, timedelta(hours=1))
                     raise EndEarly("任务栏已满/今日任务已经领完")
                 else:
@@ -110,6 +112,7 @@ class RenWuJiHuiSuo(BaseTask):
                 self.logger.info("刷新任务列表")
             else:
                 # 能接取的都接了，无法刷新，可以退出执行了
+                self.operationer.click_and_wait("X")
                 self._update_next_execute_time(3, timedelta(hours=1))
                 raise EndEarly("无法刷新，提前退出执行")
         self.operationer.click_and_wait("X")
