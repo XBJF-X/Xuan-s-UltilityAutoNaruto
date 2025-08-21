@@ -103,37 +103,24 @@ class QingBaoZhan(BaseTask):
     @TransitionOn("福利站")
     def _(self):
         self.logger.info("福利站签到")
-        # 点击福利站-立即签到
-        if not self.operationer.click_and_wait(
-                "立即签到",
+        # 点击福利站-一键签到
+        if self.operationer.click_and_wait(
+                "一键签到",
                 wait_time=3,
                 auto_raise=False
         ):
-            # 点击福利站-一键签到
-            if self.operationer.click_and_wait(
-                    "一键签到",
-                    wait_time=3,
-                    auto_raise=False
-            ):
-                self.logger.info("未自动弹出窗口，点击一键签到")
-                self.operationer.click_and_wait(
-                    "立即签到",
-                    wait_time=3
-                )
-                # 签到成功，点击我知道了
-                self.operationer.click_and_wait(
-                    "我知道了",
-                    wait_time=3
-                )
-            else:
-                self.logger.warning("手动点击一键签到失败，可能已经签到过")
-        else:
-            self.logger.info("自动弹出窗口，点击立即签到")
+            self.logger.info("未自动弹出窗口，点击一键签到")
+            self.operationer.click_and_wait(
+                "立即签到",
+                wait_time=3
+            )
             # 签到成功，点击我知道了
             self.operationer.click_and_wait(
                 "我知道了",
                 wait_time=3
             )
+        else:
+            self.logger.warning("手动点击一键签到失败，可能已经签到过")
         # 确认福利站页面已出现
         self.operationer.detect_scene(
             "福利站",

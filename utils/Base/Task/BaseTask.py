@@ -171,7 +171,7 @@ class BaseTask:
         任务的处理逻辑，默认需要自己重载为所用的逻辑
         """
         if self.task_max_duration:
-            dead_line = datetime.now() + self.task_max_duration
+            dead_line = datetime.now(tz=ZoneInfo("Asia/Shanghai")) + self.task_max_duration
         self.operationer.next_scene = self.source_scene
         while True:
             if self.task_max_duration:

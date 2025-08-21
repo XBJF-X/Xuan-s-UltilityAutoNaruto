@@ -20,7 +20,7 @@ class DengLuJiangLi(BaseTask):
         if not self.operationer.search_and_click(
                 [self.scene_graph.scenes.get("登录").elements.get("开始游戏")],
                 [],
-                search_max_time=100
+                search_max_time=300
         ):
             raise StepFailedError("未出现[开始游戏]按钮，请检查是否掉授权或网络情况差")
 
