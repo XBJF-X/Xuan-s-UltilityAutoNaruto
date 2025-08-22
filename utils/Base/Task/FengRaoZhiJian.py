@@ -30,19 +30,16 @@ class FengRaoZhiJian(BaseTask):
                     auto_raise=False
             ):
                 self.logger.info("领取丰饶之间奖励")
-                # 使用连点器过丰饶之间
-                self.operationer.auto_cycle_actioner(
-                    [
-                        ("CLICK", self.config.get_config("键位")[KEY_INDEX.BasicAttack]),
-                        ("CLICK", self.config.get_config("键位")[KEY_INDEX.FirstSkill]),
-                        ("CLICK", self.config.get_config("键位")[KEY_INDEX.SecondSkill]),
-                        ("CLICK", self.config.get_config("键位")[KEY_INDEX.UltimateSkill]),
-                    ],
-                    stop_conditions=[
-                        self.scene_graph.scenes.get("丰饶之间")
-                    ],
-                    max_workers=4
-                )
+                if not self.operationer.search_and_detect(
+                        [
+                            self.operationer.current_scene
+                        ],
+                        [
+                            {'click': "空白点"}
+                        ],
+                        search_max_time=60
+                ):
+                    raise StepFailedError("退出[丰饶之间]失败")
                 self._update_next_execute_time()
                 raise EndEarly("免费完成，提前结束执行")
             else:
@@ -80,7 +77,7 @@ class FengRaoZhiJian(BaseTask):
                 [
                     {'click': "空白点"}
                 ],
-                search_max_time=180
+                search_max_time=60
         ):
             raise StepFailedError("退出[丰饶之间]失败")
         self._update_next_execute_time()
