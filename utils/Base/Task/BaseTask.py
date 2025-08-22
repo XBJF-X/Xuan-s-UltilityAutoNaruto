@@ -171,11 +171,11 @@ class BaseTask:
         任务的处理逻辑，默认需要自己重载为所用的逻辑
         """
         if self.task_max_duration:
-            dead_line = datetime.now(tz=ZoneInfo("Asia/Shanghai")) + self.task_max_duration
+            self.dead_line = datetime.now(tz=ZoneInfo("Asia/Shanghai")) + self.task_max_duration
         self.operationer.next_scene = self.source_scene
         while True:
             if self.task_max_duration:
-                if datetime.now(tz=ZoneInfo("Asia/Shanghai")) > dead_line:
+                if datetime.now(tz=ZoneInfo("Asia/Shanghai")) > self.dead_line:
                     raise TimeOut(f"任务超时")
             if self._should_stop():
                 raise Stop("任务停止")

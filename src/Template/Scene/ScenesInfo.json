@@ -265,8 +265,8 @@
                     900
                 ],
                 "coordinate": [
-                    1248,
-                    451
+                    790,
+                    852
                 ]
             }
         }
@@ -2021,12 +2021,352 @@
         }
     },
     "天地战场": {
-        "edges": [
-            "天之战场",
-            "地之战场"
-        ],
+        "edges": [],
         "threshold": 0.8,
-        "elements": {}
+        "elements": {
+            "X": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1530,
+                    42
+                ]
+            },
+            "返回": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    151,
+                    842
+                ]
+            },
+            "天之战场": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    220,
+                    564,
+                    332,
+                    122
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "地之战场": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1214,
+                    569,
+                    266,
+                    111
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "确定进入-确认": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    474,
+                    486,
+                    340,
+                    138
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "天之战场-标识": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "地之战场-标识": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    655,
+                    0,
+                    306,
+                    92
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "组织鼓舞": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    95,
+                    335
+                ]
+            },
+            "战场奖励": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1503,
+                    417
+                ]
+            },
+            "战场奖励-领取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    826,
+                    134,
+                    193,
+                    693
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "战场奖励-恭喜你获得": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    478,
+                    111,
+                    682,
+                    161
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "出战忍者-确认": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1116,
+                    673,
+                    303,
+                    122
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
+            },
+            "出战忍者-忍者": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    948,
+                    200
+                ]
+            },
+            "出战忍者-通灵兽": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    944,
+                    340
+                ]
+            },
+            "出战忍者-秘卷": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    944,
+                    486
+                ]
+            },
+            "出战忍者-默认选择-1": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1083,
+                    239
+                ]
+            },
+            "出战忍者-默认选择-2": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1214,
+                    234
+                ]
+            },
+            "出战忍者-默认选择-3": {
+                "type": 1,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    0,
+                    0,
+                    1600,
+                    900
+                ],
+                "coordinate": [
+                    1349,
+                    239
+                ]
+            }
+        }
     },
     "奖励": {
         "edges": [
@@ -3326,7 +3666,7 @@
             "点赞-已点": {
                 "type": 0,
                 "match_type": 0,
-                "threshold": 0.8,
+                "threshold": 0.7,
                 "ratio": [
                     0.5,
                     0.5
@@ -3364,7 +3704,7 @@
             "点赞-未点": {
                 "type": 0,
                 "match_type": 0,
-                "threshold": 0.8,
+                "threshold": 0.7,
                 "ratio": [
                     0.5,
                     0.5
@@ -5582,56 +5922,6 @@
         "edges": [],
         "threshold": 0.8,
         "elements": {}
-    },
-    "天之战场": {
-        "edges": [],
-        "threshold": 0.8,
-        "elements": {
-            "返回": {
-                "type": 1,
-                "match_type": 0,
-                "threshold": 0.8,
-                "ratio": [
-                    0.5,
-                    0.5
-                ],
-                "roi": [
-                    0,
-                    0,
-                    1600,
-                    900
-                ],
-                "coordinate": [
-                    1550,
-                    52
-                ]
-            }
-        }
-    },
-    "地之战场": {
-        "edges": [],
-        "threshold": 0.8,
-        "elements": {
-            "返回": {
-                "type": 1,
-                "match_type": 0,
-                "threshold": 0.8,
-                "ratio": [
-                    0.5,
-                    0.5
-                ],
-                "roi": [
-                    0,
-                    0,
-                    1600,
-                    900
-                ],
-                "coordinate": [
-                    1549,
-                    49
-                ]
-            }
-        }
     },
     "忍术对战-单人模式": {
         "edges": [

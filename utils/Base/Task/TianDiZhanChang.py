@@ -1,18 +1,36 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from utils.Base.Task.BaseTask import BaseTask
+from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
 class TianDiZhanChang(BaseTask):
-    def _execute(self):
-        # 确定在主场景
-        if not self.home():
-            raise self.StepFailedError("无法回到[主场景]")
+    source_scene = "天地战场"
+    task_max_duration = timedelta(minutes=30)
 
-        # 执行逻辑部分
-
-        self._update_next_execute_time()
+    @TransitionOn()
+    def _(self):
+        self.operationer.click_and_wait("地之战场")
+        self.operationer.click_and_wait("确定进入-确认", wait_time=4)
+        self.operationer.click_and_wait("出战忍者-忍者")
+        self.operationer.click_and_wait("出战忍者-默认选择-1")
+        self.operationer.click_and_wait("出战忍者-通灵兽")
+        self.operationer.click_and_wait("出战忍者-默认选择-1")
+        self.operationer.click_and_wait("出战忍者-默认选择-2")
+        self.operationer.click_and_wait("出战忍者-默认选择-3")
+        self.operationer.click_and_wait("出战忍者-秘卷")
+        self.operationer.click_and_wait("出战忍者-默认选择-1")
+        self.operationer.click_and_wait("出战忍者-确认")
+        self.operationer.detect_element("地之战场-标识", max_time=10)
+        self.operationer.click_and_wait("组织鼓舞")
+        while datetime.now(tz=ZoneInfo("Asia/Shanghai")) <= self.dead_line:
+            self.operationer.click_and_wait("战场奖励")
+            while self.operationer.click_and_wait("战场奖励-领取"):
+                if self.operationer.detect_element("战场奖励-恭喜你获得", auto_raise=False):
+                    self.operationer.click_and_wait("X")
+            self.operationer.click_and_wait("X", wait_time=480)
+        self.operationer.click_and_wait("X")
+        self.operationer.click_and_wait("X")
 
     def _update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         # 明确指定中国时区（带时区的当前时间）
