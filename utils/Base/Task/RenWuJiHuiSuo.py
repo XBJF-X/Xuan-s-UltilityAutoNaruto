@@ -89,7 +89,7 @@ class RenWuJiHuiSuo(BaseTask):
                     wait_time=0
                 )
                 # 检查任务栏是否已满
-                if self.operationer.search_and_detect(
+                match self.operationer.search_and_detect(
                         [
                             self.operationer.current_scene.elements.get("任务栏满了"),
                             self.operationer.current_scene.elements.get("今天所有任务已经领完"),
@@ -98,13 +98,19 @@ class RenWuJiHuiSuo(BaseTask):
                         once_max_time=1,
                         search_max_time=2
                 ):
-                    self.operationer.click_and_wait("X")
-                    self.operationer.click_and_wait("X")
-                    self._update_next_execute_time(3, timedelta(hours=1))
-                    raise EndEarly("任务栏已满/今日任务已经领完")
-                else:
-                    task_sum += 1
-                    self.logger.info(f"已接取 {task_sum} 个任务")
+                    case 0:
+                        task_sum += 1
+                        self.logger.info(f"已接取 {task_sum} 个任务")
+                    case 1:
+                        self.operationer.click_and_wait("X")
+                        self.operationer.click_and_wait("X")
+                        self._update_next_execute_time(3, timedelta(hours=1))
+                        raise EndEarly("任务栏已满，等待下次检查")
+                    case 2:
+                        self.operationer.click_and_wait("X")
+                        self.operationer.click_and_wait("X")
+                        self._update_next_execute_time()
+                        raise EndEarly("任务栏已满/今日任务已经领完")
             if self.operationer.click_and_wait(
                     "超影免费",
                     auto_raise=False
