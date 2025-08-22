@@ -532,6 +532,7 @@ class Operationer:
                     self.click_and_wait(
                         action['click'],
                         max_time=1,
+                        wait_time=3,
                         auto_raise=False
                     )
                 elif "swipe" in action:

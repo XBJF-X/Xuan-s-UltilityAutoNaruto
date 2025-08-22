@@ -27,7 +27,8 @@ class DengLuJiangLi(BaseTask):
         if not self.operationer.search_and_detect(
             [self.scene_graph.scenes.get("登录奖励")],
             [
-                {'click': self.scene_graph.scenes.get("主场景").elements.get("公告-X")}
+                {'click': self.scene_graph.scenes.get("主场景").elements.get("公告-X")},
+                {'click': self.scene_graph.scenes.get("主场景").elements.get("广告-X")}
             ],
             search_max_time=60,
             wait_time=3
