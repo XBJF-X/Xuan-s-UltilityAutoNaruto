@@ -51,7 +51,7 @@ class Xuan(QMainWindow):
 
         # 主日志文件处理器
         main_handler = RotatingFileHandler(
-            log_dir/"Main.log",
+            log_dir / "Main.log",
             maxBytes=10 * 1024 * 1024,  # 10MB
             backupCount=5,
             encoding='utf-8'
@@ -116,7 +116,7 @@ class Xuan(QMainWindow):
         config_files = []
         for item in Path(self.config_path).iterdir():
             # 检查是否为文件且后缀为.json，同时排除默认配置
-            if item.is_file() and item.suffix.lower() == ".json":
+            if item.is_file() and item.suffix.lower() == ".json" and item.name != "DefaultConfig.json":
                 config_files.append(item)  # 添加Path类型的文件路径
         if len(config_files) != 0:
             for config_file in config_files:
@@ -147,18 +147,14 @@ class Xuan(QMainWindow):
             return
 
         # 2. 先移除现有按钮（保留垂直弹簧和初始PushButton）
-        # 遍历布局中的所有项目，记录弹簧和初始按钮的位置
+        # 遍历布局中的所有项目，记录弹簧的位置
         spring_item = None
-        initial_btn_item = None
         for i in range(container_layout.count()):
             item = container_layout.itemAt(i)
             widget = item.widget()
             # 判断是否为垂直弹簧（QSpacerItem）
             if not widget and item.spacerItem():
                 spring_item = item
-            # 判断是否为初始PushButton（假设初始按钮有特定名称，如"add_config_btn"）
-            elif widget and isinstance(widget, QPushButton) and widget.objectName() == "add_config_btn":  # 替换为实际初始按钮名称
-                initial_btn_item = item
 
         # 4. 为每个service生成按钮，并插入到弹簧上方
         for idx, service in enumerate(self.services):
