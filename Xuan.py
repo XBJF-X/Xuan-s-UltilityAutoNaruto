@@ -44,7 +44,7 @@ class Xuan(QMainWindow):
     @staticmethod
     def setup_main_logger():
         """配置程序主日志"""
-        main_logger = logging.getLogger("main")
+        main_logger = logging.getLogger("Main")
         main_logger.setLevel(logging.INFO)
         log_dir = Path(get_real_path("log"))
         log_dir.mkdir(exist_ok=True)
