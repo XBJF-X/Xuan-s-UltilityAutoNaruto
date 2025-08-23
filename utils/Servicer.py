@@ -20,7 +20,7 @@ class Service(QWidget):
     def __init__(self, config_path, scene_graph):
         super().__init__()
         self.config_path = config_path
-        self.logger = logging.getLogger(f"{self.__class__.__name__}_{self.config_path.stem[-1:]}")
+        self.logger = logging.getLogger(f"{self.__class__.__name__}_{self.config_path.stem}")
         self.UI = Ui_Service()
         self.UI.setupUi(self)
         self.logger.info("初始化配置...")
