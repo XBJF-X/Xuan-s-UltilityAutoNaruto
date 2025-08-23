@@ -16,8 +16,8 @@ class MuMu:
     2.不受模拟器窗口大小位置和可视性的限制，最小化或调整窗口大小或窗口边界超出范围依旧生效
     """
 
-    def __init__(self, config: Config):
-        self.logger = logging.getLogger(self.__class__.__name__)
+    def __init__(self, config: Config, parent_logger):
+        self.logger = parent_logger.getChild(self.__class__.__name__)
         self.config = config
         self.mumu_handle = 0
         self.display_width = 0

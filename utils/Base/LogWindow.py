@@ -16,6 +16,35 @@ class LogSignal(QObject):
     log_received = Signal(str)  # 传递格式化后的日志字符串
 
 
+class ShortNameFormatter(logging.Formatter):
+    """只显示logger名称的最后一部分"""
+
+    def format(self, record):
+        # 保存原始名称
+        original_name = record.name
+
+        try:
+            # 提取最后一个子模块名称
+            if '.' in record.name:
+                # 分割名称并取最后一部分
+                record.name = record.name.split('.')[-1]
+            # 也可以使用正则表达式提取中文名称（如果存在）
+            # match = re.search(r'[\.\w]+\.([\u4e00-\u9fff\w]+)$', record.name)
+            # if match:
+            #     record.name = match.group(1)
+        except:
+            # 如果处理失败，保持原样
+            pass
+
+        # 调用父类格式化方法
+        result = super().format(record)
+
+        # 恢复原始名称（避免影响其他处理器）
+        record.name = original_name
+
+        return result
+
+
 class QtLogHandler(logging.Handler):
     """自定义日志处理器，将日志发送到PyQt界面"""
 
@@ -37,12 +66,16 @@ class QtLogHandler(logging.Handler):
 class LogWindow(QWidget):
     """日志输出窗口（QPlainTextEdit实现，保留颜色和行数限制）"""
 
-    def __init__(self, user_name,max_lines=10000):  # 默认限制10000行
+    def __init__(self, user_name, logger_name, max_lines=10000):  # 默认限制10000行
         super().__init__()
-        self.user_name=user_name
+
+        self.user_name = user_name
+        self.logger_name = logger_name
         self.max_lines = max_lines  # 最大日志行数
         self.log_level = logging.DEBUG
         self.init_ui()
+        self.target_logger = None
+        self.file_handler = None
         # 初始化日志级别颜色格式
         self.init_log_formats()
         self.setup_logging()
@@ -117,16 +150,17 @@ class LogWindow(QWidget):
         self.log_handler = QtLogHandler()
         self.log_handler.signal.log_received.connect(self.append_log)
 
-        formatter = logging.Formatter(
+        formatter = ShortNameFormatter(
             '[%(levelname)s] %(name)s %(asctime)s | %(message)s',
             datefmt='%Y-%m-%d %H:%M:%S'
         )
         self.log_handler.setFormatter(formatter)
 
-        # 配置root logger
-        root_logger = logging.getLogger()
-        root_logger.addHandler(self.log_handler)
-        root_logger.setLevel(logging.DEBUG)
+        # 获取当前Service专属的logger（而非root logger）
+        self.target_logger = logging.getLogger(self.logger_name)
+        self.target_logger.addHandler(self.log_handler)
+        self.target_logger.setLevel(logging.DEBUG)
+        self.target_logger.propagate = True
 
         log_root_dir = Path(get_real_path(f"log"))
         if not log_root_dir.exists():
@@ -141,16 +175,21 @@ class LogWindow(QWidget):
         if not log_dir.exists():
             log_dir.mkdir(exist_ok=True)
 
-        # 添加文件处理器
-        file_handler = RotatingFileHandler(
-            log_dir / "DailyQuestHelper.log",
-            maxBytes=5 * 1024 * 1024,  # 5MB
+        # 添加文件处理器（仅绑定到当前logger）
+        self.file_handler = RotatingFileHandler(
+            log_dir / "Xuan.log",
+            maxBytes=5 * 1024 * 1024,
             backupCount=100,
             encoding='utf-8'
         )
-        file_handler.setLevel(logging.DEBUG)
-        file_handler.setFormatter(formatter)
-        root_logger.addHandler(file_handler)
+        # 文件处理器仍然使用完整名称
+        file_formatter = logging.Formatter(
+            '[%(levelname)s] %(name)s %(asctime)s | %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S'
+        )
+        self.file_handler.setFormatter(file_formatter)
+        self.file_handler.setLevel(logging.DEBUG)
+        self.target_logger.addHandler(self.file_handler)
 
         # 禁用指定logger的日志
         stop_logger = ["comtypes", "uiautomator2", "adbutils", "urllib3"]
@@ -159,7 +198,7 @@ class LogWindow(QWidget):
             logger_instance.setLevel(logging.WARNING)
             logger_instance.propagate = False
 
-        root_logger.debug("根记录器初始化完成...")
+        self.target_logger.debug(f"专属记录器 {self.logger_name} 初始化完成...")
 
     def get_log_level(self, log_msg):
         """从日志消息中提取日志级别"""

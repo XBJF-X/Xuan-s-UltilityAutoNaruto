@@ -7,9 +7,9 @@ from utils.Base.Config import Config
 
 
 class U2:
-    def __init__(self, config: Config):
+    def __init__(self, config: Config, parent_logger):
         try:
-            self.logger = logging.getLogger(self.__class__.__name__ + "_Screen")
+            self.logger = parent_logger.getChild(self.__class__.__name__ + "_Screen")
             self.config = config
             self.serial = config.get_config("串口")
             self.u2_device: u2.Device = None

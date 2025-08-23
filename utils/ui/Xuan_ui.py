@@ -203,9 +203,10 @@ class Ui_Xuan(object):
         self.widget_109.setObjectName(u"widget_109")
         self.horizontalLayout = QHBoxLayout(self.widget_109)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
-        self.widget_110 = QWidget(self.widget_109)
-        self.widget_110.setObjectName(u"widget_110")
-        self.widget_110.setStyleSheet(u"QWidget {\n"
+        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
+        self.config_switch_btn_container = QWidget(self.widget_109)
+        self.config_switch_btn_container.setObjectName(u"config_switch_btn_container")
+        self.config_switch_btn_container.setStyleSheet(u"QWidget {\n"
 "                background-color: #dfdfdf;  /* \u80cc\u666f\u989c\u8272 */\n"
 "				border-radius:10px;\n"
 "            }\n"
@@ -256,16 +257,16 @@ class Ui_Xuan(object):
 "            QLineEdit:hover {\n"
 "                border-bottom: 4px solid #39C5BB;  /* \u6df1\u7070\u8272\u4e0b\u8fb9\u6846\uff08\u4e2d\u95f4\u72b6\u6001\uff09 */\n"
 "            }")
-        self.verticalLayout_16 = QVBoxLayout(self.widget_110)
+        self.verticalLayout_16 = QVBoxLayout(self.config_switch_btn_container)
         self.verticalLayout_16.setObjectName(u"verticalLayout_16")
         self.verticalSpacer_30 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
         self.verticalLayout_16.addItem(self.verticalSpacer_30)
 
-        self.add_config_btn = QPushButton(self.widget_110)
+        self.add_config_btn = QPushButton(self.config_switch_btn_container)
         self.add_config_btn.setObjectName(u"add_config_btn")
         self.add_config_btn.setMinimumSize(QSize(30, 0))
-        self.add_config_btn.setMaximumSize(QSize(50, 16777215))
+        self.add_config_btn.setMaximumSize(QSize(30, 16777215))
         self.add_config_btn.setStyleSheet(u"QPushButton{\n"
 "border: 2px solid #b5b5b5;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
 "background-color: rgb(255, 255, 255);\n"
@@ -285,10 +286,10 @@ class Ui_Xuan(object):
 "padding-bottom:2px;\n"
 "}")
 
-        self.verticalLayout_16.addWidget(self.add_config_btn)
+        self.verticalLayout_16.addWidget(self.add_config_btn, 0, Qt.AlignmentFlag.AlignHCenter)
 
 
-        self.horizontalLayout.addWidget(self.widget_110)
+        self.horizontalLayout.addWidget(self.config_switch_btn_container)
 
         self.ServiceStackedWidget = QStackedWidget(self.widget_109)
         self.ServiceStackedWidget.setObjectName(u"ServiceStackedWidget")

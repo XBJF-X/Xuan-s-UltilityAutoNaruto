@@ -27,7 +27,8 @@ class Operationer:
                  device: Device,
                  recognizer: Recognizer,
                  scene_graph: SceneGraph,
-                 screen_save_signal: Signal(str)
+                 screen_save_signal: Signal(str),
+                 parent_logger
                  ):
         self.task_name = task_name
         self.config = config
@@ -35,7 +36,7 @@ class Operationer:
         self.recognizer = recognizer
         self.scene_graph = scene_graph
         self.screen_save_signal = screen_save_signal
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = parent_logger.getChild(self.__class__.__name__)
 
     def _should_stop(self):
         """检查是否收到停止请求"""

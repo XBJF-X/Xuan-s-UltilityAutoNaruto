@@ -25,8 +25,8 @@ class WindowCapture:
         1280: 720
     }
 
-    def __init__(self, config: Config):
-        self.logger = logging.getLogger(self.__class__.__name__)
+    def __init__(self, config: Config,parent_logger):
+        self.logger = parent_logger.getChild(self.__class__.__name__)
         self.config = config
         self.hwnd = None
         self.left = None

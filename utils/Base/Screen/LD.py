@@ -108,8 +108,8 @@ CreateScreenShotInstanceFunc = ctypes.WINFUNCTYPE(
 class LD:
     """LD 模拟器控制器，实现截图功能"""
 
-    def __init__(self, config: Config):
-        self.logger = logging.getLogger(self.__class__.__name__)
+    def __init__(self, config: Config,parent_logger):
+        self.logger = parent_logger.getChild(self.__class__.__name__)
         self.config = config
         self.dll_handle = None  # ldopengl64.dll 句柄
         self.screenshot_instance = None  # IScreenShotClass 实例

@@ -10,11 +10,11 @@ from utils.Base.Config import Config
 class Device:
     resolution = (1600, 900)
 
-    def __init__(self, config: Config):
-        self.logger = logging.getLogger(self.__class__.__name__)
+    def __init__(self, config: Config, parent_logger):
+        self.logger = parent_logger.getChild(self.__class__.__name__)
         self.package_name = "com.tencent.KiHan"
-        self.controller = Control(config, initial=True)
-        self.screener = Screen(config, initial=True)
+        self.controller = Control(config, self.logger, initial=True)
+        self.screener = Screen(config, self.logger, initial=True)
         self.screen_size = self.controller.control_instance.screen_size
         self.logger.debug("初始化完成...")
 

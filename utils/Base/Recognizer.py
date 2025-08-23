@@ -28,8 +28,8 @@ def visualize_confidence_heatmap(result, template_name):
 
 
 class Recognizer:
-    def __init__(self, scene_graph: SceneGraph):
-        self.logger = logging.getLogger("识别器")
+    def __init__(self, scene_graph: SceneGraph, parent_logger):
+        self.logger = parent_logger.getChild("识别器")
         self.scene_graph = scene_graph
 
     def scene(self, scene_img, bool_debug=True):

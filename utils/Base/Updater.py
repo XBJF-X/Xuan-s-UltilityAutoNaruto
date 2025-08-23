@@ -17,8 +17,8 @@ class Updater:
     repo_name = "Xuan-s-UltilityAutoNaruto"
     branch_name = "master"
 
-    def __init__(self):
-        self.logger = logging.getLogger(self.__class__.__name__)
+    def __init__(self, parent_logger):
+        self.logger = parent_logger.getChild(self.__class__.__name__)
         self.master_url = f"https://api.github.com/repos/{self.repo_owner}/{self.repo_name}/branches/{self.branch_name}"
         self.zip_url = f"https://github.com/{self.repo_owner}/{self.repo_name}/archive/refs/heads/{self.branch_name}.zip"
         self.version_file_path = Path(get_real_path("version.json"))

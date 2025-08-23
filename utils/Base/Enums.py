@@ -1,5 +1,4 @@
 import enum
-from typing import Tuple, List
 
 
 class CycleType(enum.IntEnum):

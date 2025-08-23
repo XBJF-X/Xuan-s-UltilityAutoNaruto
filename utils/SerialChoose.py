@@ -10,13 +10,13 @@ from utils.Base.Config import Config
 
 
 class SerialChoose(QDialog):
-    def __init__(self, config: Config, lineedit:QLineEdit, parent=None):
+    def __init__(self, config: Config, lineedit: QLineEdit, parent_logger, parent=None):
         super().__init__(parent)
         self.UI = Ui_SerialChoose()
         self.UI.setupUi(self)
         self.config = config
-        self.logger = logging.getLogger("串口列表")
-        self.lineedit=lineedit
+        self.logger = parent_logger.getChild(self.__class__.__name__)
+        self.lineedit = lineedit
         self.setModal(True)
         self.resize(394, 268)
 

@@ -1,17 +1,20 @@
 import ctypes
+import json
 import logging
 import os
 import sys
 import webbrowser
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import List
 
 import cv2
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QPainter, QBrush, QColor, QPainterPath
-from PySide6.QtWidgets import QMainWindow, QApplication
+from PySide6.QtWidgets import QMainWindow, QApplication, QPushButton, QDialog
 
 from StaticFunctions import resource_path, get_real_path
+from utils.AddConfig import AddConfig
 from utils.Base.Scene.SceneGraph import SceneGraph
 from utils.Base.Updater import Updater
 from utils.Servicer import Service
@@ -24,10 +27,10 @@ class Xuan(QMainWindow):
 
         self.UI = Ui_Xuan()
         self.UI.setupUi(self)
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.logger = self.setup_main_logger()
         self.logger.info("初始化配置...")
         self.config_path = Path(get_real_path("config"))
-        self.scene_graph = SceneGraph()
+        self.scene_graph = SceneGraph(parent_logger=self.logger)
         self.logger.info("初始化环境...")
         self.mouse_position = None
         self.init_environment()
@@ -35,8 +38,38 @@ class Xuan(QMainWindow):
         self.alloc_ui_ref_map()
         self.logger.info("初始化UI响应函数...")
         self.bind_signals()
-        self.updater = Updater()
+        self.updater = Updater(parent_logger=self.logger)
         self.logger.info("初始化完成...")
+
+    @staticmethod
+    def setup_main_logger():
+        """配置程序主日志"""
+        main_logger = logging.getLogger("main")
+        main_logger.setLevel(logging.INFO)
+        log_dir = Path(get_real_path("log"))
+        log_dir.mkdir(exist_ok=True)
+
+        # 主日志文件处理器
+        main_handler = RotatingFileHandler(
+            log_dir/"Main.log",
+            maxBytes=10 * 1024 * 1024,  # 10MB
+            backupCount=5,
+            encoding='utf-8'
+        )
+
+        formatter = logging.Formatter(
+            '[%(levelname)s] %(name)s %(asctime)s | %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S'
+        )
+        main_handler.setFormatter(formatter)
+        main_logger.addHandler(main_handler)
+
+        # 可选：控制台输出
+        console_handler = logging.StreamHandler()
+        console_handler.setFormatter(formatter)
+        main_logger.addHandler(console_handler)
+
+        return main_logger
 
     def init_environment(self):
         """初始化环境设置"""
@@ -79,11 +112,11 @@ class Xuan(QMainWindow):
             os.makedirs(self.config_path)
             self.logger.debug(f"创建配置目录: {self.config_path}")
 
-        # 遍历目录下所有文件，筛选出JSON文件并排除DefaultConfig.json
+        # 遍历目录下所有文件，筛选出JSON文件
         config_files = []
         for item in Path(self.config_path).iterdir():
             # 检查是否为文件且后缀为.json，同时排除默认配置
-            if item.is_file() and item.suffix.lower() == ".json" and item.name != "DefaultConfig.json":
+            if item.is_file() and item.suffix.lower() == ".json":
                 config_files.append(item)  # 添加Path类型的文件路径
         if len(config_files) != 0:
             for config_file in config_files:
@@ -93,7 +126,7 @@ class Xuan(QMainWindow):
                 ))
         else:
             self.services.append(Service(
-                config_path=Path(get_real_path("config/1.json")),
+                config_path=Path(get_real_path("config/Config_1.json")),
                 scene_graph=self.scene_graph
             ))
         # 关键步骤：先清除ServiceStackedWidget中默认的空白page
@@ -105,6 +138,43 @@ class Xuan(QMainWindow):
         # 关键步骤：将services按顺序添加到ServiceStackedWidget
         for service in self.services:
             self.UI.ServiceStackedWidget.addWidget(service)
+
+        # 生成配置切换按钮（核心逻辑）
+        # 1. 获取容器布局
+        container_layout = self.UI.config_switch_btn_container.layout()
+        if not container_layout:
+            self.logger.error("config_switch_btn_container未设置布局")
+            return
+
+        # 2. 先移除现有按钮（保留垂直弹簧和初始PushButton）
+        # 遍历布局中的所有项目，记录弹簧和初始按钮的位置
+        spring_item = None
+        initial_btn_item = None
+        for i in range(container_layout.count()):
+            item = container_layout.itemAt(i)
+            widget = item.widget()
+            # 判断是否为垂直弹簧（QSpacerItem）
+            if not widget and item.spacerItem():
+                spring_item = item
+            # 判断是否为初始PushButton（假设初始按钮有特定名称，如"add_config_btn"）
+            elif widget and isinstance(widget, QPushButton) and widget.objectName() == "add_config_btn":  # 替换为实际初始按钮名称
+                initial_btn_item = item
+
+        # 4. 为每个service生成按钮，并插入到弹簧上方
+        for idx, service in enumerate(self.services):
+            # 按钮文本使用配置文件名（不含后缀）
+            btn_text = service.config.get_config("用户名")  # 例如"Config_1"
+            btn = QPushButton(btn_text)
+            btn.setObjectName(f"config_switch_btn_{idx}")  # 设置唯一名称，便于调试
+            # 绑定点击事件：切换到对应索引的page
+            btn.clicked.connect(lambda checked, id=idx: self.UI.ServiceStackedWidget.setCurrentIndex(id))
+            # 插入到弹簧上方（弹簧在布局中的索引位置）
+            if spring_item:
+                spring_index = container_layout.indexOf(spring_item)
+                container_layout.insertWidget(spring_index, btn)
+            else:
+                # 如果没有弹簧，直接添加到布局末尾
+                container_layout.addWidget(btn)
         # 确保首页为总览面板
         self.UI.ServiceStackedWidget.setCurrentIndex(0)
 
@@ -113,6 +183,7 @@ class Xuan(QMainWindow):
         self.UI.update_btn.clicked.connect(self._on_update_btn_clicked)
         self.UI.exit_btn.clicked.connect(QApplication.quit)
         self.UI.min_btn.clicked.connect(self.showMinimized)
+        self.UI.add_config_btn.clicked.connect(self._on_add_config_btn_clicked)
 
     @staticmethod
     def _on_go_to_github_btn_clicked():
@@ -125,6 +196,96 @@ class Xuan(QMainWindow):
             self.updater.update(new_version)
         else:
             self.logger.debug("不存在新版本！")
+
+    def _on_add_config_btn_clicked(self):
+        self.logger.debug("新建用户配置窗口开启")
+        dialog = AddConfig(parent=self)
+
+        # 显示对话框并阻塞，直到用户关闭
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            username = dialog.get_username()
+            if username:
+                try:
+                    # 1. 找到目录下不重复的最小数字x
+                    config_dir = self.config_path
+                    existing_numbers = []
+
+                    # 遍历现有配置文件提取数字
+                    for item in config_dir.iterdir():
+                        if item.is_file() and item.suffix.lower() == ".json":
+                            # 提取文件名中的数字部分（假设格式为 Config_x.json 或 x.json）
+                            name = item.stem
+                            if name.startswith("Config_"):
+                                num_str = name.split("_")[1]
+                            else:
+                                num_str = name
+                            if num_str.isdigit():
+                                existing_numbers.append(int(num_str))
+
+                    # 计算最小可用数字
+                    x = 1
+                    while x in existing_numbers:
+                        x += 1
+
+                    # 2. 创建新配置文件
+                    new_config_name = f"Config_{x}.json"  # 生成文件名
+                    new_config_path = config_dir / new_config_name
+
+                    # 准备配置数据（可根据需要从默认配置复制或新建）
+                    config_data = {"用户名": username}
+
+                    # 写入配置文件
+                    with open(new_config_path, "w", encoding="utf-8") as f:
+                        json.dump(config_data, f, ensure_ascii=False, indent=2)
+                    self.logger.info(f"创建新配置文件: {new_config_path}")
+
+                    # 3. 生成新的Service页面并添加到StackedWidget
+                    new_service = Service(
+                        config_path=new_config_path,
+                        scene_graph=self.scene_graph
+                    )
+                    self.services.append(new_service)
+                    self.UI.ServiceStackedWidget.addWidget(new_service)
+
+                    # 4. 生成对应的切换按钮
+                    container_layout = self.UI.config_switch_btn_container.layout()
+                    if not container_layout:
+                        self.logger.error("配置切换容器布局不存在")
+                        return
+
+                    # 找到弹簧位置
+                    spring_item = None
+                    for i in range(container_layout.count()):
+                        item = container_layout.itemAt(i)
+                        if not item.widget() and item.spacerItem():
+                            spring_item = item
+                            break
+
+                    # 创建新按钮
+                    new_btn_index = len(self.services) - 1  # 新服务在列表中的索引
+                    btn = QPushButton(new_service.config.get_config("用户名"))  # 按钮文本为文件名（不含后缀）
+                    btn.setObjectName(f"config_switch_btn_{new_btn_index}")
+                    btn.clicked.connect(
+                        lambda checked, idx=new_btn_index: self.UI.ServiceStackedWidget.setCurrentIndex(idx)
+                    )
+
+                    # 插入到弹簧上方
+                    if spring_item:
+                        spring_index = container_layout.indexOf(spring_item)
+                        container_layout.insertWidget(spring_index, btn)
+                    else:
+                        container_layout.addWidget(btn)
+
+                    # 切换到新创建的页面
+                    self.UI.ServiceStackedWidget.setCurrentIndex(new_btn_index)
+                    self.logger.debug(f"已添加新配置页面: {username} (索引: {new_btn_index})")
+
+                except Exception as e:
+                    self.logger.error(f"创建新配置失败: {str(e)}")
+            else:
+                self.logger.warning("用户输入的用户名为空")
+        else:
+            self.logger.debug("用户取消了配置添加")
 
     def _on_about_to_quit(self):
         for service in self.services:

@@ -19,8 +19,8 @@ class Screen:
     提供了截图模式切换的选择
     """
 
-    def __init__(self, config: Config, initial=False):
-        self.logger = logging.getLogger(self.__class__.__name__)
+    def __init__(self, config: Config, parent_logger, initial=False):
+        self.logger = parent_logger.getChild(self.__class__.__name__)
         self.config = config
         self.screen_mode = ScreenMode(self.config.get_config('截图模式'))
         self.screen_instance = None
@@ -35,15 +35,15 @@ class Screen:
         self.logger.info(f"当前截图模式：[{self.screen_mode.name}]")
         try:
             if self.screen_mode == ScreenMode.DroidCastRaw:
-                self.screen_instance = DroidCastRaw(self.config)
+                self.screen_instance = DroidCastRaw(self.config, parent_logger=self.logger)
             elif self.screen_mode == ScreenMode.MuMu:
-                self.screen_instance = MuMu(self.config)
+                self.screen_instance = MuMu(self.config, parent_logger=self.logger)
             elif self.screen_mode == ScreenMode.LD:
-                self.screen_instance = LD(self.config)
+                self.screen_instance = LD(self.config, parent_logger=self.logger)
             elif self.screen_mode == ScreenMode.WindowCapture:
-                self.screen_instance = WindowCapture(self.config)
+                self.screen_instance = WindowCapture(self.config, parent_logger=self.logger)
             elif self.screen_mode == ScreenMode.U2:
-                self.screen_instance = U2(self.config)
+                self.screen_instance = U2(self.config, parent_logger=self.logger)
             self.screen_instance.init()
             if not initial:
                 QMessageBox.information(None, "", f"[{self.screen_mode.name}]截图实例初始化完毕", QMessageBox.StandardButton.Ok)

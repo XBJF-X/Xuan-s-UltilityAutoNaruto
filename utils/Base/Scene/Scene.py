@@ -16,7 +16,6 @@ class Scene:
                  id: str,
                  elements: Optional[Dict[str, Element]] = None,
                  **kwargs):
-        self.logger = logging.getLogger(f"[SCENE-{id}]")
         self.id = id  # 唯一标识
         self.elements = elements or {}
         """该场景中所有的元素"""

@@ -15,8 +15,8 @@ from utils.Base.Scene.Scene import Scene
 class SceneGraph:
     """场景有向图管理类，负责维护场景和跳转关系"""
 
-    def __init__(self, scenes_path=Path(get_real_path("src/Template/Scene"))):
-        self.logger = logging.getLogger("场景有向图")
+    def __init__(self, parent_logger, scenes_path=Path(get_real_path("src/Template/Scene"))):
+        self.logger = parent_logger.getChild(self.__class__.__name__)
         self.scenes: Dict[str, Scene] = self.init_scenes(scenes_path)  # 场景ID到场景的映射
 
     def init_scenes(self, scenes_path):

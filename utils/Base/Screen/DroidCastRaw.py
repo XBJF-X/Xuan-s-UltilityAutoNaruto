@@ -31,8 +31,8 @@ class DroidCastRaw:
     class ForwardPort(Exception):
         pass
 
-    def __init__(self, config: Config):
-        self.logger = logging.getLogger(self.__class__.__name__)
+    def __init__(self, config: Config,parent_logger):
+        self.logger = parent_logger.getChild(self.__class__.__name__)
         self.config = config
         self.serial = config.get_config("串口")  # 设备序列号
         self.device_port = 8080  # 设备上的服务端口

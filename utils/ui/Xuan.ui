@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1197</width>
+    <width>1338</width>
     <height>679</height>
    </rect>
   </property>
@@ -297,7 +297,7 @@ padding-bottom:2px;
         <number>0</number>
        </property>
        <item>
-        <widget class="QWidget" name="widget_110" native="true">
+        <widget class="QWidget" name="config_switch_btn_container" native="true">
          <property name="styleSheet">
           <string notr="true">QWidget {
                 background-color: #dfdfdf;  /* 背景颜色 */
@@ -363,7 +363,7 @@ QCheckBox::indicator:disabled {
             </property>
            </spacer>
           </item>
-          <item>
+          <item alignment="Qt::AlignmentFlag::AlignHCenter">
            <widget class="QPushButton" name="add_config_btn">
             <property name="minimumSize">
              <size>
@@ -373,7 +373,7 @@ QCheckBox::indicator:disabled {
             </property>
             <property name="maximumSize">
              <size>
-              <width>50</width>
+              <width>30</width>
               <height>16777215</height>
              </size>
             </property>

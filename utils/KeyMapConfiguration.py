@@ -69,12 +69,12 @@ class SkillButton(QWidget):
 
 
 class KeyMapConfiguration(QDialog):
-    def __init__(self, config: Config, screen, parent=None):
+    def __init__(self, config: Config, screen, parent_logger, parent=None):
         super().__init__(parent)
         self.UI = Ui_KeyMapConfiguration()
         self.UI.setupUi(self)
         self.config = config
-        self.logger = logging.getLogger("键位配置")
+        self.logger = parent_logger.getChild(self.__class__.__name__)
         self.skill_buttons = []  # 存储所有技能按钮
         self.result_positions = [[] for _ in range(10)]
         self.setModal(True)

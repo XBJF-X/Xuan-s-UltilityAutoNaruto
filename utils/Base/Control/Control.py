@@ -1,5 +1,3 @@
-import logging
-
 from PySide6.QtWidgets import QMessageBox
 
 from utils.Base.Control.ADB import ADB
@@ -16,8 +14,8 @@ class Control:
     提供了控制模式切换的选择
     """
 
-    def __init__(self, config: Config, initial=False):
-        self.logger = logging.getLogger(self.__class__.__name__)
+    def __init__(self, config: Config,parent_logger, initial=False):
+        self.logger = parent_logger.getChild(self.__class__.__name__)
         self.config = config
         self.control_mode = ControlMode(self.config.get_config('控制模式'))
         self.control_instance = None
@@ -37,7 +35,7 @@ class Control:
                     QMessageBox.information(None, "", f"[ADB]初始化控制实例初始化完毕", QMessageBox.StandardButton.Ok)
                 self.logger.info("[ADB]控制实例初始化完毕")
             elif self.control_mode == ControlMode.U2:
-                self.control_instance = U2(self.config)
+                self.control_instance = U2(self.config, parent_logger=self.logger)
                 if not initial:
                     QMessageBox.information(None, "", f"[U2]初始化控制实例初始化完毕", QMessageBox.StandardButton.Ok)
                 self.logger.info("U2控制实例初始化完毕")
@@ -50,7 +48,7 @@ class Control:
             self.logger.error(f"[%s]初始化控制实例出错，将启用[ADB]方案", self.control_mode.name)
             try:
                 self.control_mode = ControlMode.U2
-                self.control_instance = U2(self.config)
+                self.control_instance = U2(self.config, parent_logger=self.logger)
                 self.control_instance_ready = True
                 self.config.set_config('控制模式', self.control_mode)
             except Exception as e:

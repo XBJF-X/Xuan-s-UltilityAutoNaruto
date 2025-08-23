@@ -6,40 +6,44 @@ from zoneinfo import ZoneInfo
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QFileDialog
 from utils.Base.Config import Config
 from utils.Base.Device import Device
-from utils.Base.Logger import LogWindow
+from utils.Base.LogWindow import LogWindow
 from utils.Base.Recognizer import Recognizer
 from utils.Base.Scene.SceneGraph import SceneGraph
 from utils.Base.Task import TASK_NAME_CN2EN_MAP, TREE_INDEX_DIC
 from utils.KeyMapConfiguration import KeyMapConfiguration
-from utils.Scheduler import Scheduler
+from utils.Base.Scheduler import Scheduler
 from utils.SerialChoose import SerialChoose
 from utils.ui.Service_ui import Ui_Service
 
 
 class Service(QWidget):
-    def __init__(self, **kwargs):
+    def __init__(self, config_path, scene_graph):
         super().__init__()
-        self.logger = logging.getLogger(self.__class__.__name__)
+        self.config_path = config_path
+        self.logger = logging.getLogger(f"{self.__class__.__name__}_{self.config_path.stem[-1:]}")
         self.UI = Ui_Service()
         self.UI.setupUi(self)
-        self.config_path = kwargs.get("config_path")
         self.logger.info("初始化配置...")
-        self.config = Config(config_path=self.config_path)
-        self.log_window = LogWindow(user_name=self.config.get_config("用户名"))
+        self.config = Config(config_path=self.config_path, parent_logger=self.logger)
+        self.log_window = LogWindow(
+            user_name=self.config.get_config("用户名"),
+            logger_name=self.logger.name
+        )
         self.task_common_control_ref_map: Dict[str:Dict[str:QWidget]] = defaultdict(dict)  # 任务控制控件
         self.logger.info("初始化UI...")
         self.alloc_ui_ref_map()
         self.logger.info("初始化UI响应函数...")
         self.bind_signals()
-        self.scene_graph: SceneGraph = kwargs.get("scene_graph")
-        self.recognizer = Recognizer(self.scene_graph)
+        self.scene_graph: SceneGraph = scene_graph
+        self.recognizer = Recognizer(self.scene_graph, parent_logger=self.logger)
         self.logger.info("初始化调度器...")
         self.scheduler = Scheduler(
             self.UI,
             self.config,
             self.scene_graph,
             self.recognizer,
-            self.task_common_control_ref_map
+            self.task_common_control_ref_map,
+            parent_logger=self.logger
         )
         self.logger.info("初始化完成...")
 

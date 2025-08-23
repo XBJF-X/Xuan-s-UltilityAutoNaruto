@@ -80,7 +80,6 @@ def _handle_callback(self):
 
 class BaseTask:
     waiting_scene = [
-
     ]
     transition_return: str = ""
     transition_func = {}
@@ -96,7 +95,8 @@ class BaseTask:
         recognizer: Recognizer,
         operationer: Operationer,
         activate_another_task_signal: Signal(str),
-        callback: Callable
+        callback: Callable,
+        parent_logger
     ):
         # 任务信息
         self.create_time = datetime.now(ZoneInfo("Asia/Shanghai"))
@@ -108,7 +108,7 @@ class BaseTask:
         self.data: Dict = config.tasks.get(task_name)
         self._execution_thread = None
         self.task_name = self.data.get('任务名称')
-        self.logger = logging.getLogger(self.task_name)
+        self.logger = parent_logger.getChild(self.task_name)
         self.task_id = self.data.get('任务ID')
         self.is_activated = self.data.get('是否启用')
         self.cycle_type = CycleType(self.data.get('周期类型'))

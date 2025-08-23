@@ -254,17 +254,18 @@ class Scheduler(QObject):
                  config: Config,
                  scene_graph: SceneGraph,
                  recognizer: Recognizer,
-                 ref_map: Dict
+                 ref_map: Dict,
+                 parent_logger
                  ):
         super().__init__()
-        self.logger = logging.getLogger("调度器")
+        self.logger = parent_logger.getChild(self.__class__.__name__)
         self.running = False
         self.UI = ui
         self.config = config
         self.task_common_control_ref_map = ref_map
         self.scene_graph = scene_graph
         self.recognizer = recognizer
-        self.transition_manager = TransitionManager(self.config, self.scene_graph.scenes)
+        self.transition_manager = TransitionManager(self.config, self.scene_graph.scenes, self.logger)
         self.running_queue = PriorityQueue[BaseTask]()  # 执行队列
         self.ready_queue = PriorityQueue[BaseTask]()  # 就绪队列
         self.waiting_queue = PriorityQueue[BaseTask]()  # 等待队列
@@ -296,7 +297,7 @@ class Scheduler(QObject):
         self.logger.info("正在启动调度器...")
         self.UI.start_schedule_button.setEnabled(False)
         self.running = True
-        self.device = Device(self.config)
+        self.device = Device(self.config, parent_logger=self.logger)
 
         for task_info in self.config.tasks.values():
             task_name = task_info.get('任务名称')
@@ -311,7 +312,8 @@ class Scheduler(QObject):
                 self.device,
                 self.recognizer,
                 self.scene_graph,
-                self.screen_save_signal
+                self.screen_save_signal,
+                parent_logger=self.logger
             )
             task_instance = task_class(
                 task_name,
@@ -321,7 +323,8 @@ class Scheduler(QObject):
                 self.recognizer,
                 operationer_instance,
                 self.activate_another_task_signal,
-                self._execute_done_callback
+                self._execute_done_callback,
+                parent_logger=self.logger
             )
             self.waiting_queue.enqueue(task_instance)
             self.create_task_ui(task_instance, 2)

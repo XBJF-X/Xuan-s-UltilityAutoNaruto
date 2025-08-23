@@ -1757,13 +1757,13 @@ QScrollArea &gt; QWidget &gt; QWidget {
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_10">
                    <property name="leftMargin">
-                    <number>7</number>
+                    <number>9</number>
                    </property>
                    <property name="topMargin">
                     <number>0</number>
                    </property>
                    <property name="rightMargin">
-                    <number>0</number>
+                    <number>9</number>
                    </property>
                    <property name="bottomMargin">
                     <number>0</number>

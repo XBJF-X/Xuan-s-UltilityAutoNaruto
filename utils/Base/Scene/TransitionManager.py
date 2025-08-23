@@ -13,8 +13,8 @@ from utils.Base.Scene.Scene import Scene
 class TransitionManager:
     """管理场景跳转关系，完全依赖Operationer的current_scene和next_scene"""
 
-    def __init__(self, config: Config, scenes: Dict[str, Scene]):
-        self.logger = logging.getLogger(self.__class__.__name__)
+    def __init__(self, config: Config, scenes: Dict[str, Scene], parent_logger):
+        self.logger = parent_logger.getChild(self.__class__.__name__)
         self.config = config
         self.scenes = scenes  # 仅用于BFS路径搜索
         self.transition_map = {}  # 键: (source_id, target_id)，值: 跳转函数
