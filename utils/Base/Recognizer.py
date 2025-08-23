@@ -70,10 +70,7 @@ class Recognizer:
             if bool_debug:
                 self.logger.info(f"匹配成功: {best_match_id} ({best_match_score:.4f})")
             return self.scene_graph.scenes.get(best_match_id)
-
-        if bool_debug:
-            self.logger.warning("未找到匹配场景")
-        return None
+        return "未知场景"
 
         start = time.perf_counter()
         color_scores = []

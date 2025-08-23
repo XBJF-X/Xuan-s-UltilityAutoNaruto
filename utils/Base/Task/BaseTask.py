@@ -201,8 +201,12 @@ class BaseTask:
         screenshot = self.operationer.screen_cap()
         current_scene_obj = self.recognizer.scene(screenshot)
 
-        if not current_scene_obj:
-            raise StepFailedError("无法识别当前场景")
+        if isinstance(current_scene_obj, str) and current_scene_obj == "未知场景":
+            self.logger.warning("未知场景，将尝试进入可识别场景")
+            self.operationer.click_and_wait(self.scene_graph.scenes.get("主场景").elements.get("公告-X"))
+            self.operationer.click_and_wait(self.scene_graph.scenes.get("主场景").elements.get("广告-X"))
+            return None
+
         self.logger.debug(f"识别到：{current_scene_obj.id}")
 
         self.operationer.current_scene = current_scene_obj
