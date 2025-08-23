@@ -2,21 +2,22 @@ import copy
 import json
 import logging
 import os
+from pathlib import Path
 from typing import Dict, Any
 
-from StaticFunctions import get_real_path,resource_path
+from StaticFunctions import get_real_path
 
 
 class Config:
-    def __init__(self):
+    def __init__(self, **kwargs):
         self.logger = logging.getLogger(self.__class__.__name__)
-        self.config_path = get_real_path("config/Config.json")
-        self.default_config_path = resource_path("config/DefaultConfig.json")
+        self.config_path: Path = kwargs.get("config_path")
+        self.default_config_path = get_real_path("config/DefaultConfig.json")
 
         self.setting_dics: Dict[str, Any] = {}
         self.tasks: Dict[str, Any] = {}
-        self._load_and_merge_config()  # 改为合并加载方法
-        self._save_config_to_file()  # 初始化后立即保存合并后的配置
+        self.load_and_merge_config()  # 改为合并加载方法
+        self.save_config_to_file()  # 初始化后立即保存合并后的配置
         self.logger.debug(f"初始化完成...")
 
     def get_config(self, key: str, empty=None) -> Any:
@@ -25,7 +26,7 @@ class Config:
     def set_config(self, key: str, value: Any):
         self.setting_dics[key] = value
         self.logger.debug(f"设置 {key} 为 {value}")
-        self._save_config_to_file()
+        self.save_config_to_file()
 
     def get_task_config(self, task_name: str, key: str):
         return self.tasks.get(task_name, {}).get(key, None)
@@ -40,7 +41,7 @@ class Config:
             return
         task[key] = value
         self.logger.debug(f"设置[{task_name}] {key} 为 {value}")
-        self._save_config_to_file()
+        self.save_config_to_file()
 
     def _load_default_config(self) -> Dict[str, Any]:
         """加载默认配置"""
@@ -56,7 +57,8 @@ class Config:
                 "任务": {}
             }
 
-    def _merge_configs(self, user_config: Dict[str, Any], default_config: Dict[str, Any]) -> Dict[str, Any]:
+    def _merge_configs(self, user_config: Dict[str, Any], default_config: Dict[str, Any]) -> Dict[
+        str, Any]:
         """递归合并配置：用户配置覆盖默认配置，缺失项用默认配置补充"""
         merged = copy.deepcopy(default_config)
         for key, value in user_config.items():
@@ -68,7 +70,7 @@ class Config:
                 merged[key] = value
         return merged
 
-    def _load_and_merge_config(self):
+    def load_and_merge_config(self):
         """加载用户配置并与默认配置合并"""
         # 确保配置目录存在
         config_dir = os.path.dirname(self.config_path)
@@ -94,7 +96,7 @@ class Config:
         self.tasks = self.setting_dics.get("任务", {})
         self.logger.info("配置合并完成")
 
-    def _save_config_to_file(self):
+    def save_config_to_file(self):
         try:
             config_data = copy.deepcopy(self.setting_dics)
             with open(self.config_path, 'w', encoding='utf-8') as f:

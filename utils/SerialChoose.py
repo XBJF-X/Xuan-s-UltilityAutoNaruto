@@ -10,7 +10,7 @@ from utils.Base.Config import Config
 
 
 class SerialChoose(QDialog):
-    def __init__(self, config: Config, lineedit:QLineEdit,parent=None):
+    def __init__(self, config: Config, lineedit:QLineEdit, parent=None):
         super().__init__(parent)
         self.UI = Ui_SerialChoose()
         self.UI.setupUi(self)

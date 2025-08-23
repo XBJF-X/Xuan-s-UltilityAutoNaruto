@@ -37,8 +37,9 @@ class QtLogHandler(logging.Handler):
 class LogWindow(QWidget):
     """日志输出窗口（QPlainTextEdit实现，保留颜色和行数限制）"""
 
-    def __init__(self, max_lines=10000):  # 默认限制10000行
+    def __init__(self, user_name,max_lines=10000):  # 默认限制10000行
         super().__init__()
+        self.user_name=user_name
         self.max_lines = max_lines  # 最大日志行数
         self.log_level = logging.DEBUG
         self.init_ui()
@@ -130,11 +131,17 @@ class LogWindow(QWidget):
         log_root_dir = Path(get_real_path(f"log"))
         if not log_root_dir.exists():
             log_root_dir.mkdir(exist_ok=True)
-        log_dir = log_root_dir / datetime.now().strftime("%Y-%m-%d")
-        # 添加文件处理器
+
+        log_user_dir = Path(get_real_path(f"log/{self.user_name}"))
+        if not log_user_dir.exists():
+            log_user_dir.mkdir(exist_ok=True)
+
+        log_dir = log_user_dir / datetime.now().strftime("%Y-%m-%d")
+
         if not log_dir.exists():
             log_dir.mkdir(exist_ok=True)
 
+        # 添加文件处理器
         file_handler = RotatingFileHandler(
             log_dir / "DailyQuestHelper.log",
             maxBytes=5 * 1024 * 1024,  # 5MB

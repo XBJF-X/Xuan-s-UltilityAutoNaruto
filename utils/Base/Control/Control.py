@@ -1,4 +1,3 @@
-import enum
 import logging
 
 from PySide6.QtWidgets import QMessageBox

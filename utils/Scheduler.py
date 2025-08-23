@@ -21,6 +21,7 @@ from utils.Base.Scene.SceneGraph import SceneGraph
 from utils.Base.Scene.TransitionManager import TransitionManager
 from utils.Base.Task import TASK_TYPE_MAP
 from utils.Base.Task.BaseTask import BaseTask
+from utils.ui.Service_ui import Ui_Service
 from utils.ui.Xuan_ui import Ui_Xuan
 
 T = TypeVar('T', bound=BaseTask)
@@ -249,7 +250,7 @@ class Scheduler(QObject):
     screen_save_signal = Signal(str)
 
     def __init__(self,
-                 ui: Ui_Xuan,
+                 ui: Ui_Service,
                  config: Config,
                  scene_graph: SceneGraph,
                  recognizer: Recognizer,
