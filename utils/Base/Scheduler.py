@@ -654,7 +654,6 @@ def create_task_widget(task: BaseTask) -> tuple[QWidget, QLabel, QLabel]:
             background-color: transparent;
             font-size: 14pt; 
             color: black;
-            padding: 5px 5px;
         """)
     item_layout.addWidget(name_label, alignment=Qt.AlignmentFlag.AlignLeft)
 

@@ -79,8 +79,8 @@ class XiaoDuiTuXi(BaseTask):
             ):
                 self._update_next_execute_time()
                 raise EndEarly("小队突袭次数已用尽")
-            # 先看看能不能扫荡
-            self._handle_sweep_through()
+            # # 先看看能不能扫荡
+            # self._handle_sweep_through()
             self.operationer.next_scene = "小队突袭-组织助战"
             return False
         self.logger.info("执行结束")
