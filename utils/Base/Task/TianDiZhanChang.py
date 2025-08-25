@@ -31,8 +31,18 @@ class TianDiZhanChang(BaseTask):
             self.operationer.click_and_wait("X", wait_time=480)
         self.operationer.click_and_wait("X")
         self.operationer.click_and_wait("X")
+        return True
 
     def _update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
+        # 辅助函数：计算下次周三9点的时间
+        def get_next_wednesday_9pm(current_time, tz):
+            current_weekday = current_time.weekday()
+            days_ahead = (2 - current_weekday) % 7
+            if days_ahead == 0 and current_time.hour >= 21:
+                days_ahead = 7
+            next_time = current_time + timedelta(days=days_ahead)
+            return next_time.replace(hour=21, minute=0, second=0, microsecond=0, tzinfo=tz)
+
         # 明确指定中国时区（带时区的当前时间）
         china_tz = ZoneInfo("Asia/Shanghai")
         current_time = datetime.now(china_tz)
@@ -42,14 +52,13 @@ class TianDiZhanChang(BaseTask):
             case 0:  # 创建任务时使用，需要读取config中的时间，按照空/已存在分别处理
                 next_exec_ts = self.data.get('下次执行时间')
                 if next_exec_ts == 0:
-                    # 若初始值为0，设置为当前UTC时间（或其他合理时间）
-                    self.next_execute_time = datetime.now(ZoneInfo("Asia/Shanghai"))
+                    self.next_execute_time = get_next_wednesday_9pm(current_time, china_tz)
                 else:
                     # 从时间戳转换为datetime对象（指定UTC时区避免歧义）
                     self.next_execute_time = datetime.fromtimestamp(next_exec_ts, tz=ZoneInfo("Asia/Shanghai"))
 
             case 1:  # 正常执行完毕，更新为下次执行的时间
-                pass
+                self.next_execute_time = get_next_wednesday_9pm(current_time, china_tz)
 
             case 2:  # 立刻执行，通常把时间重置到能保证第二天之前即可，不同的任务分别处理
                 self.next_execute_time = datetime.now(ZoneInfo("Asia/Shanghai"))

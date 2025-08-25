@@ -158,6 +158,9 @@ class TransitionManager:
         @self.register("忍法帖-分享", "忍法帖-排行榜")
         @self.register("忍法帖-排行榜", "忍法帖")
         @self.register("组织助战-助战忍者", "小队突袭-组织助战")
+        @self.register("X之要塞", "要塞战略图")
+        @self.register("要塞战略图", "组织")
+        @self.register("天地战场", "组织")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("X")
 
@@ -457,6 +460,51 @@ class TransitionManager:
             operationer.search_and_click(
                 [
                     "组织祈福-前往"
+                ],
+                [
+                    {
+                        "swipe": {
+                            "start_coordinate": [1339, 464],
+                            "end_coordinate": [260, 464],
+                            "duration": 1
+                        }
+                    }
+                ],
+                max_attempts=3,
+                wait_time=3
+            )
+
+        @self.register("主场景-组织", "要塞战略图")
+        def _(operationer: Operationer, *args, **kwargs):
+            operationer.click_and_wait("玩法")
+            operationer.search_and_click(
+                [
+                    "要塞争夺战-前往"
+                ],
+                [
+                    {
+                        "swipe": {
+                            "start_coordinate": [1339, 464],
+                            "end_coordinate": [260, 464],
+                            "duration": 1
+                        }
+                    }
+                ],
+                max_attempts=3,
+                wait_time=5
+            )
+
+        @self.register("要塞战略图", "X之要塞")
+        def _(operationer: Operationer, *args, **kwargs):
+            operationer.click_and_wait("火之要塞")
+            operationer.click_and_wait("X之要塞-攻击")
+
+        @self.register("主场景-组织", "天地战场")
+        def _(operationer: Operationer, *args, **kwargs):
+            operationer.click_and_wait("玩法")
+            operationer.search_and_click(
+                [
+                    "天地战场-前往"
                 ],
                 [
                     {
