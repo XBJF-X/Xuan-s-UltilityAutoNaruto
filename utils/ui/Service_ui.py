@@ -35,7 +35,9 @@ class Ui_Service(object):
 "\n"
 "")
         self.horizontalLayout_56 = QHBoxLayout(Service)
+        self.horizontalLayout_56.setSpacing(0)
         self.horizontalLayout_56.setObjectName(u"horizontalLayout_56")
+        self.horizontalLayout_56.setContentsMargins(0, 0, 0, 0)
         self.widget_31 = QWidget(Service)
         self.widget_31.setObjectName(u"widget_31")
         self.horizontalLayout = QHBoxLayout(self.widget_31)
@@ -604,7 +606,7 @@ class Ui_Service(object):
         self.scrollArea_2.setWidgetResizable(True)
         self.scroll_area_ready_content = QWidget()
         self.scroll_area_ready_content.setObjectName(u"scroll_area_ready_content")
-        self.scroll_area_ready_content.setGeometry(QRect(0, 0, 232, 82))
+        self.scroll_area_ready_content.setGeometry(QRect(0, 0, 232, 88))
         self.scrollArea_2.setWidget(self.scroll_area_ready_content)
 
         self.verticalLayout_6.addWidget(self.scrollArea_2)
@@ -708,7 +710,7 @@ class Ui_Service(object):
         self.scrollArea_3.setWidgetResizable(True)
         self.scroll_area_wait_content = QWidget()
         self.scroll_area_wait_content.setObjectName(u"scroll_area_wait_content")
-        self.scroll_area_wait_content.setGeometry(QRect(0, 0, 232, 179))
+        self.scroll_area_wait_content.setGeometry(QRect(0, 0, 232, 189))
         self.scrollArea_3.setWidget(self.scroll_area_wait_content)
 
         self.verticalLayout_7.addWidget(self.scrollArea_3)
@@ -734,7 +736,7 @@ class Ui_Service(object):
         self.widget_8.setStyleSheet(u"")
         self.verticalLayout_10 = QVBoxLayout(self.widget_8)
         self.verticalLayout_10.setObjectName(u"verticalLayout_10")
-        self.verticalLayout_10.setContentsMargins(7, 0, 0, 0)
+        self.verticalLayout_10.setContentsMargins(9, 0, 9, 0)
         self.widget_12 = QWidget(self.widget_8)
         self.widget_12.setObjectName(u"widget_12")
         self.widget_12.setStyleSheet(u"QWidget {\n"

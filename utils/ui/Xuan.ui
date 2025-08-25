@@ -284,6 +284,9 @@ padding-bottom:2px;
     <item>
      <widget class="QWidget" name="widget_109" native="true">
       <layout class="QHBoxLayout" name="horizontalLayout">
+       <property name="spacing">
+        <number>0</number>
+       </property>
        <property name="leftMargin">
         <number>0</number>
        </property>
@@ -347,7 +350,23 @@ QCheckBox::indicator:disabled {
             /* 3. 鼠标略过（悬停）状态的下边框 */
             QLineEdit:hover {
                 border-bottom: 4px solid #39C5BB;  /* 深灰色下边框（中间状态） */
-            }</string>
+            }
+
+QPushButton{
+border: 2px solid #b5b5b5;  /* 2px宽的深灰色实线边框 */
+background-color: rgb(255, 255, 255);
+border-radius:10px;
+outline:none;
+color:#0f322f;
+padding: 3px 10px;
+}
+QPushButton::hover {
+border: 2px solid #39C5BB;  /* 2px宽的深灰色实线边框 */
+background-color: rgb(255, 255, 255);
+border-radius:10px;
+outline:none;
+color:#39C5BB;
+}</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_16">
           <item>
@@ -367,35 +386,24 @@ QCheckBox::indicator:disabled {
            <widget class="QPushButton" name="add_config_btn">
             <property name="minimumSize">
              <size>
-              <width>30</width>
+              <width>36</width>
               <height>0</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>30</width>
+              <width>36</width>
               <height>16777215</height>
              </size>
             </property>
+            <property name="font">
+             <font>
+              <family>Consolas</family>
+              <pointsize>15</pointsize>
+             </font>
+            </property>
             <property name="styleSheet">
-             <string notr="true">QPushButton{
-border: 2px solid #b5b5b5;  /* 2px宽的深灰色实线边框 */
-background-color: rgb(255, 255, 255);
-border-radius:10px;
-outline:none;
-color:#0f322f;
-padding-top:2px;
-padding-bottom:2px;
-}
-QPushButton::hover {
-border: 2px solid #39C5BB;  /* 2px宽的深灰色实线边框 */
-background-color: rgb(255, 255, 255);
-border-radius:10px;
-outline:none;
-padding-top:2px;
-color:#39C5BB;
-padding-bottom:2px;
-}</string>
+             <string notr="true"/>
             </property>
             <property name="text">
              <string>+</string>

@@ -16,7 +16,10 @@ class SceneGraph:
     """场景有向图管理类，负责维护场景和跳转关系"""
 
     def __init__(self, parent_logger, scenes_path=Path(get_real_path("src/Template/Scene"))):
-        self.logger = parent_logger.getChild(self.__class__.__name__)
+        if isinstance(parent_logger, str):
+            self.logger = logging.getLogger(self.__class__.__name__)
+        else:
+            self.logger = parent_logger.getChild(self.__class__.__name__)
         self.scenes: Dict[str, Scene] = self.init_scenes(scenes_path)  # 场景ID到场景的映射
 
     def init_scenes(self, scenes_path):

@@ -4699,7 +4699,7 @@
             "活跃度任务-今日已领取过该奖励": {
                 "type": 0,
                 "match_type": 0,
-                "threshold": 0.8,
+                "threshold": 0.7,
                 "ratio": [
                     0.5,
                     0.5
@@ -4735,28 +4735,28 @@
                 ]
             },
             "一键签到": {
-                "type": 0,
+                "type": 1,
                 "match_type": 0,
-                "threshold": 0.8,
+                "threshold": 0.75,
                 "ratio": [
                     0.5,
                     0.5
                 ],
                 "roi": [
-                    688,
-                    67,
-                    176,
-                    87
+                    0,
+                    0,
+                    1600,
+                    900
                 ],
                 "coordinate": [
-                    0,
-                    0
+                    780,
+                    115
                 ]
             },
             "活跃度任务-100-我知道了": {
                 "type": 0,
                 "match_type": 0,
-                "threshold": 0.75,
+                "threshold": 0.7,
                 "ratio": [
                     0.5,
                     0.5
@@ -4775,7 +4775,7 @@
             "活跃度任务-40-确定": {
                 "type": 0,
                 "match_type": 0,
-                "threshold": 0.75,
+                "threshold": 0.7,
                 "ratio": [
                     0.5,
                     0.5
@@ -4794,7 +4794,7 @@
             "活跃度任务-40-我知道了": {
                 "type": 0,
                 "match_type": 0,
-                "threshold": 0.75,
+                "threshold": 0.7,
                 "ratio": [
                     0.5,
                     0.5
@@ -4813,7 +4813,7 @@
             "立即签到": {
                 "type": 0,
                 "match_type": 0,
-                "threshold": 0.8,
+                "threshold": 0.75,
                 "ratio": [
                     0.5,
                     0.5
@@ -4832,7 +4832,7 @@
             "活跃度任务-领取": {
                 "type": 0,
                 "match_type": 0,
-                "threshold": 0.8,
+                "threshold": 0.77,
                 "ratio": [
                     0.5,
                     0.5
@@ -4851,7 +4851,7 @@
             "活跃度任务-60-我知道了": {
                 "type": 0,
                 "match_type": 0,
-                "threshold": 0.75,
+                "threshold": 0.7,
                 "ratio": [
                     0.5,
                     0.5

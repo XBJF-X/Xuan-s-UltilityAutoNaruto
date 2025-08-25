@@ -104,20 +104,22 @@ class QingBaoZhan(BaseTask):
     def _(self):
         self.logger.info("福利站签到")
         # 点击福利站-一键签到
-        if self.operationer.click_and_wait(
+        self.operationer.click_and_wait(
                 "一键签到",
                 wait_time=3,
                 auto_raise=False
+        )
+        self.logger.info("点击一键签到")
+        if self.operationer.click_and_wait(
+            "立即签到",
+            wait_time=3,
+            auto_raise=False
         ):
-            self.logger.info("未自动弹出窗口，点击一键签到")
-            self.operationer.click_and_wait(
-                "立即签到",
-                wait_time=3
-            )
             # 签到成功，点击我知道了
             self.operationer.click_and_wait(
                 "我知道了",
-                wait_time=3
+                wait_time=3,
+                auto_raise=False
             )
         else:
             self.logger.warning("手动点击一键签到失败，可能已经签到过")

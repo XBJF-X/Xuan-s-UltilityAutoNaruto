@@ -202,6 +202,7 @@ class Ui_Xuan(object):
         self.widget_109 = QWidget(self.centralwidget)
         self.widget_109.setObjectName(u"widget_109")
         self.horizontalLayout = QHBoxLayout(self.widget_109)
+        self.horizontalLayout.setSpacing(0)
         self.horizontalLayout.setObjectName(u"horizontalLayout")
         self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
         self.config_switch_btn_container = QWidget(self.widget_109)
@@ -256,7 +257,23 @@ class Ui_Xuan(object):
                         "\u7684\u4e0b\u8fb9\u6846 */\n"
 "            QLineEdit:hover {\n"
 "                border-bottom: 4px solid #39C5BB;  /* \u6df1\u7070\u8272\u4e0b\u8fb9\u6846\uff08\u4e2d\u95f4\u72b6\u6001\uff09 */\n"
-"            }")
+"            }\n"
+"\n"
+"QPushButton{\n"
+"border: 2px solid #b5b5b5;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
+"background-color: rgb(255, 255, 255);\n"
+"border-radius:10px;\n"
+"outline:none;\n"
+"color:#0f322f;\n"
+"padding: 3px 10px;\n"
+"}\n"
+"QPushButton::hover {\n"
+"border: 2px solid #39C5BB;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
+"background-color: rgb(255, 255, 255);\n"
+"border-radius:10px;\n"
+"outline:none;\n"
+"color:#39C5BB;\n"
+"}")
         self.verticalLayout_16 = QVBoxLayout(self.config_switch_btn_container)
         self.verticalLayout_16.setObjectName(u"verticalLayout_16")
         self.verticalSpacer_30 = QSpacerItem(20, 40, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
@@ -265,26 +282,13 @@ class Ui_Xuan(object):
 
         self.add_config_btn = QPushButton(self.config_switch_btn_container)
         self.add_config_btn.setObjectName(u"add_config_btn")
-        self.add_config_btn.setMinimumSize(QSize(30, 0))
-        self.add_config_btn.setMaximumSize(QSize(30, 16777215))
-        self.add_config_btn.setStyleSheet(u"QPushButton{\n"
-"border: 2px solid #b5b5b5;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
-"background-color: rgb(255, 255, 255);\n"
-"border-radius:10px;\n"
-"outline:none;\n"
-"color:#0f322f;\n"
-"padding-top:2px;\n"
-"padding-bottom:2px;\n"
-"}\n"
-"QPushButton::hover {\n"
-"border: 2px solid #39C5BB;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
-"background-color: rgb(255, 255, 255);\n"
-"border-radius:10px;\n"
-"outline:none;\n"
-"padding-top:2px;\n"
-"color:#39C5BB;\n"
-"padding-bottom:2px;\n"
-"}")
+        self.add_config_btn.setMinimumSize(QSize(36, 0))
+        self.add_config_btn.setMaximumSize(QSize(36, 16777215))
+        font1 = QFont()
+        font1.setFamilies([u"Consolas"])
+        font1.setPointSize(15)
+        self.add_config_btn.setFont(font1)
+        self.add_config_btn.setStyleSheet(u"")
 
         self.verticalLayout_16.addWidget(self.add_config_btn, 0, Qt.AlignmentFlag.AlignHCenter)
 
