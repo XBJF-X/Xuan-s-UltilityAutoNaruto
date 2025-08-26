@@ -197,14 +197,14 @@ class TransitionManager:
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("个人信息")
             operationer.click_and_wait(
-                operationer.scene_graph.scenes.get("个人信息").elements.get("下一步"),
-                max_time=5,
-                wait_time=5
+                operationer.scene_graph.scenes.get("个人信息").elements.get("称号-下一步"),
+                max_time=3,
+                wait_time=3
             )
             operationer.click_and_wait(
-                operationer.scene_graph.scenes.get("个人信息").elements.get("确定"),
-                max_time=5,
-                wait_time=5
+                operationer.scene_graph.scenes.get("个人信息").elements.get("称号-确定"),
+                max_time=3,
+                wait_time=3
             )
 
         @self.register("主场景", "忍法帖")

@@ -1,6 +1,7 @@
 from datetime import timedelta, datetime
 from zoneinfo import ZoneInfo
 
+from utils.Base.Exceptions import StepFailedError
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -22,12 +23,15 @@ class XiuXingZhiLu(BaseTask):
             self.operationer.click_and_wait("扫荡", wait_time=0)
             # 先点击扫荡看看能不能扫荡
             if not self.operationer.detect_element("当前没有可扫荡关卡了", auto_raise=False):
-                self.operationer.click_and_wait("可以扫荡N关-扫荡")
-                # if self.operationer.click_and_wait("超影免费完成", auto_raise=False):
-                #     self.operationer.click_and_wait("X")
-                #     self.operationer.click_and_wait("X")
-                #     self._update_next_execute_time()
-                #     return True
+                if not self.operationer.click_and_wait("可以扫荡N关-扫荡", auto_raise=False):
+                    if self.operationer.click_and_wait("超影免费", auto_raise=False):
+                        self.operationer.click_and_wait("超影免费")  # 这是点击加速扫荡
+                        self.operationer.click_and_wait("X")  # 点掉恭喜获得
+                        self.operationer.click_and_wait("X")  # 退出场景
+                        self._update_next_execute_time()
+                        return True
+                    else:
+                        raise StepFailedError("扫荡失败")
                 self.operationer.click_and_wait("X")
                 self.config.set_config("修行之路状态", 1)
                 self._update_next_execute_time(3, timedelta(hours=1, minutes=20))
@@ -37,13 +41,17 @@ class XiuXingZhiLu(BaseTask):
                 self.operationer.click_and_wait("重置", wait_time=0)
                 if not self.operationer.detect_element("每周只能重置1次", auto_raise=False):
                     # 如果可以重置的话
-                    self.operationer.click_and_wait("是否将当前进度重置到第一关-确定")
-                    self.operationer.click_and_wait("可以扫荡N关-扫荡")
-                    # if self.operationer.click_and_wait("超影免费完成", auto_raise=False):
-                    #     self.operationer.click_and_wait("X")
-                    #     self.operationer.click_and_wait("X")
-                    #     self._update_next_execute_time()
-                    #     return True
+                    self.operationer.click_and_wait("是否将当前进度重置到第一关-确定", auto_raise=False)
+                    if not self.operationer.click_and_wait("可以扫荡N关-扫荡", auto_raise=False):
+                        if self.operationer.click_and_wait("超影免费", auto_raise=False):
+                            self.operationer.click_and_wait("超影免费")  # 这是点击加速扫荡
+                            self.operationer.click_and_wait("X")  # 点掉恭喜获得
+                            self.operationer.click_and_wait("X")  # 退出场景
+                            self._update_next_execute_time()
+                            return True
+                        else:
+                            raise StepFailedError("扫荡失败")
+                    self.operationer.click_and_wait("X")
                     self.operationer.click_and_wait("X")
                     self.config.set_config("修行之路状态", 1)
                     self._update_next_execute_time(3, timedelta(hours=1, minutes=20))
