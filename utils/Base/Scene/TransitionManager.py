@@ -434,8 +434,9 @@ class TransitionManager:
         @self.register("试炼之地", "生存挑战")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("生存挑战", wait_time=4)
-            operationer.click_and_wait("空白点", wait_time=0)
-            operationer.click_and_wait("空白点", wait_time=0)
+            operationer.click_and_wait("空白点", wait_time=2)
+            operationer.click_and_wait("空白点", wait_time=2)
+            operationer.click_and_wait("空白点", wait_time=2)
 
         @self.register("试炼之地", "修行之路")
         def _(operationer: Operationer, *args, **kwargs):
