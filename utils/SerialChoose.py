@@ -15,7 +15,10 @@ class SerialChoose(QDialog):
         self.UI = Ui_SerialChoose()
         self.UI.setupUi(self)
         self.config = config
-        self.logger = parent_logger.getChild(self.__class__.__name__)
+        if isinstance(parent_logger,str):
+            self.logger = logging.getLogger(parent_logger)
+        else:
+            self.logger = parent_logger.getChild(self.__class__.__name__)
         self.lineedit = lineedit
         self.setModal(True)
         self.resize(394, 268)
