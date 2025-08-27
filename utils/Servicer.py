@@ -161,7 +161,7 @@ class Service(QWidget):
             device = self.scheduler.device
         else:
             device = Device(self.config, self.logger)
-        editor = KeyMapConfiguration(self.config, device.screen_cap(), self)
+        editor = KeyMapConfiguration(self.config, device.screen_cap(), self.logger, self)
         editor.exec()
         device = None
 
