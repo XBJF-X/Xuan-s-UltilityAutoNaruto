@@ -160,13 +160,13 @@ class Service(QWidget):
         if self.scheduler.device is not None:
             device = self.scheduler.device
         else:
-            device = Device(self.config)
+            device = Device(self.config, self.logger)
         editor = KeyMapConfiguration(self.config, device.screen_cap(), self)
         editor.exec()
         device = None
 
     def _on_serial_list_button_clicked(self):
-        editor = SerialChoose(self.config, self.UI.serial, self)
+        editor = SerialChoose(self.config, self.UI.serial, self.logger, self)
         editor.exec()
 
     def _on_filepath_browse_clicked(self, name):
