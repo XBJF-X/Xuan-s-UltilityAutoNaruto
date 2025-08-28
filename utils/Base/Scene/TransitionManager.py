@@ -199,12 +199,14 @@ class TransitionManager:
             operationer.click_and_wait(
                 operationer.scene_graph.scenes.get("个人信息").elements.get("称号-下一步"),
                 max_time=3,
-                wait_time=3
+                wait_time=3,
+                auto_raise=False
             )
             operationer.click_and_wait(
                 operationer.scene_graph.scenes.get("个人信息").elements.get("称号-确定"),
                 max_time=3,
-                wait_time=3
+                wait_time=3,
+                auto_raise = False
             )
 
         @self.register("主场景", "忍法帖")
@@ -517,7 +519,7 @@ class TransitionManager:
                     }
                 ],
                 max_attempts=3,
-                wait_time=3
+                wait_time=7
             )
 
         @self.register("组织祈福", "组织")
