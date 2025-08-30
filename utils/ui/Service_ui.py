@@ -25,7 +25,7 @@ class Ui_Service(object):
     def setupUi(self, Service):
         if not Service.objectName():
             Service.setObjectName(u"Service")
-        Service.resize(1163, 621)
+        Service.resize(1136, 621)
         Service.setStyleSheet(u"/*\n"
 "font: 15pt \"\u4ed3\u8033\u4eca\u697702-6763\";\n"
 "font: 15pt \"Microsoft YaHei UI\";\n"
@@ -82,6 +82,7 @@ class Ui_Service(object):
         self.widget_9.setStyleSheet(u"")
         self.verticalLayout_8 = QVBoxLayout(self.widget_9)
         self.verticalLayout_8.setObjectName(u"verticalLayout_8")
+        self.verticalLayout_8.setContentsMargins(-1, 0, -1, -1)
         self.overview_panel_button = QPushButton(self.widget_9)
         self.overview_panel_button.setObjectName(u"overview_panel_button")
         sizePolicy1 = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
@@ -124,7 +125,7 @@ class Ui_Service(object):
         self.widget_11.setObjectName(u"widget_11")
         self.verticalLayout_9 = QVBoxLayout(self.widget_11)
         self.verticalLayout_9.setObjectName(u"verticalLayout_9")
-        self.verticalLayout_9.setContentsMargins(0, 0, -1, -1)
+        self.verticalLayout_9.setContentsMargins(0, 0, -1, 0)
         self.treeWidget = QTreeWidget(self.widget_11)
         __qtreewidgetitem = QTreeWidgetItem(self.treeWidget)
         QTreeWidgetItem(__qtreewidgetitem)
@@ -295,11 +296,16 @@ class Ui_Service(object):
         self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.stackedWidget = QStackedWidget(self.widget)
         self.stackedWidget.setObjectName(u"stackedWidget")
+        self.stackedWidget.setStyleSheet(u"QStackedWidget QWidget {\n"
+"                background-color: rgb(255, 255, 255);  /* \u80cc\u666f\u989c\u8272 */\n"
+"            }")
         self.Overview_Panel_widget = QWidget()
         self.Overview_Panel_widget.setObjectName(u"Overview_Panel_widget")
         self.Overview_Panel_widget.setEnabled(True)
+        self.Overview_Panel_widget.setStyleSheet(u"")
         self.horizontalLayout_2 = QHBoxLayout(self.Overview_Panel_widget)
         self.horizontalLayout_2.setObjectName(u"horizontalLayout_2")
+        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
         self.widget_2 = QWidget(self.Overview_Panel_widget)
         self.widget_2.setObjectName(u"widget_2")
         self.widget_2.setMinimumSize(QSize(240, 0))
@@ -349,11 +355,15 @@ class Ui_Service(object):
         self.widget_4.setStyleSheet(u"#widget_4 {  /* \u4ec5\u5339\u914d objectName \u4e3a myWidget \u7684\u63a7\u4ef6 */\n"
 "    background-color: rgb(222, 222, 222);\n"
 "border-radius: 10px;\n"
+"}\n"
+"QWidget QLabel {\n"
+"    background-color: rgb(222, 222, 222);\n"
+"border-radius: 10px;\n"
 "}")
         self.horizontalLayout_3 = QHBoxLayout(self.widget_4)
         self.horizontalLayout_3.setSpacing(4)
         self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.horizontalLayout_3.setContentsMargins(0, 0, 10, 0)
+        self.horizontalLayout_3.setContentsMargins(0, 9, 10, 9)
         self.label = QLabel(self.widget_4)
         self.label.setObjectName(u"label")
         self.label.setStyleSheet(u"font-size:23px;\n"
@@ -402,6 +412,9 @@ class Ui_Service(object):
         self.widget_5.setStyleSheet(u"#widget_5 {  /* \u4ec5\u5339\u914d objectName \u4e3a myWidget \u7684\u63a7\u4ef6 */\n"
 "    background-color: rgb(222, 222, 222);\n"
 "border-radius: 10px;\n"
+"}\n"
+"QWidget QLabel {\n"
+"    background-color: rgb(222, 222, 222);\n"
 "}")
         self.verticalLayout = QVBoxLayout(self.widget_5)
         self.verticalLayout.setSpacing(4)
@@ -422,22 +435,31 @@ class Ui_Service(object):
         brush5 = QBrush(QColor(179, 179, 179, 255))
         brush5.setStyle(Qt.BrushStyle.SolidPattern)
         palette3.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.WindowText, brush5)
+        palette3.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Button, brush)
         palette3.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Text, brush2)
         palette3.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.ButtonText, brush2)
+        palette3.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush)
+        palette3.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
         palette3.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.PlaceholderText, brush4)
 #endif
         palette3.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.WindowText, brush5)
+        palette3.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Button, brush)
         palette3.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Text, brush2)
         palette3.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.ButtonText, brush2)
+        palette3.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush)
+        palette3.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
         palette3.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.PlaceholderText, brush4)
 #endif
         brush6 = QBrush(QColor(120, 120, 120, 255))
         brush6.setStyle(Qt.BrushStyle.SolidPattern)
         palette3.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText, brush6)
+        palette3.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Button, brush)
         palette3.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text, brush2)
         palette3.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText, brush2)
+        palette3.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush)
+        palette3.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
         palette3.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.PlaceholderText, brush4)
 #endif
@@ -516,6 +538,9 @@ class Ui_Service(object):
         self.widget_6.setStyleSheet(u"#widget_6 {  /* \u4ec5\u5339\u914d objectName \u4e3a myWidget \u7684\u63a7\u4ef6 */\n"
 "    background-color: rgb(222, 222, 222);\n"
 "border-radius: 10px;\n"
+"}\n"
+"QWidget QLabel {\n"
+"    background-color: rgb(222, 222, 222);\n"
 "}")
         self.verticalLayout_6 = QVBoxLayout(self.widget_6)
         self.verticalLayout_6.setSpacing(4)
@@ -532,20 +557,29 @@ class Ui_Service(object):
         self.line_2.setObjectName(u"line_2")
         palette4 = QPalette()
         palette4.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.WindowText, brush5)
+        palette4.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Button, brush)
         palette4.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Text, brush2)
         palette4.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.ButtonText, brush2)
+        palette4.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush)
+        palette4.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
         palette4.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.PlaceholderText, brush4)
 #endif
         palette4.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.WindowText, brush5)
+        palette4.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Button, brush)
         palette4.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Text, brush2)
         palette4.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.ButtonText, brush2)
+        palette4.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush)
+        palette4.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
         palette4.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.PlaceholderText, brush4)
 #endif
         palette4.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText, brush6)
+        palette4.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Button, brush)
         palette4.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text, brush2)
         palette4.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText, brush2)
+        palette4.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush)
+        palette4.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
         palette4.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.PlaceholderText, brush4)
 #endif
@@ -606,7 +640,7 @@ class Ui_Service(object):
         self.scrollArea_2.setWidgetResizable(True)
         self.scroll_area_ready_content = QWidget()
         self.scroll_area_ready_content.setObjectName(u"scroll_area_ready_content")
-        self.scroll_area_ready_content.setGeometry(QRect(0, 0, 232, 87))
+        self.scroll_area_ready_content.setGeometry(QRect(0, 0, 232, 92))
         self.scrollArea_2.setWidget(self.scroll_area_ready_content)
 
         self.verticalLayout_6.addWidget(self.scrollArea_2)
@@ -619,6 +653,9 @@ class Ui_Service(object):
         self.widget_7.setStyleSheet(u"#widget_7 {  /* \u4ec5\u5339\u914d objectName \u4e3a myWidget \u7684\u63a7\u4ef6 */\n"
 "    background-color: rgb(222, 222, 222);\n"
 "border-radius: 10px;\n"
+"}\n"
+"QWidget QLabel {\n"
+"    background-color: rgb(222, 222, 222);\n"
 "}")
         self.verticalLayout_7 = QVBoxLayout(self.widget_7)
         self.verticalLayout_7.setSpacing(4)
@@ -636,20 +673,29 @@ class Ui_Service(object):
         self.line_3.setObjectName(u"line_3")
         palette5 = QPalette()
         palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.WindowText, brush5)
+        palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Button, brush)
         palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Text, brush2)
         palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.ButtonText, brush2)
+        palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush)
+        palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
         palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.PlaceholderText, brush4)
 #endif
         palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.WindowText, brush5)
+        palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Button, brush)
         palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Text, brush2)
         palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.ButtonText, brush2)
+        palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush)
+        palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
         palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.PlaceholderText, brush4)
 #endif
         palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText, brush6)
+        palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Button, brush)
         palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text, brush2)
         palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText, brush2)
+        palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush)
+        palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush)
 #if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
         palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.PlaceholderText, brush4)
 #endif
@@ -710,7 +756,7 @@ class Ui_Service(object):
         self.scrollArea_3.setWidgetResizable(True)
         self.scroll_area_wait_content = QWidget()
         self.scroll_area_wait_content.setObjectName(u"scroll_area_wait_content")
-        self.scroll_area_wait_content.setGeometry(QRect(0, 0, 232, 187))
+        self.scroll_area_wait_content.setGeometry(QRect(0, 0, 232, 194))
         self.scrollArea_3.setWidget(self.scroll_area_wait_content)
 
         self.verticalLayout_7.addWidget(self.scrollArea_3)
@@ -843,15 +889,13 @@ class Ui_Service(object):
         self.DengLuJiangLi_widget.setObjectName(u"DengLuJiangLi_widget")
         self.horizontalLayout_25 = QHBoxLayout(self.DengLuJiangLi_widget)
         self.horizontalLayout_25.setObjectName(u"horizontalLayout_25")
+        self.horizontalLayout_25.setContentsMargins(0, 0, 0, 0)
         self.widget_44 = QWidget(self.DengLuJiangLi_widget)
         self.widget_44.setObjectName(u"widget_44")
         self.widget_44.setStyleSheet(u"")
         self.horizontalLayout_24 = QHBoxLayout(self.widget_44)
         self.horizontalLayout_24.setObjectName(u"horizontalLayout_24")
-        self.horizontalSpacer_23 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_24.addItem(self.horizontalSpacer_23)
-
+        self.horizontalLayout_24.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_15 = QScrollArea(self.widget_44)
         self.scrollArea_15.setObjectName(u"scrollArea_15")
         self.scrollArea_15.setMinimumSize(QSize(600, 0))
@@ -859,10 +903,11 @@ class Ui_Service(object):
         self.scrollArea_15.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_12 = QWidget()
         self.scrollAreaWidgetContents_12.setObjectName(u"scrollAreaWidgetContents_12")
-        self.scrollAreaWidgetContents_12.setGeometry(QRect(0, 0, 566, 234))
+        self.scrollAreaWidgetContents_12.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_73 = QVBoxLayout(self.scrollAreaWidgetContents_12)
         self.verticalLayout_73.setSpacing(20)
         self.verticalLayout_73.setObjectName(u"verticalLayout_73")
+        self.verticalLayout_73.setContentsMargins(0, 0, 0, 0)
         self.widget_45 = QWidget(self.scrollAreaWidgetContents_12)
         self.widget_45.setObjectName(u"widget_45")
         self.widget_45.setStyleSheet(u"QWidget {\n"
@@ -1007,13 +1052,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_24.addWidget(self.scrollArea_15)
 
-        self.horizontalSpacer_24 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_24.addItem(self.horizontalSpacer_24)
-
-        self.horizontalLayout_24.setStretch(0, 1)
-        self.horizontalLayout_24.setStretch(1, 5)
-        self.horizontalLayout_24.setStretch(2, 1)
+        self.horizontalLayout_24.setStretch(0, 5)
 
         self.horizontalLayout_25.addWidget(self.widget_44)
 
@@ -1022,15 +1061,13 @@ class Ui_Service(object):
         self.PaiHangBangDianZan_widget.setObjectName(u"PaiHangBangDianZan_widget")
         self.horizontalLayout_32 = QHBoxLayout(self.PaiHangBangDianZan_widget)
         self.horizontalLayout_32.setObjectName(u"horizontalLayout_32")
+        self.horizontalLayout_32.setContentsMargins(0, 0, 0, 0)
         self.widget_52 = QWidget(self.PaiHangBangDianZan_widget)
         self.widget_52.setObjectName(u"widget_52")
         self.widget_52.setStyleSheet(u";")
         self.horizontalLayout_31 = QHBoxLayout(self.widget_52)
         self.horizontalLayout_31.setObjectName(u"horizontalLayout_31")
-        self.horizontalSpacer_31 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_31.addItem(self.horizontalSpacer_31)
-
+        self.horizontalLayout_31.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_19 = QScrollArea(self.widget_52)
         self.scrollArea_19.setObjectName(u"scrollArea_19")
         self.scrollArea_19.setMinimumSize(QSize(600, 0))
@@ -1038,10 +1075,11 @@ class Ui_Service(object):
         self.scrollArea_19.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_16 = QWidget()
         self.scrollAreaWidgetContents_16.setObjectName(u"scrollAreaWidgetContents_16")
-        self.scrollAreaWidgetContents_16.setGeometry(QRect(0, 0, 566, 234))
+        self.scrollAreaWidgetContents_16.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_89 = QVBoxLayout(self.scrollAreaWidgetContents_16)
         self.verticalLayout_89.setSpacing(20)
         self.verticalLayout_89.setObjectName(u"verticalLayout_89")
+        self.verticalLayout_89.setContentsMargins(0, 0, 0, 0)
         self.widget_53 = QWidget(self.scrollAreaWidgetContents_16)
         self.widget_53.setObjectName(u"widget_53")
         self.widget_53.setStyleSheet(u"QWidget {\n"
@@ -1186,13 +1224,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_31.addWidget(self.scrollArea_19)
 
-        self.horizontalSpacer_32 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_31.addItem(self.horizontalSpacer_32)
-
-        self.horizontalLayout_31.setStretch(0, 1)
-        self.horizontalLayout_31.setStretch(1, 5)
-        self.horizontalLayout_31.setStretch(2, 1)
+        self.horizontalLayout_31.setStretch(0, 5)
 
         self.horizontalLayout_32.addWidget(self.widget_52)
 
@@ -1201,15 +1233,13 @@ class Ui_Service(object):
         self.MeiYueQianDao_widget.setObjectName(u"MeiYueQianDao_widget")
         self.horizontalLayout_34 = QHBoxLayout(self.MeiYueQianDao_widget)
         self.horizontalLayout_34.setObjectName(u"horizontalLayout_34")
+        self.horizontalLayout_34.setContentsMargins(0, 0, 0, 0)
         self.widget_54 = QWidget(self.MeiYueQianDao_widget)
         self.widget_54.setObjectName(u"widget_54")
         self.widget_54.setStyleSheet(u"")
         self.horizontalLayout_33 = QHBoxLayout(self.widget_54)
         self.horizontalLayout_33.setObjectName(u"horizontalLayout_33")
-        self.horizontalSpacer_33 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_33.addItem(self.horizontalSpacer_33)
-
+        self.horizontalLayout_33.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_20 = QScrollArea(self.widget_54)
         self.scrollArea_20.setObjectName(u"scrollArea_20")
         self.scrollArea_20.setMinimumSize(QSize(600, 0))
@@ -1217,10 +1247,11 @@ class Ui_Service(object):
         self.scrollArea_20.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_17 = QWidget()
         self.scrollAreaWidgetContents_17.setObjectName(u"scrollAreaWidgetContents_17")
-        self.scrollAreaWidgetContents_17.setGeometry(QRect(0, 0, 566, 234))
+        self.scrollAreaWidgetContents_17.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_93 = QVBoxLayout(self.scrollAreaWidgetContents_17)
         self.verticalLayout_93.setSpacing(20)
         self.verticalLayout_93.setObjectName(u"verticalLayout_93")
+        self.verticalLayout_93.setContentsMargins(0, 0, 0, 0)
         self.widget_55 = QWidget(self.scrollAreaWidgetContents_17)
         self.widget_55.setObjectName(u"widget_55")
         self.widget_55.setStyleSheet(u"QWidget {\n"
@@ -1365,13 +1396,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_33.addWidget(self.scrollArea_20)
 
-        self.horizontalSpacer_34 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_33.addItem(self.horizontalSpacer_34)
-
-        self.horizontalLayout_33.setStretch(0, 1)
-        self.horizontalLayout_33.setStretch(1, 5)
-        self.horizontalLayout_33.setStretch(2, 1)
+        self.horizontalLayout_33.setStretch(0, 5)
 
         self.horizontalLayout_34.addWidget(self.widget_54)
 
@@ -1380,15 +1405,13 @@ class Ui_Service(object):
         self.GouMaiTiLi_widget.setObjectName(u"GouMaiTiLi_widget")
         self.horizontalLayout_14 = QHBoxLayout(self.GouMaiTiLi_widget)
         self.horizontalLayout_14.setObjectName(u"horizontalLayout_14")
+        self.horizontalLayout_14.setContentsMargins(0, 0, 0, 0)
         self.widget_24 = QWidget(self.GouMaiTiLi_widget)
         self.widget_24.setObjectName(u"widget_24")
         self.widget_24.setStyleSheet(u"")
         self.horizontalLayout_13 = QHBoxLayout(self.widget_24)
         self.horizontalLayout_13.setObjectName(u"horizontalLayout_13")
-        self.horizontalSpacer_11 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_13.addItem(self.horizontalSpacer_11)
-
+        self.horizontalLayout_13.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_9 = QScrollArea(self.widget_24)
         self.scrollArea_9.setObjectName(u"scrollArea_9")
         self.scrollArea_9.setMinimumSize(QSize(600, 0))
@@ -1396,10 +1419,11 @@ class Ui_Service(object):
         self.scrollArea_9.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_6 = QWidget()
         self.scrollAreaWidgetContents_6.setObjectName(u"scrollAreaWidgetContents_6")
-        self.scrollAreaWidgetContents_6.setGeometry(QRect(0, 0, 566, 416))
+        self.scrollAreaWidgetContents_6.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_46 = QVBoxLayout(self.scrollAreaWidgetContents_6)
         self.verticalLayout_46.setSpacing(20)
         self.verticalLayout_46.setObjectName(u"verticalLayout_46")
+        self.verticalLayout_46.setContentsMargins(0, 0, 0, 0)
         self.widget_30 = QWidget(self.scrollAreaWidgetContents_6)
         self.widget_30.setObjectName(u"widget_30")
         self.widget_30.setStyleSheet(u"QWidget {\n"
@@ -1763,13 +1787,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_13.addWidget(self.scrollArea_9)
 
-        self.horizontalSpacer_12 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_13.addItem(self.horizontalSpacer_12)
-
-        self.horizontalLayout_13.setStretch(0, 1)
-        self.horizontalLayout_13.setStretch(1, 5)
-        self.horizontalLayout_13.setStretch(2, 1)
+        self.horizontalLayout_13.setStretch(0, 5)
 
         self.horizontalLayout_14.addWidget(self.widget_24)
 
@@ -1778,15 +1796,13 @@ class Ui_Service(object):
         self.JinBiZhaoCai_widget.setObjectName(u"JinBiZhaoCai_widget")
         self.horizontalLayout_9 = QHBoxLayout(self.JinBiZhaoCai_widget)
         self.horizontalLayout_9.setObjectName(u"horizontalLayout_9")
+        self.horizontalLayout_9.setContentsMargins(0, 0, 0, 0)
         self.widget_27 = QWidget(self.JinBiZhaoCai_widget)
         self.widget_27.setObjectName(u"widget_27")
         self.widget_27.setStyleSheet(u"")
         self.horizontalLayout_15 = QHBoxLayout(self.widget_27)
         self.horizontalLayout_15.setObjectName(u"horizontalLayout_15")
-        self.horizontalSpacer_13 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_15.addItem(self.horizontalSpacer_13)
-
+        self.horizontalLayout_15.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_10 = QScrollArea(self.widget_27)
         self.scrollArea_10.setObjectName(u"scrollArea_10")
         self.scrollArea_10.setMinimumSize(QSize(600, 0))
@@ -1794,10 +1810,11 @@ class Ui_Service(object):
         self.scrollArea_10.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_7 = QWidget()
         self.scrollAreaWidgetContents_7.setObjectName(u"scrollAreaWidgetContents_7")
-        self.scrollAreaWidgetContents_7.setGeometry(QRect(0, 0, 566, 452))
+        self.scrollAreaWidgetContents_7.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_47 = QVBoxLayout(self.scrollAreaWidgetContents_7)
         self.verticalLayout_47.setSpacing(20)
         self.verticalLayout_47.setObjectName(u"verticalLayout_47")
+        self.verticalLayout_47.setContentsMargins(0, 0, 0, 0)
         self.widget_33 = QWidget(self.scrollAreaWidgetContents_7)
         self.widget_33.setObjectName(u"widget_33")
         self.widget_33.setStyleSheet(u"QWidget {\n"
@@ -2165,13 +2182,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_15.addWidget(self.scrollArea_10)
 
-        self.horizontalSpacer_14 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_15.addItem(self.horizontalSpacer_14)
-
-        self.horizontalLayout_15.setStretch(0, 1)
-        self.horizontalLayout_15.setStretch(1, 5)
-        self.horizontalLayout_15.setStretch(2, 1)
+        self.horizontalLayout_15.setStretch(0, 5)
 
         self.horizontalLayout_9.addWidget(self.widget_27)
 
@@ -2180,15 +2191,13 @@ class Ui_Service(object):
         self.XiaoDuiTuXi_widget.setObjectName(u"XiaoDuiTuXi_widget")
         self.horizontalLayout_17 = QHBoxLayout(self.XiaoDuiTuXi_widget)
         self.horizontalLayout_17.setObjectName(u"horizontalLayout_17")
+        self.horizontalLayout_17.setContentsMargins(0, 0, 0, 0)
         self.widget_29 = QWidget(self.XiaoDuiTuXi_widget)
         self.widget_29.setObjectName(u"widget_29")
         self.widget_29.setStyleSheet(u"")
         self.horizontalLayout_16 = QHBoxLayout(self.widget_29)
         self.horizontalLayout_16.setObjectName(u"horizontalLayout_16")
-        self.horizontalSpacer_15 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_16.addItem(self.horizontalSpacer_15)
-
+        self.horizontalLayout_16.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_11 = QScrollArea(self.widget_29)
         self.scrollArea_11.setObjectName(u"scrollArea_11")
         self.scrollArea_11.setMinimumSize(QSize(600, 0))
@@ -2196,10 +2205,11 @@ class Ui_Service(object):
         self.scrollArea_11.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_8 = QWidget()
         self.scrollAreaWidgetContents_8.setObjectName(u"scrollAreaWidgetContents_8")
-        self.scrollAreaWidgetContents_8.setGeometry(QRect(0, 0, 566, 455))
+        self.scrollAreaWidgetContents_8.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_51 = QVBoxLayout(self.scrollAreaWidgetContents_8)
         self.verticalLayout_51.setSpacing(20)
         self.verticalLayout_51.setObjectName(u"verticalLayout_51")
+        self.verticalLayout_51.setContentsMargins(0, 0, 0, 0)
         self.widget_35 = QWidget(self.scrollAreaWidgetContents_8)
         self.widget_35.setObjectName(u"widget_35")
         self.widget_35.setStyleSheet(u"QWidget {\n"
@@ -2583,13 +2593,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_16.addWidget(self.scrollArea_11)
 
-        self.horizontalSpacer_16 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_16.addItem(self.horizontalSpacer_16)
-
-        self.horizontalLayout_16.setStretch(0, 1)
-        self.horizontalLayout_16.setStretch(1, 5)
-        self.horizontalLayout_16.setStretch(2, 1)
+        self.horizontalLayout_16.setStretch(0, 5)
 
         self.horizontalLayout_17.addWidget(self.widget_29)
 
@@ -2598,15 +2602,13 @@ class Ui_Service(object):
         self.ZuZhiQiFu_widget.setObjectName(u"ZuZhiQiFu_widget")
         self.horizontalLayout_6 = QHBoxLayout(self.ZuZhiQiFu_widget)
         self.horizontalLayout_6.setObjectName(u"horizontalLayout_6")
+        self.horizontalLayout_6.setContentsMargins(0, 0, 0, 0)
         self.widget_80 = QWidget(self.ZuZhiQiFu_widget)
         self.widget_80.setObjectName(u"widget_80")
         self.widget_80.setStyleSheet(u"")
         self.horizontalLayout_62 = QHBoxLayout(self.widget_80)
         self.horizontalLayout_62.setObjectName(u"horizontalLayout_62")
-        self.horizontalSpacer_59 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_62.addItem(self.horizontalSpacer_59)
-
+        self.horizontalLayout_62.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_33 = QScrollArea(self.widget_80)
         self.scrollArea_33.setObjectName(u"scrollArea_33")
         self.scrollArea_33.setMinimumSize(QSize(600, 0))
@@ -2614,10 +2616,11 @@ class Ui_Service(object):
         self.scrollArea_33.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_30 = QWidget()
         self.scrollAreaWidgetContents_30.setObjectName(u"scrollAreaWidgetContents_30")
-        self.scrollAreaWidgetContents_30.setGeometry(QRect(0, 0, 566, 234))
+        self.scrollAreaWidgetContents_30.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_145 = QVBoxLayout(self.scrollAreaWidgetContents_30)
         self.verticalLayout_145.setSpacing(20)
         self.verticalLayout_145.setObjectName(u"verticalLayout_145")
+        self.verticalLayout_145.setContentsMargins(0, 0, 0, 0)
         self.widget_81 = QWidget(self.scrollAreaWidgetContents_30)
         self.widget_81.setObjectName(u"widget_81")
         self.widget_81.setStyleSheet(u"QWidget {\n"
@@ -2762,13 +2765,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_62.addWidget(self.scrollArea_33)
 
-        self.horizontalSpacer_60 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_62.addItem(self.horizontalSpacer_60)
-
-        self.horizontalLayout_62.setStretch(0, 1)
-        self.horizontalLayout_62.setStretch(1, 5)
-        self.horizontalLayout_62.setStretch(2, 1)
+        self.horizontalLayout_62.setStretch(0, 5)
 
         self.horizontalLayout_6.addWidget(self.widget_80)
 
@@ -2777,15 +2774,13 @@ class Ui_Service(object):
         self.HaoYouTiLi_widget.setObjectName(u"HaoYouTiLi_widget")
         self.horizontalLayout_7 = QHBoxLayout(self.HaoYouTiLi_widget)
         self.horizontalLayout_7.setObjectName(u"horizontalLayout_7")
+        self.horizontalLayout_7.setContentsMargins(0, 0, 0, 0)
         self.widget_50 = QWidget(self.HaoYouTiLi_widget)
         self.widget_50.setObjectName(u"widget_50")
         self.widget_50.setStyleSheet(u"")
         self.horizontalLayout_30 = QHBoxLayout(self.widget_50)
         self.horizontalLayout_30.setObjectName(u"horizontalLayout_30")
-        self.horizontalSpacer_29 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_30.addItem(self.horizontalSpacer_29)
-
+        self.horizontalLayout_30.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_18 = QScrollArea(self.widget_50)
         self.scrollArea_18.setObjectName(u"scrollArea_18")
         self.scrollArea_18.setMinimumSize(QSize(600, 0))
@@ -2793,10 +2788,11 @@ class Ui_Service(object):
         self.scrollArea_18.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_15 = QWidget()
         self.scrollAreaWidgetContents_15.setObjectName(u"scrollAreaWidgetContents_15")
-        self.scrollAreaWidgetContents_15.setGeometry(QRect(0, 0, 566, 234))
+        self.scrollAreaWidgetContents_15.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_85 = QVBoxLayout(self.scrollAreaWidgetContents_15)
         self.verticalLayout_85.setSpacing(20)
         self.verticalLayout_85.setObjectName(u"verticalLayout_85")
+        self.verticalLayout_85.setContentsMargins(0, 0, 0, 0)
         self.widget_51 = QWidget(self.scrollAreaWidgetContents_15)
         self.widget_51.setObjectName(u"widget_51")
         self.widget_51.setStyleSheet(u"QWidget {\n"
@@ -2941,13 +2937,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_30.addWidget(self.scrollArea_18)
 
-        self.horizontalSpacer_30 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_30.addItem(self.horizontalSpacer_30)
-
-        self.horizontalLayout_30.setStretch(0, 1)
-        self.horizontalLayout_30.setStretch(1, 5)
-        self.horizontalLayout_30.setStretch(2, 1)
+        self.horizontalLayout_30.setStretch(0, 5)
 
         self.horizontalLayout_7.addWidget(self.widget_50)
 
@@ -2956,15 +2946,13 @@ class Ui_Service(object):
         self.PuTongRenZheZhaoMu_widget.setObjectName(u"PuTongRenZheZhaoMu_widget")
         self.horizontalLayout_8 = QHBoxLayout(self.PuTongRenZheZhaoMu_widget)
         self.horizontalLayout_8.setObjectName(u"horizontalLayout_8")
+        self.horizontalLayout_8.setContentsMargins(0, 0, 0, 0)
         self.widget_66 = QWidget(self.PuTongRenZheZhaoMu_widget)
         self.widget_66.setObjectName(u"widget_66")
         self.widget_66.setStyleSheet(u"")
         self.horizontalLayout_48 = QHBoxLayout(self.widget_66)
         self.horizontalLayout_48.setObjectName(u"horizontalLayout_48")
-        self.horizontalSpacer_45 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_48.addItem(self.horizontalSpacer_45)
-
+        self.horizontalLayout_48.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_26 = QScrollArea(self.widget_66)
         self.scrollArea_26.setObjectName(u"scrollArea_26")
         self.scrollArea_26.setMinimumSize(QSize(600, 0))
@@ -2972,10 +2960,11 @@ class Ui_Service(object):
         self.scrollArea_26.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_23 = QWidget()
         self.scrollAreaWidgetContents_23.setObjectName(u"scrollAreaWidgetContents_23")
-        self.scrollAreaWidgetContents_23.setGeometry(QRect(0, 0, 566, 234))
+        self.scrollAreaWidgetContents_23.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_117 = QVBoxLayout(self.scrollAreaWidgetContents_23)
         self.verticalLayout_117.setSpacing(20)
         self.verticalLayout_117.setObjectName(u"verticalLayout_117")
+        self.verticalLayout_117.setContentsMargins(0, 0, 0, 0)
         self.widget_67 = QWidget(self.scrollAreaWidgetContents_23)
         self.widget_67.setObjectName(u"widget_67")
         self.widget_67.setStyleSheet(u"QWidget {\n"
@@ -3120,13 +3109,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_48.addWidget(self.scrollArea_26)
 
-        self.horizontalSpacer_46 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_48.addItem(self.horizontalSpacer_46)
-
-        self.horizontalLayout_48.setStretch(0, 1)
-        self.horizontalLayout_48.setStretch(1, 5)
-        self.horizontalLayout_48.setStretch(2, 1)
+        self.horizontalLayout_48.setStretch(0, 5)
 
         self.horizontalLayout_8.addWidget(self.widget_66)
 
@@ -3135,15 +3118,13 @@ class Ui_Service(object):
         self.MeiRiFenXiang_widget.setObjectName(u"MeiRiFenXiang_widget")
         self.horizontalLayout_38 = QHBoxLayout(self.MeiRiFenXiang_widget)
         self.horizontalLayout_38.setObjectName(u"horizontalLayout_38")
+        self.horizontalLayout_38.setContentsMargins(0, 0, 0, 0)
         self.widget_58 = QWidget(self.MeiRiFenXiang_widget)
         self.widget_58.setObjectName(u"widget_58")
         self.widget_58.setStyleSheet(u"")
         self.horizontalLayout_37 = QHBoxLayout(self.widget_58)
         self.horizontalLayout_37.setObjectName(u"horizontalLayout_37")
-        self.horizontalSpacer_37 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_37.addItem(self.horizontalSpacer_37)
-
+        self.horizontalLayout_37.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_22 = QScrollArea(self.widget_58)
         self.scrollArea_22.setObjectName(u"scrollArea_22")
         self.scrollArea_22.setMinimumSize(QSize(600, 0))
@@ -3151,10 +3132,11 @@ class Ui_Service(object):
         self.scrollArea_22.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_19 = QWidget()
         self.scrollAreaWidgetContents_19.setObjectName(u"scrollAreaWidgetContents_19")
-        self.scrollAreaWidgetContents_19.setGeometry(QRect(0, 0, 566, 298))
+        self.scrollAreaWidgetContents_19.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_101 = QVBoxLayout(self.scrollAreaWidgetContents_19)
         self.verticalLayout_101.setSpacing(20)
         self.verticalLayout_101.setObjectName(u"verticalLayout_101")
+        self.verticalLayout_101.setContentsMargins(0, 0, 0, 0)
         self.widget_59 = QWidget(self.scrollAreaWidgetContents_19)
         self.widget_59.setObjectName(u"widget_59")
         self.widget_59.setStyleSheet(u"QWidget {\n"
@@ -3307,13 +3289,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_37.addWidget(self.scrollArea_22)
 
-        self.horizontalSpacer_38 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_37.addItem(self.horizontalSpacer_38)
-
-        self.horizontalLayout_37.setStretch(0, 1)
-        self.horizontalLayout_37.setStretch(1, 5)
-        self.horizontalLayout_37.setStretch(2, 1)
+        self.horizontalLayout_37.setStretch(0, 5)
 
         self.horizontalLayout_38.addWidget(self.widget_58)
 
@@ -3322,15 +3298,13 @@ class Ui_Service(object):
         self.FengRaoZhiJian_widget.setObjectName(u"FengRaoZhiJian_widget")
         self.horizontalLayout_27 = QHBoxLayout(self.FengRaoZhiJian_widget)
         self.horizontalLayout_27.setObjectName(u"horizontalLayout_27")
+        self.horizontalLayout_27.setContentsMargins(0, 0, 0, 0)
         self.widget_46 = QWidget(self.FengRaoZhiJian_widget)
         self.widget_46.setObjectName(u"widget_46")
         self.widget_46.setStyleSheet(u"")
         self.horizontalLayout_26 = QHBoxLayout(self.widget_46)
         self.horizontalLayout_26.setObjectName(u"horizontalLayout_26")
-        self.horizontalSpacer_25 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_26.addItem(self.horizontalSpacer_25)
-
+        self.horizontalLayout_26.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_16 = QScrollArea(self.widget_46)
         self.scrollArea_16.setObjectName(u"scrollArea_16")
         self.scrollArea_16.setMinimumSize(QSize(600, 0))
@@ -3338,10 +3312,11 @@ class Ui_Service(object):
         self.scrollArea_16.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_13 = QWidget()
         self.scrollAreaWidgetContents_13.setObjectName(u"scrollAreaWidgetContents_13")
-        self.scrollAreaWidgetContents_13.setGeometry(QRect(0, 0, 566, 260))
+        self.scrollAreaWidgetContents_13.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_77 = QVBoxLayout(self.scrollAreaWidgetContents_13)
         self.verticalLayout_77.setSpacing(20)
         self.verticalLayout_77.setObjectName(u"verticalLayout_77")
+        self.verticalLayout_77.setContentsMargins(0, 0, 0, 0)
         self.widget_47 = QWidget(self.scrollAreaWidgetContents_13)
         self.widget_47.setObjectName(u"widget_47")
         self.widget_47.setStyleSheet(u"QWidget {\n"
@@ -3494,13 +3469,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_26.addWidget(self.scrollArea_16)
 
-        self.horizontalSpacer_26 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_26.addItem(self.horizontalSpacer_26)
-
-        self.horizontalLayout_26.setStretch(0, 1)
-        self.horizontalLayout_26.setStretch(1, 5)
-        self.horizontalLayout_26.setStretch(2, 1)
+        self.horizontalLayout_26.setStretch(0, 5)
 
         self.horizontalLayout_27.addWidget(self.widget_46)
 
@@ -3509,15 +3478,13 @@ class Ui_Service(object):
         self.RenWuJiHuiSuo_widget.setObjectName(u"RenWuJiHuiSuo_widget")
         self.horizontalLayout_44 = QHBoxLayout(self.RenWuJiHuiSuo_widget)
         self.horizontalLayout_44.setObjectName(u"horizontalLayout_44")
+        self.horizontalLayout_44.setContentsMargins(0, 0, 0, 0)
         self.widget_74 = QWidget(self.RenWuJiHuiSuo_widget)
         self.widget_74.setObjectName(u"widget_74")
         self.widget_74.setStyleSheet(u"")
         self.horizontalLayout_59 = QHBoxLayout(self.widget_74)
         self.horizontalLayout_59.setObjectName(u"horizontalLayout_59")
-        self.horizontalSpacer_53 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_59.addItem(self.horizontalSpacer_53)
-
+        self.horizontalLayout_59.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_30 = QScrollArea(self.widget_74)
         self.scrollArea_30.setObjectName(u"scrollArea_30")
         self.scrollArea_30.setMinimumSize(QSize(600, 0))
@@ -3525,10 +3492,11 @@ class Ui_Service(object):
         self.scrollArea_30.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_27 = QWidget()
         self.scrollAreaWidgetContents_27.setObjectName(u"scrollAreaWidgetContents_27")
-        self.scrollAreaWidgetContents_27.setGeometry(QRect(0, 0, 566, 260))
+        self.scrollAreaWidgetContents_27.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_133 = QVBoxLayout(self.scrollAreaWidgetContents_27)
         self.verticalLayout_133.setSpacing(20)
         self.verticalLayout_133.setObjectName(u"verticalLayout_133")
+        self.verticalLayout_133.setContentsMargins(0, 0, 0, 0)
         self.widget_75 = QWidget(self.scrollAreaWidgetContents_27)
         self.widget_75.setObjectName(u"widget_75")
         self.widget_75.setStyleSheet(u"QWidget {\n"
@@ -3681,13 +3649,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_59.addWidget(self.scrollArea_30)
 
-        self.horizontalSpacer_54 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_59.addItem(self.horizontalSpacer_54)
-
-        self.horizontalLayout_59.setStretch(0, 1)
-        self.horizontalLayout_59.setStretch(1, 5)
-        self.horizontalLayout_59.setStretch(2, 1)
+        self.horizontalLayout_59.setStretch(0, 5)
 
         self.horizontalLayout_44.addWidget(self.widget_74)
 
@@ -3696,15 +3658,13 @@ class Ui_Service(object):
         self.YiLeWaiMai_widget.setObjectName(u"YiLeWaiMai_widget")
         self.horizontalLayout_45 = QHBoxLayout(self.YiLeWaiMai_widget)
         self.horizontalLayout_45.setObjectName(u"horizontalLayout_45")
+        self.horizontalLayout_45.setContentsMargins(0, 0, 0, 0)
         self.widget_78 = QWidget(self.YiLeWaiMai_widget)
         self.widget_78.setObjectName(u"widget_78")
         self.widget_78.setStyleSheet(u"")
         self.horizontalLayout_61 = QHBoxLayout(self.widget_78)
         self.horizontalLayout_61.setObjectName(u"horizontalLayout_61")
-        self.horizontalSpacer_57 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_61.addItem(self.horizontalSpacer_57)
-
+        self.horizontalLayout_61.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_32 = QScrollArea(self.widget_78)
         self.scrollArea_32.setObjectName(u"scrollArea_32")
         self.scrollArea_32.setMinimumSize(QSize(600, 0))
@@ -3712,10 +3672,11 @@ class Ui_Service(object):
         self.scrollArea_32.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_29 = QWidget()
         self.scrollAreaWidgetContents_29.setObjectName(u"scrollAreaWidgetContents_29")
-        self.scrollAreaWidgetContents_29.setGeometry(QRect(0, 0, 566, 234))
+        self.scrollAreaWidgetContents_29.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_141 = QVBoxLayout(self.scrollAreaWidgetContents_29)
         self.verticalLayout_141.setSpacing(20)
         self.verticalLayout_141.setObjectName(u"verticalLayout_141")
+        self.verticalLayout_141.setContentsMargins(0, 0, 0, 0)
         self.widget_79 = QWidget(self.scrollAreaWidgetContents_29)
         self.widget_79.setObjectName(u"widget_79")
         self.widget_79.setStyleSheet(u"QWidget {\n"
@@ -3860,13 +3821,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_61.addWidget(self.scrollArea_32)
 
-        self.horizontalSpacer_58 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_61.addItem(self.horizontalSpacer_58)
-
-        self.horizontalLayout_61.setStretch(0, 1)
-        self.horizontalLayout_61.setStretch(1, 5)
-        self.horizontalLayout_61.setStretch(2, 1)
+        self.horizontalLayout_61.setStretch(0, 5)
 
         self.horizontalLayout_45.addWidget(self.widget_78)
 
@@ -3875,15 +3830,13 @@ class Ui_Service(object):
         self.MeiRiShengChang_widget.setObjectName(u"MeiRiShengChang_widget")
         self.horizontalLayout_36 = QHBoxLayout(self.MeiRiShengChang_widget)
         self.horizontalLayout_36.setObjectName(u"horizontalLayout_36")
+        self.horizontalLayout_36.setContentsMargins(0, 0, 0, 0)
         self.widget_56 = QWidget(self.MeiRiShengChang_widget)
         self.widget_56.setObjectName(u"widget_56")
         self.widget_56.setStyleSheet(u"")
         self.horizontalLayout_35 = QHBoxLayout(self.widget_56)
         self.horizontalLayout_35.setObjectName(u"horizontalLayout_35")
-        self.horizontalSpacer_35 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_35.addItem(self.horizontalSpacer_35)
-
+        self.horizontalLayout_35.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_21 = QScrollArea(self.widget_56)
         self.scrollArea_21.setObjectName(u"scrollArea_21")
         self.scrollArea_21.setMinimumSize(QSize(600, 0))
@@ -3891,10 +3844,11 @@ class Ui_Service(object):
         self.scrollArea_21.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_18 = QWidget()
         self.scrollAreaWidgetContents_18.setObjectName(u"scrollAreaWidgetContents_18")
-        self.scrollAreaWidgetContents_18.setGeometry(QRect(0, 0, 590, 260))
+        self.scrollAreaWidgetContents_18.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_97 = QVBoxLayout(self.scrollAreaWidgetContents_18)
         self.verticalLayout_97.setSpacing(20)
         self.verticalLayout_97.setObjectName(u"verticalLayout_97")
+        self.verticalLayout_97.setContentsMargins(0, 0, 0, 0)
         self.widget_57 = QWidget(self.scrollAreaWidgetContents_18)
         self.widget_57.setObjectName(u"widget_57")
         self.widget_57.setStyleSheet(u"QWidget {\n"
@@ -4047,13 +4001,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_35.addWidget(self.scrollArea_21)
 
-        self.horizontalSpacer_36 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_35.addItem(self.horizontalSpacer_36)
-
-        self.horizontalLayout_35.setStretch(0, 1)
-        self.horizontalLayout_35.setStretch(1, 5)
-        self.horizontalLayout_35.setStretch(2, 1)
+        self.horizontalLayout_35.setStretch(0, 5)
 
         self.horizontalLayout_36.addWidget(self.widget_56)
 
@@ -4062,15 +4010,13 @@ class Ui_Service(object):
         self.ShengCunTiaoZhan_widget.setObjectName(u"ShengCunTiaoZhan_widget")
         self.horizontalLayout_47 = QHBoxLayout(self.ShengCunTiaoZhan_widget)
         self.horizontalLayout_47.setObjectName(u"horizontalLayout_47")
+        self.horizontalLayout_47.setContentsMargins(0, 0, 0, 0)
         self.widget_82 = QWidget(self.ShengCunTiaoZhan_widget)
         self.widget_82.setObjectName(u"widget_82")
         self.widget_82.setStyleSheet(u"")
         self.horizontalLayout_63 = QHBoxLayout(self.widget_82)
         self.horizontalLayout_63.setObjectName(u"horizontalLayout_63")
-        self.horizontalSpacer_61 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_63.addItem(self.horizontalSpacer_61)
-
+        self.horizontalLayout_63.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_34 = QScrollArea(self.widget_82)
         self.scrollArea_34.setObjectName(u"scrollArea_34")
         self.scrollArea_34.setMinimumSize(QSize(600, 0))
@@ -4078,10 +4024,11 @@ class Ui_Service(object):
         self.scrollArea_34.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_31 = QWidget()
         self.scrollAreaWidgetContents_31.setObjectName(u"scrollAreaWidgetContents_31")
-        self.scrollAreaWidgetContents_31.setGeometry(QRect(0, 0, 566, 260))
+        self.scrollAreaWidgetContents_31.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_149 = QVBoxLayout(self.scrollAreaWidgetContents_31)
         self.verticalLayout_149.setSpacing(20)
         self.verticalLayout_149.setObjectName(u"verticalLayout_149")
+        self.verticalLayout_149.setContentsMargins(0, 0, 0, 0)
         self.widget_83 = QWidget(self.scrollAreaWidgetContents_31)
         self.widget_83.setObjectName(u"widget_83")
         self.widget_83.setStyleSheet(u"QWidget {\n"
@@ -4234,13 +4181,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_63.addWidget(self.scrollArea_34)
 
-        self.horizontalSpacer_62 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_63.addItem(self.horizontalSpacer_62)
-
-        self.horizontalLayout_63.setStretch(0, 1)
-        self.horizontalLayout_63.setStretch(1, 5)
-        self.horizontalLayout_63.setStretch(2, 1)
+        self.horizontalLayout_63.setStretch(0, 5)
 
         self.horizontalLayout_47.addWidget(self.widget_82)
 
@@ -4249,15 +4190,13 @@ class Ui_Service(object):
         self.MiJingTanXian_widget.setObjectName(u"MiJingTanXian_widget")
         self.horizontalLayout_65 = QHBoxLayout(self.MiJingTanXian_widget)
         self.horizontalLayout_65.setObjectName(u"horizontalLayout_65")
+        self.horizontalLayout_65.setContentsMargins(0, 0, 0, 0)
         self.widget_84 = QWidget(self.MiJingTanXian_widget)
         self.widget_84.setObjectName(u"widget_84")
         self.widget_84.setStyleSheet(u"")
         self.horizontalLayout_64 = QHBoxLayout(self.widget_84)
         self.horizontalLayout_64.setObjectName(u"horizontalLayout_64")
-        self.horizontalSpacer_63 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_64.addItem(self.horizontalSpacer_63)
-
+        self.horizontalLayout_64.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_35 = QScrollArea(self.widget_84)
         self.scrollArea_35.setObjectName(u"scrollArea_35")
         self.scrollArea_35.setMinimumSize(QSize(600, 0))
@@ -4265,10 +4204,11 @@ class Ui_Service(object):
         self.scrollArea_35.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_32 = QWidget()
         self.scrollAreaWidgetContents_32.setObjectName(u"scrollAreaWidgetContents_32")
-        self.scrollAreaWidgetContents_32.setGeometry(QRect(0, 0, 566, 234))
+        self.scrollAreaWidgetContents_32.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_153 = QVBoxLayout(self.scrollAreaWidgetContents_32)
         self.verticalLayout_153.setSpacing(20)
         self.verticalLayout_153.setObjectName(u"verticalLayout_153")
+        self.verticalLayout_153.setContentsMargins(0, 0, 0, 0)
         self.widget_85 = QWidget(self.scrollAreaWidgetContents_32)
         self.widget_85.setObjectName(u"widget_85")
         self.widget_85.setStyleSheet(u"QWidget {\n"
@@ -4413,13 +4353,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_64.addWidget(self.scrollArea_35)
 
-        self.horizontalSpacer_64 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_64.addItem(self.horizontalSpacer_64)
-
-        self.horizontalLayout_64.setStretch(0, 1)
-        self.horizontalLayout_64.setStretch(1, 5)
-        self.horizontalLayout_64.setStretch(2, 1)
+        self.horizontalLayout_64.setStretch(0, 5)
 
         self.horizontalLayout_65.addWidget(self.widget_84)
 
@@ -4428,15 +4362,13 @@ class Ui_Service(object):
         self.ShangChengJiangLi_widget.setObjectName(u"ShangChengJiangLi_widget")
         self.horizontalLayout_80 = QHBoxLayout(self.ShangChengJiangLi_widget)
         self.horizontalLayout_80.setObjectName(u"horizontalLayout_80")
+        self.horizontalLayout_80.setContentsMargins(0, 0, 0, 0)
         self.widget_107 = QWidget(self.ShangChengJiangLi_widget)
         self.widget_107.setObjectName(u"widget_107")
         self.widget_107.setStyleSheet(u"")
         self.horizontalLayout_79 = QHBoxLayout(self.widget_107)
         self.horizontalLayout_79.setObjectName(u"horizontalLayout_79")
-        self.horizontalSpacer_83 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_79.addItem(self.horizontalSpacer_83)
-
+        self.horizontalLayout_79.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_45 = QScrollArea(self.widget_107)
         self.scrollArea_45.setObjectName(u"scrollArea_45")
         self.scrollArea_45.setMinimumSize(QSize(600, 0))
@@ -4444,10 +4376,11 @@ class Ui_Service(object):
         self.scrollArea_45.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_42 = QWidget()
         self.scrollAreaWidgetContents_42.setObjectName(u"scrollAreaWidgetContents_42")
-        self.scrollAreaWidgetContents_42.setGeometry(QRect(0, 0, 566, 234))
+        self.scrollAreaWidgetContents_42.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_199 = QVBoxLayout(self.scrollAreaWidgetContents_42)
         self.verticalLayout_199.setSpacing(20)
         self.verticalLayout_199.setObjectName(u"verticalLayout_199")
+        self.verticalLayout_199.setContentsMargins(0, 0, 0, 0)
         self.widget_108 = QWidget(self.scrollAreaWidgetContents_42)
         self.widget_108.setObjectName(u"widget_108")
         self.widget_108.setStyleSheet(u"QWidget {\n"
@@ -4592,13 +4525,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_79.addWidget(self.scrollArea_45)
 
-        self.horizontalSpacer_84 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_79.addItem(self.horizontalSpacer_84)
-
-        self.horizontalLayout_79.setStretch(0, 1)
-        self.horizontalLayout_79.setStretch(1, 5)
-        self.horizontalLayout_79.setStretch(2, 1)
+        self.horizontalLayout_79.setStretch(0, 5)
 
         self.horizontalLayout_80.addWidget(self.widget_107)
 
@@ -4607,15 +4534,13 @@ class Ui_Service(object):
         self.QingBaoZhan_widget.setObjectName(u"QingBaoZhan_widget")
         self.horizontalLayout_50 = QHBoxLayout(self.QingBaoZhan_widget)
         self.horizontalLayout_50.setObjectName(u"horizontalLayout_50")
+        self.horizontalLayout_50.setContentsMargins(0, 0, 0, 0)
         self.widget_68 = QWidget(self.QingBaoZhan_widget)
         self.widget_68.setObjectName(u"widget_68")
         self.widget_68.setStyleSheet(u"")
         self.horizontalLayout_49 = QHBoxLayout(self.widget_68)
         self.horizontalLayout_49.setObjectName(u"horizontalLayout_49")
-        self.horizontalSpacer_47 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_49.addItem(self.horizontalSpacer_47)
-
+        self.horizontalLayout_49.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_27 = QScrollArea(self.widget_68)
         self.scrollArea_27.setObjectName(u"scrollArea_27")
         self.scrollArea_27.setMinimumSize(QSize(600, 0))
@@ -4623,10 +4548,11 @@ class Ui_Service(object):
         self.scrollArea_27.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_24 = QWidget()
         self.scrollAreaWidgetContents_24.setObjectName(u"scrollAreaWidgetContents_24")
-        self.scrollAreaWidgetContents_24.setGeometry(QRect(0, 0, 566, 260))
+        self.scrollAreaWidgetContents_24.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_121 = QVBoxLayout(self.scrollAreaWidgetContents_24)
         self.verticalLayout_121.setSpacing(20)
         self.verticalLayout_121.setObjectName(u"verticalLayout_121")
+        self.verticalLayout_121.setContentsMargins(0, 0, 0, 0)
         self.widget_69 = QWidget(self.scrollAreaWidgetContents_24)
         self.widget_69.setObjectName(u"widget_69")
         self.widget_69.setStyleSheet(u"QWidget {\n"
@@ -4779,13 +4705,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_49.addWidget(self.scrollArea_27)
 
-        self.horizontalSpacer_48 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_49.addItem(self.horizontalSpacer_48)
-
-        self.horizontalLayout_49.setStretch(0, 1)
-        self.horizontalLayout_49.setStretch(1, 5)
-        self.horizontalLayout_49.setStretch(2, 1)
+        self.horizontalLayout_49.setStretch(0, 5)
 
         self.horizontalLayout_50.addWidget(self.widget_68)
 
@@ -4794,15 +4714,13 @@ class Ui_Service(object):
         self.MaoXianFuBen_widget.setObjectName(u"MaoXianFuBen_widget")
         self.horizontalLayout_40 = QHBoxLayout(self.MaoXianFuBen_widget)
         self.horizontalLayout_40.setObjectName(u"horizontalLayout_40")
+        self.horizontalLayout_40.setContentsMargins(0, 0, 0, 0)
         self.widget_60 = QWidget(self.MaoXianFuBen_widget)
         self.widget_60.setObjectName(u"widget_60")
         self.widget_60.setStyleSheet(u"")
         self.horizontalLayout_39 = QHBoxLayout(self.widget_60)
         self.horizontalLayout_39.setObjectName(u"horizontalLayout_39")
-        self.horizontalSpacer_39 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_39.addItem(self.horizontalSpacer_39)
-
+        self.horizontalLayout_39.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_23 = QScrollArea(self.widget_60)
         self.scrollArea_23.setObjectName(u"scrollArea_23")
         self.scrollArea_23.setMinimumSize(QSize(600, 0))
@@ -4810,10 +4728,11 @@ class Ui_Service(object):
         self.scrollArea_23.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_20 = QWidget()
         self.scrollAreaWidgetContents_20.setObjectName(u"scrollAreaWidgetContents_20")
-        self.scrollAreaWidgetContents_20.setGeometry(QRect(0, 0, 566, 280))
+        self.scrollAreaWidgetContents_20.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_105 = QVBoxLayout(self.scrollAreaWidgetContents_20)
         self.verticalLayout_105.setSpacing(20)
         self.verticalLayout_105.setObjectName(u"verticalLayout_105")
+        self.verticalLayout_105.setContentsMargins(0, 0, 0, 0)
         self.widget_61 = QWidget(self.scrollAreaWidgetContents_20)
         self.widget_61.setObjectName(u"widget_61")
         self.widget_61.setStyleSheet(u"QWidget {\n"
@@ -4966,13 +4885,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_39.addWidget(self.scrollArea_23)
 
-        self.horizontalSpacer_40 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_39.addItem(self.horizontalSpacer_40)
-
-        self.horizontalLayout_39.setStretch(0, 1)
-        self.horizontalLayout_39.setStretch(1, 5)
-        self.horizontalLayout_39.setStretch(2, 1)
+        self.horizontalLayout_39.setStretch(0, 5)
 
         self.horizontalLayout_40.addWidget(self.widget_60)
 
@@ -4981,15 +4894,13 @@ class Ui_Service(object):
         self.HuoYueDuJiangLi_widget.setObjectName(u"HuoYueDuJiangLi_widget")
         self.horizontalLayout_42 = QHBoxLayout(self.HuoYueDuJiangLi_widget)
         self.horizontalLayout_42.setObjectName(u"horizontalLayout_42")
+        self.horizontalLayout_42.setContentsMargins(0, 0, 0, 0)
         self.widget_62 = QWidget(self.HuoYueDuJiangLi_widget)
         self.widget_62.setObjectName(u"widget_62")
         self.widget_62.setStyleSheet(u"")
         self.horizontalLayout_41 = QHBoxLayout(self.widget_62)
         self.horizontalLayout_41.setObjectName(u"horizontalLayout_41")
-        self.horizontalSpacer_41 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_41.addItem(self.horizontalSpacer_41)
-
+        self.horizontalLayout_41.setContentsMargins(9, 0, -1, 0)
         self.scrollArea_24 = QScrollArea(self.widget_62)
         self.scrollArea_24.setObjectName(u"scrollArea_24")
         self.scrollArea_24.setMinimumSize(QSize(600, 0))
@@ -4997,10 +4908,11 @@ class Ui_Service(object):
         self.scrollArea_24.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_21 = QWidget()
         self.scrollAreaWidgetContents_21.setObjectName(u"scrollAreaWidgetContents_21")
-        self.scrollAreaWidgetContents_21.setGeometry(QRect(0, 0, 566, 234))
+        self.scrollAreaWidgetContents_21.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_109 = QVBoxLayout(self.scrollAreaWidgetContents_21)
         self.verticalLayout_109.setSpacing(20)
         self.verticalLayout_109.setObjectName(u"verticalLayout_109")
+        self.verticalLayout_109.setContentsMargins(0, 0, 0, 0)
         self.widget_63 = QWidget(self.scrollAreaWidgetContents_21)
         self.widget_63.setObjectName(u"widget_63")
         self.widget_63.setStyleSheet(u"QWidget {\n"
@@ -5145,13 +5057,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_41.addWidget(self.scrollArea_24)
 
-        self.horizontalSpacer_42 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_41.addItem(self.horizontalSpacer_42)
-
-        self.horizontalLayout_41.setStretch(0, 1)
-        self.horizontalLayout_41.setStretch(1, 5)
-        self.horizontalLayout_41.setStretch(2, 1)
+        self.horizontalLayout_41.setStretch(0, 5)
 
         self.horizontalLayout_42.addWidget(self.widget_62)
 
@@ -5160,15 +5066,13 @@ class Ui_Service(object):
         self.QingKongYouJian_widget.setObjectName(u"QingKongYouJian_widget")
         self.horizontalLayout_52 = QHBoxLayout(self.QingKongYouJian_widget)
         self.horizontalLayout_52.setObjectName(u"horizontalLayout_52")
+        self.horizontalLayout_52.setContentsMargins(0, 0, 0, 0)
         self.widget_70 = QWidget(self.QingKongYouJian_widget)
         self.widget_70.setObjectName(u"widget_70")
         self.widget_70.setStyleSheet(u"")
         self.horizontalLayout_51 = QHBoxLayout(self.widget_70)
         self.horizontalLayout_51.setObjectName(u"horizontalLayout_51")
-        self.horizontalSpacer_49 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_51.addItem(self.horizontalSpacer_49)
-
+        self.horizontalLayout_51.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_28 = QScrollArea(self.widget_70)
         self.scrollArea_28.setObjectName(u"scrollArea_28")
         self.scrollArea_28.setMinimumSize(QSize(600, 0))
@@ -5176,10 +5080,11 @@ class Ui_Service(object):
         self.scrollArea_28.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_25 = QWidget()
         self.scrollAreaWidgetContents_25.setObjectName(u"scrollAreaWidgetContents_25")
-        self.scrollAreaWidgetContents_25.setGeometry(QRect(0, 0, 566, 234))
+        self.scrollAreaWidgetContents_25.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_125 = QVBoxLayout(self.scrollAreaWidgetContents_25)
         self.verticalLayout_125.setSpacing(20)
         self.verticalLayout_125.setObjectName(u"verticalLayout_125")
+        self.verticalLayout_125.setContentsMargins(0, 0, 0, 0)
         self.widget_71 = QWidget(self.scrollAreaWidgetContents_25)
         self.widget_71.setObjectName(u"widget_71")
         self.widget_71.setStyleSheet(u"QWidget {\n"
@@ -5324,13 +5229,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_51.addWidget(self.scrollArea_28)
 
-        self.horizontalSpacer_50 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_51.addItem(self.horizontalSpacer_50)
-
-        self.horizontalLayout_51.setStretch(0, 1)
-        self.horizontalLayout_51.setStretch(1, 5)
-        self.horizontalLayout_51.setStretch(2, 1)
+        self.horizontalLayout_51.setStretch(0, 5)
 
         self.horizontalLayout_52.addWidget(self.widget_70)
 
@@ -5339,15 +5238,13 @@ class Ui_Service(object):
         self.XiuXingZhiLu_widget.setObjectName(u"XiuXingZhiLu_widget")
         self.horizontalLayout_53 = QHBoxLayout(self.XiuXingZhiLu_widget)
         self.horizontalLayout_53.setObjectName(u"horizontalLayout_53")
+        self.horizontalLayout_53.setContentsMargins(0, 0, 0, 0)
         self.widget_76 = QWidget(self.XiuXingZhiLu_widget)
         self.widget_76.setObjectName(u"widget_76")
         self.widget_76.setStyleSheet(u"")
         self.horizontalLayout_60 = QHBoxLayout(self.widget_76)
         self.horizontalLayout_60.setObjectName(u"horizontalLayout_60")
-        self.horizontalSpacer_55 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_60.addItem(self.horizontalSpacer_55)
-
+        self.horizontalLayout_60.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_31 = QScrollArea(self.widget_76)
         self.scrollArea_31.setObjectName(u"scrollArea_31")
         self.scrollArea_31.setMinimumSize(QSize(600, 0))
@@ -5355,10 +5252,11 @@ class Ui_Service(object):
         self.scrollArea_31.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_28 = QWidget()
         self.scrollAreaWidgetContents_28.setObjectName(u"scrollAreaWidgetContents_28")
-        self.scrollAreaWidgetContents_28.setGeometry(QRect(0, 0, 566, 234))
+        self.scrollAreaWidgetContents_28.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_137 = QVBoxLayout(self.scrollAreaWidgetContents_28)
         self.verticalLayout_137.setSpacing(20)
         self.verticalLayout_137.setObjectName(u"verticalLayout_137")
+        self.verticalLayout_137.setContentsMargins(0, 0, 0, 0)
         self.widget_77 = QWidget(self.scrollAreaWidgetContents_28)
         self.widget_77.setObjectName(u"widget_77")
         self.widget_77.setStyleSheet(u"QWidget {\n"
@@ -5503,13 +5401,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_60.addWidget(self.scrollArea_31)
 
-        self.horizontalSpacer_56 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_60.addItem(self.horizontalSpacer_56)
-
-        self.horizontalLayout_60.setStretch(0, 1)
-        self.horizontalLayout_60.setStretch(1, 5)
-        self.horizontalLayout_60.setStretch(2, 1)
+        self.horizontalLayout_60.setStretch(0, 5)
 
         self.horizontalLayout_53.addWidget(self.widget_76)
 
@@ -5518,15 +5410,13 @@ class Ui_Service(object):
         self.MeiZhouShengChang_widget.setObjectName(u"MeiZhouShengChang_widget")
         self.horizontalLayout_19 = QHBoxLayout(self.MeiZhouShengChang_widget)
         self.horizontalLayout_19.setObjectName(u"horizontalLayout_19")
+        self.horizontalLayout_19.setContentsMargins(0, 0, 0, 0)
         self.widget_38 = QWidget(self.MeiZhouShengChang_widget)
         self.widget_38.setObjectName(u"widget_38")
         self.widget_38.setStyleSheet(u"")
         self.horizontalLayout_18 = QHBoxLayout(self.widget_38)
         self.horizontalLayout_18.setObjectName(u"horizontalLayout_18")
-        self.horizontalSpacer_17 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_18.addItem(self.horizontalSpacer_17)
-
+        self.horizontalLayout_18.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_12 = QScrollArea(self.widget_38)
         self.scrollArea_12.setObjectName(u"scrollArea_12")
         self.scrollArea_12.setMinimumSize(QSize(600, 0))
@@ -5534,10 +5424,11 @@ class Ui_Service(object):
         self.scrollArea_12.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_9 = QWidget()
         self.scrollAreaWidgetContents_9.setObjectName(u"scrollAreaWidgetContents_9")
-        self.scrollAreaWidgetContents_9.setGeometry(QRect(0, 0, 566, 252))
+        self.scrollAreaWidgetContents_9.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_61 = QVBoxLayout(self.scrollAreaWidgetContents_9)
         self.verticalLayout_61.setSpacing(20)
         self.verticalLayout_61.setObjectName(u"verticalLayout_61")
+        self.verticalLayout_61.setContentsMargins(0, 0, 0, 0)
         self.widget_39 = QWidget(self.scrollAreaWidgetContents_9)
         self.widget_39.setObjectName(u"widget_39")
         self.widget_39.setStyleSheet(u"QWidget {\n"
@@ -5682,13 +5573,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_18.addWidget(self.scrollArea_12)
 
-        self.horizontalSpacer_18 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_18.addItem(self.horizontalSpacer_18)
-
-        self.horizontalLayout_18.setStretch(0, 1)
-        self.horizontalLayout_18.setStretch(1, 5)
-        self.horizontalLayout_18.setStretch(2, 1)
+        self.horizontalLayout_18.setStretch(0, 5)
 
         self.horizontalLayout_19.addWidget(self.widget_38)
 
@@ -5697,15 +5582,13 @@ class Ui_Service(object):
         self.RenFaTieDianZanFenXiang_widget.setObjectName(u"RenFaTieDianZanFenXiang_widget")
         self.horizontalLayout_58 = QHBoxLayout(self.RenFaTieDianZanFenXiang_widget)
         self.horizontalLayout_58.setObjectName(u"horizontalLayout_58")
+        self.horizontalLayout_58.setContentsMargins(0, 0, 0, 0)
         self.widget_72 = QWidget(self.RenFaTieDianZanFenXiang_widget)
         self.widget_72.setObjectName(u"widget_72")
         self.widget_72.setStyleSheet(u"")
         self.horizontalLayout_54 = QHBoxLayout(self.widget_72)
         self.horizontalLayout_54.setObjectName(u"horizontalLayout_54")
-        self.horizontalSpacer_51 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_54.addItem(self.horizontalSpacer_51)
-
+        self.horizontalLayout_54.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_29 = QScrollArea(self.widget_72)
         self.scrollArea_29.setObjectName(u"scrollArea_29")
         self.scrollArea_29.setMinimumSize(QSize(600, 0))
@@ -5713,10 +5596,11 @@ class Ui_Service(object):
         self.scrollArea_29.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_26 = QWidget()
         self.scrollAreaWidgetContents_26.setObjectName(u"scrollAreaWidgetContents_26")
-        self.scrollAreaWidgetContents_26.setGeometry(QRect(0, 0, 566, 260))
+        self.scrollAreaWidgetContents_26.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_129 = QVBoxLayout(self.scrollAreaWidgetContents_26)
         self.verticalLayout_129.setSpacing(20)
         self.verticalLayout_129.setObjectName(u"verticalLayout_129")
+        self.verticalLayout_129.setContentsMargins(0, 0, 0, 0)
         self.widget_73 = QWidget(self.scrollAreaWidgetContents_26)
         self.widget_73.setObjectName(u"widget_73")
         self.widget_73.setStyleSheet(u"QWidget {\n"
@@ -5869,13 +5753,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_54.addWidget(self.scrollArea_29)
 
-        self.horizontalSpacer_52 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_54.addItem(self.horizontalSpacer_52)
-
-        self.horizontalLayout_54.setStretch(0, 1)
-        self.horizontalLayout_54.setStretch(1, 5)
-        self.horizontalLayout_54.setStretch(2, 1)
+        self.horizontalLayout_54.setStretch(0, 5)
 
         self.horizontalLayout_58.addWidget(self.widget_72)
 
@@ -5884,15 +5762,13 @@ class Ui_Service(object):
         self.GengDuoWanFa_widget.setObjectName(u"GengDuoWanFa_widget")
         self.horizontalLayout_23 = QHBoxLayout(self.GengDuoWanFa_widget)
         self.horizontalLayout_23.setObjectName(u"horizontalLayout_23")
+        self.horizontalLayout_23.setContentsMargins(0, 0, 0, 0)
         self.widget_42 = QWidget(self.GengDuoWanFa_widget)
         self.widget_42.setObjectName(u"widget_42")
         self.widget_42.setStyleSheet(u"")
         self.horizontalLayout_22 = QHBoxLayout(self.widget_42)
         self.horizontalLayout_22.setObjectName(u"horizontalLayout_22")
-        self.horizontalSpacer_21 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_22.addItem(self.horizontalSpacer_21)
-
+        self.horizontalLayout_22.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_14 = QScrollArea(self.widget_42)
         self.scrollArea_14.setObjectName(u"scrollArea_14")
         self.scrollArea_14.setMinimumSize(QSize(600, 0))
@@ -5900,10 +5776,11 @@ class Ui_Service(object):
         self.scrollArea_14.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_11 = QWidget()
         self.scrollAreaWidgetContents_11.setObjectName(u"scrollAreaWidgetContents_11")
-        self.scrollAreaWidgetContents_11.setGeometry(QRect(0, 0, 566, 252))
+        self.scrollAreaWidgetContents_11.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_69 = QVBoxLayout(self.scrollAreaWidgetContents_11)
         self.verticalLayout_69.setSpacing(20)
         self.verticalLayout_69.setObjectName(u"verticalLayout_69")
+        self.verticalLayout_69.setContentsMargins(0, 0, 0, 0)
         self.widget_43 = QWidget(self.scrollAreaWidgetContents_11)
         self.widget_43.setObjectName(u"widget_43")
         self.widget_43.setStyleSheet(u"QWidget {\n"
@@ -6048,13 +5925,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_22.addWidget(self.scrollArea_14)
 
-        self.horizontalSpacer_22 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_22.addItem(self.horizontalSpacer_22)
-
-        self.horizontalLayout_22.setStretch(0, 1)
-        self.horizontalLayout_22.setStretch(1, 5)
-        self.horizontalLayout_22.setStretch(2, 1)
+        self.horizontalLayout_22.setStretch(0, 5)
 
         self.horizontalLayout_23.addWidget(self.widget_42)
 
@@ -6063,15 +5934,13 @@ class Ui_Service(object):
         self.TuanBen_widget.setObjectName(u"TuanBen_widget")
         self.horizontalLayout_67 = QHBoxLayout(self.TuanBen_widget)
         self.horizontalLayout_67.setObjectName(u"horizontalLayout_67")
+        self.horizontalLayout_67.setContentsMargins(0, 0, 0, 0)
         self.widget_88 = QWidget(self.TuanBen_widget)
         self.widget_88.setObjectName(u"widget_88")
         self.widget_88.setStyleSheet(u"")
         self.horizontalLayout_55 = QHBoxLayout(self.widget_88)
         self.horizontalLayout_55.setObjectName(u"horizontalLayout_55")
-        self.horizontalSpacer_67 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_55.addItem(self.horizontalSpacer_67)
-
+        self.horizontalLayout_55.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_37 = QScrollArea(self.widget_88)
         self.scrollArea_37.setObjectName(u"scrollArea_37")
         self.scrollArea_37.setMinimumSize(QSize(600, 0))
@@ -6079,10 +5948,11 @@ class Ui_Service(object):
         self.scrollArea_37.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_34 = QWidget()
         self.scrollAreaWidgetContents_34.setObjectName(u"scrollAreaWidgetContents_34")
-        self.scrollAreaWidgetContents_34.setGeometry(QRect(0, 0, 566, 260))
+        self.scrollAreaWidgetContents_34.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_161 = QVBoxLayout(self.scrollAreaWidgetContents_34)
         self.verticalLayout_161.setSpacing(20)
         self.verticalLayout_161.setObjectName(u"verticalLayout_161")
+        self.verticalLayout_161.setContentsMargins(0, 0, 0, 0)
         self.widget_89 = QWidget(self.scrollAreaWidgetContents_34)
         self.widget_89.setObjectName(u"widget_89")
         self.widget_89.setStyleSheet(u"QWidget {\n"
@@ -6235,13 +6105,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_55.addWidget(self.scrollArea_37)
 
-        self.horizontalSpacer_68 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_55.addItem(self.horizontalSpacer_68)
-
-        self.horizontalLayout_55.setStretch(0, 1)
-        self.horizontalLayout_55.setStretch(1, 5)
-        self.horizontalLayout_55.setStretch(2, 1)
+        self.horizontalLayout_55.setStretch(0, 5)
 
         self.horizontalLayout_67.addWidget(self.widget_88)
 
@@ -6250,15 +6114,13 @@ class Ui_Service(object):
         self.BenFuYaoSaiZhan_widget.setObjectName(u"BenFuYaoSaiZhan_widget")
         self.horizontalLayout_76 = QHBoxLayout(self.BenFuYaoSaiZhan_widget)
         self.horizontalLayout_76.setObjectName(u"horizontalLayout_76")
+        self.horizontalLayout_76.setContentsMargins(0, 0, 0, 0)
         self.widget_101 = QWidget(self.BenFuYaoSaiZhan_widget)
         self.widget_101.setObjectName(u"widget_101")
         self.widget_101.setStyleSheet(u"")
         self.horizontalLayout_72 = QHBoxLayout(self.widget_101)
         self.horizontalLayout_72.setObjectName(u"horizontalLayout_72")
-        self.horizontalSpacer_77 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_72.addItem(self.horizontalSpacer_77)
-
+        self.horizontalLayout_72.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_42 = QScrollArea(self.widget_101)
         self.scrollArea_42.setObjectName(u"scrollArea_42")
         self.scrollArea_42.setMinimumSize(QSize(600, 0))
@@ -6266,10 +6128,11 @@ class Ui_Service(object):
         self.scrollArea_42.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_39 = QWidget()
         self.scrollAreaWidgetContents_39.setObjectName(u"scrollAreaWidgetContents_39")
-        self.scrollAreaWidgetContents_39.setGeometry(QRect(0, 0, 566, 260))
+        self.scrollAreaWidgetContents_39.setGeometry(QRect(0, 0, 886, 619))
         self.verticalLayout_187 = QVBoxLayout(self.scrollAreaWidgetContents_39)
         self.verticalLayout_187.setSpacing(20)
         self.verticalLayout_187.setObjectName(u"verticalLayout_187")
+        self.verticalLayout_187.setContentsMargins(0, 0, 0, 0)
         self.widget_102 = QWidget(self.scrollAreaWidgetContents_39)
         self.widget_102.setObjectName(u"widget_102")
         self.widget_102.setStyleSheet(u"QWidget {\n"
@@ -6422,13 +6285,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_72.addWidget(self.scrollArea_42)
 
-        self.horizontalSpacer_78 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_72.addItem(self.horizontalSpacer_78)
-
-        self.horizontalLayout_72.setStretch(0, 1)
-        self.horizontalLayout_72.setStretch(1, 5)
-        self.horizontalLayout_72.setStretch(2, 1)
+        self.horizontalLayout_72.setStretch(0, 5)
 
         self.horizontalLayout_76.addWidget(self.widget_101)
 
@@ -6437,15 +6294,13 @@ class Ui_Service(object):
         self.PanRenLaiXi_widget.setObjectName(u"PanRenLaiXi_widget")
         self.horizontalLayout_66 = QHBoxLayout(self.PanRenLaiXi_widget)
         self.horizontalLayout_66.setObjectName(u"horizontalLayout_66")
+        self.horizontalLayout_66.setContentsMargins(0, 0, 0, 0)
         self.widget_86 = QWidget(self.PanRenLaiXi_widget)
         self.widget_86.setObjectName(u"widget_86")
         self.widget_86.setStyleSheet(u"")
         self.horizontalLayout_57 = QHBoxLayout(self.widget_86)
         self.horizontalLayout_57.setObjectName(u"horizontalLayout_57")
-        self.horizontalSpacer_65 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_57.addItem(self.horizontalSpacer_65)
-
+        self.horizontalLayout_57.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_36 = QScrollArea(self.widget_86)
         self.scrollArea_36.setObjectName(u"scrollArea_36")
         self.scrollArea_36.setMinimumSize(QSize(600, 0))
@@ -6453,10 +6308,11 @@ class Ui_Service(object):
         self.scrollArea_36.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_33 = QWidget()
         self.scrollAreaWidgetContents_33.setObjectName(u"scrollAreaWidgetContents_33")
-        self.scrollAreaWidgetContents_33.setGeometry(QRect(0, 0, 566, 260))
+        self.scrollAreaWidgetContents_33.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_157 = QVBoxLayout(self.scrollAreaWidgetContents_33)
         self.verticalLayout_157.setSpacing(20)
         self.verticalLayout_157.setObjectName(u"verticalLayout_157")
+        self.verticalLayout_157.setContentsMargins(0, 0, 0, 0)
         self.widget_87 = QWidget(self.scrollAreaWidgetContents_33)
         self.widget_87.setObjectName(u"widget_87")
         self.widget_87.setStyleSheet(u"QWidget {\n"
@@ -6609,13 +6465,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_57.addWidget(self.scrollArea_36)
 
-        self.horizontalSpacer_66 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_57.addItem(self.horizontalSpacer_66)
-
-        self.horizontalLayout_57.setStretch(0, 1)
-        self.horizontalLayout_57.setStretch(1, 5)
-        self.horizontalLayout_57.setStretch(2, 1)
+        self.horizontalLayout_57.setStretch(0, 5)
 
         self.horizontalLayout_66.addWidget(self.widget_86)
 
@@ -6624,15 +6474,13 @@ class Ui_Service(object):
         self.TianDiZhanChang_widget.setObjectName(u"TianDiZhanChang_widget")
         self.horizontalLayout_77 = QHBoxLayout(self.TianDiZhanChang_widget)
         self.horizontalLayout_77.setObjectName(u"horizontalLayout_77")
+        self.horizontalLayout_77.setContentsMargins(0, 0, 0, 0)
         self.widget_103 = QWidget(self.TianDiZhanChang_widget)
         self.widget_103.setObjectName(u"widget_103")
         self.widget_103.setStyleSheet(u"")
         self.horizontalLayout_73 = QHBoxLayout(self.widget_103)
         self.horizontalLayout_73.setObjectName(u"horizontalLayout_73")
-        self.horizontalSpacer_79 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_73.addItem(self.horizontalSpacer_79)
-
+        self.horizontalLayout_73.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_43 = QScrollArea(self.widget_103)
         self.scrollArea_43.setObjectName(u"scrollArea_43")
         self.scrollArea_43.setMinimumSize(QSize(600, 0))
@@ -6640,10 +6488,11 @@ class Ui_Service(object):
         self.scrollArea_43.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_40 = QWidget()
         self.scrollAreaWidgetContents_40.setObjectName(u"scrollAreaWidgetContents_40")
-        self.scrollAreaWidgetContents_40.setGeometry(QRect(0, 0, 566, 260))
+        self.scrollAreaWidgetContents_40.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_191 = QVBoxLayout(self.scrollAreaWidgetContents_40)
         self.verticalLayout_191.setSpacing(20)
         self.verticalLayout_191.setObjectName(u"verticalLayout_191")
+        self.verticalLayout_191.setContentsMargins(0, 0, 0, 0)
         self.widget_104 = QWidget(self.scrollAreaWidgetContents_40)
         self.widget_104.setObjectName(u"widget_104")
         self.widget_104.setStyleSheet(u"QWidget {\n"
@@ -6796,13 +6645,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_73.addWidget(self.scrollArea_43)
 
-        self.horizontalSpacer_80 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_73.addItem(self.horizontalSpacer_80)
-
-        self.horizontalLayout_73.setStretch(0, 1)
-        self.horizontalLayout_73.setStretch(1, 5)
-        self.horizontalLayout_73.setStretch(2, 1)
+        self.horizontalLayout_73.setStretch(0, 5)
 
         self.horizontalLayout_77.addWidget(self.widget_103)
 
@@ -6811,15 +6654,13 @@ class Ui_Service(object):
         self.ZhuiJiXiaoZuZhi_widget.setObjectName(u"ZhuiJiXiaoZuZhi_widget")
         self.horizontalLayout_78 = QHBoxLayout(self.ZhuiJiXiaoZuZhi_widget)
         self.horizontalLayout_78.setObjectName(u"horizontalLayout_78")
+        self.horizontalLayout_78.setContentsMargins(0, 0, 0, 0)
         self.widget_105 = QWidget(self.ZhuiJiXiaoZuZhi_widget)
         self.widget_105.setObjectName(u"widget_105")
         self.widget_105.setStyleSheet(u"")
         self.horizontalLayout_74 = QHBoxLayout(self.widget_105)
         self.horizontalLayout_74.setObjectName(u"horizontalLayout_74")
-        self.horizontalSpacer_81 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_74.addItem(self.horizontalSpacer_81)
-
+        self.horizontalLayout_74.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_44 = QScrollArea(self.widget_105)
         self.scrollArea_44.setObjectName(u"scrollArea_44")
         self.scrollArea_44.setMinimumSize(QSize(600, 0))
@@ -6827,10 +6668,11 @@ class Ui_Service(object):
         self.scrollArea_44.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_41 = QWidget()
         self.scrollAreaWidgetContents_41.setObjectName(u"scrollAreaWidgetContents_41")
-        self.scrollAreaWidgetContents_41.setGeometry(QRect(0, 0, 566, 260))
+        self.scrollAreaWidgetContents_41.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_195 = QVBoxLayout(self.scrollAreaWidgetContents_41)
         self.verticalLayout_195.setSpacing(20)
         self.verticalLayout_195.setObjectName(u"verticalLayout_195")
+        self.verticalLayout_195.setContentsMargins(0, 0, 0, 0)
         self.widget_106 = QWidget(self.scrollAreaWidgetContents_41)
         self.widget_106.setObjectName(u"widget_106")
         self.widget_106.setStyleSheet(u"QWidget {\n"
@@ -6983,13 +6825,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_74.addWidget(self.scrollArea_44)
 
-        self.horizontalSpacer_82 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_74.addItem(self.horizontalSpacer_82)
-
-        self.horizontalLayout_74.setStretch(0, 1)
-        self.horizontalLayout_74.setStretch(1, 5)
-        self.horizontalLayout_74.setStretch(2, 1)
+        self.horizontalLayout_74.setStretch(0, 5)
 
         self.horizontalLayout_78.addWidget(self.widget_105)
 
@@ -6998,15 +6834,13 @@ class Ui_Service(object):
         self.KuaFuYaoSaiZhan_widget.setObjectName(u"KuaFuYaoSaiZhan_widget")
         self.horizontalLayout_75 = QHBoxLayout(self.KuaFuYaoSaiZhan_widget)
         self.horizontalLayout_75.setObjectName(u"horizontalLayout_75")
+        self.horizontalLayout_75.setContentsMargins(0, 0, 0, 0)
         self.widget_99 = QWidget(self.KuaFuYaoSaiZhan_widget)
         self.widget_99.setObjectName(u"widget_99")
         self.widget_99.setStyleSheet(u"")
         self.horizontalLayout_71 = QHBoxLayout(self.widget_99)
         self.horizontalLayout_71.setObjectName(u"horizontalLayout_71")
-        self.horizontalSpacer_75 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_71.addItem(self.horizontalSpacer_75)
-
+        self.horizontalLayout_71.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_41 = QScrollArea(self.widget_99)
         self.scrollArea_41.setObjectName(u"scrollArea_41")
         self.scrollArea_41.setMinimumSize(QSize(600, 0))
@@ -7014,10 +6848,11 @@ class Ui_Service(object):
         self.scrollArea_41.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_38 = QWidget()
         self.scrollAreaWidgetContents_38.setObjectName(u"scrollAreaWidgetContents_38")
-        self.scrollAreaWidgetContents_38.setGeometry(QRect(0, 0, 566, 260))
+        self.scrollAreaWidgetContents_38.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_183 = QVBoxLayout(self.scrollAreaWidgetContents_38)
         self.verticalLayout_183.setSpacing(20)
         self.verticalLayout_183.setObjectName(u"verticalLayout_183")
+        self.verticalLayout_183.setContentsMargins(0, 0, 0, 0)
         self.widget_100 = QWidget(self.scrollAreaWidgetContents_38)
         self.widget_100.setObjectName(u"widget_100")
         self.widget_100.setStyleSheet(u"QWidget {\n"
@@ -7170,13 +7005,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_71.addWidget(self.scrollArea_41)
 
-        self.horizontalSpacer_76 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_71.addItem(self.horizontalSpacer_76)
-
-        self.horizontalLayout_71.setStretch(0, 1)
-        self.horizontalLayout_71.setStretch(1, 5)
-        self.horizontalLayout_71.setStretch(2, 1)
+        self.horizontalLayout_71.setStretch(0, 5)
 
         self.horizontalLayout_75.addWidget(self.widget_99)
 
@@ -7185,15 +7014,13 @@ class Ui_Service(object):
         self.DianFengDuiJue_widget.setObjectName(u"DianFengDuiJue_widget")
         self.horizontalLayout_11 = QHBoxLayout(self.DianFengDuiJue_widget)
         self.horizontalLayout_11.setObjectName(u"horizontalLayout_11")
+        self.horizontalLayout_11.setContentsMargins(0, 0, 0, 0)
         self.widget_97 = QWidget(self.DianFengDuiJue_widget)
         self.widget_97.setObjectName(u"widget_97")
         self.widget_97.setStyleSheet(u"")
         self.horizontalLayout_70 = QHBoxLayout(self.widget_97)
         self.horizontalLayout_70.setObjectName(u"horizontalLayout_70")
-        self.horizontalSpacer_73 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_70.addItem(self.horizontalSpacer_73)
-
+        self.horizontalLayout_70.setContentsMargins(-1, 0, 9, 0)
         self.scrollArea_40 = QScrollArea(self.widget_97)
         self.scrollArea_40.setObjectName(u"scrollArea_40")
         self.scrollArea_40.setMinimumSize(QSize(600, 0))
@@ -7201,10 +7028,11 @@ class Ui_Service(object):
         self.scrollArea_40.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_37 = QWidget()
         self.scrollAreaWidgetContents_37.setObjectName(u"scrollAreaWidgetContents_37")
-        self.scrollAreaWidgetContents_37.setGeometry(QRect(0, 0, 566, 260))
+        self.scrollAreaWidgetContents_37.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_179 = QVBoxLayout(self.scrollAreaWidgetContents_37)
         self.verticalLayout_179.setSpacing(20)
         self.verticalLayout_179.setObjectName(u"verticalLayout_179")
+        self.verticalLayout_179.setContentsMargins(0, 0, 0, 0)
         self.widget_98 = QWidget(self.scrollAreaWidgetContents_37)
         self.widget_98.setObjectName(u"widget_98")
         self.widget_98.setStyleSheet(u"QWidget {\n"
@@ -7357,13 +7185,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_70.addWidget(self.scrollArea_40)
 
-        self.horizontalSpacer_74 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_70.addItem(self.horizontalSpacer_74)
-
-        self.horizontalLayout_70.setStretch(0, 1)
-        self.horizontalLayout_70.setStretch(1, 5)
-        self.horizontalLayout_70.setStretch(2, 1)
+        self.horizontalLayout_70.setStretch(0, 5)
 
         self.horizontalLayout_11.addWidget(self.widget_97)
 
@@ -7372,15 +7194,13 @@ class Ui_Service(object):
         self.ZuZhiZhengBa_widget.setObjectName(u"ZuZhiZhengBa_widget")
         self.horizontalLayout_46 = QHBoxLayout(self.ZuZhiZhengBa_widget)
         self.horizontalLayout_46.setObjectName(u"horizontalLayout_46")
+        self.horizontalLayout_46.setContentsMargins(0, 0, 0, 0)
         self.widget_64 = QWidget(self.ZuZhiZhengBa_widget)
         self.widget_64.setObjectName(u"widget_64")
         self.widget_64.setStyleSheet(u"")
         self.horizontalLayout_43 = QHBoxLayout(self.widget_64)
         self.horizontalLayout_43.setObjectName(u"horizontalLayout_43")
-        self.horizontalSpacer_43 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_43.addItem(self.horizontalSpacer_43)
-
+        self.horizontalLayout_43.setContentsMargins(9, 0, -1, 0)
         self.scrollArea_25 = QScrollArea(self.widget_64)
         self.scrollArea_25.setObjectName(u"scrollArea_25")
         self.scrollArea_25.setMinimumSize(QSize(600, 0))
@@ -7388,10 +7208,11 @@ class Ui_Service(object):
         self.scrollArea_25.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_22 = QWidget()
         self.scrollAreaWidgetContents_22.setObjectName(u"scrollAreaWidgetContents_22")
-        self.scrollAreaWidgetContents_22.setGeometry(QRect(0, 0, 566, 260))
+        self.scrollAreaWidgetContents_22.setGeometry(QRect(0, 0, 886, 619))
         self.verticalLayout_113 = QVBoxLayout(self.scrollAreaWidgetContents_22)
         self.verticalLayout_113.setSpacing(20)
         self.verticalLayout_113.setObjectName(u"verticalLayout_113")
+        self.verticalLayout_113.setContentsMargins(0, 0, 0, 0)
         self.widget_65 = QWidget(self.scrollAreaWidgetContents_22)
         self.widget_65.setObjectName(u"widget_65")
         self.widget_65.setStyleSheet(u"QWidget {\n"
@@ -7544,13 +7365,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_43.addWidget(self.scrollArea_25)
 
-        self.horizontalSpacer_44 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_43.addItem(self.horizontalSpacer_44)
-
-        self.horizontalLayout_43.setStretch(0, 1)
-        self.horizontalLayout_43.setStretch(1, 5)
-        self.horizontalLayout_43.setStretch(2, 1)
+        self.horizontalLayout_43.setStretch(0, 5)
 
         self.horizontalLayout_46.addWidget(self.widget_64)
 
@@ -7559,15 +7374,13 @@ class Ui_Service(object):
         self.SaiJiShengChang_widget.setObjectName(u"SaiJiShengChang_widget")
         self.horizontalLayout_21 = QHBoxLayout(self.SaiJiShengChang_widget)
         self.horizontalLayout_21.setObjectName(u"horizontalLayout_21")
+        self.horizontalLayout_21.setContentsMargins(0, 0, 0, 0)
         self.widget_40 = QWidget(self.SaiJiShengChang_widget)
         self.widget_40.setObjectName(u"widget_40")
         self.widget_40.setStyleSheet(u"")
         self.horizontalLayout_20 = QHBoxLayout(self.widget_40)
         self.horizontalLayout_20.setObjectName(u"horizontalLayout_20")
-        self.horizontalSpacer_19 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_20.addItem(self.horizontalSpacer_19)
-
+        self.horizontalLayout_20.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_13 = QScrollArea(self.widget_40)
         self.scrollArea_13.setObjectName(u"scrollArea_13")
         self.scrollArea_13.setMinimumSize(QSize(600, 0))
@@ -7575,10 +7388,11 @@ class Ui_Service(object):
         self.scrollArea_13.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_10 = QWidget()
         self.scrollAreaWidgetContents_10.setObjectName(u"scrollAreaWidgetContents_10")
-        self.scrollAreaWidgetContents_10.setGeometry(QRect(0, 0, 566, 252))
+        self.scrollAreaWidgetContents_10.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_65 = QVBoxLayout(self.scrollAreaWidgetContents_10)
         self.verticalLayout_65.setSpacing(20)
         self.verticalLayout_65.setObjectName(u"verticalLayout_65")
+        self.verticalLayout_65.setContentsMargins(0, 0, 0, 0)
         self.widget_41 = QWidget(self.scrollAreaWidgetContents_10)
         self.widget_41.setObjectName(u"widget_41")
         self.widget_41.setStyleSheet(u"QWidget {\n"
@@ -7723,13 +7537,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_20.addWidget(self.scrollArea_13)
 
-        self.horizontalSpacer_20 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_20.addItem(self.horizontalSpacer_20)
-
-        self.horizontalLayout_20.setStretch(0, 1)
-        self.horizontalLayout_20.setStretch(1, 5)
-        self.horizontalLayout_20.setStretch(2, 1)
+        self.horizontalLayout_20.setStretch(0, 5)
 
         self.horizontalLayout_21.addWidget(self.widget_40)
 
@@ -7738,15 +7546,13 @@ class Ui_Service(object):
         self.ZhuangBeiHeCheng.setObjectName(u"ZhuangBeiHeCheng")
         self.horizontalLayout_10 = QHBoxLayout(self.ZhuangBeiHeCheng)
         self.horizontalLayout_10.setObjectName(u"horizontalLayout_10")
+        self.horizontalLayout_10.setContentsMargins(0, 0, 0, 0)
         self.widget_92 = QWidget(self.ZhuangBeiHeCheng)
         self.widget_92.setObjectName(u"widget_92")
         self.widget_92.setStyleSheet(u"")
         self.horizontalLayout_69 = QHBoxLayout(self.widget_92)
         self.horizontalLayout_69.setObjectName(u"horizontalLayout_69")
-        self.horizontalSpacer_71 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_69.addItem(self.horizontalSpacer_71)
-
+        self.horizontalLayout_69.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_39 = QScrollArea(self.widget_92)
         self.scrollArea_39.setObjectName(u"scrollArea_39")
         self.scrollArea_39.setMinimumSize(QSize(600, 0))
@@ -7754,10 +7560,11 @@ class Ui_Service(object):
         self.scrollArea_39.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_36 = QWidget()
         self.scrollAreaWidgetContents_36.setObjectName(u"scrollAreaWidgetContents_36")
-        self.scrollAreaWidgetContents_36.setGeometry(QRect(0, 0, 566, 412))
+        self.scrollAreaWidgetContents_36.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_169 = QVBoxLayout(self.scrollAreaWidgetContents_36)
         self.verticalLayout_169.setSpacing(20)
         self.verticalLayout_169.setObjectName(u"verticalLayout_169")
+        self.verticalLayout_169.setContentsMargins(0, 0, 0, 0)
         self.widget_93 = QWidget(self.scrollAreaWidgetContents_36)
         self.widget_93.setObjectName(u"widget_93")
         self.widget_93.setStyleSheet(u"QWidget {\n"
@@ -8114,13 +7921,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_69.addWidget(self.scrollArea_39)
 
-        self.horizontalSpacer_72 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_69.addItem(self.horizontalSpacer_72)
-
-        self.horizontalLayout_69.setStretch(0, 1)
-        self.horizontalLayout_69.setStretch(1, 5)
-        self.horizontalLayout_69.setStretch(2, 1)
+        self.horizontalLayout_69.setStretch(0, 5)
 
         self.horizontalLayout_10.addWidget(self.widget_92)
 
@@ -8129,15 +7930,13 @@ class Ui_Service(object):
         self.GaoJiRenZheZhaoMu_widget.setObjectName(u"GaoJiRenZheZhaoMu_widget")
         self.horizontalLayout_29 = QHBoxLayout(self.GaoJiRenZheZhaoMu_widget)
         self.horizontalLayout_29.setObjectName(u"horizontalLayout_29")
+        self.horizontalLayout_29.setContentsMargins(0, 0, 0, 0)
         self.widget_48 = QWidget(self.GaoJiRenZheZhaoMu_widget)
         self.widget_48.setObjectName(u"widget_48")
         self.widget_48.setStyleSheet(u"")
         self.horizontalLayout_28 = QHBoxLayout(self.widget_48)
         self.horizontalLayout_28.setObjectName(u"horizontalLayout_28")
-        self.horizontalSpacer_27 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_28.addItem(self.horizontalSpacer_27)
-
+        self.horizontalLayout_28.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_17 = QScrollArea(self.widget_48)
         self.scrollArea_17.setObjectName(u"scrollArea_17")
         self.scrollArea_17.setMinimumSize(QSize(600, 0))
@@ -8145,10 +7944,11 @@ class Ui_Service(object):
         self.scrollArea_17.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_14 = QWidget()
         self.scrollAreaWidgetContents_14.setObjectName(u"scrollAreaWidgetContents_14")
-        self.scrollAreaWidgetContents_14.setGeometry(QRect(0, 0, 566, 234))
+        self.scrollAreaWidgetContents_14.setGeometry(QRect(0, 0, 886, 610))
         self.verticalLayout_81 = QVBoxLayout(self.scrollAreaWidgetContents_14)
         self.verticalLayout_81.setSpacing(20)
         self.verticalLayout_81.setObjectName(u"verticalLayout_81")
+        self.verticalLayout_81.setContentsMargins(0, 0, 0, 0)
         self.widget_49 = QWidget(self.scrollAreaWidgetContents_14)
         self.widget_49.setObjectName(u"widget_49")
         self.widget_49.setStyleSheet(u"QWidget {\n"
@@ -8293,13 +8093,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_28.addWidget(self.scrollArea_17)
 
-        self.horizontalSpacer_28 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_28.addItem(self.horizontalSpacer_28)
-
-        self.horizontalLayout_28.setStretch(0, 1)
-        self.horizontalLayout_28.setStretch(1, 5)
-        self.horizontalLayout_28.setStretch(2, 1)
+        self.horizontalLayout_28.setStretch(0, 5)
 
         self.horizontalLayout_29.addWidget(self.widget_48)
 
@@ -8309,15 +8103,13 @@ class Ui_Service(object):
         self.DQH_Settings_widget.setMinimumSize(QSize(180, 0))
         self.horizontalLayout_5 = QHBoxLayout(self.DQH_Settings_widget)
         self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
+        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
         self.widget_19 = QWidget(self.DQH_Settings_widget)
         self.widget_19.setObjectName(u"widget_19")
         self.widget_19.setStyleSheet(u"")
         self.horizontalLayout_12 = QHBoxLayout(self.widget_19)
         self.horizontalLayout_12.setObjectName(u"horizontalLayout_12")
-        self.horizontalSpacer_9 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_12.addItem(self.horizontalSpacer_9)
-
+        self.horizontalLayout_12.setContentsMargins(-1, 0, -1, 0)
         self.scrollArea_8 = QScrollArea(self.widget_19)
         self.scrollArea_8.setObjectName(u"scrollArea_8")
         self.scrollArea_8.setMinimumSize(QSize(600, 0))
@@ -8325,11 +8117,11 @@ class Ui_Service(object):
         self.scrollArea_8.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_5 = QWidget()
         self.scrollAreaWidgetContents_5.setObjectName(u"scrollAreaWidgetContents_5")
-        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, -87, 619, 1162))
+        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 874, 1144))
         self.verticalLayout_25 = QVBoxLayout(self.scrollAreaWidgetContents_5)
         self.verticalLayout_25.setSpacing(20)
         self.verticalLayout_25.setObjectName(u"verticalLayout_25")
-        self.verticalLayout_25.setContentsMargins(10, -1, 10, -1)
+        self.verticalLayout_25.setContentsMargins(0, 0, 0, 0)
         self.widget_21 = QWidget(self.scrollAreaWidgetContents_5)
         self.widget_21.setObjectName(u"widget_21")
         self.widget_21.setStyleSheet(u"QWidget {\n"
@@ -9542,13 +9334,7 @@ class Ui_Service(object):
 
         self.horizontalLayout_12.addWidget(self.scrollArea_8)
 
-        self.horizontalSpacer_10 = QSpacerItem(40, 20, QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Minimum)
-
-        self.horizontalLayout_12.addItem(self.horizontalSpacer_10)
-
-        self.horizontalLayout_12.setStretch(0, 1)
-        self.horizontalLayout_12.setStretch(1, 5)
-        self.horizontalLayout_12.setStretch(2, 1)
+        self.horizontalLayout_12.setStretch(0, 5)
 
         self.horizontalLayout_5.addWidget(self.widget_19)
 
@@ -9567,7 +9353,7 @@ class Ui_Service(object):
         self.screen_mode.currentIndexChanged.connect(self.screen_mode_settings_stackedWidget.setCurrentIndex)
 
         self.overview_panel_button.setDefault(False)
-        self.stackedWidget.setCurrentIndex(37)
+        self.stackedWidget.setCurrentIndex(0)
         self.screen_mode_settings_stackedWidget.setCurrentIndex(2)
 
 

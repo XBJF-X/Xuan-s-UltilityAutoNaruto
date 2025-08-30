@@ -40,8 +40,11 @@ class Updater:
                 self.logger.info(f"最新提交 Date：{new_commit['commit']["committer"]["date"]}")
                 self.logger.info(f"最新提交 Message：{new_commit['commit']['message']}")
                 return current_version["commit"]["sha"] != new_version["commit"]["sha"], new_version
+            else:
+                return False, {}
         except Exception as e:
             self.logger.error(f"检查更新出错：{e}")
+            return False, {}
 
     def update_implement(self, new_version):
         try:

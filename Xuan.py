@@ -96,7 +96,7 @@ class Xuan(QMainWindow):
         os.environ['PATH'] = os.pathsep.join([get_real_path('bin/adb'), os.environ.get('PATH', '')])
         cv2.ocl.setUseOpenCL(True)
         self.setWindowIcon(QIcon(resource_path("src/ASDS.ico")))
-        self.resize(1400, 800)
+        # self.resize(1201, 800)
         app.aboutToQuit.connect(self._on_about_to_quit)
         # 设置窗口标志
         self.setWindowFlags(
@@ -107,6 +107,7 @@ class Xuan(QMainWindow):
         # self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
 
     def alloc_ui_ref_map(self):
+        self.UI.ServiceStackedWidget.setContentsMargins(0, 0, 0, 0)
         # 确保配置目录存在
         if not os.path.exists(self.config_path):
             os.makedirs(self.config_path)

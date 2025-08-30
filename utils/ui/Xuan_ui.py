@@ -23,7 +23,7 @@ class Ui_Xuan(object):
     def setupUi(self, Xuan):
         if not Xuan.objectName():
             Xuan.setObjectName(u"Xuan")
-        Xuan.resize(1338, 679)
+        Xuan.resize(1273, 596)
         Xuan.setMinimumSize(QSize(180, 0))
         font = QFont()
         font.setFamilies([u"Consolas"])

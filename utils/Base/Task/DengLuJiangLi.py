@@ -42,7 +42,7 @@ class DengLuJiangLi(BaseTask):
                 {'click': self.scene_graph.scenes.get("主场景").elements.get("公告-X")},
                 {'click': self.scene_graph.scenes.get("主场景").elements.get("广告-X")}
             ],
-            search_max_time=10,
+            search_max_time=15,
             wait_time=3
         )
         self._update_next_execute_time()

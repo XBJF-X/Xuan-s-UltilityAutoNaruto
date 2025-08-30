@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1163</width>
+    <width>1136</width>
     <height>621</height>
    </rect>
   </property>
@@ -201,6 +201,9 @@ font-size:15pt;
             <string notr="true"/>
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_8">
+            <property name="topMargin">
+             <number>0</number>
+            </property>
             <item>
              <widget class="QPushButton" name="overview_panel_button">
               <property name="sizePolicy">
@@ -276,6 +279,9 @@ padding-bottom:2px;
              <number>0</number>
             </property>
             <property name="topMargin">
+             <number>0</number>
+            </property>
+            <property name="bottomMargin">
              <number>0</number>
             </property>
             <item>
@@ -713,14 +719,34 @@ QTreeWidget QScrollBar::add-line:vertical {
          </property>
          <item>
           <widget class="QStackedWidget" name="stackedWidget">
+           <property name="styleSheet">
+            <string notr="true">QStackedWidget QWidget {
+                background-color: rgb(255, 255, 255);  /* 背景颜色 */
+            }</string>
+           </property>
            <property name="currentIndex">
-            <number>37</number>
+            <number>0</number>
            </property>
            <widget class="QWidget" name="Overview_Panel_widget">
             <property name="enabled">
              <bool>true</bool>
             </property>
+            <property name="styleSheet">
+             <string notr="true"/>
+            </property>
             <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="1,0">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_2" native="true">
                <property name="minimumSize">
@@ -959,6 +985,10 @@ QTreeWidget QScrollBar::add-line:vertical {
                    <string notr="true">#widget_4 {  /* 仅匹配 objectName 为 myWidget 的控件 */
     background-color: rgb(222, 222, 222);
 border-radius: 10px;
+}
+QWidget QLabel {
+    background-color: rgb(222, 222, 222);
+border-radius: 10px;
 }</string>
                   </property>
                   <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -969,13 +999,13 @@ border-radius: 10px;
                     <number>0</number>
                    </property>
                    <property name="topMargin">
-                    <number>0</number>
+                    <number>9</number>
                    </property>
                    <property name="rightMargin">
                     <number>10</number>
                    </property>
                    <property name="bottomMargin">
-                    <number>0</number>
+                    <number>9</number>
                    </property>
                    <item>
                     <widget class="QLabel" name="label">
@@ -1042,6 +1072,9 @@ QPushButton:disabled {
                    <string notr="true">#widget_5 {  /* 仅匹配 objectName 为 myWidget 的控件 */
     background-color: rgb(222, 222, 222);
 border-radius: 10px;
+}
+QWidget QLabel {
+    background-color: rgb(222, 222, 222);
 }</string>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout">
@@ -1087,6 +1120,15 @@ margin-bottom:0px;
                           </color>
                          </brush>
                         </colorrole>
+                        <colorrole role="Button">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
                         <colorrole role="Text">
                          <brush brushstyle="SolidPattern">
                           <color alpha="255">
@@ -1102,6 +1144,24 @@ margin-bottom:0px;
                            <red>15</red>
                            <green>50</green>
                            <blue>47</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
+                        <colorrole role="Base">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
+                        <colorrole role="Window">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
                           </color>
                          </brush>
                         </colorrole>
@@ -1125,6 +1185,15 @@ margin-bottom:0px;
                           </color>
                          </brush>
                         </colorrole>
+                        <colorrole role="Button">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
                         <colorrole role="Text">
                          <brush brushstyle="SolidPattern">
                           <color alpha="255">
@@ -1140,6 +1209,24 @@ margin-bottom:0px;
                            <red>15</red>
                            <green>50</green>
                            <blue>47</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
+                        <colorrole role="Base">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
+                        <colorrole role="Window">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
                           </color>
                          </brush>
                         </colorrole>
@@ -1163,6 +1250,15 @@ margin-bottom:0px;
                           </color>
                          </brush>
                         </colorrole>
+                        <colorrole role="Button">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
                         <colorrole role="Text">
                          <brush brushstyle="SolidPattern">
                           <color alpha="255">
@@ -1178,6 +1274,24 @@ margin-bottom:0px;
                            <red>15</red>
                            <green>50</green>
                            <blue>47</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
+                        <colorrole role="Base">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
+                        <colorrole role="Window">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
                           </color>
                          </brush>
                         </colorrole>
@@ -1283,6 +1397,9 @@ QScrollArea &gt; QWidget &gt; QWidget {
                    <string notr="true">#widget_6 {  /* 仅匹配 objectName 为 myWidget 的控件 */
     background-color: rgb(222, 222, 222);
 border-radius: 10px;
+}
+QWidget QLabel {
+    background-color: rgb(222, 222, 222);
 }</string>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -1326,6 +1443,15 @@ margin-bottom:0px;</string>
                           </color>
                          </brush>
                         </colorrole>
+                        <colorrole role="Button">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
                         <colorrole role="Text">
                          <brush brushstyle="SolidPattern">
                           <color alpha="255">
@@ -1341,6 +1467,24 @@ margin-bottom:0px;</string>
                            <red>15</red>
                            <green>50</green>
                            <blue>47</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
+                        <colorrole role="Base">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
+                        <colorrole role="Window">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
                           </color>
                          </brush>
                         </colorrole>
@@ -1364,6 +1508,15 @@ margin-bottom:0px;</string>
                           </color>
                          </brush>
                         </colorrole>
+                        <colorrole role="Button">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
                         <colorrole role="Text">
                          <brush brushstyle="SolidPattern">
                           <color alpha="255">
@@ -1379,6 +1532,24 @@ margin-bottom:0px;</string>
                            <red>15</red>
                            <green>50</green>
                            <blue>47</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
+                        <colorrole role="Base">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
+                        <colorrole role="Window">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
                           </color>
                          </brush>
                         </colorrole>
@@ -1402,6 +1573,15 @@ margin-bottom:0px;</string>
                           </color>
                          </brush>
                         </colorrole>
+                        <colorrole role="Button">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
                         <colorrole role="Text">
                          <brush brushstyle="SolidPattern">
                           <color alpha="255">
@@ -1417,6 +1597,24 @@ margin-bottom:0px;</string>
                            <red>15</red>
                            <green>50</green>
                            <blue>47</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
+                        <colorrole role="Base">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
+                        <colorrole role="Window">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
                           </color>
                          </brush>
                         </colorrole>
@@ -1501,7 +1699,7 @@ QScrollArea &gt; QWidget &gt; QWidget {
                         <x>0</x>
                         <y>0</y>
                         <width>232</width>
-                        <height>87</height>
+                        <height>92</height>
                        </rect>
                       </property>
                      </widget>
@@ -1516,6 +1714,9 @@ QScrollArea &gt; QWidget &gt; QWidget {
                    <string notr="true">#widget_7 {  /* 仅匹配 objectName 为 myWidget 的控件 */
     background-color: rgb(222, 222, 222);
 border-radius: 10px;
+}
+QWidget QLabel {
+    background-color: rgb(222, 222, 222);
 }</string>
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout_7">
@@ -1560,6 +1761,15 @@ margin-bottom:0px;</string>
                           </color>
                          </brush>
                         </colorrole>
+                        <colorrole role="Button">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
                         <colorrole role="Text">
                          <brush brushstyle="SolidPattern">
                           <color alpha="255">
@@ -1575,6 +1785,24 @@ margin-bottom:0px;</string>
                            <red>15</red>
                            <green>50</green>
                            <blue>47</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
+                        <colorrole role="Base">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
+                        <colorrole role="Window">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
                           </color>
                          </brush>
                         </colorrole>
@@ -1598,6 +1826,15 @@ margin-bottom:0px;</string>
                           </color>
                          </brush>
                         </colorrole>
+                        <colorrole role="Button">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
                         <colorrole role="Text">
                          <brush brushstyle="SolidPattern">
                           <color alpha="255">
@@ -1613,6 +1850,24 @@ margin-bottom:0px;</string>
                            <red>15</red>
                            <green>50</green>
                            <blue>47</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
+                        <colorrole role="Base">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
+                        <colorrole role="Window">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
                           </color>
                          </brush>
                         </colorrole>
@@ -1636,6 +1891,15 @@ margin-bottom:0px;</string>
                           </color>
                          </brush>
                         </colorrole>
+                        <colorrole role="Button">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
                         <colorrole role="Text">
                          <brush brushstyle="SolidPattern">
                           <color alpha="255">
@@ -1651,6 +1915,24 @@ margin-bottom:0px;</string>
                            <red>15</red>
                            <green>50</green>
                            <blue>47</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
+                        <colorrole role="Base">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
+                          </color>
+                         </brush>
+                        </colorrole>
+                        <colorrole role="Window">
+                         <brush brushstyle="SolidPattern">
+                          <color alpha="255">
+                           <red>255</red>
+                           <green>255</green>
+                           <blue>255</blue>
                           </color>
                          </brush>
                         </colorrole>
@@ -1735,7 +2017,7 @@ QScrollArea &gt; QWidget &gt; QWidget {
                         <x>0</x>
                         <y>0</y>
                         <width>232</width>
-                        <height>187</height>
+                        <height>194</height>
                        </rect>
                       </property>
                      </widget>
@@ -1913,25 +2195,30 @@ QCheckBox::indicator:disabled {
            </widget>
            <widget class="QWidget" name="DengLuJiangLi_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_25">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_44" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_24" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_23">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_24" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_15">
                   <property name="minimumSize">
@@ -1951,13 +2238,25 @@ QCheckBox::indicator:disabled {
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>234</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_73">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_45" native="true">
@@ -2154,19 +2453,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_24">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -2174,25 +2460,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="PaiHangBangDianZan_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_32">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_52" native="true">
                <property name="styleSheet">
                 <string notr="true">;</string>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_31" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_31">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_31" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_19">
                   <property name="minimumSize">
@@ -2212,13 +2503,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>234</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_89">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_53" native="true">
@@ -2415,19 +2718,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_32">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -2435,25 +2725,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="MeiYueQianDao_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_34">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_54" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_33" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_33">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_33" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_20">
                   <property name="minimumSize">
@@ -2473,13 +2768,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>234</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_93">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_55" native="true">
@@ -2676,19 +2983,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_34">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -2696,25 +2990,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="GouMaiTiLi_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_14">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_24" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_13" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_11">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_13" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_9">
                   <property name="minimumSize">
@@ -2734,13 +3033,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>416</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_46">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_30" native="true">
@@ -3223,19 +3534,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_12">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -3243,25 +3541,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="JinBiZhaoCai_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_9">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_27" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_13">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_15" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_10">
                   <property name="minimumSize">
@@ -3281,13 +3584,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>452</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_47">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_33" native="true">
@@ -3786,19 +4101,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_14">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -3806,25 +4108,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="XiaoDuiTuXi_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_17">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_29" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_16" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_15">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_16" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_11">
                   <property name="minimumSize">
@@ -3844,13 +4151,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>455</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_51">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_35" native="true">
@@ -4378,19 +4697,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_16">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -4398,25 +4704,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="ZuZhiQiFu_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_6">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_80" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_62" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_59">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_62" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_33">
                   <property name="minimumSize">
@@ -4436,13 +4747,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>234</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_145">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_81" native="true">
@@ -4639,19 +4962,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_60">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -4659,25 +4969,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="HaoYouTiLi_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_7">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_50" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_30" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_29">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_30" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_18">
                   <property name="minimumSize">
@@ -4697,13 +5012,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>234</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_85">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_51" native="true">
@@ -4900,19 +5227,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_30">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -4920,25 +5234,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="PuTongRenZheZhaoMu_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_8">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_66" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_48" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_45">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_48" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_26">
                   <property name="minimumSize">
@@ -4958,13 +5277,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>234</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_117">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_67" native="true">
@@ -5161,19 +5492,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_46">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -5181,25 +5499,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="MeiRiFenXiang_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_38">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_58" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_37" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_37">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_37" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_22">
                   <property name="minimumSize">
@@ -5219,13 +5542,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>298</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_101">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_59" native="true">
@@ -5436,19 +5771,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_38">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -5456,25 +5778,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="FengRaoZhiJian_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_27">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_46" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_26" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_25">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_26" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_16">
                   <property name="minimumSize">
@@ -5494,13 +5821,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>260</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_77">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_47" native="true">
@@ -5709,19 +6048,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_26">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -5729,25 +6055,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="RenWuJiHuiSuo_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_44">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_74" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_59" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_53">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_59" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_30">
                   <property name="minimumSize">
@@ -5767,13 +6098,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>260</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_133">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_75" native="true">
@@ -5982,19 +6325,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_54">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -6002,25 +6332,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="YiLeWaiMai_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_45">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_78" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_61" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_57">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_61" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_32">
                   <property name="minimumSize">
@@ -6040,13 +6375,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>234</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_141">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_79" native="true">
@@ -6243,19 +6590,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_58">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -6263,25 +6597,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="MeiRiShengChang_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_36">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_56" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_35" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_35">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_35" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_21">
                   <property name="minimumSize">
@@ -6301,13 +6640,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>590</width>
-                     <height>260</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_97">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_57" native="true">
@@ -6516,19 +6867,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_36">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -6536,25 +6874,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="ShengCunTiaoZhan_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_47">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_82" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_63" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_61">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_63" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_34">
                   <property name="minimumSize">
@@ -6574,13 +6917,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>260</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_149">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_83" native="true">
@@ -6789,19 +7144,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_62">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -6809,25 +7151,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="MiJingTanXian_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_65">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_84" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_64" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_63">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_64" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_35">
                   <property name="minimumSize">
@@ -6847,13 +7194,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>234</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_153">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_85" native="true">
@@ -7050,19 +7409,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_64">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -7070,25 +7416,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="ShangChengJiangLi_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_80">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_107" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_79" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_83">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_79" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_45">
                   <property name="minimumSize">
@@ -7108,13 +7459,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>234</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_199">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_108" native="true">
@@ -7311,19 +7674,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_84">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -7331,25 +7681,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="QingBaoZhan_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_50">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_68" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_49" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_47">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_49" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_27">
                   <property name="minimumSize">
@@ -7369,13 +7724,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>260</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_121">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_69" native="true">
@@ -7584,19 +7951,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_48">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -7604,25 +7958,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="MaoXianFuBen_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_40">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_60" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_39" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_39">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_39" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_23">
                   <property name="minimumSize">
@@ -7642,13 +8001,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>280</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_105">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_61" native="true">
@@ -7858,19 +8229,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_40">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -7878,25 +8236,33 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="HuoYueDuJiangLi_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_42">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_62" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_41" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_41">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_41" stretch="5">
+                <property name="leftMargin">
+                 <number>9</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_24">
                   <property name="minimumSize">
@@ -7916,13 +8282,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>234</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_109">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_63" native="true">
@@ -8119,19 +8497,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_42">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -8139,25 +8504,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="QingKongYouJian_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_52">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_70" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_51" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_49">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_51" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_28">
                   <property name="minimumSize">
@@ -8177,13 +8547,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>234</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_125">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_71" native="true">
@@ -8380,19 +8762,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_50">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -8400,25 +8769,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="XiuXingZhiLu_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_53">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_76" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_60" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_55">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_60" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_31">
                   <property name="minimumSize">
@@ -8438,13 +8812,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>234</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_137">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_77" native="true">
@@ -8641,19 +9027,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_56">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -8661,25 +9034,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="MeiZhouShengChang_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_19">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_38" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_18" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_17">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_18" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_12">
                   <property name="minimumSize">
@@ -8699,13 +9077,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>252</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_61">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_39" native="true">
@@ -8903,19 +9293,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_18">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -8923,25 +9300,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="RenFaTieDianZanFenXiang_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_58">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_72" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_54" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_51">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_54" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_29">
                   <property name="minimumSize">
@@ -8961,13 +9343,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>260</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_129">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_73" native="true">
@@ -9176,19 +9570,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_52">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -9196,25 +9577,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="GengDuoWanFa_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_23">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_42" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_22" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_21">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_22" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_14">
                   <property name="minimumSize">
@@ -9234,13 +9620,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>252</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_69">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_43" native="true">
@@ -9438,19 +9836,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_22">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -9458,25 +9843,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="TuanBen_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_67">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_88" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_55" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_67">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_55" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_37">
                   <property name="minimumSize">
@@ -9496,13 +9886,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>260</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_161">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_89" native="true">
@@ -9711,19 +10113,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_68">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -9731,25 +10120,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="BenFuYaoSaiZhan_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_76">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_101" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_72" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_77">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_72" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_42">
                   <property name="minimumSize">
@@ -9769,13 +10163,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>260</height>
+                     <width>886</width>
+                     <height>619</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_187">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_102" native="true">
@@ -9984,19 +10390,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_78">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -10004,25 +10397,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="PanRenLaiXi_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_66">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_86" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_57" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_65">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_57" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_36">
                   <property name="minimumSize">
@@ -10042,13 +10440,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>260</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_157">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_87" native="true">
@@ -10257,19 +10667,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_66">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -10277,25 +10674,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="TianDiZhanChang_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_77">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_103" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_73" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_79">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_73" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_43">
                   <property name="minimumSize">
@@ -10315,13 +10717,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>260</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_191">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_104" native="true">
@@ -10530,19 +10944,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_80">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -10550,25 +10951,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="ZhuiJiXiaoZuZhi_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_78">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_105" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_74" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_81">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_74" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_44">
                   <property name="minimumSize">
@@ -10588,13 +10994,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>260</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_195">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_106" native="true">
@@ -10803,19 +11221,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_82">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -10823,25 +11228,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="KuaFuYaoSaiZhan_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_75">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_99" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_71" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_75">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_71" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_41">
                   <property name="minimumSize">
@@ -10861,13 +11271,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>260</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_183">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_100" native="true">
@@ -11076,19 +11498,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_76">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -11096,25 +11505,33 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="DianFengDuiJue_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_11">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_97" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_70" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_73">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_70" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="rightMargin">
+                 <number>9</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_40">
                   <property name="minimumSize">
@@ -11134,13 +11551,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>260</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_179">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_98" native="true">
@@ -11349,19 +11778,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_74">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -11369,25 +11785,33 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="ZuZhiZhengBa_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_46">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_64" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_43" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_43">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_43" stretch="5">
+                <property name="leftMargin">
+                 <number>9</number>
+                </property>
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_25">
                   <property name="minimumSize">
@@ -11407,13 +11831,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>260</height>
+                     <width>886</width>
+                     <height>619</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_113">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_65" native="true">
@@ -11622,19 +12058,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_44">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -11642,25 +12065,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="SaiJiShengChang_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_21">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_40" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_20" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_19">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_20" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_13">
                   <property name="minimumSize">
@@ -11680,13 +12108,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>252</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_65">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_41" native="true">
@@ -11884,19 +12324,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_20">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -11904,25 +12331,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="ZhuangBeiHeCheng">
             <layout class="QHBoxLayout" name="horizontalLayout_10">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_92" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_69" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_71">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_69" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_39">
                   <property name="minimumSize">
@@ -11942,13 +12374,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>412</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_169">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_93" native="true">
@@ -12410,19 +12854,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_72">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -12430,25 +12861,30 @@ margin-left:18px;</string>
            </widget>
            <widget class="QWidget" name="GaoJiRenZheZhaoMu_widget">
             <layout class="QHBoxLayout" name="horizontalLayout_29">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_48" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_28" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_27">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_28" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_17">
                   <property name="minimumSize">
@@ -12468,13 +12904,25 @@ margin-left:18px;</string>
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>566</width>
-                     <height>234</height>
+                     <width>886</width>
+                     <height>610</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_81">
                     <property name="spacing">
                      <number>20</number>
+                    </property>
+                    <property name="leftMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="rightMargin">
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item>
                      <widget class="QWidget" name="widget_49" native="true">
@@ -12671,19 +13119,6 @@ margin-left:18px;</string>
                   </widget>
                  </widget>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer_28">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </widget>
              </item>
@@ -12697,25 +13132,30 @@ margin-left:18px;</string>
              </size>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_5">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
              <item>
               <widget class="QWidget" name="widget_19" native="true">
                <property name="styleSheet">
                 <string notr="true"/>
                </property>
-               <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="1,5,1">
-                <item>
-                 <spacer name="horizontalSpacer_9">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
+               <layout class="QHBoxLayout" name="horizontalLayout_12" stretch="5">
+                <property name="topMargin">
+                 <number>0</number>
+                </property>
+                <property name="bottomMargin">
+                 <number>0</number>
+                </property>
                 <item>
                  <widget class="QScrollArea" name="scrollArea_8">
                   <property name="minimumSize">
@@ -12734,9 +13174,9 @@ margin-left:18px;</string>
                    <property name="geometry">
                     <rect>
                      <x>0</x>
-                     <y>-87</y>
-                     <width>619</width>
-                     <height>1162</height>
+                     <y>0</y>
+                     <width>874</width>
+                     <height>1144</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_25">
@@ -12744,10 +13184,16 @@ margin-left:18px;</string>
                      <number>20</number>
                     </property>
                     <property name="leftMargin">
-                     <number>10</number>
+                     <number>0</number>
+                    </property>
+                    <property name="topMargin">
+                     <number>0</number>
                     </property>
                     <property name="rightMargin">
-                     <number>10</number>
+                     <number>0</number>
+                    </property>
+                    <property name="bottomMargin">
+                     <number>0</number>
                     </property>
                     <item alignment="Qt::AlignmentFlag::AlignTop">
                      <widget class="QWidget" name="widget_21" native="true">
@@ -14486,19 +14932,6 @@ margin-left:18px;</string>
                    </layout>
                   </widget>
                  </widget>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer_10">
-                  <property name="orientation">
-                   <enum>Qt::Orientation::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
                 </item>
                </layout>
               </widget>
