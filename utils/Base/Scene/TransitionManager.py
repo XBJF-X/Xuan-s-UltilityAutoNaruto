@@ -86,7 +86,8 @@ class TransitionManager:
         return operationer.search_and_detect(
             [operationer.scene_graph.scenes.get(target_id)],
             [],
-            search_max_time=10
+            search_max_time=10,
+            wait_time=0
         )
 
     def _bfs_shortest_path(self, start_id: str, end_id: str) -> List[str]:

@@ -10,13 +10,13 @@ class BenFuYaoSaiZhan(BaseTask):
     source_scene = "X之要塞"
     task_max_duration = timedelta(minutes=30)
 
-    @TransitionOn
+    @TransitionOn()
     def _(self):
         joystick = self.config.get_config("键位")[KEY_INDEX.JoyStick]
         fight_sum = 0
 
         while datetime.now(tz=ZoneInfo("Asia/Shanghai")) < self.dead_line:
-            while not self.operationer.detect_element("正在寻找旗鼓相当的对手", auto_raise=False):
+            while not self.operationer.detect_element("正在寻找旗鼓相当的对手", max_time=0.5, auto_raise=False):
                 self.operationer.long_press(joystick[0] + 30, joystick[1], 3)
             self._handle_fight()
             fight_sum += 1
@@ -78,9 +78,10 @@ class BenFuYaoSaiZhan(BaseTask):
                     {'click': "空白点"},
                     {'click': "你的对手离开了游戏-确定"}
                 ],
-                search_max_time=60
+                search_max_time=60,
+                wait_time=0
         ):
-            raise StepFailedError("战斗结束后无法退回[忍术对战-单人模式]")
+            raise StepFailedError("战斗结束后无法退回[X之要塞]")
 
     def _update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         # 辅助函数：计算下次周六8点的时间
