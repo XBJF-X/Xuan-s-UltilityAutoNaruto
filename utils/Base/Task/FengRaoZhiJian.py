@@ -16,7 +16,7 @@ class FengRaoZhiJian(BaseTask):
                 "今日已完成挑战",
                 auto_raise=False
         ):
-            self._update_next_execute_time()
+            self.update_next_execute_time()
             raise EndEarly("已完成挑战，提前结束执行")
         # 先看看能不能用超影直接过
         if self.operationer.click_and_wait(
@@ -40,7 +40,7 @@ class FengRaoZhiJian(BaseTask):
                         search_max_time=60
                 ):
                     raise StepFailedError("退出[丰饶之间]失败")
-                self._update_next_execute_time()
+                self.update_next_execute_time()
                 raise EndEarly("免费完成，提前结束执行")
             else:
                 self.logger.info("没有超影，返回[丰饶之间]界面")
@@ -80,9 +80,9 @@ class FengRaoZhiJian(BaseTask):
                 search_max_time=60
         ):
             raise StepFailedError("退出[丰饶之间]失败")
-        self._update_next_execute_time()
+        self.update_next_execute_time()
 
-    def _update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
+    def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         # 明确指定中国时区（带时区的当前时间）
         china_tz = ZoneInfo("Asia/Shanghai")
         current_time = datetime.now(china_tz)
@@ -111,12 +111,13 @@ class FengRaoZhiJian(BaseTask):
             case 3:  # 把执行时间推迟delta时间，要求 delta!=None
                 if delta is None:
                     self.logger.warning(f"update_next_execute_time传入的delta为空")
-                    return
+                    return False, None
                 self.next_execute_time = current_time + delta
 
             case _:
                 self.logger.warning(f"请检查update_next_execute_time传入的参数：flag={flag},delta={delta}")
-                return
+                return False, None
 
         self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
         self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
+        return True, self.next_execute_time

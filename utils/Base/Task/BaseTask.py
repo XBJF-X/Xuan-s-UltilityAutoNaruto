@@ -112,7 +112,8 @@ class BaseTask:
         self.task_id = self.data.get('任务ID')
         self.is_activated = self.data.get('是否启用')
         self.cycle_type = CycleType(self.data.get('周期类型'))
-        self._update_next_execute_time(0)
+        self.next_execute_time = None
+        self.update_next_execute_time(0)
 
         # 任务执行需要的组件
         self.scene_graph = scene_graph
@@ -254,7 +255,7 @@ class BaseTask:
         self.logger.debug(f"{task_name}被激活，将立即执行")
         self.activate_another_task_signal.emit(task_name)
 
-    def _update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
+    def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         """
         用于更新本任务的下次执行时间，默认需要派生类自己重载
 
@@ -264,7 +265,7 @@ class BaseTask:
                 1：正常执行完毕，更新为下次执行的时间
                 2：立刻执行，通常把时间重置到能保证第二天之前即可，不同的任务分别处理
                 3：把执行时间推迟delta时间，要求 delta!=None
-
+            delta: 延迟的时长
         Returns:
 
         """
@@ -292,15 +293,16 @@ class BaseTask:
             case 3:  # 把执行时间推迟delta时间，要求 delta!=None
                 if delta is None:
                     self.logger.warning(f"update_next_execute_time传入的delta为空")
-                    return
+                    return False, None
                 self.next_execute_time = current_time + delta
 
             case _:
                 self.logger.warning(f"请检查update_next_execute_time传入的参数：flag={flag},delta={delta}")
-                return
+                return False, None
 
         self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
         self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
+        return True, self.next_execute_time
 
 
 class TransitionOn:

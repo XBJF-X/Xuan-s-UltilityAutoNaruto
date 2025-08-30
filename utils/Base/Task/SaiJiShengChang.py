@@ -87,9 +87,9 @@ class SaiJiShengChang(MeiRiShengChang):
 
         self.logger.warning("已打完所有赛季胜场")
         self.click_and_wait({'type': "COORDINATE", 'coordinate': [1523, 45]})
-        self._update_next_execute_time()
+        self.update_next_execute_time()
 
-    def _update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
+    def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         # 明确指定中国时区（带时区的当前时间）
         china_tz = ZoneInfo("Asia/Shanghai")
         current_time = datetime.now(china_tz)
@@ -149,12 +149,13 @@ class SaiJiShengChang(MeiRiShengChang):
             case 3:  # 把执行时间推迟delta时间，要求 delta!=None
                 if delta is None:
                     self.logger.warning(f"update_next_execute_time传入的delta为空")
-                    return
+                    return False, None
                 self.next_execute_time = current_time + delta
 
             case _:
                 self.logger.warning(f"请检查update_next_execute_time传入的参数：flag={flag},delta={delta}")
-                return
+                return False, None
 
         self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
         self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
+        return True, self.next_execute_time

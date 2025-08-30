@@ -79,6 +79,22 @@ class PriorityQueue(Generic[T]):
         except ValueError:
             return False
 
+    def execute_at_once(self, task_name: str):
+        """在队列中更新某个任务的状态"""
+        if task_name not in self.task_dic:
+            return False, None
+        task = self.task_dic[task_name]
+        # 更新任务属性
+        flag, net = task.update_next_execute_time(2)
+        # 从堆中移除并重新插入
+        try:
+            self.heap.remove(task)
+            heapq.heapify(self.heap)  # 重新堆化
+            heapq.heappush(self.heap, task)  # 重新插入
+            return True, net
+        except ValueError:
+            return False, None
+
 
 class TaskWidgetList(Generic[W]):
     def __init__(self, layout: QBoxLayout):
@@ -399,17 +415,17 @@ class Scheduler(QObject):
         if lineedit_widget.text() != "":
             return
 
-        self.config.set_task_config(task_name, "下次执行时间", int(datetime.now(ZoneInfo("Asia/Shanghai")).timestamp()))
-        lineedit_widget.setText(datetime.now(ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"))
-
         if not self.running:
             return
 
         lineedit_widget.setEnabled(False)
-        net = datetime.now(ZoneInfo("Asia/Shanghai"))
-        if not self.waiting_queue.update(task_name, next_execute_time=net):
-            if not self.ready_queue.update(task_name, next_execute_time=net):
-                if not self.running_queue.update(task_name, next_execute_time=net):
+
+        flag, net = self.waiting_queue.execute_at_once(task_name)
+        if not flag:
+            flag, net = self.ready_queue.execute_at_once(task_name)
+            if not flag:
+                flag, net = self.running_queue.execute_at_once(task_name)
+                if not flag:
                     self.logger.error(f"任务 {task_name} 放入等待队列等待立即执行失败")
                     return
                 else:
@@ -418,20 +434,23 @@ class Scheduler(QObject):
                 self.ready_widget_list.update_task_widget(task_name, next_execute_time=net)
         else:
             self.waiting_widget_list.update_task_widget(task_name, next_execute_time=net)
+        lineedit_widget.setText(net.strftime("%Y-%m-%d %H:%M:%S"))
         lineedit_widget.setEnabled(True)
+
         self.logger.info(f"任务 {task_name} 已放入等待队列等待立即执行")
 
     def activate_another_task_implement(self, task_name):
         """任务调用其他任务立刻执行"""
-        self.config.set_task_config(task_name, "下次执行时间", int(datetime.now(ZoneInfo("Asia/Shanghai")).timestamp()))
 
         if not self.running:
             return
 
-        net = datetime.now(ZoneInfo("Asia/Shanghai"))
-        if not self.waiting_queue.update(task_name, next_execute_time=net):
-            if not self.ready_queue.update(task_name, next_execute_time=net):
-                if not self.running_queue.update(task_name, next_execute_time=net):
+        flag, net = self.waiting_queue.execute_at_once(task_name)
+        if not flag:
+            flag, net = self.ready_queue.execute_at_once(task_name)
+            if not flag:
+                flag, net = self.running_queue.execute_at_once(task_name)
+                if not flag:
                     self.logger.error(f"任务 {task_name} 放入等待队列等待立即执行失败")
                     return
                 else:

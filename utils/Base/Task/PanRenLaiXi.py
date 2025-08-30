@@ -9,4 +9,4 @@ class PanRenLaiXi(BaseTask):
 
         # 执行逻辑部分
 
-        self._update_next_execute_time()
+        self.update_next_execute_time()

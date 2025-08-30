@@ -77,14 +77,14 @@ class XiaoDuiTuXi(BaseTask):
                     "今日收益次数已达上限",
                     auto_raise=False
             ):
-                self._update_next_execute_time()
+                self.update_next_execute_time()
                 raise EndEarly("小队突袭次数已用尽")
             # # 先看看能不能扫荡
             # self._handle_sweep_through()
             self.operationer.next_scene = "小队突袭-组织助战"
             return False
         self.logger.info("执行结束")
-        self._update_next_execute_time()
+        self.update_next_execute_time()
         return True
 
     def _select_four_rewards(self):
@@ -133,7 +133,7 @@ class XiaoDuiTuXi(BaseTask):
             self.logger.info("战斗结束")
             raise EndEarly("已扫荡完成，提前结束")
 
-    def _update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
+    def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         # 明确指定中国时区（带时区的当前时间）
         china_tz = ZoneInfo("Asia/Shanghai")
         current_time = datetime.now(china_tz)
@@ -163,16 +163,16 @@ class XiaoDuiTuXi(BaseTask):
             case 3:  # 把执行时间推迟delta时间，要求 delta!=None
                 if delta is None:
                     self.logger.warning(f"update_next_execute_time传入的delta为空")
-                    return
+                    return False, None
                 self.next_execute_time = current_time + delta
 
             case _:
                 self.logger.warning(f"请检查update_next_execute_time传入的参数：flag={flag},delta={delta}")
-                return
+                return False, None
 
         self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
         self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
-
+        return True, self.next_execute_time
 
 def setup_logging():
     # 创建基础日志格式

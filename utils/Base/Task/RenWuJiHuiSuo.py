@@ -52,7 +52,7 @@ class RenWuJiHuiSuo(BaseTask):
                 "今天所有任务已经领完",
                 auto_raise=False
         ):
-            self._update_next_execute_time()
+            self.update_next_execute_time()
             raise EndEarly("今日任务已经领完，提前退出执行")
 
         task_sum = 0
@@ -103,11 +103,11 @@ class RenWuJiHuiSuo(BaseTask):
                         self.logger.info(f"已接取 {task_sum} 个任务")
                     case 1:
                         self.operationer.click_and_wait("X")
-                        self._update_next_execute_time(3, timedelta(hours=1))
+                        self.update_next_execute_time(3, timedelta(hours=1))
                         raise EndEarly("任务栏已满，等待下次检查")
                     case 2:
                         self.operationer.click_and_wait("X")
-                        self._update_next_execute_time()
+                        self.update_next_execute_time()
                         raise EndEarly("任务栏已满/今日任务已经领完")
             if self.operationer.click_and_wait(
                     "超影免费",
@@ -117,13 +117,13 @@ class RenWuJiHuiSuo(BaseTask):
             else:
                 # 能接取的都接了，无法刷新，可以退出执行了
                 self.operationer.click_and_wait("X")
-                self._update_next_execute_time(3, timedelta(hours=1))
+                self.update_next_execute_time(3, timedelta(hours=1))
                 raise EndEarly("无法刷新，提前退出执行")
         self.operationer.click_and_wait("X")
-        self._update_next_execute_time(3, timedelta(hours=1))
+        self.update_next_execute_time(3, timedelta(hours=1))
         return True
 
-    def _update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
+    def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         # 明确指定中国时区（带时区的当前时间）
         china_tz = ZoneInfo("Asia/Shanghai")
         current_time = datetime.now(china_tz)
@@ -153,12 +153,13 @@ class RenWuJiHuiSuo(BaseTask):
             case 3:  # 把执行时间推迟delta时间，要求 delta!=None
                 if delta is None:
                     self.logger.warning(f"update_next_execute_time传入的delta为空")
-                    return
+                    return False, None
                 self.next_execute_time = current_time + delta
 
             case _:
                 self.logger.warning(f"请检查update_next_execute_time传入的参数：flag={flag},delta={delta}")
-                return
+                return False, None
 
         self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
         self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
+        return True, self.next_execute_time

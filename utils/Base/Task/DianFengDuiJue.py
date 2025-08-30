@@ -12,9 +12,9 @@ class DianFengDuiJue(BaseTask):
 
         # 执行逻辑部分
 
-        self._update_next_execute_time()
+        self.update_next_execute_time()
 
-    def _update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
+    def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         # 明确指定中国时区（带时区的当前时间）
         china_tz = ZoneInfo("Asia/Shanghai")
         current_time = datetime.now(china_tz)
@@ -48,3 +48,4 @@ class DianFengDuiJue(BaseTask):
 
         self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
         self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
+        return True, self.next_execute_time

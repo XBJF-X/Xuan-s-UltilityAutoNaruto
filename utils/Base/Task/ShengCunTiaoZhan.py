@@ -40,7 +40,7 @@ class ShengCunTiaoZhan(BaseTask):
                     "生存挑战今天已经不能再重置了",
                     max_time=0.5
                 ):
-                    self._update_next_execute_time()
+                    self.update_next_execute_time()
                     raise EndEarly("已经不能再重置了，结束执行")
                 self.operationer.click_and_wait("重置-确认")
                 # 随便点一下把自动打的弹窗点掉
@@ -76,10 +76,10 @@ class ShengCunTiaoZhan(BaseTask):
             raise StepFailedError("检测[生存挑战-已通过所有关卡]超时")
         self.logger.info("系统自动扫荡结束")
         self.operationer.click_and_wait("X")
-        self._update_next_execute_time()
+        self.update_next_execute_time()
         return True
 
-    def _update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
+    def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         # 明确指定中国时区（带时区的当前时间）
         china_tz = ZoneInfo("Asia/Shanghai")
         current_time = datetime.now(china_tz)
@@ -109,12 +109,13 @@ class ShengCunTiaoZhan(BaseTask):
             case 3:  # 把执行时间推迟delta时间，要求 delta!=None
                 if delta is None:
                     self.logger.warning(f"update_next_execute_time传入的delta为空")
-                    return
+                    return False, None
                 self.next_execute_time = current_time + delta
 
             case _:
                 self.logger.warning(f"请检查update_next_execute_time传入的参数：flag={flag},delta={delta}")
-                return
+                return False, None
 
         self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
         self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
+        return True, self.next_execute_time

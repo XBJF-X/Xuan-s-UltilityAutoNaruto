@@ -33,7 +33,7 @@ class TianDiZhanChang(BaseTask):
         self.operationer.click_and_wait("X")
         return True
 
-    def _update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
+    def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         # 辅助函数：计算下次周三9点的时间
         def get_next_wednesday_9pm(current_time, tz):
             current_weekday = current_time.weekday()
@@ -61,17 +61,18 @@ class TianDiZhanChang(BaseTask):
                 self.next_execute_time = get_next_wednesday_9pm(current_time, china_tz)
 
             case 2:  # 立刻执行，通常把时间重置到能保证第二天之前即可，不同的任务分别处理
-                self.next_execute_time = datetime.now(ZoneInfo("Asia/Shanghai"))
+                self.next_execute_time = get_next_wednesday_9pm(current_time, china_tz)
 
             case 3:  # 把执行时间推迟delta时间，要求 delta!=None
                 if delta is None:
                     self.logger.warning(f"update_next_execute_time传入的delta为空")
-                    return
+                    return False, None
                 self.next_execute_time = current_time + delta
 
             case _:
                 self.logger.warning(f"请检查update_next_execute_time传入的参数：flag={flag},delta={delta}")
-                return
+                return False, None
 
         self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
         self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
+        return True, self.next_execute_time
