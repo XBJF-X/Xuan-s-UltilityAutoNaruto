@@ -10,16 +10,16 @@ class GouMaiTiLi(BaseTask):
     task_max_duration = timedelta(minutes=3)
 
     def run(self):
-        if self.config.get_config("已购买体力次数") >= self.data.get("购买体力次数", 0):
+        if self.data.get("已购买体力次数") >= self.data.get("购买体力次数", 0):
             self.update_next_execute_time()
-            self.config.set_config("已购买体力次数", 0)
+            self.config.set_task_config("购买体力", "已购买体力次数", 0)
             raise EndEarly("已完成购买体力次数")
         super().run()
 
     @TransitionOn()
     def _(self):
         self.operationer.click_and_wait("体力购买")
-        times = self.config.get_config('已购买体力次数')
+        times = self.data.get('已购买体力次数')
         while times < self.data.get("购买体力次数", 0):
             self.operationer.click_and_wait("体力购买-购买")
             if not self.operationer.pass_secondary_password():
@@ -27,7 +27,7 @@ class GouMaiTiLi(BaseTask):
                 self.config.set_config('已购买体力次数', times)
                 self.logger.info(f"已购买体力 {times} 次")
         self.operationer.click_and_wait("体力购买-X")
-        self.config.set_config('已购买体力次数', 0)
+        self.config.set_task_config("购买体力", "已购买体力次数", 0)
         self.update_next_execute_time()
         return True
 

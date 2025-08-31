@@ -62,8 +62,34 @@ class Config:
         """递归合并配置：用户配置覆盖默认配置，缺失项用默认配置补充"""
         merged = copy.deepcopy(default_config)
         for key, value in user_config.items():
-            if isinstance(value, dict) and key in merged and isinstance(merged[key], dict):
-                # 递归合并字典
+            if key == "任务":  # 特殊处理"任务"字典
+                if key in merged and isinstance(merged[key], dict) and isinstance(value, dict):
+                    # 对每个任务进行特殊合并
+                    merged_tasks = {}
+                    for task_name, task_config in value.items():
+                        # 如果默认配置中存在同名任务
+                        if task_name in merged[key]:
+                            default_task = merged[key][task_name]
+                            # 创建任务配置的深拷贝
+                            merged_task = copy.deepcopy(task_config)
+                            # 强制同步特定字段
+                            merged_task["任务ID"] = default_task["任务ID"]
+                            merged_task["任务名称"] = default_task["任务名称"]
+                            merged_task["周期类型"] = default_task["周期类型"]
+                            merged_tasks[task_name] = merged_task
+                        else:
+                            # 默认配置中不存在的任务，直接使用用户配置
+                            merged_tasks[task_name] = task_config
+                    # 添加默认配置中存在但用户配置中不存在的任务
+                    for task_name, task_config in merged[key].items():
+                        if task_name not in merged_tasks:
+                            merged_tasks[task_name] = task_config
+                    merged[key] = merged_tasks
+                else:
+                    # 如果默认配置中没有"任务"键或不是字典，则使用用户配置
+                    merged[key] = value
+            elif isinstance(value, dict) and key in merged and isinstance(merged[key], dict):
+                # 递归合并其他字典
                 merged[key] = self._merge_configs(value, merged[key])
             else:
                 # 非字典类型直接覆盖

@@ -10,9 +10,9 @@ class JinBiZhaoCai(BaseTask):
     task_max_duration = timedelta(minutes=3)
 
     def run(self):
-        if self.config.get_config("已金币招财次数") >= self.data.get("招财次数", 0):
+        if self.data.get("已金币招财次数") >= self.data.get("招财次数", 0):
             self.update_next_execute_time()
-            self.config.set_config("已金币招财次数", 0)
+            self.config.set_task_config("金币招财","已金币招财次数", 0)
             raise EndEarly("已招满金币招财")
         super().run()
 
@@ -30,17 +30,17 @@ class JinBiZhaoCai(BaseTask):
             self.logger.info(f"已招财 2 次")
         else:
             self.logger.debug("不存在免费招财次数")
-        self.config.set_config("已金币招财次数", 2)
-        times = self.config.get_config("已金币招财次数")
+        self.config.set_task_config("金币招财", "已金币招财次数", 2)
+        times = self.data.get("已金币招财次数")
         while times < self.data.get("招财次数", 2):
             self.operationer.click_and_wait("付费招财")
             if not self.operationer.pass_secondary_password():
                 times += 1
-                self.config.set_config("已金币招财次数", times)
+                self.config.set_task_config("金币招财", "已金币招财次数", times)
                 self.logger.info(f"已招财 {times} 次")
         self.operationer.click_and_wait("X")
         self.update_next_execute_time()
-        self.config.set_config("已金币招财次数", 0)
+        self.config.set_task_config("金币招财", "已金币招财次数", 0)
         return True
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):

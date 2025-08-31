@@ -10,7 +10,7 @@ class XiuXingZhiLu(BaseTask):
     task_max_duration = timedelta(minutes=3)
 
     def run(self):
-        self.flag = self.config.get_config("修行之路状态")
+        self.flag = self.data.get("修行之路状态")
         # 0 - 表示未扫荡，同时也是默认值
         # 1 - 表示已扫荡未收获
         super().run()
@@ -33,7 +33,7 @@ class XiuXingZhiLu(BaseTask):
                     else:
                         raise StepFailedError("扫荡失败")
                 self.operationer.click_and_wait("X")
-                self.config.set_config("修行之路状态", 1)
+                self.config.set_task_config("修行之路", "修行之路状态", 1)
                 self.update_next_execute_time(3, timedelta(hours=1, minutes=20))
                 return True
             else:
@@ -53,7 +53,7 @@ class XiuXingZhiLu(BaseTask):
                             raise StepFailedError("扫荡失败")
                     self.operationer.click_and_wait("X")
                     self.operationer.click_and_wait("X")
-                    self.config.set_config("修行之路状态", 1)
+                    self.config.set_task_config("修行之路", "修行之路状态", 1)
                     self.update_next_execute_time(3, timedelta(hours=1, minutes=20))
                     return True
                 else:
@@ -65,7 +65,7 @@ class XiuXingZhiLu(BaseTask):
             self.operationer.current_scene = self.scene_graph.scenes.get("修行之路")
             self.operationer.click_and_wait("领取奖励")
             self.operationer.click_and_wait("X")
-            self.config.set_config("修行之路状态", 0)
+            self.config.set_task_config("修行之路", "修行之路状态", 0)
             self.update_next_execute_time()
             return True
 
