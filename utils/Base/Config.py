@@ -70,9 +70,9 @@ class Config:
                         # 如果默认配置中存在同名任务
                         if task_name in merged[key]:
                             default_task = merged[key][task_name]
-                            # 创建任务配置的深拷贝
-                            merged_task = copy.deepcopy(task_config)
-                            # 强制同步特定字段
+                            # 递归合并任务配置，确保用户配置中缺失的键从默认配置继承
+                            merged_task = self._merge_configs(task_config, default_task)
+                            # 强制同步特定字段（如果需要覆盖递归合并的结果）
                             merged_task["任务ID"] = default_task["任务ID"]
                             merged_task["任务名称"] = default_task["任务名称"]
                             merged_task["周期类型"] = default_task["周期类型"]
