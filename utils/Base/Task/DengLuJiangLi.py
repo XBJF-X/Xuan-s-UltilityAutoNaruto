@@ -11,27 +11,21 @@ class DengLuJiangLi(BaseTask):
     @TransitionOn("Default")
     def _(self):
         self.operationer.restart()
+        self.operationer.detect_element(
+            self.scene_graph.scenes.get("登录").elements.get("开始游戏"),
+            max_time=300,
+            wait_time=3)
+        self.operationer.click_and_wait(
+            self.scene_graph.scenes.get("登录").elements.get("开始游戏"),
+            max_time=10)
         if not self.operationer.search_and_detect(
-                [self.scene_graph.scenes.get("登录")],
-                [],
-                search_max_time=120
-        ):
-            raise StepFailedError("加载到游戏登录界面失败")
-        if not self.operationer.search_and_click(
-                [self.scene_graph.scenes.get("登录").elements.get("开始游戏")],
-                [],
-                search_max_time=300
-        ):
-            raise StepFailedError("未出现[开始游戏]按钮，请检查是否掉授权或网络情况差")
-
-        if not self.operationer.search_and_detect(
-            [self.scene_graph.scenes.get("登录奖励")],
-            [
-                {'click': self.scene_graph.scenes.get("主场景").elements.get("公告-X")},
-                {'click': self.scene_graph.scenes.get("主场景").elements.get("广告-X")}
-            ],
-            search_max_time=60,
-            wait_time=3
+                [self.scene_graph.scenes.get("登录奖励")],
+                [
+                    {'click': self.scene_graph.scenes.get("主场景").elements.get("公告-X")},
+                    {'click': self.scene_graph.scenes.get("主场景").elements.get("广告-X")}
+                ],
+                search_max_time=120,
+                wait_time=3
         ):
             self.update_next_execute_time()
             raise EndEarly("未弹出登录奖励窗口，可能已领取")
@@ -42,7 +36,7 @@ class DengLuJiangLi(BaseTask):
                 {'click': self.scene_graph.scenes.get("主场景").elements.get("公告-X")},
                 {'click': self.scene_graph.scenes.get("主场景").elements.get("广告-X")}
             ],
-            search_max_time=15,
+            search_max_time=60,
             wait_time=3
         )
         self.update_next_execute_time()
