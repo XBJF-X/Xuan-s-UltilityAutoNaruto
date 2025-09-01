@@ -19,7 +19,6 @@ from utils.Base.Scene.SceneGraph import SceneGraph
 class Operationer:
     current_scene: Scene | None = None
     next_scene: str | None = None
-    stop_event = threading.Event()
 
     def __init__(self,
                  task_name: str,
@@ -30,6 +29,7 @@ class Operationer:
                  screen_save_signal: Signal(str),
                  parent_logger
                  ):
+        self.stop_event = threading.Event()
         self.task_name = task_name
         self.config = config
         self.device = device
