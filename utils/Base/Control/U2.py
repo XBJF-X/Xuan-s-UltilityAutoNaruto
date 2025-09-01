@@ -11,13 +11,13 @@ class U2:
     使用uiautomator2进行控制的控制方案
     """
 
-    def __init__(self, config: Config,parent_logger):
+    def __init__(self, config: Config, parent_logger):
         try:
-            self.logger = parent_logger.getChild(self.__class__.__name__+"_Control")
+            self.logger = parent_logger.getChild(self.__class__.__name__ + "_Control")
             self.config = config
             self.serial = config.get_config("串口")
             self.screen_size = None
-            self.u2_device: u2.Device|None = None
+            self.u2_device: u2.Device | None = None
             self.u2_device = u2.connect(self.serial)
             self.screen_size = self.u2_device.window_size()  # (width, height)
             print(self.u2_device.info)

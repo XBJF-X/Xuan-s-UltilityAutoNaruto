@@ -213,7 +213,8 @@ class Recognizer:
         else:
             return self.template_match(template, scene_img, bool_debug)
 
-    def sift_match(self, template, scene_img, min_match_ratio=0.18, ratio=0.75):
+    def sift_match(self, template, scene_img, ratio=0.75):
+        min_match_ratio = template.threshold
         # 1. 读取图像
         template_gray = template.gray
         scene_gray = cv2.cvtColor(scene_img, cv2.COLOR_BGR2GRAY).astype(np.uint8)

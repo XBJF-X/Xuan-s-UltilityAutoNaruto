@@ -86,6 +86,7 @@ class MuMu:
             return None
 
         display_id = self.get_display_id()
+
         ret = self.capture_display_func(
             self.mumu_handle,
             display_id,
@@ -283,8 +284,9 @@ class MuMu:
             self.logger.warning("get_display_id_func_ 函数指针为空，MuMu模拟器版本过低，请升级")
             return 0
         display_id = self.get_display_id_func(self.mumu_handle, c_char_p(self.package_name.encode('utf-8')), 0)
+        # self.logger.debug(f"获取Display id : {display_id}")
         if display_id < 0:
-            self.logger.warning("获取Display id失败")
+            self.logger.warning(f"获取Display id失败：{display_id}")
             return 0
         return display_id
 

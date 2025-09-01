@@ -184,6 +184,7 @@ class Operationer:
                 elif element.type == ElementType.IMG:
                     coordinates = self.recognizer.element_match(self.device.screen_cap(), element)
                     if coordinates:
+                        QThread.msleep(500)
                         coordinate = coordinates[0]
                         x_ratio, y_ratio = element.ratio
                         # 按照元素可点击位置相对于模版左上角，相对整体的比例确定点击坐标
@@ -206,6 +207,7 @@ class Operationer:
                 elif element.type == ElementType.IMG:
                     coordinates = self.recognizer.element_match(self.device.screen_cap(), element)
                     if coordinates:
+                        QThread.msleep(500)
                         coordinate = coordinates[0]
                         x_ratio, y_ratio = element.ratio
                         # 按照元素可点击位置相对于模版左上角，相对整体的比例确定点击坐标
