@@ -21,11 +21,12 @@ class MiJingTanXian(BaseTask):
         while not self.operationer.detect_element(
                 "剩余挑战券-0",
                 max_time=0.7,
+                wait_time=3,
                 auto_raise=False
         ):
             self.logger.info("挑战券不为0，继续出战")
             # 点击出战
-            self.operationer.click_and_wait("出战")
+            self.operationer.click_and_wait("出战", wait_time=3)
             if self.operationer.click_and_wait(
                     "出战-继续挑战-确定",
                     wait_time=3,
@@ -114,7 +115,8 @@ class MiJingTanXian(BaseTask):
             # 等待[秘境探险-匹配]界面出现，继续检测挑战券数量
             self.operationer.detect_scene(
                 "秘境探险-匹配",
-                max_time=30
+                max_time=30,
+                wait_time=3
             )
         self.logger.info("挑战券清空，结束执行")
 
