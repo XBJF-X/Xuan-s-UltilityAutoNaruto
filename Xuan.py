@@ -11,7 +11,7 @@ from typing import List
 import cv2
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QPainter, QBrush, QColor, QPainterPath
-from PySide6.QtWidgets import QMainWindow, QApplication, QPushButton, QDialog
+from PySide6.QtWidgets import QMainWindow, QApplication, QPushButton, QDialog, QButtonGroup
 
 from StaticFunctions import resource_path, get_real_path
 from utils.AddConfig import AddConfig
@@ -19,6 +19,36 @@ from utils.Base.Scene.SceneGraph import SceneGraph
 from utils.Base.Updater import Updater
 from utils.Servicer import Service
 from utils.ui.Xuan_ui import Ui_Xuan
+
+# 使用样式表
+button_style = """
+QPushButton {
+    border: 0px;
+    outline: 0px;
+    background-color: transparent;
+    color: #000000;
+    padding: 5px;
+    margin-right:3px;
+    margin-left:3px;
+    text-align: left;
+}
+
+QPushButton:hover {
+    border: 1px solid #39C5BB;
+    color: #39C5BB;
+    background-color: rgba(57, 197, 187, 0.1);
+}
+
+QPushButton:checked {
+    border: 1px solid #39C5BB;
+    color: #39C5BB;
+}
+
+QPushButton:pressed {
+    border: 1px solid #39C5BB;
+    color: #2AA79E;
+}
+"""
 
 
 class Xuan(QMainWindow):
@@ -108,6 +138,10 @@ class Xuan(QMainWindow):
 
     def alloc_ui_ref_map(self):
         self.UI.ServiceStackedWidget.setContentsMargins(0, 0, 0, 0)
+        # 创建按钮组并设置互斥
+        self.button_group = QButtonGroup(self)
+        self.button_group.setExclusive(True)
+
         # 确保配置目录存在
         if not os.path.exists(self.config_path):
             os.makedirs(self.config_path)
@@ -163,8 +197,11 @@ class Xuan(QMainWindow):
             btn_text = service.config.get_config("用户名")  # 例如"Config_1"
             btn = QPushButton(btn_text)
             btn.setObjectName(f"config_switch_btn_{idx}")  # 设置唯一名称，便于调试
+            btn.setStyleSheet(button_style)
+            btn.setCheckable(True)
             # 绑定点击事件：切换到对应索引的page
             btn.clicked.connect(lambda checked, id=idx: self.UI.ServiceStackedWidget.setCurrentIndex(id))
+            self.button_group.addButton(btn)
             # 插入到弹簧上方（弹簧在布局中的索引位置）
             if spring_item:
                 spring_index = container_layout.indexOf(spring_item)
@@ -172,6 +209,9 @@ class Xuan(QMainWindow):
             else:
                 # 如果没有弹簧，直接添加到布局末尾
                 container_layout.addWidget(btn)
+        if self.services:  # 确保有服务存在
+            first_btn = self.button_group.buttons()[0]
+            first_btn.setChecked(True)
         # 确保首页为总览面板
         self.UI.ServiceStackedWidget.setCurrentIndex(0)
 
@@ -262,9 +302,12 @@ class Xuan(QMainWindow):
                     new_btn_index = len(self.services) - 1  # 新服务在列表中的索引
                     btn = QPushButton(new_service.config.get_config("用户名"))  # 按钮文本为文件名（不含后缀）
                     btn.setObjectName(f"config_switch_btn_{new_btn_index}")
+                    btn.setStyleSheet(button_style)
+                    btn.setCheckable(True)
                     btn.clicked.connect(
                         lambda checked, idx=new_btn_index: self.UI.ServiceStackedWidget.setCurrentIndex(idx)
                     )
+                    self.button_group.addButton(btn)
 
                     # 插入到弹簧上方
                     if spring_item:
