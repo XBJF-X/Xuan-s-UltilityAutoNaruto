@@ -91,7 +91,7 @@
         "threshold": 0.8,
         "elements": {
             "发给好友": {
-                "type": 0,
+                "type": 1,
                 "match_type": 0,
                 "threshold": 0.8,
                 "ratio": [
@@ -105,8 +105,8 @@
                     301
                 ],
                 "coordinate": [
-                    0,
-                    0
+                    1511,
+                    823
                 ]
             },
             "X": {
