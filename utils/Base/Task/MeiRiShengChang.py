@@ -14,53 +14,48 @@ class MeiRiShengChang(BaseTask):
     def _(self):
         self.logger.info("领取所有待领取的决斗任务宝箱")
         self.operationer.click_and_wait("决斗任务")
-        while self.operationer.search_and_click(
-                [
-                    "宝箱-待领取"
-                ],
-                [],
-                max_attempts=1,
-        ):
-            continue
+        self.collect_and_recover()
 
-        flag = self.operationer.search_and_detect(
-            [
-                self.operationer.current_scene.elements.get("宝箱-未达成")
-            ],
-            [
-                {'swipe':
-                    {"start_coordinate": [1095, 618], "end_coordinate": [1095, 167], "duration": 1}}
-            ],
-            max_attempts=1,
-            bool_debug=True
-        )
-        while flag:
-            self.operationer.click_and_wait("X")
-            self.fight()
-            self.operationer.click_and_wait("决斗任务")
-            while self.operationer.search_and_click(
-                    [
-                        "宝箱-待领取"
-                    ],
-                    [],
-                    max_attempts=1,
-            ):
-                continue
-            flag = self.operationer.search_and_detect(
+        while self.operationer.search_and_detect(
                 [
                     self.operationer.current_scene.elements.get("宝箱-未达成")
                 ],
                 [
                     {'swipe':
-                        {"start_coordinate": [1095, 618], "end_coordinate": [1095, 167], "duration": 1}}
+                        {"start_coordinate": [1095, 618], "end_coordinate": [1095, 167], "duration": 0.7}}
                 ],
                 max_attempts=1,
                 bool_debug=True
-            )
+        ):
+            self.operationer.click_and_wait("X")
+            self.fight()
+            self.operationer.click_and_wait("决斗任务")
+            self.collect_and_recover()
         self.operationer.click_and_wait("X")
         self.logger.info("没有未达成的宝箱，结束执行")
         self.update_next_execute_time()
         return True
+
+    def collect_and_recover(self):
+        """
+        领取战斗宝箱以及追回，自动处理道具不足的情况
+        """
+        while self.operationer.search_and_click(
+                [
+                    "宝箱-领取"
+                ],
+                [],
+                max_attempts=1,
+        ):
+            continue
+        # 检测有无可追回宝箱
+        if self.operationer.click_and_wait(
+                "宝箱-追回",
+                auto_raise=False
+        ):
+            self.operationer.click_and_wait("宝箱-追回-追回")
+            if self.operationer.detect_element("追回-道具不足", auto_raise=False):
+                self.operationer.click_and_wait("追回-X")
 
     def fight(self):
         """
