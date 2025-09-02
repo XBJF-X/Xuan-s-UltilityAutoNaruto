@@ -338,7 +338,7 @@
             "积分赛": {
                 "type": 0,
                 "match_type": 1,
-                "threshold": 0.23000000000000004,
+                "threshold": 0.4,
                 "ratio": [
                     0.5,
                     0.5
@@ -357,7 +357,7 @@
             "组织": {
                 "type": 0,
                 "match_type": 1,
-                "threshold": 0.23000000000000004,
+                "threshold": 0.4,
                 "ratio": [
                     0.5,
                     0.5
@@ -376,7 +376,7 @@
             "小队突袭": {
                 "type": 0,
                 "match_type": 1,
-                "threshold": 0.23000000000000004,
+                "threshold": 0.40000000000000013,
                 "ratio": [
                     0.5,
                     0.5
@@ -395,7 +395,7 @@
             "排行榜": {
                 "type": 0,
                 "match_type": 1,
-                "threshold": 0.23000000000000004,
+                "threshold": 0.4,
                 "ratio": [
                     0.5,
                     0.5
@@ -414,7 +414,7 @@
             "丰饶之间": {
                 "type": 0,
                 "match_type": 1,
-                "threshold": 0.23,
+                "threshold": 0.4000000000000001,
                 "ratio": [
                     0.5,
                     0.5
@@ -433,7 +433,7 @@
             "决斗场": {
                 "type": 0,
                 "match_type": 1,
-                "threshold": 0.23000000000000004,
+                "threshold": 0.4000000000000001,
                 "ratio": [
                     0.5,
                     0.5
@@ -471,7 +471,7 @@
             "试炼之地": {
                 "type": 0,
                 "match_type": 1,
-                "threshold": 0.23000000000000004,
+                "threshold": 0.4,
                 "ratio": [
                     0.5,
                     0.5
@@ -528,7 +528,7 @@
             "任务集会所": {
                 "type": 0,
                 "match_type": 1,
-                "threshold": 0.23000000000000004,
+                "threshold": 0.4000000000000001,
                 "ratio": [
                     0.5,
                     0.5
@@ -604,7 +604,7 @@
             "忍者大赛": {
                 "type": 0,
                 "match_type": 1,
-                "threshold": 0.23000000000000004,
+                "threshold": 0.4000000000000001,
                 "ratio": [
                     0.5,
                     0.5
@@ -623,7 +623,7 @@
             "忍话剧": {
                 "type": 0,
                 "match_type": 1,
-                "threshold": 0.23000000000000004,
+                "threshold": 0.4,
                 "ratio": [
                     0.5,
                     0.5
@@ -661,7 +661,7 @@
             "战区赛事": {
                 "type": 0,
                 "match_type": 1,
-                "threshold": 0.23000000000000004,
+                "threshold": 0.4,
                 "ratio": [
                     0.5,
                     0.5
@@ -679,8 +679,8 @@
             },
             "忍者挑战": {
                 "type": 0,
-                "match_type": 1,
-                "threshold": 0.23,
+                "match_type": 0,
+                "threshold": 0.4000000000000001,
                 "ratio": [
                     0.5,
                     0.5
@@ -793,8 +793,8 @@
             },
             "招财": {
                 "type": 1,
-                "match_type": 0,
-                "threshold": 0.8,
+                "match_type": 1,
+                "threshold": 0.4,
                 "ratio": [
                     0.5,
                     0.5
@@ -813,7 +813,7 @@
             "个人信息": {
                 "type": 1,
                 "match_type": 1,
-                "threshold": 0.23000000000000004,
+                "threshold": 0.30000000000000004,
                 "ratio": [
                     0.5,
                     0.5
