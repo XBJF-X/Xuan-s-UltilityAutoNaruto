@@ -17,7 +17,7 @@ class MeiRiFenXiang(BaseTask):
         )
         self.logger.info("返回游戏")
         # 返回游戏
-        self.operationer.press_key("back", wait_time=5)
+        self.operationer.back_to_naruto()
         self.update_next_execute_time()
         return True
 

@@ -14,7 +14,7 @@ class Control:
     提供了控制模式切换的选择
     """
 
-    def __init__(self, config: Config,parent_logger, initial=False):
+    def __init__(self, config: Config, parent_logger, initial=False):
         self.logger = parent_logger.getChild(self.__class__.__name__)
         self.config = config
         self.control_mode = ControlMode(self.config.get_config('控制模式'))
@@ -102,6 +102,9 @@ class Control:
         else:
             self.logger.warning("控制实例未初始化或切换未完成")
             return False
+
+    def current_app(self):
+        return self.control_instance.current_app()
 
     def input(self, input_text):
         self.control_instance.input(input_text)

@@ -56,6 +56,7 @@ class Operationer:
         Args:
             element(str|Element): 元素名
             ** kwargs: 可选参数：
+            - interval: 检测的间隔，默认为80ms
             - auto_raise: 是否自动抛出异常，默认为True
             - wait_time: 检测到之后的等待时间
             - max_time: 最大尝试时间，默认为2.0
@@ -65,6 +66,7 @@ class Operationer:
         """
         if isinstance(element, str):
             element = self.current_scene.elements.get(element)
+        interval: int = kwargs.get("interval", 80)
         auto_raise: bool = kwargs.get("auto_raise", True)
         wait_time: float = kwargs.get("wait_time", 1.0)
         max_time: float = kwargs.get("max_time", 2.0)
@@ -78,6 +80,7 @@ class Operationer:
             self.screen_save_signal.emit(self.task_name)
         if max_attempts is not None:
             for i in range(max_attempts):
+                time_1 = time.perf_counter()
                 coordinates = self.recognizer.element_match(self.device.screen_cap(), element, bool_debug)
                 if len(coordinates) != 0:
                     if bool_save_screen:
@@ -85,8 +88,11 @@ class Operationer:
                     QThread.msleep(int(wait_time * 1000))
                     success = True
                     break
+                sleep_time = max(0, int(interval - (time.perf_counter() - time_1)))
+                QThread.msleep(sleep_time)
         else:
             while time.perf_counter() - start_time < max_time:
+                time_1 = time.perf_counter()
                 coordinates = self.recognizer.element_match(self.device.screen_cap(), element, bool_debug)
                 if len(coordinates) != 0:
                     if bool_save_screen:
@@ -94,6 +100,8 @@ class Operationer:
                     QThread.msleep(int(wait_time * 1000))
                     success = True
                     break
+                sleep_time = max(0, int(interval - (time.perf_counter() - time_1)))
+                QThread.msleep(sleep_time)
         # 根据auto_raise参数决定是抛出异常还是返回结果
         if not success and auto_raise:
             raise StepFailedError(f"元素 [{element.id}] 未出现")
@@ -106,6 +114,7 @@ class Operationer:
             Args:
                 scene(str|Scene): 元素名
                 ** kwargs: 可选参数：
+                - interval: 检测的间隔，默认为80ms
                 - auto_raise: 是否自动抛出异常，默认为True
                 - wait_time: 检测到之后的等待时间
                 - max_time: 最大尝试时间，默认为2.0
@@ -115,6 +124,7 @@ class Operationer:
             """
         if isinstance(scene, str):
             scene = self.scene_graph.scenes.get(scene)
+        interval: int = kwargs.get("interval", 80)
         auto_raise: bool = kwargs.get("auto_raise", True)
         wait_time: float = kwargs.get("wait_time", 1.0)
         max_time: float = kwargs.get("max_time", 2.0)
@@ -128,6 +138,7 @@ class Operationer:
             self.screen_save_signal.emit(self.task_name)
         if max_attempts is not None:
             for i in range(max_attempts):
+                time_1 = time.perf_counter()
                 flag, confidence = self.recognizer.scene_match(self.device.screen_cap(), scene, bool_debug)
                 if flag:
                     if bool_save_screen:
@@ -135,8 +146,11 @@ class Operationer:
                     QThread.msleep(int(wait_time * 1000))
                     success = True
                     break
+                sleep_time = max(0, int(interval - (time.perf_counter() - time_1)))
+                QThread.msleep(sleep_time)
         else:
             while time.perf_counter() - start_time < max_time:
+                time_1 = time.perf_counter()
                 flag, confidence = self.recognizer.scene_match(self.device.screen_cap(), scene, bool_debug)
                 if flag:
                     if bool_save_screen:
@@ -144,6 +158,8 @@ class Operationer:
                     QThread.msleep(int(wait_time * 1000))
                     success = True
                     break
+                sleep_time = max(0, int(interval - (time.perf_counter() - time_1)))
+                QThread.msleep(sleep_time)
         # 根据auto_raise参数决定是抛出异常还是返回结果
         if not success and auto_raise:
             raise StepFailedError(f"场景 [{scene.id}] 未出现")
@@ -156,6 +172,7 @@ class Operationer:
         Args:
             element(str|Element): 元素
             ** kwargs: 可选参数：
+            - interval: 检测的间隔，默认为80ms
             - auto_raise: 是否自动抛出异常，默认为True,对于试探性的点击一定要设置成False
             - wait_time: 检测到之后的等待时间，默认为1.5
             - max_time: 最大尝试时间，默认为2.0
@@ -164,6 +181,7 @@ class Operationer:
         """
         if isinstance(element, str):
             element = self.current_scene.elements.get(element)
+        interval: int = kwargs.get("interval", 80)
         auto_raise: bool = kwargs.get("auto_raise", True)
         wait_time: float = kwargs.get("wait_time", 1.5)
         max_time: float = kwargs.get("max_time", 2.0)
@@ -175,6 +193,7 @@ class Operationer:
         self.screen_save_signal.emit(self.task_name)
         if max_attempts:
             for i in range(max_attempts):
+                time_1 = time.perf_counter()
                 if element.type == ElementType.COORDINATE:
                     self.device.click(element.coordinate, times=click_times)
                     self.screen_save_signal.emit(self.task_name)
@@ -196,8 +215,11 @@ class Operationer:
                         QThread.msleep(int(wait_time * 1000))
                         success = True
                         break
+                    sleep_time = max(0, int(interval - (time.perf_counter() - time_1)))
+                    QThread.msleep(sleep_time)
         else:
             while time.perf_counter() - start_time < max_time:
+                time_1 = time.perf_counter()
                 if element.type == ElementType.COORDINATE:
                     self.device.click(element.coordinate, times=click_times)
                     self.screen_save_signal.emit(self.task_name)
@@ -219,6 +241,8 @@ class Operationer:
                         QThread.msleep(int(wait_time * 1000))
                         success = True
                         break
+                    sleep_time = max(0, int(interval - (time.perf_counter() - time_1)))
+                    QThread.msleep(sleep_time)
 
         # 根据auto_raise参数决定是抛出异常还是返回结果
         if not success and auto_raise:
@@ -239,20 +263,23 @@ class Operationer:
             **kwargs:
             - wait_time: 检测到之后的等待时间
             - duration: 滑动过程时间
+            - times: 滑动的次数
 
         Returns:
             bool
         """
         wait_time: float = kwargs.get("wait_time", 1.0)
         duration: float = kwargs.get("duration", 1.0)
+        times: int = kwargs.get("times", 1)
         self.screen_save_signal.emit(self.task_name)
-        self.device.swipe(
-            start_coordinate,
-            end_coordinate,
-            duration
-        )
+        for _ in range(times):
+            self.device.swipe(
+                start_coordinate,
+                end_coordinate,
+                duration
+            )
+            QThread.msleep(int(wait_time * 1000))
         self.screen_save_signal.emit(self.task_name)
-        QThread.msleep(int(wait_time * 1000))
         return True
 
     def auto_cycle_actioner(self, actions: list[Tuple], **kwargs, ):
@@ -315,6 +342,7 @@ class Operationer:
                                     stop_condition,
                                     wait_time=0,
                                     max_attempts=1,
+                                    interval=0,
                                     bool_debug=bool_debug,
                                     bool_save_screen=False,
                                     auto_raise=False
@@ -329,6 +357,7 @@ class Operationer:
                                     stop_condition,
                                     wait_time=0,
                                     max_attempts=1,
+                                    interval=0,
                                     bool_debug=bool_debug,
                                     bool_save_screen=False,
                                     auto_raise=False
@@ -409,7 +438,7 @@ class Operationer:
         self.logger.debug(f"元素点击搜索内容：")
         self.logger.debug(element_list)
         for element_id in element_list:
-            if isinstance(element_id,Element):
+            if isinstance(element_id, Element):
                 self.logger.debug(f"[元素] {element_id.id}")
             else:
                 self.logger.debug(f"[元素] {element_id}")
@@ -630,6 +659,12 @@ class Operationer:
         """
         self.logger.info("重启火影忍者")
         self.device.restart()
+
+    def back_to_naruto(self):
+        front_app = self.device.current_app()
+        while front_app["package"] != self.device.package_name:
+            self.press_key("back", wait_time=3)
+            front_app = self.device.current_app()
 
     def screen_cap(self):
         return self.device.screen_cap()

@@ -51,7 +51,7 @@ class MiJingTanXian(BaseTask):
             )
             if flag == 1:
                 self.logger.info("检测到落岩秘境，开始战斗")
-                # 检测到[落岩秘境]，开始走两步开始连点，停止条件为[胜利图标出现]
+                # 检测到[落岩秘境]，开始走两步开始连点，停止条件为[胜利/返回图标出现]
                 joystick_coordinate = self.config.get_config("键位")[KEY_INDEX.JoyStick]
                 self.operationer.long_press(joystick_coordinate[0] + 30, joystick_coordinate[1], 1.5)
                 flag = self.operationer.auto_cycle_actioner(
@@ -96,8 +96,7 @@ class MiJingTanXian(BaseTask):
                                 self.scene_graph.scenes.get("秘境探险-匹配")
                             ],
                             [
-                                {'click': "空白点"},
-                                {'click': "返回"},
+                                {'click': "空白点"}
                             ],
                             search_max_time=60,
                             once_max_time=1,

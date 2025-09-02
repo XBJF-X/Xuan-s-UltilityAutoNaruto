@@ -43,6 +43,9 @@ class Device:
         # 启动应用
         self.controller.app_start(self.package_name)
 
+    def current_app(self):
+        return self.controller.current_app()
+
     def input(self, input_text):
         self.controller.input(input_text)
 

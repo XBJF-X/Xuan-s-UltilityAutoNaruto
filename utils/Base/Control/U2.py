@@ -42,6 +42,13 @@ class U2:
     def app_start(self, package_name: str):
         self.u2_device.app_start(package_name)
 
+    def current_app(self):
+        front_app = self.u2_device.app_current()
+        return {
+            "package": front_app["package"],
+            "activity": front_app["activity"]
+        }
+
     def input(self, input_text):
         self.u2_device.shell(f"input text {input_text}")
 

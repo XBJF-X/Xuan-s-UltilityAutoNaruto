@@ -233,155 +233,155 @@ class TransitionManager:
 
         @self.register("主场景", "丰饶之间")
         def _(operationer: Operationer, *args, **kwargs):
-            for _ in range(2):
+            operationer.swipe_and_wait(
+                (462, 340),
+                (1345, 340),
+                duration=0.3,
+                wait_time=0.1,
+                times=2
+            )
+            if not operationer.click_and_wait("丰饶之间", auto_raise=False):
                 operationer.swipe_and_wait(
-                    (462, 340),
-                    (1345, 340),
-                    duration=0.3,
-                    wait_time=0.1
-                )
-            operationer.click_and_wait("丰饶之间", auto_raise=False)
-            for _ in range(2):
-                operationer.swipe_and_wait(
                     (1345, 340),
                     (462, 340),
                     duration=0.3,
-                    wait_time=0.1
+                    wait_time=0.1,
+                    times=2
                 )
-            operationer.click_and_wait("丰饶之间", auto_raise=False)
+                operationer.click_and_wait("丰饶之间", auto_raise=False)
 
         @self.register("主场景", "决斗场-首页")
         def _(operationer: Operationer, *args, **kwargs):
-            for _ in range(2):
+            operationer.swipe_and_wait(
+                (462, 340),
+                (1345, 340),
+                duration=0.3,
+                wait_time=0.1,
+                times=2
+            )
+            if not operationer.click_and_wait("决斗场", auto_raise=False):
                 operationer.swipe_and_wait(
-                    (462, 340),
-                    (1345, 340),
-                    duration=0.3,
-                    wait_time=0.1
-                )
-            operationer.click_and_wait("决斗场", auto_raise=False)
-            for _ in range(2):
-                operationer.swipe_and_wait(
                     (1345, 340),
                     (462, 340),
                     duration=0.3,
-                    wait_time=0.1
+                    wait_time=0.1,
+                    times=2
                 )
-            operationer.click_and_wait("决斗场", auto_raise=False)
+                operationer.click_and_wait("决斗场", auto_raise=False)
 
         @self.register("主场景", "忍者挑战")
         def _(operationer: Operationer, *args, **kwargs):
-            for _ in range(2):
+            operationer.swipe_and_wait(
+                (462, 340),
+                (1345, 340),
+                duration=0.3,
+                wait_time=0.1,
+                times=2
+            )
+            if not operationer.click_and_wait("忍者挑战", auto_raise=False):
                 operationer.swipe_and_wait(
-                    (462, 340),
-                    (1345, 340),
-                    duration=0.3,
-                    wait_time=0.1
-                )
-            operationer.click_and_wait("忍者挑战", auto_raise=False)
-            for _ in range(2):
-                operationer.swipe_and_wait(
                     (1345, 340),
                     (462, 340),
                     duration=0.3,
-                    wait_time=0.1
+                    wait_time=0.1,
+                    times=2
                 )
-            operationer.click_and_wait("忍者挑战", auto_raise=False)
+                operationer.click_and_wait("忍者挑战", auto_raise=False)
 
         @self.register("主场景", "排行榜")
         def _(operationer: Operationer, *args, **kwargs):
-            for _ in range(2):
+            operationer.swipe_and_wait(
+                (462, 340),
+                (1345, 340),
+                duration=0.3,
+                wait_time=0.1,
+                times=2
+            )
+            if not operationer.click_and_wait("排行榜", auto_raise=False):
                 operationer.swipe_and_wait(
-                    (462, 340),
-                    (1345, 340),
-                    duration=0.3,
-                    wait_time=0.1
-                )
-            operationer.click_and_wait("排行榜", auto_raise=False)
-            for _ in range(2):
-                operationer.swipe_and_wait(
                     (1345, 340),
                     (462, 340),
                     duration=0.3,
-                    wait_time=0.1
+                    wait_time=0.1,
+                    times=2
                 )
-            operationer.click_and_wait("排行榜", auto_raise=False)
+                operationer.click_and_wait("排行榜", auto_raise=False)
 
         @self.register("主场景", "任务集会所")
         def _(operationer: Operationer, *args, **kwargs):
-            for _ in range(2):
+            operationer.swipe_and_wait(
+                (462, 340),
+                (1345, 340),
+                duration=0.3,
+                wait_time=0.1,
+                times=2
+            )
+            if not operationer.click_and_wait("任务集会所", auto_raise=False):
                 operationer.swipe_and_wait(
-                    (462, 340),
-                    (1345, 340),
-                    duration=0.3,
-                    wait_time=0.1
-                )
-            operationer.click_and_wait("任务集会所", auto_raise=False)
-            for _ in range(2):
-                operationer.swipe_and_wait(
                     (1345, 340),
                     (462, 340),
                     duration=0.3,
-                    wait_time=0.1
+                    wait_time=0.1,
+                    times=2
                 )
-            operationer.click_and_wait("任务集会所", auto_raise=False)
+                operationer.click_and_wait("任务集会所", auto_raise=False)
 
         @self.register("主场景", "试炼之地")
         def _(operationer: Operationer, *args, **kwargs):
-            for _ in range(2):
+            operationer.swipe_and_wait(
+                (462, 340),
+                (1345, 340),
+                duration=0.3,
+                wait_time=0.1,
+                times=2
+            )
+            if not operationer.click_and_wait("试炼之地", auto_raise=False):
                 operationer.swipe_and_wait(
-                    (462, 340),
-                    (1345, 340),
-                    duration=0.3,
-                    wait_time=0.1
-                )
-            operationer.click_and_wait("试炼之地", auto_raise=False)
-            for _ in range(2):
-                operationer.swipe_and_wait(
                     (1345, 340),
                     (462, 340),
                     duration=0.3,
-                    wait_time=0.1
+                    wait_time=0.1,
+                    times=2
                 )
-            operationer.click_and_wait("试炼之地", auto_raise=False)
+                operationer.click_and_wait("试炼之地", auto_raise=False)
 
         @self.register("主场景", "小队突袭")
         def _(operationer: Operationer, *args, **kwargs):
-            for _ in range(2):
+            operationer.swipe_and_wait(
+                (462, 340),
+                (1345, 340),
+                duration=0.3,
+                wait_time=0.1,
+                times=2
+            )
+            if not operationer.click_and_wait("小队突袭", auto_raise=False):
                 operationer.swipe_and_wait(
-                    (462, 340),
-                    (1345, 340),
-                    duration=0.3,
-                    wait_time=0.1
-                )
-            operationer.click_and_wait("小队突袭", auto_raise=False)
-            for _ in range(2):
-                operationer.swipe_and_wait(
                     (1345, 340),
                     (462, 340),
                     duration=0.3,
-                    wait_time=0.1
+                    wait_time=0.1,
+                    times=2
                 )
-            operationer.click_and_wait("小队突袭", auto_raise=False)
+                operationer.click_and_wait("小队突袭", auto_raise=False)
 
         @self.register("主场景", "主场景-组织")
         def _(operationer: Operationer, *args, **kwargs):
-            for _ in range(2):
+            operationer.swipe_and_wait(
+                (462, 340),
+                (1345, 340),
+                duration=0.3,
+                wait_time=0.1,
+                times=2
+            )
+            if not operationer.click_and_wait("组织", auto_raise=False):
                 operationer.swipe_and_wait(
-                    (462, 340),
-                    (1345, 340),
-                    duration=0.3,
-                    wait_time=0.1
-                )
-            operationer.click_and_wait("组织", auto_raise=False)
-            for _ in range(2):
-                operationer.swipe_and_wait(
                     (1345, 340),
                     (462, 340),
                     duration=0.3,
-                    wait_time=0.1
+                    wait_time=0.1,
+                    times=2
                 )
-            operationer.click_and_wait("组织", auto_raise=False)
+                operationer.click_and_wait("组织", auto_raise=False)
 
         @self.register("个人信息", "个人信息-分享")
         def _(operationer: Operationer, *args, **kwargs):

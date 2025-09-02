@@ -19,8 +19,7 @@ class RenFaTieDianZanFenXiang(BaseTask):
     def _(self):
         self.operationer.click_and_wait("发给好友", wait_time=5)
         self.logger.info("返回游戏")
-        # 返回游戏
-        self.operationer.press_key("back", wait_time=3)
+        self.operationer.back_to_naruto()
         self.update_next_execute_time()
         return True
 
