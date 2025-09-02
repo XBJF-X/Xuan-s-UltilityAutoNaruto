@@ -2,92 +2,42 @@ from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 from utils.Base.Task import MeiRiShengChang
+from utils.Base.Task.BaseTask import TransitionOn
 
 
 class SaiJiShengChang(MeiRiShengChang):
+    source_scene = "决斗场-赛季"
+    task_max_duration = None
 
-    def _execute(self):
-        # 确定在主场景
-        if not self.home():
-            raise self.StepFailedError("无法回到[主场景]")
-        self.logger.info("进入[决斗场-首页]")
-        if not self.search_and_click(
-                [
-                    {"type": "ELEMENT", "name": "主场景-决斗场"}
-                ],
-                [
-                    {
-                        "swipe": {
-                            "start_coordinate": [1345, 340],
-                            "end_coordinate": [462, 340],
-                            "duration": 1
-                        }
-                    }
-                ],
-                max_attempts=2
-
+    @TransitionOn()
+    def _(self):
+        while self.operationer.click_and_wait(
+            "赛季任务-领取",
+            auto_raise=False,
+            max_time=0.3,
+            wait_time=0.5
         ):
-            if not self.search_and_click(
-                    [
-                        {"type": "ELEMENT", "name": "主场景-决斗场"}
-                    ],
-                    [
-                        {
-                            "swipe": {
-                                "start_coordinate": [462, 86],
-                                "end_coordinate": [1345, 86],
-                                "duration": 1
-                            }
-                        }
-                    ],
-                    max_attempts=2
-
-            ):
-                raise self.StepFailedError("无法进入[决斗场]")
-        self.detect_and_wait({'type': "SCENE", 'name': "决斗场-首页"})
-
-        self.logger.info("进入[决斗赛季]")
-        self.click_and_wait(
-            {'type': "COORDINATE", 'coordinate': [1506, 206]},
-            wait_time=3
-        )
-
-        while not self.detect_and_wait(
-                {'type': "ELEMENT", 'name': "赛季-决斗场内获得N次胜利-已领"},
+            continue
+        if not self.operationer.detect_element(
+                "决斗场内获得N次胜利-已领",
                 wait_time=2,
                 max_time=1,
                 auto_raise=False
         ):
-            self.esc()
-            self.logger.info("进入[决斗场-忍术对战-单人模式]")
-            self.click_and_wait({'type': "ELEMENT", 'name': "决斗场-忍术对战"})
-            self.detect_and_wait({'type': "SCENE", 'name': "决斗场-忍术对战-单人模式"})
-            self.logger.info("查看[决斗场-忍术对战-单人模式-决斗任务]")
-            self.click_and_wait({'type': "ELEMENT", 'name': "决斗场-忍术对战-单人模式-决斗任务"})
-            self.detect_and_wait({'type': "SCENE", 'name': "决斗场-忍术对战-单人模式-决斗任务"})
-            self.logger.info("领取所有待领取的决斗任务宝箱")
-            while self.click_and_wait(
-                    {'type': "ELEMENT", 'name': "决斗任务-宝箱-待领取"},
-                    auto_raise=False
-            ):
-                continue
 
-            self.click_and_wait({'type': "COORDINATE", 'coordinate': [1523, 45]})
-            self.fight()
-            self.logger.info("返回[决斗赛季]")
-            self.home(home_name="决斗场-首页")
-            self.detect_and_wait(
-                {'type': "SCENE", 'name': "决斗场-首页"},
-                max_time=3
-            )
-            self.click_and_wait({
-                'type': "COORDINATE",
-                'coordinate': [1506, 206]
-            }, wait_time=3)
+            self.operationer.next_scene = "忍术对战-单人模式"
+            return False
+        else:
+            self.logger.warning("已打完所有赛季胜场")
+            self.operationer.click_and_wait("X")
+            self.update_next_execute_time()
+            return True
 
-        self.logger.warning("已打完所有赛季胜场")
-        self.click_and_wait({'type': "COORDINATE", 'coordinate': [1523, 45]})
-        self.update_next_execute_time()
+    @TransitionOn("忍术对战-单人模式")
+    def _(self):
+        self.fight()
+        self.operationer.next_scene = "决斗场-赛季"
+        return False
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         # 明确指定中国时区（带时区的当前时间）

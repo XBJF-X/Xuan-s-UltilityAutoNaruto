@@ -10,7 +10,7 @@ class MeiRiShengChang(BaseTask):
     source_scene = "忍术对战-单人模式"
     task_max_duration = timedelta(hours=2)
 
-    @TransitionOn("忍术对战-单人模式")
+    @TransitionOn()
     def _(self):
         self.logger.info("领取所有待领取的决斗任务宝箱")
         self.operationer.click_and_wait("决斗任务")

@@ -1803,6 +1803,25 @@
                     142,
                     840
                 ]
+            },
+            "赛季任务-领取": {
+                "type": 0,
+                "match_type": 0,
+                "threshold": 0.8,
+                "ratio": [
+                    0.5,
+                    0.5
+                ],
+                "roi": [
+                    1388,
+                    75,
+                    207,
+                    734
+                ],
+                "coordinate": [
+                    0,
+                    0
+                ]
             }
         }
     },
@@ -1816,25 +1835,6 @@
         ],
         "threshold": 0.8,
         "elements": {
-            "决斗场-X": {
-                "type": 0,
-                "match_type": 0,
-                "threshold": 0.8,
-                "ratio": [
-                    0.5,
-                    0.5
-                ],
-                "roi": [
-                    0,
-                    0,
-                    1600,
-                    900
-                ],
-                "coordinate": [
-                    0,
-                    0
-                ]
-            },
             "决斗场-忍术对战": {
                 "type": 0,
                 "match_type": 0,
@@ -1893,7 +1893,7 @@
                 ]
             },
             "决斗季大奖": {
-                "type": 0,
+                "type": 1,
                 "match_type": 0,
                 "threshold": 0.8,
                 "ratio": [
@@ -1907,12 +1907,12 @@
                     900
                 ],
                 "coordinate": [
-                    0,
-                    0
+                    1507,
+                    208
                 ]
             },
             "练习": {
-                "type": 0,
+                "type": 1,
                 "match_type": 0,
                 "threshold": 0.8,
                 "ratio": [
@@ -1926,12 +1926,12 @@
                     900
                 ],
                 "coordinate": [
-                    0,
-                    0
+                    1511,
+                    647
                 ]
             },
             "更多玩法": {
-                "type": 0,
+                "type": 1,
                 "match_type": 0,
                 "threshold": 0.8,
                 "ratio": [
@@ -1945,8 +1945,8 @@
                     900
                 ],
                 "coordinate": [
-                    0,
-                    0
+                    1285,
+                    799
                 ]
             }
         }

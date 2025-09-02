@@ -154,6 +154,7 @@ class TransitionManager:
         @self.register("个人信息-分享", "个人信息")
         @self.register("精英副本-便捷扫荡", "冒险-精英副本")
         @self.register("忍术对战-单人模式", "决斗场-首页")
+        @self.register("决斗场-赛季", "决斗场-首页")
         @self.register("忍术对战-单人模式-决斗任务", "忍术对战-单人模式")
         @self.register("秘境探险-首页", "忍者挑战")
         @self.register("忍法帖-分享", "忍法帖-排行榜")
@@ -390,6 +391,10 @@ class TransitionManager:
         @self.register("决斗场-首页", "忍术对战-单人模式")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("决斗场-忍术对战")
+
+        @self.register("决斗场-首页", "决斗场-赛季")
+        def _(operationer: Operationer, *args, **kwargs):
+            operationer.click_and_wait("决斗季大奖")
 
         @self.register("忍术对战-单人模式", "忍术对战-单人模式-决斗任务")
         def _(operationer: Operationer, *args, **kwargs):
