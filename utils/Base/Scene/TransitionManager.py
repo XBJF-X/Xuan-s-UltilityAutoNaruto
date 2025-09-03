@@ -199,15 +199,15 @@ class TransitionManager:
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("个人信息")
             while operationer.click_and_wait(
-                operationer.scene_graph.scenes.get("个人信息").elements.get("称号-下一步"),
-                max_time=7,
-                auto_raise=False
+                    operationer.scene_graph.scenes.get("个人信息").elements.get("称号-下一步"),
+                    max_time=7,
+                    auto_raise=False
             ):
                 continue
             while operationer.click_and_wait(
-                operationer.scene_graph.scenes.get("个人信息").elements.get("称号-确定"),
-                max_time=7,
-                auto_raise=False
+                    operationer.scene_graph.scenes.get("个人信息").elements.get("称号-确定"),
+                    max_time=7,
+                    auto_raise=False
             ):
                 continue
 
@@ -268,7 +268,24 @@ class TransitionManager:
                     wait_time=0.1,
                     times=2
                 )
-                operationer.click_and_wait("决斗场", auto_raise=False)
+                operationer.click_and_wait("决斗场", wait_time=3, auto_raise=False)
+
+            while operationer.click_and_wait(
+                    self.scenes.get("决斗场-首页").elements.get("称号-下一步"),
+                    max_time=0.5, wait_time=3, auto_raise=False
+            ):
+                continue
+            while operationer.click_and_wait(
+                    self.scenes.get("决斗场-首页").elements.get("称号-确定"),
+                    max_time=0.5, wait_time=3, auto_raise=False
+            ):
+                continue
+            operationer.click_and_wait(
+                self.scenes.get("决斗场-首页").elements.get("上赛季获得段位-继续"),
+                max_time=0.5, wait_time=3, auto_raise=False)
+            operationer.click_and_wait(
+                self.scenes.get("决斗场-首页").elements.get("新赛季初始段位-升段奖励"),
+                max_time=0.5, wait_time=3, auto_raise=False)
 
         @self.register("主场景", "忍者挑战")
         def _(operationer: Operationer, *args, **kwargs):
