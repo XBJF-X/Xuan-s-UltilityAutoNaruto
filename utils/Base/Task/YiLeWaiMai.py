@@ -12,20 +12,20 @@ class YiLeWaiMai(BaseTask):
     @TransitionOn()
     def _(self):
         if not self.operationer.search_and_click(
-            [
-                "一乐外卖-未选中",
-                "一乐外卖-选中",
-            ],
-            [
-                {
-                    "swipe": {
-                        "start_coordinate": [107, 846],
-                        "end_coordinate": [107, 213],
-                        "duration": 1
+                [
+                    "一乐外卖-未选中",
+                    "一乐外卖-选中",
+                ],
+                [
+                    {
+                        "swipe": {
+                            "start_coordinate": [107, 846],
+                            "end_coordinate": [107, 213],
+                            "duration": 1
+                        }
                     }
-                }
-            ],
-            max_attempts=2
+                ],
+                max_attempts=2
         ):
             raise StepFailedError("进入[一乐外卖]失败")
         self.logger.info("开始领取[一乐外卖]")
@@ -35,9 +35,10 @@ class YiLeWaiMai(BaseTask):
                 auto_raise=False
         ):
             takeout_sum += 1
-            self.logger.info(f"已领取了 {takeout_sum} 份外卖")
+            self.logger.debug(f"已领取了 {takeout_sum} 份外卖")
             continue
-        self._activate_another_task("装备合成")
+        if takeout_sum:
+            self._activate_another_task("装备合成")
         self.operationer.click_and_wait("X")
         self.update_next_execute_time()
         return True
@@ -54,7 +55,7 @@ class YiLeWaiMai(BaseTask):
                 if next_exec_ts == 0:
                     # 若初始值为0，设置为当前UTC时间（或其他合理时间）
                     self.next_execute_time = datetime(
-                        current_time.year, current_time.month, current_time.day, 11, 0,
+                        current_time.year, current_time.month, current_time.day, 11, 0, 20,
                         tzinfo=china_tz  # 关键：添加时区信息
                     )
                 else:
@@ -65,7 +66,7 @@ class YiLeWaiMai(BaseTask):
                 next_day = current_time + timedelta(days=1)
                 # 新建时间时指定时区（与current_time一致）
                 self.next_execute_time = datetime(
-                    next_day.year, next_day.month, next_day.day, 11, 0,
+                    next_day.year, next_day.month, next_day.day, 11, 0, 20,
                     tzinfo=china_tz  # 关键：添加时区信息
                 )
 

@@ -118,7 +118,7 @@ class ZhuangBeiHeCheng(BaseTask):
             else:
                 self.operationer.click_and_wait(
                     "空白点",
-                    wait_time=8
+                    wait_time=5
                 )
                 # 检测当前材料是否已足够
                 if self.operationer.detect_element(
