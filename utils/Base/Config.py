@@ -75,7 +75,6 @@ class Config:
                             # 强制同步特定字段（如果需要覆盖递归合并的结果）
                             merged_task["任务ID"] = default_task["任务ID"]
                             merged_task["任务名称"] = default_task["任务名称"]
-                            merged_task["周期类型"] = default_task["周期类型"]
                             merged_tasks[task_name] = merged_task
                         else:
                             # 默认配置中不存在的任务，直接使用用户配置

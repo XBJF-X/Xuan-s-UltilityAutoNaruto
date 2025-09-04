@@ -26,7 +26,6 @@ class FengRaoZhiJian(BaseTask):
             # 点击丰饶之间-超影免费
             if self.operationer.click_and_wait(
                     "超影免费",
-                    wait_time=3,
                     auto_raise=False
             ):
                 self.logger.info("领取丰饶之间奖励")
@@ -50,10 +49,7 @@ class FengRaoZhiJian(BaseTask):
             self.logger.warning("点击一键完成失败")
 
         # 点击丰饶之间-挑战
-        self.operationer.click_and_wait(
-            "挑战",
-            wait_time=4
-        )
+        self.operationer.click_and_wait("挑战")
         self.logger.info("无法免费完成，开始自动挑战")
         # 使用连点器过丰饶之间
         self.operationer.auto_cycle_actioner(
@@ -80,6 +76,7 @@ class FengRaoZhiJian(BaseTask):
                 search_max_time=60
         ):
             raise StepFailedError("退出[丰饶之间]失败")
+        self.operationer.click_and_wait("X")
         self.update_next_execute_time()
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):

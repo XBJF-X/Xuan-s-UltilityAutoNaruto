@@ -36,7 +36,6 @@ class MeiZhouShengChang(MeiRiShengChang):
             self.logger.info("领取所有待领取的决斗任务宝箱")
             while self.operationer.click_and_wait(
                     "宝箱-待领取",
-                    max_time=3,
                     auto_raise=False
             ):
                 continue

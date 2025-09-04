@@ -1,18 +1,36 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
-from utils.Base.Task.BaseTask import BaseTask
+from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
 class Example(BaseTask):
+    @TransitionOn()
     def _execute(self):
-        # 确定在主场景
-        if not self.home():
-            raise self.StepFailedError("无法回到[主场景]")
+        # 此时已经进入了[我指定的那个场景]
 
-        # 执行逻辑部分
+        # 从配置文件中读所有的小关卡的完成情况
+        config = self.config.get_config("XXX")
+
+        if not config["关卡1"]:
+            # 搜索点进关卡，执行你的派遣之类的，没看懂，但是流程应该挺固定
+
+            # 设置配置项为True
+
+            # 执行结束直接在这里返回[我指定的那个场景]
+            if self._stop_event.is_set():
+                return True
+            return False
+
+        elif config["关卡2"]:
+            # 同上
+            return False
+        # .....
+
+        # 执行结束，更新下次执行时间
 
         self.update_next_execute_time()
+        return True
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         # 明确指定中国时区（带时区的当前时间）

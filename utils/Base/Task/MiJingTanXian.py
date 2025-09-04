@@ -26,10 +26,9 @@ class MiJingTanXian(BaseTask):
         ):
             self.logger.info("挑战券不为0，继续出战")
             # 点击出战
-            self.operationer.click_and_wait("出战", wait_time=3)
+            self.operationer.click_and_wait("出战")
             if self.operationer.click_and_wait(
                     "出战-继续挑战-确定",
-                    wait_time=3,
                     auto_raise=False
             ):
                 self.logger.debug("确认出战")

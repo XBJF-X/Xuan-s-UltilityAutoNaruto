@@ -22,7 +22,8 @@ class MeiRiShengChang(BaseTask):
                 ],
                 [
                     {'swipe':
-                        {"start_coordinate": [1095, 618], "end_coordinate": [1095, 167], "duration": 0.7}}
+                        {"start_coordinate": [1095, 618], "end_coordinate": [1095, 167],
+                            "duration": 0.7}}
                 ],
                 max_attempts=1,
                 bool_debug=True
@@ -53,7 +54,7 @@ class MeiRiShengChang(BaseTask):
                 "宝箱-追回",
                 auto_raise=False
         ):
-            self.operationer.click_and_wait("宝箱-追回-追回")
+            self.operationer.click_and_wait("宝箱-追回-追回", wait_time=0)
             if self.operationer.detect_element("追回-道具不足", auto_raise=False):
                 self.operationer.click_and_wait("追回-X")
 

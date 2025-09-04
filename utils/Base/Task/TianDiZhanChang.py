@@ -1,36 +1,110 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+from PySide6.QtCore import QThread
+
+from utils.Base.Enums import KEY_INDEX
+from utils.Base.Exceptions import EndEarly, StepFailedError
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
 class TianDiZhanChang(BaseTask):
     source_scene = "天地战场"
-    task_max_duration = timedelta(minutes=30)
+    task_max_duration = timedelta(minutes=31)
+    pillar_took = False
 
     @TransitionOn()
     def _(self):
         self.operationer.click_and_wait("地之战场")
-        self.operationer.click_and_wait("确定进入-确认", wait_time=4)
+        self.operationer.click_and_wait("确定进入-确认", max_time=0.5, stable_max_time=0.5, auto_raise=False)
         self.operationer.click_and_wait("出战忍者-忍者")
-        self.operationer.click_and_wait("出战忍者-默认选择-1")
-        self.operationer.click_and_wait("出战忍者-通灵兽")
-        self.operationer.click_and_wait("出战忍者-默认选择-1")
-        self.operationer.click_and_wait("出战忍者-默认选择-2")
-        self.operationer.click_and_wait("出战忍者-默认选择-3")
-        self.operationer.click_and_wait("出战忍者-秘卷")
-        self.operationer.click_and_wait("出战忍者-默认选择-1")
-        self.operationer.click_and_wait("出战忍者-确认")
+        self.operationer.click_and_wait("出战忍者-默认选择-1", stable_max_time=0.5)
+        self.operationer.click_and_wait("出战忍者-通灵兽", stable_max_time=0.5)
+        self.operationer.click_and_wait("出战忍者-默认选择-1", stable_max_time=0.5)
+        self.operationer.click_and_wait("出战忍者-默认选择-2", stable_max_time=0.5)
+        self.operationer.click_and_wait("出战忍者-默认选择-3", stable_max_time=0.5)
+        self.operationer.click_and_wait("出战忍者-秘卷", stable_max_time=0.5)
+        self.operationer.click_and_wait("出战忍者-默认选择-1", stable_max_time=0.5)
+        self.operationer.click_and_wait("出战忍者-确认", stable_max_time=0.5)
         self.operationer.detect_element("地之战场-标识", max_time=10)
         self.operationer.click_and_wait("组织鼓舞")
         while datetime.now(tz=ZoneInfo("Asia/Shanghai")) <= self.dead_line:
-            self.operationer.click_and_wait("战场奖励")
-            while self.operationer.click_and_wait("战场奖励-领取"):
-                if self.operationer.detect_element("战场奖励-恭喜你获得", auto_raise=False):
-                    self.operationer.click_and_wait("X")
-            self.operationer.click_and_wait("X", wait_time=480)
+            if self.operationer.click_and_wait("战场战斗已经结束-确认", max_time=0.5, auto_raise=False):
+                # 领取所有战场奖励
+                self.operationer.click_and_wait("战场奖励")
+                while self.operationer.click_and_wait("战场奖励-领取", max_time=0.5, stable_max_time=0.5, auto_raise=False):
+                    if self.operationer.detect_element("战场奖励-恭喜你获得", stable_max_time=0.5, auto_raise=False):
+                        self.operationer.click_and_wait("空白点")
+                self.operationer.click_and_wait("空白点")
+                self.operationer.click_and_wait("X")
+                self.operationer.click_and_wait("确认退出天地战场-确认")
+                self.update_next_execute_time()
+                raise EndEarly("天地战场战斗已经结束")
+
+            if self.pillar_took:
+                # 检测是否进入战斗
+                flag = self.operationer.search_and_detect(
+                    [
+                        self.operationer.current_scene.elements.get("60"),
+                        self.operationer.current_scene.elements.get("你的对手离开了游戏")
+                    ],
+                    [
+                        {'click': "你的对手离开了游戏-确定"}
+                    ],
+                    search_max_time=60,
+                )
+                match flag:
+                    case 0:
+                        self.logger.info("无人攻击...")
+                    case 1:
+                        self.logger.info("倒计时60s出现，连点执行中...")
+                        # 使用连点器，结束的标志定为举报反馈
+                        self.operationer.auto_cycle_actioner(
+                            [
+                                ("CLICK", self.config.get_config("键位")[KEY_INDEX.BasicAttack]),
+                                ("CLICK", self.config.get_config("键位")[KEY_INDEX.FirstSkill]),
+                                ("CLICK", self.config.get_config("键位")[KEY_INDEX.SecondSkill]),
+                                ("CLICK", self.config.get_config("键位")[KEY_INDEX.UltimateSkill]),
+                                ("CLICK", self.config.get_config("键位")[KEY_INDEX.SecretScroll]),
+                                ("CLICK", self.config.get_config("键位")[KEY_INDEX.Summon]),
+                                ("CLICK", self.config.get_config("键位")[KEY_INDEX.Substitution])
+                            ],
+                            stop_conditions=[
+                                self.operationer.current_scene.elements.get("你的对手离开了游戏"),
+                                self.operationer.current_scene.elements.get("举报反馈")
+                            ],
+                            max_workers=7
+                        )
+                        self.logger.info("对局结束，返回[单人模式-首页]")
+                        # 输连点器之后需要重新选角色，按系统默认的来
+                        self.operationer.click_and_wait(
+                            "出战忍者-确认",
+                            max_time=30,
+                            wait_time=0.5,
+                            auto_raise=False)
+                        self.pillar_took = False
+                    case 2:
+                        self.logger.warning("对手退出游戏，即将返回[地之战场]")
+                        self.pillar_took = True
+                # 先回到单人模式首页
+                if not self.operationer.search_and_detect(
+                        [
+                            self.operationer.current_scene.elements.get("地之战场-标识")
+                        ],
+                        [
+                            {'click': "空白点"},
+                            {'click': "你的对手离开了游戏-确定"}
+                        ],
+                        search_max_time=30
+                ):
+                    raise StepFailedError("战斗结束后无法退回[地之战场]")
+            else:
+                if self.operationer.click_and_wait("空闲柱子", max_time=60, auto_raise=False):
+                    self.pillar_took = True
+
         self.operationer.click_and_wait("X")
-        self.operationer.click_and_wait("X")
+        self.operationer.click_and_wait("确认退出天地战场-确认")
+        self.update_next_execute_time()
         return True
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):

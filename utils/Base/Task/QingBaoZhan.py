@@ -59,23 +59,14 @@ class QingBaoZhan(BaseTask):
                 )
                 if flag == 1:
                     self.logger.debug("发现未被点赞帖子")
-                    self.operationer.click_and_wait(
-                        "点赞-未点",
-                        wait_time=2
-                    )
+                    self.operationer.click_and_wait("点赞-未点")
                     love_sum += 1
                     self.logger.info(f"已点赞❤帖子 {love_sum} 个")
 
                 elif flag == 2:
                     self.logger.debug("发现已被点赞帖子")
-                    self.operationer.click_and_wait(
-                        "点赞-已点",
-                        wait_time=2
-                    )
-                    self.operationer.click_and_wait(
-                        "点赞-未点",
-                        wait_time=2
-                    )
+                    self.operationer.click_and_wait("点赞-已点")
+                    self.operationer.click_and_wait("点赞-未点")
                     love_sum += 1
                     self.logger.info(f"已点赞❤帖子 {love_sum} 个")
 
@@ -106,19 +97,16 @@ class QingBaoZhan(BaseTask):
         # 点击福利站-一键签到
         self.operationer.click_and_wait(
                 "一键签到",
-                wait_time=3,
                 auto_raise=False
         )
         self.logger.info("点击一键签到")
         if self.operationer.click_and_wait(
             "立即签到",
-            wait_time=3,
             auto_raise=False
         ):
             # 签到成功，点击我知道了
             self.operationer.click_and_wait(
                 "我知道了",
-                wait_time=3,
                 auto_raise=False
             )
         else:
@@ -156,7 +144,6 @@ class QingBaoZhan(BaseTask):
         # 点击所有的领取按钮
         while self.operationer.click_and_wait(
                 "活跃度任务-领取",
-                wait_time=3,
                 auto_raise=False
         ):
             continue
@@ -188,7 +175,6 @@ class QingBaoZhan(BaseTask):
             # 点击40活跃度奖励-确定
             if not self.operationer.click_and_wait(
                     "活跃度任务-40-确定",
-                    wait_time=2,
                     auto_raise=False
             ):
                 self.logger.error("点击[活跃度-40-确定]失败")
@@ -197,7 +183,6 @@ class QingBaoZhan(BaseTask):
             # 等待转盘结束之后点击 转盘抽奖-我知道了
             while not self.operationer.click_and_wait(
                     "活跃度任务-40-我知道了",
-                    wait_time=1,
                     auto_raise=False
             ):
                 continue

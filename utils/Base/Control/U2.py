@@ -12,17 +12,16 @@ class U2:
     """
 
     def __init__(self, config: Config, parent_logger):
+        self.logger = parent_logger.getChild(self.__class__.__name__ + "_Control")
+        self.config = config
         try:
-            self.logger = parent_logger.getChild(self.__class__.__name__ + "_Control")
-            self.config = config
             self.serial = config.get_config("串口")
             self.screen_size = None
             self.u2_device: u2.Device | None = None
             self.u2_device = u2.connect(self.serial)
             self.screen_size = self.u2_device.window_size()  # (width, height)
-            print(self.u2_device.info)
         except Exception as e:
-            print(e)
+            self.logger.error(e)
 
     def click(self, x, y, duration=200):
         self.u2_device.touch.down(x, y)

@@ -55,7 +55,6 @@ class MaoXianFuBen(BaseTask):
         self.logger.info("扫荡开始，等待扫荡结束")
         while not self.operationer.click_and_wait(
                 "扫荡结束-确定",
-                max_time=0.3,
                 auto_raise=False
         ):
             # 处理体力不足的情况

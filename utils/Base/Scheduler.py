@@ -1,5 +1,4 @@
 import heapq
-import logging
 import os
 import threading
 import time
@@ -12,17 +11,15 @@ from PySide6.QtCore import QThread, Signal, QMutex, QWaitCondition, Qt, QObject,
 from PySide6.QtWidgets import QWidget, QLabel, QBoxLayout, QVBoxLayout
 
 from StaticFunctions import get_real_path, cv_save
-from utils.Base.Enums import CycleType
-from utils.Base.Operationer import Operationer
-from utils.Base.Recognizer import Recognizer
 from utils.Base.Config import Config
 from utils.Base.Device import Device
+from utils.Base.Operationer import Operationer
+from utils.Base.Recognizer import Recognizer
 from utils.Base.Scene.SceneGraph import SceneGraph
 from utils.Base.Scene.TransitionManager import TransitionManager
 from utils.Base.Task import TASK_TYPE_MAP
 from utils.Base.Task.BaseTask import BaseTask
 from utils.ui.Service_ui import Ui_Service
-from utils.ui.Xuan_ui import Ui_Xuan
 
 T = TypeVar('T', bound=BaseTask)
 W = TypeVar('W', bound=QWidget)
@@ -563,6 +560,9 @@ class Scheduler(QObject):
                 self.timer_thread.trigger(100)  # 立即触发下一次扫描
                 return
 
+        # # 新增：检查是否有高优先级任务需要抢占
+        # self._check_preemption()
+
         # 扫描就绪队列，当执行队列为空时将就绪队列中的任务移至执行队列
         if self.running_queue.is_empty() and not self.ready_queue.is_empty():
             # 移除就绪队列中的任务
@@ -592,11 +592,48 @@ class Scheduler(QObject):
 
             task_to_execute.run()
 
+        # if self.running_queue.is_empty() and not self.ready_queue.is_empty():
+        #     self._schedule_next_task()  # 提取就绪队列中最高优先级任务执行
+
         if self.running:
             # 继续下一次扫描
             wait_time = max(100, self.config.get_config("扫描间隔") - 1000 * (
                     time.perf_counter() - start))
             self.timer_thread.trigger(int(wait_time))  # 每秒扫描一次
+
+    def _check_preemption(self):
+        """检查是否有高优先级任务需要抢占当前运行任务"""
+        if self.running_queue.is_empty() or self.ready_queue.is_empty():
+            return  # 无运行任务或无就绪任务，无需抢占
+
+        current_running_task = self.running_queue.peek()[0]  # 运行队列中唯一任务
+        highest_ready_task = self.ready_queue.peek()[0]  # 就绪队列中最高优先级任务
+
+        # 如果就绪队列中存在更高优先级的任务，触发抢占
+        if highest_ready_task.current_priority > current_running_task.current_priority:
+            self.logger.info(
+                f"高优先级任务[{highest_ready_task.task_name}]抢占低优先级任务[{current_running_task.task_name}]"
+            )
+            # 1. 停止当前运行任务
+            current_running_task.stop()
+            # 2. 将被抢占的任务移回就绪队列（保留其状态）
+            self.running_queue.dequeue()
+            self.remove_task_ui_signal.emit(current_running_task, 0)
+            current_running_task.current_status = 1
+            self.ready_queue.enqueue(current_running_task)
+            self.add_task_ui_signal.emit(current_running_task, 1)
+            # 3. 调度高优先级任务执行
+            self._schedule_next_task()
+
+    def _schedule_next_task(self):
+        """从就绪队列调度最高优先级任务执行"""
+        task_to_execute = self.ready_queue.dequeue()
+        self.remove_task_ui_signal.emit(task_to_execute, 1)
+        task_to_execute.current_status = 0
+        self.running_queue.enqueue(task_to_execute)
+        self.add_task_ui_signal.emit(task_to_execute, 0)
+        self.logger.info(f"任务[{task_to_execute.task_name}]开始执行（优先级：{task_to_execute.current_priority}）")
+        task_to_execute.run()
 
     def _execute_done_callback(self, task: BaseTask):
         lineedit = self.task_common_control_ref_map[task.task_name]["LineEdit"]
@@ -606,10 +643,6 @@ class Scheduler(QObject):
         self.logger.info(f"[{task.task_name}]-[{task.task_id}] 移出执行队列")
         # 只有启用的非临时任务才会回到等待队列
         if task.is_activated and self.running:
-            if task.cycle_type == CycleType.TEMP:
-                task.is_activated = False
-                self.config.set_task_config(task.task_name, "是否启用", False)
-                return
             task.current_status = 2
             task.create_time = datetime.now(ZoneInfo("Asia/Shanghai"))
             # 添加到等待队列
@@ -617,6 +650,21 @@ class Scheduler(QObject):
             self.logger.info(f"[{task.task_name}]-[{task.task_id}] 进入等待队列")
             self.add_task_ui_signal.emit(task, 2)
 
+    def set_task_temp_priority(self, task_name: str, priority: int):
+        """临时提高指定任务的优先级"""
+        # 检查任务在哪个队列
+        for queue in [self.running_queue, self.ready_queue, self.waiting_queue]:
+            if task_name in queue.task_dic:
+                task = queue.task_dic[task_name]
+                task.set_temp_priority(priority)
+                # 更新队列排序（因为优先级变化会影响堆结构）
+                queue.update(task_name)
+                self.logger.info(f"任务[{task_name}]临时优先级已设为{priority}")
+                # 触发重新扫描，立即检查抢占
+                self.timer_thread.trigger(100)
+                return True
+        self.logger.warning(f"任务[{task_name}]不存在，无法设置临时优先级")
+        return False
     def save_screen(self, name):
         """保存截图到文件"""
         try:

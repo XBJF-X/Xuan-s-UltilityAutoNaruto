@@ -15,7 +15,6 @@ class RenWuJiHuiSuo(BaseTask):
         # 点掉所有的可领取
         while self.operationer.click_and_wait(
                 "可领取",
-                wait_time=1.5,
                 auto_raise=False
         ):
             # 如果少于3个，则点击领取会直接弹出恭喜你获得弹窗
@@ -70,7 +69,6 @@ class RenWuJiHuiSuo(BaseTask):
             # 点掉所有的接取按钮，直到出现任务栏已满的提示
             while self.operationer.click_and_wait(
                     "接取",
-                    wait_time=1.5,
                     auto_raise=False
             ):
                 if not self.operationer.search_and_click(

@@ -1,15 +1,6 @@
 import enum
 
 
-class CycleType(enum.IntEnum):
-    """任务的周期类型"""
-    DAILY = 0
-    WEEKLY = 1
-    MONTHLY = 2
-    PERIOD = 3
-    TEMP = 4
-
-
 class ScreenMode(enum.IntEnum):
     """截图模式枚举"""
     DroidCastRaw = 0
@@ -39,7 +30,7 @@ class MatchType(enum.IntEnum):
 
 # 按钮列表，ID等于索引+1
 class KEY_INDEX(enum.IntEnum):
-    """截图模式枚举"""
+    """按键类型枚举"""
     BasicAttack = 0  # 平A
     FirstSkill = 1  # 一技能
     SecondSkill = 2  # 二技能

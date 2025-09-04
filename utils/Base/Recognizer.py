@@ -219,14 +219,24 @@ class Recognizer:
         template_gray = template.gray
         scene_gray = cv2.cvtColor(scene_img, cv2.COLOR_BGR2GRAY).astype(np.uint8)
 
+        # 处理ROI
+        roi = template.roi
+        if roi:
+            x, y, w_roi, h_roi = roi
+            scene_gray_roi = scene_gray[y:y + h_roi, x:x + w_roi]
+        else:
+            x, y = 0, 0  # 如果没有ROI，偏移量为0
+            scene_gray_roi = scene_gray
+
         h, w = template_gray.shape[:2]  # 模板尺寸
+
         # 2. 初始化SIFT检测器
         sift = cv2.SIFT_create()
 
         # 3. 检测特征点并计算描述符（计时）
         start_time = time.perf_counter()
         kp1, des1 = sift.detectAndCompute(template_gray, None)  # 模板特征
-        kp2, des2 = sift.detectAndCompute(scene_gray, None)  # 场景特征
+        kp2, des2 = sift.detectAndCompute(scene_gray_roi, None)  # 场景特征（在ROI区域内）
         feature_time = time.perf_counter() - start_time
 
         # 计算最小匹配点数（基于模板特征数量的比例）
@@ -234,6 +244,11 @@ class Recognizer:
         # 确保至少有4个匹配点（单应性矩阵计算的最小要求）
         min_good_matches = max(4, int(num_template_features * min_match_ratio))
         self.logger.debug(f"[{template.id}] 模板特征数: {num_template_features}, 所需最小匹配: {min_good_matches}")
+
+        # 如果没有足够的特征点或描述符，直接返回空结果
+        if des1 is None or des2 is None or len(kp1) < 4 or len(kp2) < 4:
+            self.logger.debug(f"[{template.id}] 特征点不足: 模板={len(kp1) if kp1 else 0}, 场景={len(kp2) if kp2 else 0}")
+            return []
 
         # 4. 匹配特征点（使用FLANN快速匹配器）
         start_time = time.perf_counter()
@@ -252,6 +267,7 @@ class Recognizer:
             if m.distance < ratio * n.distance:  # 最佳匹配距离远小于次佳匹配
                 good_matches.append(m)
         self.logger.debug(f"[{template.id}] 有效匹配点数：{len(good_matches)}")
+
         if len(good_matches) >= min_good_matches:
             # 提取匹配点坐标
             src_pts = np.float32([kp1[m.queryIdx].pt for m in good_matches]).reshape(-1, 1, 2)
@@ -260,9 +276,19 @@ class Recognizer:
             # 计算单应性矩阵（通过RANSAC过滤异常值）
             H, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
 
+            if H is None:
+                self.logger.debug(f"[{template.id}] 无法计算单应性矩阵")
+                return []
+
             # 模板四个角点映射到场景图
             pts = np.float32([[0, 0], [0, h - 1], [w - 1, h - 1], [w - 1, 0]]).reshape(-1, 1, 2)
             dst = cv2.perspectiveTransform(pts, H)  # 场景图中匹配区域的四个角点
+
+            # 将ROI区域内的坐标转换为原图坐标
+            for i in range(len(dst)):
+                dst[i][0][0] += x  # x坐标加上ROI的x偏移
+                dst[i][0][1] += y  # y坐标加上ROI的y偏移
+
             corners_2d = [point[0] for point in dst]  # 格式：[(x1,y1), (x2,y2), (x3,y3), (x4,y4)]
 
             # 计算最小和最大坐标（确定边界框）

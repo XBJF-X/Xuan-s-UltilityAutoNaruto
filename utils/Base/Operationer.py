@@ -183,10 +183,17 @@ class Operationer:
             element = self.current_scene.elements.get(element)
         interval: int = kwargs.get("interval", 80)
         auto_raise: bool = kwargs.get("auto_raise", True)
-        wait_time: float = kwargs.get("wait_time", 1.5)
+        wait_time: float | None = kwargs.get("wait_time", None)
         max_time: float = kwargs.get("max_time", 2.0)
         max_attempts: int | None = kwargs.get("max_attempts")
         click_times: int = kwargs.get("click_times", 1)
+
+        # wait_until_stable的参数
+        stable_threshold = kwargs.get("stable_threshold", 0.1)  # 默认1%的像素变化
+        stable_duration = kwargs.get("stable_duration", 1.0)  # 默认需要稳定1秒
+        stable_check_interval = kwargs.get("stable_check_interval", 200)  # 默认每200ms检查一次
+        stable_max_time = kwargs.get("stable_max_time", 10.0)  # 默认最多等待10秒
+        stable_bool_debug = kwargs.get("stable_bool_debug", True)  # 默认不输出调试信息
 
         start_time = time.perf_counter()
         success = False
@@ -197,7 +204,16 @@ class Operationer:
                 if element.type == ElementType.COORDINATE:
                     self.device.click(element.coordinate, times=click_times)
                     self.screen_save_signal.emit(self.task_name)
-                    QThread.msleep(int(wait_time * 1000))
+                    if wait_time:
+                        QThread.msleep(int(wait_time * 1000))
+                    else:
+                        self.wait_until_stable(
+                            threshold=stable_threshold,
+                            stable_duration=stable_duration,
+                            check_interval=stable_check_interval,
+                            max_time=stable_max_time,
+                            bool_debug=stable_bool_debug
+                        )
                     success = True
                     break
                 elif element.type == ElementType.IMG:
@@ -212,7 +228,16 @@ class Operationer:
                         self.logger.debug(f"[{element.id}] Click ({x},{y})")
                         self.device.click((x, y), times=click_times)
                         self.screen_save_signal.emit(self.task_name)
-                        QThread.msleep(int(wait_time * 1000))
+                        if wait_time:
+                            QThread.msleep(int(wait_time * 1000))
+                        else:
+                            self.wait_until_stable(
+                                threshold=stable_threshold,
+                                stable_duration=stable_duration,
+                                check_interval=stable_check_interval,
+                                max_time=stable_max_time,
+                                bool_debug=stable_bool_debug
+                            )
                         success = True
                         break
                     sleep_time = max(0, int(interval - (time.perf_counter() - time_1)))
@@ -223,7 +248,16 @@ class Operationer:
                 if element.type == ElementType.COORDINATE:
                     self.device.click(element.coordinate, times=click_times)
                     self.screen_save_signal.emit(self.task_name)
-                    QThread.msleep(int(wait_time * 1000))
+                    if wait_time:
+                        QThread.msleep(int(wait_time * 1000))
+                    else:
+                        self.wait_until_stable(
+                            threshold=stable_threshold,
+                            stable_duration=stable_duration,
+                            check_interval=stable_check_interval,
+                            max_time=stable_max_time,
+                            bool_debug=stable_bool_debug
+                        )
                     success = True
                     break
                 elif element.type == ElementType.IMG:
@@ -238,7 +272,16 @@ class Operationer:
                         self.logger.debug(f"[{element.id}] Click ({x},{y})")
                         self.device.click((x, y), times=click_times)
                         self.screen_save_signal.emit(self.task_name)
-                        QThread.msleep(int(wait_time * 1000))
+                        if wait_time:
+                            QThread.msleep(int(wait_time * 1000))
+                        else:
+                            self.wait_until_stable(
+                                threshold=stable_threshold,
+                                stable_duration=stable_duration,
+                                check_interval=stable_check_interval,
+                                max_time=stable_max_time,
+                                bool_debug=stable_bool_debug
+                            )
                         success = True
                         break
                     sleep_time = max(0, int(interval - (time.perf_counter() - time_1)))
@@ -268,7 +311,7 @@ class Operationer:
         Returns:
             bool
         """
-        wait_time: float = kwargs.get("wait_time", 1.0)
+        wait_time: float | None = kwargs.get("wait_time", None)
         duration: float = kwargs.get("duration", 1.0)
         times: int = kwargs.get("times", 1)
         self.screen_save_signal.emit(self.task_name)
@@ -278,7 +321,10 @@ class Operationer:
                 end_coordinate,
                 duration
             )
-            QThread.msleep(int(wait_time * 1000))
+            if wait_time:
+                QThread.msleep(int(wait_time * 1000))
+            else:
+                self.wait_until_stable()
         self.screen_save_signal.emit(self.task_name)
         return True
 
@@ -434,7 +480,15 @@ class Operationer:
         search_max_time: float | None = kwargs.get("search_max_time")
         max_attempts: int | None = kwargs.get("max_attempts")
         once_max_time: float = kwargs.get("once_max_time", 1)
-        wait_time: float = kwargs.get("wait_time", 1)
+        wait_time: float | None = kwargs.get("wait_time", None)
+
+        # wait_until_stable的参数
+        stable_threshold = kwargs.get("stable_threshold", 0.1)  # 默认1%的像素变化
+        stable_duration = kwargs.get("stable_duration", 1.0)  # 默认需要稳定1秒
+        stable_check_interval = kwargs.get("stable_check_interval", 200)  # 默认每200ms检查一次
+        stable_max_time = kwargs.get("stable_max_time", 10.0)  # 默认最多等待10秒
+        stable_bool_debug = kwargs.get("stable_bool_debug", True)  # 默认不输出调试信息
+
         self.logger.debug(f"元素点击搜索内容：")
         self.logger.debug(element_list)
         for element_id in element_list:
@@ -463,7 +517,12 @@ class Operationer:
                         element_id,
                         wait_time=wait_time,
                         max_time=once_max_time,
-                        auto_raise=False
+                        auto_raise=False,
+                        stable_threshold=stable_threshold,
+                        stable_duration=stable_duration,
+                        stable_check_interval=stable_check_interval,
+                        stable_max_time=stable_max_time,
+                        stable_bool_debug=stable_bool_debug
                 ):
                     self.screen_save_signal.emit(self.task_name)
                     return index + 1
@@ -564,7 +623,7 @@ class Operationer:
                     self.click_and_wait(
                         action['click'],
                         max_time=1,
-                        wait_time=3,
+                        wait_time=2,
                         auto_raise=False
                     )
                 elif "swipe" in action:
@@ -668,3 +727,80 @@ class Operationer:
 
     def screen_cap(self):
         return self.device.screen_cap()
+
+    def wait_until_stable(self, **kwargs):
+        """
+        等待画面稳定（连续多帧变化小于阈值）
+
+        Args:
+            **kwargs: 可选参数：
+                - threshold: 差异阈值（默认0.01，即1%的像素变化）
+                - stable_duration: 需要稳定的持续时间（秒，默认1.0）
+                - check_interval: 检查间隔（毫秒，默认200）
+                - max_time: 最大等待时间（秒，默认10.0）
+                - bool_debug: 是否输出调试信息（默认True）
+
+        Returns:
+            bool: 是否在最大时间内达到稳定
+        """
+        import cv2
+        import numpy as np
+
+        # 获取参数
+        threshold = kwargs.get("threshold", 0.1)  # 默认1%的像素变化
+        stable_duration = kwargs.get("stable_duration", 1.0)  # 默认需要稳定1秒
+        check_interval = kwargs.get("check_interval", 100)  # 默认每200ms检查一次
+        max_time = kwargs.get("max_time", 10.0)  # 默认最多等待10秒
+        bool_debug = kwargs.get("bool_debug", True)  # 默认不输出调试信息
+
+        start_time = time.perf_counter()
+        stable_start_time = None
+        last_frame = None
+
+        # 将稳定持续时间转换为需要连续稳定的帧数
+        stable_frames_needed = max(1, int(stable_duration * 1000 / check_interval))
+        stable_frame_count = 0
+
+        if bool_debug:
+            self.logger.debug(f"等待画面稳定，阈值: {threshold}, 需要稳定帧数: {stable_frames_needed}")
+
+        while time.perf_counter() - start_time < max_time:
+            if self._should_stop():
+                raise Stop("操作被用户中断")
+
+            # 获取当前帧
+            start_check_time = time.perf_counter()
+            current_frame = self.device.screen_cap()
+
+            # 转换为灰度图并调整大小以减少计算量
+            current_gray = cv2.cvtColor(np.array(current_frame), cv2.COLOR_RGB2GRAY)
+            current_gray = cv2.resize(current_gray, (300, 300))  # 调整到较小尺寸
+
+            if last_frame is not None:
+                # 计算帧间差异
+                diff = cv2.absdiff(last_frame, current_gray)
+                _, diff_thresh = cv2.threshold(diff, 30, 255, cv2.THRESH_BINARY)
+
+                # 计算变化比例
+                change_ratio = np.count_nonzero(diff_thresh) / diff_thresh.size
+
+                if bool_debug:
+                    self.logger.debug(f"帧间变化比例: {change_ratio:.4f}")
+
+                # 检查是否低于阈值
+                if change_ratio < threshold:
+                    stable_frame_count += 1
+                    if stable_frame_count >= stable_frames_needed:
+                        if bool_debug:
+                            self.logger.debug("画面已稳定")
+                        return True
+                else:
+                    stable_frame_count = 0  # 重置稳定计数
+
+            last_frame = current_gray
+            sleep_time = min(0, int(time.perf_counter() - start_check_time)) * 1000
+            QThread.msleep(sleep_time)
+
+        if bool_debug:
+            self.logger.debug("等待画面稳定超时")
+        return False

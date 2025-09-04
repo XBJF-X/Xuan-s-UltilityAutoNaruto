@@ -53,15 +53,9 @@ class ShengCunTiaoZhan(BaseTask):
         self.operationer.click_and_wait("准备就绪")
         self.logger.info("准备就绪")
         # 点击确定
-        self.operationer.click_and_wait(
-            "准备就绪-确定",
-            wait_time=3
-        )
+        self.operationer.click_and_wait("准备就绪-确定")
         # 点击确定
-        self.operationer.click_and_wait(
-            "准备就绪-确定-确定",
-            wait_time=3
-        )
+        self.operationer.click_and_wait("准备就绪-确定-确定")
         self.logger.info("系统开始自动扫荡")
 
         # 等待生存挑战-已通过所有关卡出现

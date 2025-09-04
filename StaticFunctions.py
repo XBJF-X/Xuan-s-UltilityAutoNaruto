@@ -169,7 +169,7 @@ def create_rounded_pixmap(pixmap: QPixmap, radius: int) -> QPixmap:
     return dest_image
 
 
-def split_gray_alpha(input_path, output_bgra_path, output_gray_path, output_mask_path):
+def split_gray_alpha(input_path, output_bgra_path=None, output_gray_path=None, output_mask_path=None):
     """
     将PNG分离为灰度图和掩码图（分别保存为单通道PNG）
     """
@@ -191,9 +191,13 @@ def split_gray_alpha(input_path, output_bgra_path, output_gray_path, output_mask
         else:
             alpha = np.ones_like(gray, dtype=np.uint8) * 255  # 全不透明
         # 保存为单通道PNG（启用最高压缩）
-        cv_save(output_bgra_path, img, [cv2.IMWRITE_PNG_COMPRESSION, 9])  # 压缩等级0-9（9最高）
-        cv_save(output_gray_path, gray, [cv2.IMWRITE_PNG_COMPRESSION, 9])  # 压缩等级0-9（9最高）
-        cv_save(output_mask_path, alpha, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+        if output_bgra_path:
+            cv_save(output_bgra_path, img, [cv2.IMWRITE_PNG_COMPRESSION, 9])  # 压缩等级0-9（9最高）
+        if output_gray_path:
+            cv_save(output_gray_path, gray, [cv2.IMWRITE_PNG_COMPRESSION, 9])  # 压缩等级0-9（9最高）
+        if output_mask_path:
+            cv_save(output_mask_path, alpha, [cv2.IMWRITE_PNG_COMPRESSION, 9])
         print(f"分离成功: {os.path.basename(input_path)} -> 灰度图 + 掩码图")
+        return img,gray,alpha
     except Exception as e:
         print(f"处理失败 {os.path.basename(input_path)}: {str(e)}")

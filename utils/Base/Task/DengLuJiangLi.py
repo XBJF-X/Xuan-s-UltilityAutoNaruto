@@ -15,9 +15,8 @@ class DengLuJiangLi(BaseTask):
             self.scene_graph.scenes.get("登录").elements.get("开始游戏"),
             max_time=300,
             wait_time=3)
-        self.operationer.click_and_wait(
-            self.scene_graph.scenes.get("登录").elements.get("开始游戏"),
-            max_time=10)
+        self.operationer.click_and_wait(self.scene_graph.scenes.get("登录").elements.get("开始游戏"),
+                                        max_time=10)
         if not self.operationer.search_and_detect(
                 [self.scene_graph.scenes.get("登录奖励")],
                 [

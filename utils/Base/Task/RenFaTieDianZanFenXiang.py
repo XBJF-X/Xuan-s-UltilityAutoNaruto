@@ -17,7 +17,7 @@ class RenFaTieDianZanFenXiang(BaseTask):
 
     @TransitionOn("忍法帖-分享")
     def _(self):
-        self.operationer.click_and_wait("发给好友", wait_time=5)
+        self.operationer.click_and_wait("发给好友")
         self.logger.info("返回游戏")
         self.operationer.back_to_naruto()
         self.update_next_execute_time()

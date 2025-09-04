@@ -13,19 +13,17 @@ class ZuZhiQiFu(BaseTask):
         # 点击组织祈福-超影免费
         if not self.operationer.click_and_wait(
                 "超影免费",
-                wait_time=2,
                 auto_raise=False
         ):
             self.logger.info("超影祈福不存在，点击焚香祈福")
             # 点击组织祈福-焚香祈福
-            self.operationer.click_and_wait("焚香祈福", wait_time=2)
+            self.operationer.click_and_wait("焚香祈福")
             self.logger.info("[焚香祈福]成功")
         else:
             self.logger.info("点击超影祈福")
         # 点掉上限弹窗
         if self.operationer.click_and_wait(
                 "今日次数已达上限-确定",
-                wait_time=2,
                 auto_raise=False
         ):
             self.logger.info("已经焚香祈福过了")
@@ -38,21 +36,16 @@ class ZuZhiQiFu(BaseTask):
             ):
                 self.logger.info("祈福奖励领取成功")
                 # 随便点下关掉弹窗
-                self.operationer.click_and_wait(
-                    "空白点",
-                    wait_time=3
-                )
+                self.operationer.click_and_wait("空白点")
         self.logger.info("领取昨日奖励")
         # 点击昨日奖励
         if self.operationer.click_and_wait(
                 "昨日奖励",
-                wait_time=2,
                 auto_raise=False
         ):
             # 点击所有的领取按钮
             while self.operationer.click_and_wait(
                     "昨日奖励-领取",
-                    wait_time=2,
                     auto_raise=False
             ):
                 continue

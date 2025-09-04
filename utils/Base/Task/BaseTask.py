@@ -1,5 +1,4 @@
 import inspect
-import logging
 import sys
 import threading
 from datetime import datetime, timedelta
@@ -12,7 +11,6 @@ from PySide6.QtCore import Signal
 
 from StaticFunctions import get_real_path
 from utils.Base.Config import Config
-from utils.Base.Enums import CycleType
 from utils.Base.Exceptions import StepFailedError, TimeOut, Stop, EndEarly
 from utils.Base.Operationer import Operationer
 from utils.Base.Recognizer import Recognizer, SceneGraph
@@ -79,8 +77,7 @@ def _handle_callback(self):
 
 
 class BaseTask:
-    waiting_scene = [
-    ]
+    waiting_scene = []
     transition_return: str = ""
     transition_func = {}
     source_scene: str | None = None
@@ -110,8 +107,10 @@ class BaseTask:
         self.task_name = self.data.get('任务名称')
         self.logger = parent_logger.getChild(self.task_name)
         self.task_id = self.data.get('任务ID')
+        self.base_priority = self.data.get('基础优先级', 0)  # 静态默认优先级
+        self.temp_priority = None  # 临时优先级（None表示未启用）
+
         self.is_activated = self.data.get('是否启用')
-        self.cycle_type = CycleType(self.data.get('周期类型'))
         self.next_execute_time = None
         self.update_next_execute_time(0)
 
@@ -124,17 +123,24 @@ class BaseTask:
         self.callback = callback
 
     def __lt__(self, other):
-        # 先比较task_id，若相同则比较时间戳（确保唯一性）
+        """
+        优先级高的任务排在前面（值越大越优先）
+        优先级相同时，再按task_id和创建时间排序
+        """
+        # # 优先比较当前有效优先级（逆序：高优先级在前）
+        # if self.current_priority != other.current_priority:
+        #     return self.current_priority > other.current_priority  # 注意这里是>，因为堆是最小堆
+        # 优先级相同则比较task_id
         if self.task_id != other.task_id:
             return self.task_id < other.task_id
+        # 最后比较创建时间
         return self.create_time < other.create_time
 
     def __repr__(self):
         info_text = (f"任务名称: {self.task_name},"
                      f"任务ID:{self.task_id},"
                      f"是否启用:{self.is_activated},"
-                     f"任务状态:{self.current_status},"
-                     f"周期类型:{CycleType(self.cycle_type)},"
+                     f"任务状态:{self.current_status}," 
                      f"下次执行时间:{self.next_execute_time}"
                      )
         return info_text
@@ -254,6 +260,21 @@ class BaseTask:
         """
         self.logger.debug(f"{task_name}被激活，将立即执行")
         self.activate_another_task_signal.emit(task_name)
+
+    @property
+    def current_priority(self):
+        """返回当前有效优先级（临时优先级优先于基础优先级）"""
+        return self.temp_priority if self.temp_priority is not None else self.base_priority
+
+    def set_temp_priority(self, priority):
+        """设置临时优先级（用于动态提高优先级）"""
+        self.temp_priority = priority
+        self.logger.debug(f"任务[{self.task_name}]临时优先级设为{priority}")
+
+    def reset_priority(self):
+        """重置临时优先级（恢复基础优先级）"""
+        self.temp_priority = None
+        self.logger.debug(f"任务[{self.task_name}]优先级已重置为基础值{self.base_priority}")
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         """
