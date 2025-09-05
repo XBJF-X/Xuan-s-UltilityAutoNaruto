@@ -85,7 +85,7 @@ class ZhuangBeiHeCheng(BaseTask):
             # 检测是否体力不足
             if self.operationer.detect_element(
                     "体力不足",
-                    max_time=0.2,
+                    max_time=0.5,
                     auto_raise=False
             ):
                 # 检测到体力不足
@@ -129,8 +129,7 @@ class ZhuangBeiHeCheng(BaseTask):
                     # 检测是否体力不足
                     if self.operationer.detect_element(
                             "体力不足",
-                            max_time=0.2,
-                            # wait_time=1,
+                            max_time=0.5,
                             auto_raise=False
                     ):
                         # 检测到体力不足

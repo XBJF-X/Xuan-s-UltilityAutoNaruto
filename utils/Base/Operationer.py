@@ -174,7 +174,7 @@ class Operationer:
             ** kwargs: 可选参数：
             - interval: 检测的间隔，默认为80ms
             - auto_raise: 是否自动抛出异常，默认为True,对于试探性的点击一定要设置成False
-            - wait_time: 检测到之后的等待时间，默认为1.5
+            - wait_time: 检测到之后的等待时间，默认为None,表示将等待画面稳定，支持自定义
             - max_time: 最大尝试时间，默认为2.0
             - max_attempts: 最大尝试次数，如果定义则优先，不定义则按最大时间
             - click_times：点击次数，默认为1
@@ -184,7 +184,7 @@ class Operationer:
         interval: int = kwargs.get("interval", 80)
         auto_raise: bool = kwargs.get("auto_raise", True)
         wait_time: float | None = kwargs.get("wait_time", None)
-        max_time: float = kwargs.get("max_time", 2.0)
+        max_time: float = kwargs.get("max_time", 1.0)
         max_attempts: int | None = kwargs.get("max_attempts")
         click_times: int = kwargs.get("click_times", 1)
 
@@ -565,7 +565,7 @@ class Operationer:
         max_attempts: int | None = kwargs.get("max_attempts")
         once_max_time: float = kwargs.get("once_max_time", 1.0)
         wait_time: float = kwargs.get("wait_time", 1.0)
-        bool_debug: bool = kwargs.get("bool_debug", False)
+        bool_debug: bool = kwargs.get("bool_debug", True)
         self.logger.debug(f"元素检测搜索内容：")
         for item in item_list:
             if isinstance(item, Scene):

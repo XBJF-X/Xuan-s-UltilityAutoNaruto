@@ -17,7 +17,7 @@ class BenFuYaoSaiZhan(BaseTask):
 
         while datetime.now(tz=ZoneInfo("Asia/Shanghai")) < self.dead_line:
             while not self.operationer.detect_element("正在寻找旗鼓相当的对手", max_time=0.5, auto_raise=False):
-                self.operationer.long_press(joystick[0] + 30, joystick[1], 3)
+                self.operationer.long_press(joystick[0] + 60, joystick[1], 3)
             self._handle_fight()
             fight_sum += 1
         self.logger.info(f"本服要塞战结束，共战斗 {fight_sum} 次")
