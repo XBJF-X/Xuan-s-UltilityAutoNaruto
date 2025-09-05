@@ -178,6 +178,11 @@ class Operationer:
             - max_time: 最大尝试时间，默认为2.0
             - max_attempts: 最大尝试次数，如果定义则优先，不定义则按最大时间
             - click_times：点击次数，默认为1
+            - stable_threshold：wait_until_stable参数
+            - stable_duration：wait_until_stable参数
+            - stable_check_interval：wait_until_stable参数
+            - stable_max_time：wait_until_stable参数
+            - stable_bool_debug：wait_until_stable参数
         """
         if isinstance(element, str):
             element = self.current_scene.elements.get(element)

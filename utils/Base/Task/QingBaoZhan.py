@@ -131,7 +131,8 @@ class QingBaoZhan(BaseTask):
                         }
                     }
                 ],
-                max_attempts=2
+                max_attempts=2,
+            wait_time=5
         ):
             self.logger.warning("进入金币助手失败，可能导致活跃度不足")
             self.operationer.swipe_and_wait((600, 290), (600, 850), duration=1)

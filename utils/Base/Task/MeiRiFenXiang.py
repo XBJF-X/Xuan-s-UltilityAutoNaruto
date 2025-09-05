@@ -11,7 +11,7 @@ class MeiRiFenXiang(BaseTask):
     @TransitionOn()
     def _(self):
         # 点击发给好友
-        self.operationer.click_and_wait("发给好友")
+        self.operationer.click_and_wait("发给好友", wait_time=10)
         self.logger.info("返回游戏")
         # 返回游戏
         self.operationer.back_to_naruto()
