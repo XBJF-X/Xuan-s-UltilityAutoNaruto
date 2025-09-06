@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>SceneManager</class>
+ <widget class="QMainWindow" name="SceneManager">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>963</width>
+    <height>600</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>场景管理</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">font-family:&quot;Consolas&quot;,&quot;黑体&quot;;
+font-size:11pt;
+
+</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="minimumSize">
+    <size>
+     <width>963</width>
+     <height>567</height>
+    </size>
+   </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>963</width>
+     <height>33</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>菜单</string>
+    </property>
+    <addaction name="refresh"/>
+    <addaction name="save"/>
+    <addaction name="new_node"/>
+    <addaction name="auto_layout"/>
+   </widget>
+   <addaction name="menu"/>
+  </widget>
+  <action name="refresh">
+   <property name="text">
+    <string>刷新视图</string>
+   </property>
+  </action>
+  <action name="save">
+   <property name="text">
+    <string>保存项目</string>
+   </property>
+  </action>
+  <action name="new_node">
+   <property name="text">
+    <string>新建节点</string>
+   </property>
+  </action>
+  <action name="auto_layout">
+   <property name="text">
+    <string>自动布局</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

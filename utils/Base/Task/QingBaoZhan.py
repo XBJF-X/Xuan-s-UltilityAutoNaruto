@@ -96,13 +96,13 @@ class QingBaoZhan(BaseTask):
         self.logger.info("福利站签到")
         # 点击福利站-一键签到
         self.operationer.click_and_wait(
-                "一键签到",
-                auto_raise=False
+            "一键签到",
+            auto_raise=False
         )
         self.logger.info("点击一键签到")
         if self.operationer.click_and_wait(
-            "立即签到",
-            auto_raise=False
+                "立即签到",
+                auto_raise=False
         ):
             # 签到成功，点击我知道了
             self.operationer.click_and_wait(
@@ -132,7 +132,7 @@ class QingBaoZhan(BaseTask):
                     }
                 ],
                 max_attempts=2,
-            wait_time=5
+                wait_time=5
         ):
             self.logger.warning("进入金币助手失败，可能导致活跃度不足")
             self.operationer.swipe_and_wait((600, 290), (600, 850), duration=1)
