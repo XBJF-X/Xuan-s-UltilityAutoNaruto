@@ -140,6 +140,7 @@ class TransitionManager:
         @self.register("忍者挑战", "主场景")
         @self.register("任务集会所", "主场景")
         @self.register("试炼之地", "主场景")
+        @self.register("排行榜", "主场景")
         @self.register("生存挑战", "主场景")
         @self.register("修行之路", "主场景")
         @self.register("小队突袭", "主场景")

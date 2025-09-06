@@ -6,9 +6,10 @@ from PySide6.QtGui import QPixmap, QMouseEvent
 from PySide6.QtWidgets import QTreeView, QDialog, QVBoxLayout, QLabel, QMessageBox, QDialogButtonBox, \
     QFileDialog
 
-from StaticFunctions import split_gray_alpha, element_to_qpixmap
+from StaticFunctions import split_gray_alpha
 from tool.ResourceManager.ResourceDBManager import ResourceDBManager
 from tool.ResourceManager.model import Scene, Element
+from tool.ResourceManager.utils import element_to_qpixmap
 from ui.NewElement_ui import Ui_NewElement
 
 

@@ -11,11 +11,11 @@ from PySide6.QtWidgets import (QDialog, QFileDialog, QMessageBox, QGraphicsScene
                                QGraphicsPixmapItem, QVBoxLayout, QWidget, QScrollArea,
                                QGraphicsRectItem, QFrame)
 
-from StaticFunctions import cv_imread, split_gray_alpha, split_gray_alpha_bytes, \
-    element_to_qpixmap
+from StaticFunctions import cv_imread, split_gray_alpha, split_gray_alpha_bytes
 from tool.ResourceManager.NewElement import NewElement, RatioDialog
 from tool.ResourceManager.ResourceDBManager import ResourceDBManager
 from tool.ResourceManager.model import Element
+from tool.ResourceManager.utils import element_to_qpixmap
 from ui.SceneEditor_ui import Ui_SceneEditor
 from utils.Base.Enums import ElementType, MatchType
 from utils.Base.Recognizer import Recognizer
