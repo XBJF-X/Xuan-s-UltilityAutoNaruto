@@ -149,8 +149,8 @@ class Recognizer:
             # 获取最大匹配值
             _, max_val, _, _ = cv2.minMaxLoc(result)
 
-            if bool_debug:
-                self.logger.debug(f"[{scene.id}] 匹配度: {max_val:.4f}")
+            # if bool_debug:
+            #     self.logger.debug(f"[{scene.id}] 匹配度: {max_val:.4f}")
 
             return max_val >= scene.threshold, max_val
 

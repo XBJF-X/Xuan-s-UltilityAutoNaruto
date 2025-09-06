@@ -195,8 +195,8 @@ class Operationer:
 
         # wait_until_stable的参数
         stable_threshold = kwargs.get("stable_threshold", 0.1)  # 默认1%的像素变化
-        stable_duration = kwargs.get("stable_duration", 1.0)  # 默认需要稳定1秒
-        stable_check_interval = kwargs.get("stable_check_interval", 200)  # 默认每200ms检查一次
+        stable_duration = kwargs.get("stable_duration", 1)  # 默认需要稳定1秒
+        stable_check_interval = kwargs.get("stable_check_interval", 100)  # 默认每200ms检查一次
         stable_max_time = kwargs.get("stable_max_time", 10.0)  # 默认最多等待10秒
         stable_bool_debug = kwargs.get("stable_bool_debug", True)  # 默认不输出调试信息
 
@@ -209,7 +209,7 @@ class Operationer:
                 if element.type == ElementType.COORDINATE:
                     self.device.click(element.coordinate, times=click_times)
                     self.screen_save_signal.emit(self.task_name)
-                    if wait_time:
+                    if wait_time is not None:
                         QThread.msleep(int(wait_time * 1000))
                     else:
                         self.wait_until_stable(
@@ -233,7 +233,7 @@ class Operationer:
                         self.logger.debug(f"[{element.id}] Click ({x},{y})")
                         self.device.click((x, y), times=click_times)
                         self.screen_save_signal.emit(self.task_name)
-                        if wait_time:
+                        if wait_time is not None:
                             QThread.msleep(int(wait_time * 1000))
                         else:
                             self.wait_until_stable(
@@ -253,7 +253,7 @@ class Operationer:
                 if element.type == ElementType.COORDINATE:
                     self.device.click(element.coordinate, times=click_times)
                     self.screen_save_signal.emit(self.task_name)
-                    if wait_time:
+                    if wait_time is not None:
                         QThread.msleep(int(wait_time * 1000))
                     else:
                         self.wait_until_stable(
@@ -277,7 +277,7 @@ class Operationer:
                         self.logger.debug(f"[{element.id}] Click ({x},{y})")
                         self.device.click((x, y), times=click_times)
                         self.screen_save_signal.emit(self.task_name)
-                        if wait_time:
+                        if wait_time is not None:
                             QThread.msleep(int(wait_time * 1000))
                         else:
                             self.wait_until_stable(
@@ -326,7 +326,7 @@ class Operationer:
                 end_coordinate,
                 duration
             )
-            if wait_time:
+            if wait_time is not None:
                 QThread.msleep(int(wait_time * 1000))
             else:
                 self.wait_until_stable()
@@ -489,8 +489,8 @@ class Operationer:
 
         # wait_until_stable的参数
         stable_threshold = kwargs.get("stable_threshold", 0.1)  # 默认1%的像素变化
-        stable_duration = kwargs.get("stable_duration", 1.0)  # 默认需要稳定1秒
-        stable_check_interval = kwargs.get("stable_check_interval", 200)  # 默认每200ms检查一次
+        stable_duration = kwargs.get("stable_duration", 1)  # 默认需要稳定1秒
+        stable_check_interval = kwargs.get("stable_check_interval", 100)  # 默认每200ms检查一次
         stable_max_time = kwargs.get("stable_max_time", 10.0)  # 默认最多等待10秒
         stable_bool_debug = kwargs.get("stable_bool_debug", True)  # 默认不输出调试信息
 
@@ -739,32 +739,51 @@ class Operationer:
 
         Args:
             **kwargs: 可选参数：
-                - threshold: 差异阈值（默认0.01，即1%的像素变化）
+                - threshold: 差异阈值（默认0.1，即1%的像素变化）
                 - stable_duration: 需要稳定的持续时间（秒，默认1.0）
                 - check_interval: 检查间隔（毫秒，默认200）
                 - max_time: 最大等待时间（秒，默认10.0）
                 - bool_debug: 是否输出调试信息（默认True）
+                - invalid_threshold: 无效帧阈值（默认0.9，即90%以上像素为黑白视为无效）
 
         Returns:
             bool: 是否在最大时间内达到稳定
         """
         import cv2
         import numpy as np
+        import time
 
         # 获取参数
         threshold = kwargs.get("threshold", 0.1)  # 默认1%的像素变化
-        stable_duration = kwargs.get("stable_duration", 1.0)  # 默认需要稳定1秒
+        stable_duration = kwargs.get("stable_duration", 1)  # 默认需要稳定1秒
         check_interval = kwargs.get("check_interval", 100)  # 默认每200ms检查一次
         max_time = kwargs.get("max_time", 10.0)  # 默认最多等待10秒
-        bool_debug = kwargs.get("bool_debug", True)  # 默认不输出调试信息
+        bool_debug = kwargs.get("bool_debug", True)  # 默认输出调试信息
+        invalid_threshold = kwargs.get("invalid_threshold", 0.9)  # 无效帧判断阈值
+
+        def is_invalid_frame(frame):
+            """判断帧是否为无效帧（全黑、大部分黑、全白、大部分白）"""
+            # 计算黑色像素比例（低于10的像素视为黑色）
+            black_pixels = np.sum(frame < 10)
+            black_ratio = black_pixels / frame.size
+
+            # 计算白色像素比例（高于245的像素视为白色）
+            white_pixels = np.sum(frame > 245)
+            white_ratio = white_pixels / frame.size
+
+            # 如果黑色或白色像素占比超过阈值，则视为无效帧
+            if black_ratio > invalid_threshold or white_ratio > invalid_threshold:
+                if bool_debug:
+                    self.logger.debug(f"检测到无效帧 - 黑色占比: {black_ratio:.4f}, 白色占比: {white_ratio:.4f}")
+                return True
+            return False
 
         start_time = time.perf_counter()
-        stable_start_time = None
-        last_frame = None
+        stable_frame_count = 0
+        last_valid_frame = None
 
         # 将稳定持续时间转换为需要连续稳定的帧数
         stable_frames_needed = max(1, int(stable_duration * 1000 / check_interval))
-        stable_frame_count = 0
 
         if bool_debug:
             self.logger.debug(f"等待画面稳定，阈值: {threshold}, 需要稳定帧数: {stable_frames_needed}")
@@ -781,31 +800,41 @@ class Operationer:
             current_gray = cv2.cvtColor(np.array(current_frame), cv2.COLOR_RGB2GRAY)
             current_gray = cv2.resize(current_gray, (300, 300))  # 调整到较小尺寸
 
-            if last_frame is not None:
-                # 计算帧间差异
-                diff = cv2.absdiff(last_frame, current_gray)
-                _, diff_thresh = cv2.threshold(diff, 30, 255, cv2.THRESH_BINARY)
+            # 检查是否为无效帧
+            if is_invalid_frame(current_gray):
+                # 无效帧不参与稳定性判断，但仍需等待检查间隔
+                pass
+            else:
+                if last_valid_frame is not None:
+                    # 计算帧间差异
+                    diff = cv2.absdiff(last_valid_frame, current_gray)
+                    _, diff_thresh = cv2.threshold(diff, 30, 255, cv2.THRESH_BINARY)
 
-                # 计算变化比例
-                change_ratio = np.count_nonzero(diff_thresh) / diff_thresh.size
+                    # 计算变化比例
+                    change_ratio = np.count_nonzero(diff_thresh) / diff_thresh.size
 
-                if bool_debug:
-                    self.logger.debug(f"帧间变化比例: {change_ratio:.4f}")
+                    if bool_debug:
+                        self.logger.debug(f"帧间变化比例: {change_ratio:.4f}")
 
-                # 检查是否低于阈值
-                if change_ratio < threshold:
-                    stable_frame_count += 1
-                    if stable_frame_count >= stable_frames_needed:
-                        if bool_debug:
-                            self.logger.debug("画面已稳定")
-                        return True
-                else:
-                    stable_frame_count = 0  # 重置稳定计数
+                    # 检查是否低于阈值
+                    if change_ratio < threshold:
+                        stable_frame_count += 1
+                        if stable_frame_count >= stable_frames_needed:
+                            if bool_debug:
+                                self.logger.debug("画面已稳定")
+                            return True
+                    else:
+                        stable_frame_count = 0  # 重置稳定计数
 
-            last_frame = current_gray
-            sleep_time = min(0, int(time.perf_counter() - start_check_time)) * 1000
+                # 更新上一帧为当前有效帧
+                last_valid_frame = current_gray
+
+            # 计算需要休眠的时间（确保检查间隔的准确性）
+            elapsed = (time.perf_counter() - start_check_time) * 1000  # 转换为毫秒
+            sleep_time = max(0, check_interval - int(elapsed))
             QThread.msleep(sleep_time)
 
         if bool_debug:
             self.logger.debug("等待画面稳定超时")
         return False
+
