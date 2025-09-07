@@ -144,8 +144,9 @@ class QingBaoZhan(BaseTask):
         self.logger.info("领取活跃度奖励")
         # 点击所有的领取按钮
         while self.operationer.click_and_wait(
-                "活跃度任务-领取",
-                auto_raise=False
+            "活跃度任务-领取",
+            wait_time=3,
+            auto_raise=False
         ):
             continue
 
