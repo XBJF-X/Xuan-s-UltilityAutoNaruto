@@ -89,6 +89,8 @@ class Updater:
 
         except Exception as e:
             self.logger.error(f"更新出错：{e}")
+        finally:
+            self.update_thread = None
 
     def update(self, new_version):
         if self.update_thread:
