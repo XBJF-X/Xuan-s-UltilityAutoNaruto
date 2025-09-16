@@ -1,10 +1,8 @@
-import logging
-
 from PySide6.QtCore import QThread
 
+from utils.Base.Config import Config
 from utils.Base.Control.Control import Control
 from utils.Base.Screen.Screen import Screen
-from utils.Base.Config import Config
 
 
 class Device:
@@ -21,9 +19,9 @@ class Device:
     def screen_cap(self):
         return self.screener.screencap()
 
-    def click(self, coordinate, times=1):
+    def click(self, coordinate_x, coordinate_y, times=1):
         scale = self.screen_size[0] / self.resolution[0]
-        x, y = int(scale * coordinate[0]), int(scale * coordinate[1])
+        x, y = int(scale * coordinate_x), int(scale * coordinate_y)
         for _ in range(times):
             self.controller.click(x, y)
 
@@ -35,7 +33,6 @@ class Device:
                 (int(scale * end_coordinate[0]), int(scale * end_coordinate[1])),
                 duration
             )
-            QThread.msleep(int(duration * 1000))
 
     def restart(self):
         # 停止应用

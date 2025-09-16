@@ -1,12 +1,11 @@
-import logging
+import ctypes
+import time
+from ctypes import wintypes
 
+import cv2
+import numpy as np
 import win32gui
 import win32ui
-import numpy as np
-import cv2
-import time
-import ctypes
-from ctypes import wintypes
 
 from utils.Base.Config import Config
 

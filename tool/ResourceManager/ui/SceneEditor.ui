@@ -117,7 +117,31 @@ font-size:15pt;
                 background-color: #dfdfdf;  /* 背景颜色 */
 border-radius:10px;
             }
+/* 调整勾选框的大小 */
+QCheckBox::indicator {
+	width: 20px;      /* 勾选框宽度 */
+	height: 20px;     /* 勾选框高度 */
+	outline:none;
+border:none;
+}
 
+/* 可选：设置勾选框不同状态的样式 */
+QCheckBox::indicator:unchecked {
+	border: 2px solid #0f322f;
+	border-radius: 3px;
+}
+QCheckBox::indicator:checked {
+	background-color:#39C5BB;
+	border: 2px solid #0f322f;
+	border-radius: 3px;
+	
+}
+
+/* 禁用状态 */
+QCheckBox::indicator:disabled {
+	background-color: #f0f0f0;
+	border-color: #cccccc;
+}
 /* 1. 未选中（默认）状态的下边框 */
 QLineEdit {
                 /* 清除默认边框，只保留下边框 */
@@ -277,7 +301,7 @@ color:#39C5BB;
 </string>
         </property>
         <property name="currentIndex">
-         <number>1</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="SceneEditorPage">
          <layout class="QVBoxLayout" name="verticalLayout_6">
@@ -296,7 +320,7 @@ color:#39C5BB;
             <item row="1" column="0">
              <widget class="QLabel" name="scene_thresholdLabel">
               <property name="text">
-               <string>模版匹配阈值：</string>
+               <string>匹配阈值：</string>
               </property>
              </widget>
             </item>
@@ -316,79 +340,15 @@ color:#39C5BB;
             <item row="2" column="0">
              <widget class="QLabel" name="Label">
               <property name="text">
-               <string>场景图片</string>
+               <string>场景匹配：</string>
               </property>
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="QWidget" name="Widget" native="true">
-              <layout class="QHBoxLayout" name="horizontalLayout_5">
-               <property name="leftMargin">
-                <number>0</number>
-               </property>
-               <property name="topMargin">
-                <number>0</number>
-               </property>
-               <property name="rightMargin">
-                <number>0</number>
-               </property>
-               <property name="bottomMargin">
-                <number>0</number>
-               </property>
-               <item>
-                <widget class="QPushButton" name="scene_view_image_btn">
-                 <property name="text">
-                  <string>查看图片</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="scene_match_btn">
-                 <property name="text">
-                  <string>执行匹配</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
-             </widget>
-            </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="set_scene_image_Label">
+             <widget class="QPushButton" name="scene_match_btn">
               <property name="text">
-               <string>选择场景图片</string>
+               <string>执行匹配</string>
               </property>
-             </widget>
-            </item>
-            <item row="3" column="1">
-             <widget class="QWidget" name="set_scene_image_Widget" native="true">
-              <layout class="QHBoxLayout" name="horizontalLayout_3">
-               <property name="leftMargin">
-                <number>0</number>
-               </property>
-               <property name="topMargin">
-                <number>0</number>
-               </property>
-               <property name="rightMargin">
-                <number>0</number>
-               </property>
-               <property name="bottomMargin">
-                <number>0</number>
-               </property>
-               <item>
-                <widget class="QPushButton" name="scene_set_image_btn">
-                 <property name="text">
-                  <string>选择图片</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="scene_split_image_btn">
-                 <property name="text">
-                  <string>分离图片</string>
-                 </property>
-                </widget>
-               </item>
-              </layout>
              </widget>
             </item>
            </layout>
@@ -480,14 +440,14 @@ color:#39C5BB;
                 <property name="formAlignment">
                  <set>Qt::AlignmentFlag::AlignHCenter|Qt::AlignmentFlag::AlignTop</set>
                 </property>
-                <item row="0" column="0">
+                <item row="1" column="0">
                  <widget class="QLabel" name="element_threshold_Label_2">
                   <property name="text">
                    <string>模版匹配阈值：</string>
                   </property>
                  </widget>
                 </item>
-                <item row="0" column="1">
+                <item row="1" column="1">
                  <widget class="QDoubleSpinBox" name="element_threshold">
                   <property name="maximum">
                    <double>1.000000000000000</double>
@@ -500,14 +460,14 @@ color:#39C5BB;
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="0">
+                <item row="2" column="0">
                  <widget class="QLabel" name="element_match_type_Label_2">
                   <property name="text">
                    <string>匹配类型：</string>
                   </property>
                  </widget>
                 </item>
-                <item row="1" column="1">
+                <item row="2" column="1">
                  <widget class="QComboBox" name="element_match_type">
                   <item>
                    <property name="text">
@@ -521,14 +481,14 @@ color:#39C5BB;
                   </item>
                  </widget>
                 </item>
-                <item row="4" column="0">
+                <item row="5" column="0">
                  <widget class="QLabel" name="element_image_Label_2">
                   <property name="text">
                    <string>选择图片：</string>
                   </property>
                  </widget>
                 </item>
-                <item row="4" column="1">
+                <item row="5" column="1">
                  <widget class="QWidget" name="widget" native="true">
                   <layout class="QHBoxLayout" name="horizontalLayout_4">
                    <property name="leftMargin">
@@ -560,14 +520,14 @@ color:#39C5BB;
                   </layout>
                  </widget>
                 </item>
-                <item row="6" column="0">
+                <item row="7" column="0">
                  <widget class="QLabel" name="element_ratio_Label">
                   <property name="text">
                    <string>Ratio：</string>
                   </property>
                  </widget>
                 </item>
-                <item row="6" column="1">
+                <item row="7" column="1">
                  <widget class="QWidget" name="element_ratio_Widget" native="true">
                   <layout class="QVBoxLayout" name="verticalLayout_9">
                    <property name="leftMargin">
@@ -592,14 +552,14 @@ color:#39C5BB;
                   </layout>
                  </widget>
                 </item>
-                <item row="7" column="0">
+                <item row="8" column="0">
                  <widget class="QLabel" name="ratioLabel">
                   <property name="text">
                    <string>设置Ratio：</string>
                   </property>
                  </widget>
                 </item>
-                <item row="7" column="1">
+                <item row="8" column="1">
                  <widget class="QWidget" name="ratioWidget" native="true">
                   <layout class="QVBoxLayout" name="verticalLayout_10">
                    <property name="leftMargin">
@@ -624,35 +584,35 @@ color:#39C5BB;
                   </layout>
                  </widget>
                 </item>
-                <item row="8" column="0">
+                <item row="9" column="0">
                  <widget class="QLabel" name="element_ratio_Label_3">
                   <property name="text">
                    <string>Roi：</string>
                   </property>
                  </widget>
                 </item>
-                <item row="8" column="1">
+                <item row="9" column="1">
                  <widget class="QLabel" name="element_roi">
                   <property name="text">
                    <string>(0,0,1600,900)</string>
                   </property>
                  </widget>
                 </item>
-                <item row="9" column="0">
+                <item row="10" column="0">
                  <widget class="QLabel" name="ratioLabel_3">
                   <property name="text">
                    <string>设置Roi：</string>
                   </property>
                  </widget>
                 </item>
-                <item row="9" column="1">
+                <item row="10" column="1">
                  <widget class="QPushButton" name="set_roi_btn">
                   <property name="text">
                    <string>设置Roi</string>
                   </property>
                  </widget>
                 </item>
-                <item row="2" column="1">
+                <item row="3" column="1">
                  <widget class="QWidget" name="widget_4" native="true">
                   <layout class="QHBoxLayout" name="horizontalLayout_6">
                    <property name="leftMargin">
@@ -684,12 +644,22 @@ color:#39C5BB;
                   </layout>
                  </widget>
                 </item>
-                <item row="2" column="0">
+                <item row="3" column="0">
                  <widget class="QLabel" name="element_image_Label_4">
                   <property name="text">
                    <string>元素图片：</string>
                   </property>
                  </widget>
+                </item>
+                <item row="0" column="0">
+                 <widget class="QLabel" name="is_symbol_Label">
+                  <property name="text">
+                   <string>是否为标志</string>
+                  </property>
+                 </widget>
+                </item>
+                <item row="0" column="1">
+                 <widget class="QCheckBox" name="is_symbol"/>
                 </item>
                </layout>
               </item>

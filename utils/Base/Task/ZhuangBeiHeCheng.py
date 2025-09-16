@@ -21,22 +21,6 @@ class ZhuangBeiHeCheng(BaseTask):
     def _(self):
         # 点击配置设置中选中的装备
         self.operationer.click_and_wait(armor_coodinates[self.data.get("合成目标装备", 0)])
-
-        # 所有可合成的逐个点击
-        while self.operationer.click_and_wait(
-                "可合成",
-                auto_raise=False
-        ):
-            # 检查能不能点击合成按钮
-            if self.operationer.click_and_wait(
-                    "合成",
-                    auto_raise=False
-            ):
-                self.logger.debug("合成并装备")
-                self.operationer.click_and_wait("装备")
-            # 返回装备界面
-            self.operationer.click_and_wait("空白点")
-
         # 先看看当前装备能不能进阶，毕竟进阶说明没有能扫荡的了
         if self.operationer.click_and_wait(
                 "进阶",
@@ -44,138 +28,45 @@ class ZhuangBeiHeCheng(BaseTask):
                 max_time=0.5
         ):
             self.logger.info("当前装备可进阶，已点击进阶")
+        if self.operationer.click_and_wait("可装备", auto_raise=False):
+            self.operationer.click_and_wait("一键添加")
+            self.logger.warning("存在[可装备]装备，已一键添加")
+        elif self.operationer.click_and_wait("可合成", auto_raise=False):
+            self.logger.debug("存在[可合成]装备，将合成")
+        elif self.operationer.click_and_wait("可扫荡", auto_raise=False):
+            self.logger.debug("点击[装备]")
+        return False
 
-        flag = self.operationer.search_and_detect(
-            [
-                self.operationer.current_scene.elements.get("可装备"),
-                self.operationer.current_scene.elements.get("可扫荡")
-            ],
-            [],
-            wait_time=0,
-            once_max_time=0.5,
-            bool_debug=True
-        )
-        while flag:
-            if flag == 1:
-                self.operationer.click_and_wait("一键添加")
-                self.logger.warning("存在[可装备]装备，已一键装备")
-            # 先看看当前装备能不能进阶，毕竟进阶说明没有能扫荡的了
-            if self.operationer.click_and_wait(
-                    "进阶",
-                    auto_raise=False,
-                    max_time=0.5
-            ):
-                self.logger.info("当前装备可进阶，已点击进阶")
+    @TransitionOn("装备-材料详情")
+    def _(self):
+        if self.operationer.click_and_wait("一键扫荡", auto_raise=False):
+            self.logger.debug("点击[一键扫荡]")
+        elif self.operationer.click_and_wait("合成", auto_raise=False):
+            self.logger.debug("点击[合成]")
+        elif self.operationer.click_and_wait("装备", auto_raise=False):
+            self.logger.debug("点击[装备]")
+        return False
 
-            # 如果当前装备存在可以扫荡的，先点击扫荡
-            self.operationer.click_and_wait("可扫荡")
-            # 如果当前装备存在可以扫荡的，先点击扫荡
-            self.operationer.click_and_wait("一键扫荡")
+    @TransitionOn("材料详情-扫荡")
+    def _(self):
+        # 勾选自动停止
+        if self.operationer.click_and_wait("材料足够后自动停止-未选中", auto_raise=False):
+            self.logger.warning("未勾选自动停止，已经勾选")
+        self.operationer.click_and_wait("开始扫荡")
+        return False
 
-            # 勾选自动停止
-            if not self.operationer.detect_element(
-                    "材料足够后自动停止-选中",
-                    auto_raise=False
-            ):
-                self.operationer.click_and_wait("材料足够后自动停止-选中")
-                self.logger.warning("未勾选自动停止，已经勾选")
+    @TransitionOn("扫荡-继续扫荡")
+    def _(self):
+        self.operationer.click_and_wait("继续扫荡")
+        return False
 
-            # 点击开始扫荡
-            self.operationer.click_and_wait("开始扫荡")
-            # 检测是否体力不足
-            if self.operationer.detect_element(
-                    "体力不足",
-                    max_time=0.5,
-                    auto_raise=False
-            ):
-                # 检测到体力不足
-                self.logger.debug("体力耗尽，提前结束")
-                # 点掉弹窗
-                self.operationer.click_and_wait("空白点")
-                # 点掉弹窗
-                self.operationer.click_and_wait("空白点")
-                # 检查能不能点击合成按钮
-                if self.operationer.click_and_wait(
-                        "合成",
-                        auto_raise=False
-                ):
-                    self.logger.debug("合成并装备")
-                    self.operationer.click_and_wait("装备")
-                # 返回装备界面
-                self.operationer.click_and_wait("空白点")
-                break
-            else:
-                self.operationer.click_and_wait("空白点")
-                # 检测当前材料是否已足够
-                if self.operationer.detect_element(
-                        "已足够",
-                        auto_raise=False
-                ):
-                    # 点掉扫荡弹窗
-                    self.operationer.click_and_wait("空白点")
-                    # 检查能不能点击合成按钮
-                    if self.operationer.click_and_wait(
-                            "合成",
-                            auto_raise=False
-                    ):
-                        self.logger.debug("合成并装备")
-                        self.operationer.click_and_wait("装备")
-                    # 点一下返回装备界面
-                    self.operationer.click_and_wait("空白点")
-                    continue
-                else:
-                    # 未检测到已足够，则尝试点击继续扫荡
-                    self.operationer.click_and_wait("继续扫荡")
-                    # 检测是否体力不足
-                    if self.operationer.detect_element(
-                            "体力不足",
-                            max_time=0.5,
-                            auto_raise=False
-                    ):
-                        # 检测到体力不足
-                        self.logger.debug("体力耗尽，提前结束")
-                        # 点掉弹窗
-                        self.operationer.click_and_wait("空白点")
-                        # 点掉弹窗
-                        self.operationer.click_and_wait("空白点")
-                        # 检查能不能点击合成按钮
-                        if self.operationer.click_and_wait(
-                                "合成",
-                                auto_raise=False
-                        ):
-                            self.logger.debug("合成并装备")
-                            self.operationer.click_and_wait("装备")
-                        # 返回装备界面
-                        self.operationer.click_and_wait("空白点")
-                        break
-                    else:
-                        self.operationer.click_and_wait("空白点")
-                        # 检测当前材料是否已足够
-                        if self.operationer.detect_element(
-                                "已足够",
-                                auto_raise=False
-                        ):
-                            # 点掉扫荡弹窗
-                            self.operationer.click_and_wait("空白点")
-                            # 检查能不能点击合成按钮
-                            if self.operationer.click_and_wait(
-                                    "合成",
-                                    auto_raise=False
-                            ):
-                                self.logger.debug("合成并装备")
-                                self.operationer.click_and_wait("装备")
-                            # 点一下返回装备界面
-                            self.operationer.click_and_wait("空白点")
-            flag = self.operationer.search_and_detect(
-                [
-                    self.operationer.current_scene.elements.get("可装备"),
-                    self.operationer.current_scene.elements.get("可扫荡")
-                ],
-                [],
-                # wait_time=0,
-                once_max_time=1,
-                bool_debug=True
-            )
+    @TransitionOn("扫荡-已足够")
+    def _(self):
+        self.operationer.click_and_wait("X")
+        return False
+
+    @TransitionOn("体力不足")
+    def _(self):
         self.operationer.click_and_wait("X")
         self.update_next_execute_time()
         return True

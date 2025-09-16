@@ -15,15 +15,15 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QDialog, QDoubleSpinBox, QFormLayout,
-    QHBoxLayout, QLabel, QLineEdit, QPushButton,
-    QSizePolicy, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QApplication, QDialog, QFormLayout, QHBoxLayout,
+    QLabel, QLineEdit, QPushButton, QSizePolicy,
+    QVBoxLayout, QWidget)
 
 class Ui_NewScene(object):
     def setupUi(self, NewScene):
         if not NewScene.objectName():
             NewScene.setObjectName(u"NewScene")
-        NewScene.resize(263, 223)
+        NewScene.resize(263, 125)
         NewScene.setStyleSheet(u"font-family:\"Consolas\",\"\u9ed1\u4f53\";\n"
 "font-size:11pt;")
         self.horizontalLayout = QHBoxLayout(NewScene)
@@ -211,36 +211,6 @@ class Ui_NewScene(object):
 
         self.formLayout.setWidget(0, QFormLayout.ItemRole.FieldRole, self.scene_id_LineEdit)
 
-        self.scene_thresholdLabel = QLabel(self.scene_info_form)
-        self.scene_thresholdLabel.setObjectName(u"scene_thresholdLabel")
-
-        self.formLayout.setWidget(1, QFormLayout.ItemRole.LabelRole, self.scene_thresholdLabel)
-
-        self.scene_thresholdDoubleSpinBox = QDoubleSpinBox(self.scene_info_form)
-        self.scene_thresholdDoubleSpinBox.setObjectName(u"scene_thresholdDoubleSpinBox")
-        self.scene_thresholdDoubleSpinBox.setMaximum(1.000000000000000)
-        self.scene_thresholdDoubleSpinBox.setSingleStep(0.010000000000000)
-
-        self.formLayout.setWidget(1, QFormLayout.ItemRole.FieldRole, self.scene_thresholdDoubleSpinBox)
-
-        self.set_scene_image_Label = QLabel(self.scene_info_form)
-        self.set_scene_image_Label.setObjectName(u"set_scene_image_Label")
-
-        self.formLayout.setWidget(2, QFormLayout.ItemRole.LabelRole, self.set_scene_image_Label)
-
-        self.set_scene_image_Widget = QWidget(self.scene_info_form)
-        self.set_scene_image_Widget.setObjectName(u"set_scene_image_Widget")
-        self.verticalLayout_2 = QVBoxLayout(self.set_scene_image_Widget)
-        self.verticalLayout_2.setObjectName(u"verticalLayout_2")
-        self.verticalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.set_img_btn = QPushButton(self.set_scene_image_Widget)
-        self.set_img_btn.setObjectName(u"set_img_btn")
-
-        self.verticalLayout_2.addWidget(self.set_img_btn)
-
-
-        self.formLayout.setWidget(2, QFormLayout.ItemRole.FieldRole, self.set_scene_image_Widget)
-
 
         self.verticalLayout.addLayout(self.formLayout)
 
@@ -274,9 +244,6 @@ class Ui_NewScene(object):
     def retranslateUi(self, NewScene):
         NewScene.setWindowTitle(QCoreApplication.translate("NewScene", u"\u65b0\u5efa\u573a\u666f", None))
         self.scene_id_Label.setText(QCoreApplication.translate("NewScene", u"\u573a\u666fID\uff1a", None))
-        self.scene_thresholdLabel.setText(QCoreApplication.translate("NewScene", u"\u6a21\u7248\u5339\u914d\u9608\u503c\uff1a", None))
-        self.set_scene_image_Label.setText(QCoreApplication.translate("NewScene", u"\u9009\u62e9\u573a\u666f\u56fe\u7247", None))
-        self.set_img_btn.setText(QCoreApplication.translate("NewScene", u"\u9009\u62e9\u56fe\u7247", None))
         self.confirm.setText(QCoreApplication.translate("NewScene", u"\u786e\u8ba4", None))
         self.cancel.setText(QCoreApplication.translate("NewScene", u"\u53d6\u6d88", None))
     # retranslateUi

@@ -1,46 +1,56 @@
 from datetime import timedelta, datetime
 from zoneinfo import ZoneInfo
 
+from PySide6.QtCore import QThread
+
 from utils.Base.Enums import KEY_INDEX
 from utils.Base.Exceptions import StepFailedError
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
 class MeiRiShengChang(BaseTask):
-    source_scene = "忍术对战-单人模式"
-    task_max_duration = timedelta(hours=2)
+    source_scene = "忍术对战"
+    task_max_duration = timedelta(hours=1)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.checked = False
+        self.finished = False
+        self.operationer.clicker.update_coordinates([
+            self.config.get_config("键位")[KEY_INDEX.BasicAttack],
+            self.config.get_config("键位")[KEY_INDEX.FirstSkill],
+            self.config.get_config("键位")[KEY_INDEX.SecondSkill],
+            self.config.get_config("键位")[KEY_INDEX.UltimateSkill],
+            self.config.get_config("键位")[KEY_INDEX.SecretScroll],
+            self.config.get_config("键位")[KEY_INDEX.Summon],
+            self.config.get_config("键位")[KEY_INDEX.Substitution]
+        ])
 
     @TransitionOn()
     def _(self):
-        self.logger.info("领取所有待领取的决斗任务宝箱")
-        self.operationer.click_and_wait("决斗任务")
-        self.collect_and_recover()
-
-        while self.operationer.search_and_detect(
-                [
-                    self.operationer.current_scene.elements.get("宝箱-未达成")
-                ],
-                [
-                    {'swipe':
-                        {"start_coordinate": [1095, 618], "end_coordinate": [1095, 167],
-                            "duration": 0.7}}
-                ],
-                max_attempts=1,
-                bool_debug=True
-        ):
-            self.operationer.click_and_wait("X")
-            self.fight()
+        if not self.checked:
+            self.operationer.clicker.stop()
             self.operationer.click_and_wait("决斗任务")
-            self.collect_and_recover()
+            return False
+        if not self.finished:
+            self.operationer.click_and_wait("开战")
+            self.operationer.click_and_wait("开战")
+            self.operationer.clicker.start()
+            return False
         self.operationer.click_and_wait("X")
-        self.logger.info("没有未达成的宝箱，结束执行")
+        self.logger.info("结束执行")
         self.update_next_execute_time()
         return True
 
-    def collect_and_recover(self):
-        """
-        领取战斗宝箱以及追回，自动处理道具不足的情况
-        """
+    @TransitionOn("决斗场-匹配中")
+    def _(self):
+        QThread.msleep(1000)
+        return False
+
+    @TransitionOn("忍术对战-决斗任务")
+    def _(self):
+        self.operationer.clicker.stop()
+        self.logger.info("领取所有待领取的决斗任务宝箱")
         while self.operationer.search_and_click(
                 [
                     "宝箱-领取"
@@ -50,79 +60,77 @@ class MeiRiShengChang(BaseTask):
         ):
             continue
         # 检测有无可追回宝箱
-        if self.operationer.click_and_wait(
-                "宝箱-追回",
-                auto_raise=False
-        ):
-            self.operationer.click_and_wait("宝箱-追回-追回", wait_time=0)
-            if self.operationer.detect_element("追回-道具不足", auto_raise=False):
-                self.operationer.click_and_wait("追回-X")
-
-    def fight(self):
-        """
-        通用的刷决斗场函数，周胜赛季胜等等都可以使用
-        """
-        # 进入战斗
-        self.operationer.click_and_wait("开战")
-        self.operationer.click_and_wait("开战", auto_raise=False)
-        flag = self.operationer.search_and_detect(
-            [
-                self.operationer.current_scene.elements.get("60"),
-                self.operationer.current_scene.elements.get("你的对手离开了游戏")
-            ],
-            [
-                {'click': "你的对手离开了游戏-确定"}
-            ],
-            search_max_time=100,
+        self.operationer.click_and_wait(
+            "宝箱-追回",
+            auto_raise=False
         )
-        if not flag:
-            raise StepFailedError("开始战斗超时")
-        else:
-            if flag == 2:
-                self.logger.warning("对手退出游戏，即将返回[忍术对战-单人模式]")
-                if not self.operationer.search_and_detect(
-                        [
-                            self.scene_graph.scenes.get("忍术对战-单人模式")
-                        ],
-                        [
-                            {'click': "空白点"},
-                            {'click': "你的对手离开了游戏-确定"}
-                        ],
-                        search_max_time=30
-                ):
-                    raise StepFailedError("战斗结束后无法退回[忍术对战-单人模式]")
-            elif flag == 1:
-                self.logger.info("倒计时60s出现，连点执行中...")
-                # 使用连点器，结束的标志定为举报反馈
-                self.operationer.auto_cycle_actioner(
-                    [
-                        ("CLICK", self.config.get_config("键位")[KEY_INDEX.BasicAttack]),
-                        ("CLICK", self.config.get_config("键位")[KEY_INDEX.FirstSkill]),
-                        ("CLICK", self.config.get_config("键位")[KEY_INDEX.SecondSkill]),
-                        ("CLICK", self.config.get_config("键位")[KEY_INDEX.UltimateSkill]),
-                        ("CLICK", self.config.get_config("键位")[KEY_INDEX.SecretScroll]),
-                        ("CLICK", self.config.get_config("键位")[KEY_INDEX.Summon]),
-                        ("CLICK", self.config.get_config("键位")[KEY_INDEX.Substitution])
-                    ],
-                    stop_conditions=[
-                        self.operationer.current_scene.elements.get("你的对手离开了游戏"),
-                        self.operationer.current_scene.elements.get("举报反馈")
-                    ],
-                    max_workers=7
-                )
-                self.logger.info("对局结束，返回[单人模式-首页]")
-        # 先回到单人模式首页
         if not self.operationer.search_and_detect(
                 [
-                    self.scene_graph.scenes.get("忍术对战-单人模式")
+                    self.operationer.get_element("宝箱-未达成")
                 ],
                 [
-                    {'click': "空白点"},
-                    {'click': "你的对手离开了游戏-确定"}
+                    {'swipe':
+                        {"start_coordinate": [1095, 618], "end_coordinate": [1095, 167],
+                            "duration": 0.7}}
                 ],
-                search_max_time=30
+                max_attempts=1,
+                bool_debug=True
         ):
-            raise StepFailedError("战斗结束后无法退回[忍术对战-单人模式]")
+            self.checked = True
+            self.finished = True
+            self.operationer.click_and_wait("X")
+            self.update_next_execute_time()
+            return True
+        self.checked = True
+        self.operationer.click_and_wait("X")
+        return False
+
+    @TransitionOn("决斗任务-追回")
+    def _(self):
+        self.operationer.click_and_wait("追回", wait_time=0)
+        if self.operationer.detect_element("道具不足", auto_raise=False):
+            self.operationer.click_and_wait("X")
+        return False
+
+    @TransitionOn("决斗场-结算")
+    def _(self):
+        self.checked = False
+        self.operationer.clicker.stop()
+        self.operationer.click_and_wait("X")
+        return False
+
+    @TransitionOn("决斗场-战斗中")
+    def _(self):
+        self.checked = False
+        self.operationer.clicker.start()
+        QThread.msleep(1000)
+        return False
+
+    @TransitionOn("决斗场-单局结算")
+    def _(self):
+        self.checked = False
+        self.operationer.clicker.stop()
+        QThread.msleep(5000)
+        return False
+
+    @TransitionOn("你的对手离开了游戏")
+    def _(self):
+        self.checked = False
+        self.operationer.clicker.stop()
+        self.operationer.click_and_wait("确定")
+        return False
+
+    @TransitionOn("未知场景")
+    def _(self):
+        self.operationer.clicker.stop()
+        QThread.msleep(1000)
+        return False
+
+    @TransitionOn("未注册场景")
+    def _(self):
+        self.operationer.clicker.stop()
+        QThread.msleep(1000)
+        return False
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         # 明确指定中国时区（带时区的当前时间）

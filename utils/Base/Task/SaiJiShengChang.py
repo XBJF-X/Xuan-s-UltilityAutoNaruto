@@ -1,42 +1,77 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+from utils.Base.Enums import KEY_INDEX
 from utils.Base.Task import MeiRiShengChang
 from utils.Base.Task.BaseTask import TransitionOn
 
 
 class SaiJiShengChang(MeiRiShengChang):
-    source_scene = "决斗场-赛季"
+    source_scene = "赛季任务"
     task_max_duration = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.checked = False
+        self.finished = False
+        self.operationer.clicker.update_coordinates([
+            self.config.get_config("键位")[KEY_INDEX.BasicAttack],
+            self.config.get_config("键位")[KEY_INDEX.FirstSkill],
+            self.config.get_config("键位")[KEY_INDEX.SecondSkill],
+            self.config.get_config("键位")[KEY_INDEX.UltimateSkill],
+            self.config.get_config("键位")[KEY_INDEX.SecretScroll],
+            self.config.get_config("键位")[KEY_INDEX.Summon],
+            self.config.get_config("键位")[KEY_INDEX.Substitution]
+        ])
 
     @TransitionOn()
     def _(self):
-        while self.operationer.click_and_wait(
-            "赛季任务-领取",
-            auto_raise=False,
-            max_time=0.3
-        ):
-            continue
-        if not self.operationer.detect_element(
-                "决斗场内获得N次胜利-已领",
-                wait_time=2,
-                max_time=1,
-                auto_raise=False
-        ):
-
-            self.operationer.next_scene = "忍术对战-单人模式"
-            return False
-        else:
-            self.logger.warning("已打完所有赛季胜场")
+        if not self.checked:
+            while self.operationer.click_and_wait(
+                    "领取",
+                    auto_raise=False,
+                    max_time=0.3
+            ):
+                continue
+            if not self.operationer.detect_element(
+                    "决斗场内获得N次胜利-已领",
+                    wait_time=2,
+                    max_time=1,
+                    auto_raise=False
+            ):
+                self.checked = True
+                self.operationer.click_and_wait("X")
+                return False
+            else:
+                self.checked = True
+                self.finished = True
+                self.operationer.clicker.stop()
+                self.logger.warning("已打完所有赛季胜场")
+                self.operationer.click_and_wait("X")
+                self.update_next_execute_time()
+                return True
+        if not self.finished:
             self.operationer.click_and_wait("X")
-            self.update_next_execute_time()
-            return True
+            return False
 
-    @TransitionOn("忍术对战-单人模式")
+    @TransitionOn("决斗场-首页")
     def _(self):
-        self.fight()
-        self.operationer.next_scene = "决斗场-赛季"
+        if self.checked:
+            self.operationer.click_and_wait("忍术对战")
+        else:
+            self.operationer.click_and_wait("赛季任务")
         return False
+
+    @TransitionOn("忍术对战")
+    def _(self):
+        if not self.finished:
+            self.operationer.click_and_wait("开战")
+            self.operationer.click_and_wait("开战")
+            self.operationer.clicker.start()
+            return False
+        self.operationer.clicker.stop()
+        self.update_next_execute_time()
+        return True
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         # 明确指定中国时区（带时区的当前时间）

@@ -31,13 +31,23 @@ class MatchType(enum.IntEnum):
 # 按钮列表，ID等于索引+1
 class KEY_INDEX(enum.IntEnum):
     """按键类型枚举"""
-    BasicAttack = 0  # 平A
-    FirstSkill = 1  # 一技能
-    SecondSkill = 2  # 二技能
-    UltimateSkill = 3  # 奥义
-    LeftSubSkill = 4  # 左子技能
-    RightSubSkill = 5  # 右子技能
-    Substitution = 6  # 替身
-    SecretScroll = 7  # 秘卷
-    Summon = 8  # 通灵
-    JoyStick = 9  # 摇杆
+    BasicAttack = 0
+    """平A"""
+    FirstSkill = 1
+    """一技能"""
+    SecondSkill = 2
+    """二技能"""
+    UltimateSkill = 3
+    """奥义"""
+    LeftSubSkill = 4
+    """左子技能"""
+    RightSubSkill = 5
+    """右子技能"""
+    Substitution = 6
+    """替身"""
+    SecretScroll = 7
+    """秘卷"""
+    Summon = 8
+    """通灵"""
+    JoyStick = 9
+    """摇杆"""

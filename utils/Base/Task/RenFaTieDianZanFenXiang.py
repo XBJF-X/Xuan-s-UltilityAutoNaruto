@@ -11,13 +11,14 @@ class RenFaTieDianZanFenXiang(BaseTask):
     @TransitionOn()
     def _(self):
         self.logger.debug("点赞")
-        self.operationer.click_and_wait("点赞")
-        self.operationer.next_scene = "忍法帖-分享"
+        if not self.operationer.click_and_wait("点赞", auto_raise=False):
+            self.logger.warning("点赞失败，可能已点赞")
+        self.operationer.click_and_wait("分享")
         return False
 
     @TransitionOn("忍法帖-分享")
     def _(self):
-        self.operationer.click_and_wait("发给好友")
+        self.operationer.click_and_wait("发给好友",wait_time=5)
         self.logger.info("返回游戏")
         self.operationer.back_to_naruto()
         self.update_next_execute_time()

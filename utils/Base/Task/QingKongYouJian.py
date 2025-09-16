@@ -8,7 +8,7 @@ class QingKongYouJian(BaseTask):
     source_scene = "邮件"
     task_max_duration = timedelta(minutes=2)
 
-    @TransitionOn("邮件")
+    @TransitionOn()
     def _(self):
         self.logger.info("进入[邮件]界面")
         # 点击邮件图标

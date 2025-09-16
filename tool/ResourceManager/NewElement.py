@@ -8,9 +8,9 @@ from PySide6.QtWidgets import QTreeView, QDialog, QVBoxLayout, QLabel, QMessageB
 
 from StaticFunctions import split_gray_alpha
 from tool.ResourceManager.ResourceDBManager import ResourceDBManager
-from tool.ResourceManager.model import Scene, Element
-from tool.ResourceManager.utils import element_to_qpixmap
+from tool.ResourceManager.model import Scene, Element, element_to_qpixmap
 from ui.NewElement_ui import Ui_NewElement
+from utils.Base.Enums import ElementType
 
 
 class RatioDialog(QDialog):
@@ -115,7 +115,7 @@ class RatioDialog(QDialog):
 
 
 class NewElement(QDialog):
-    def __init__(self, scene: Scene, resource_manager: ResourceDBManager, tree: QTreeView):
+    def __init__(self, scene: Scene, resource_manager: ResourceDBManager, tree: QTreeView, img_path: Path | None = None):
         super().__init__()
         self.UI = Ui_NewElement()
         self.UI.setupUi(self)
@@ -124,7 +124,9 @@ class NewElement(QDialog):
         self.resource_manager = resource_manager
         self.tree = tree
 
-        self.element_img_path: Path | None = None
+        self.element_img_path: Path | None = img_path
+        if self.element_img_path:
+            self.UI.element_id_LineEdit.setText(self.element_img_path.stem)
         self.element_ratio_x = 0.5
         self.element_ratio_y = 0.5
 
@@ -136,18 +138,21 @@ class NewElement(QDialog):
 
         self.UI.confirm.clicked.connect(self._handle_confirm)
         self.UI.cancel.clicked.connect(self._handle_cancel)
+        self.UI.is_symbol.clicked.connect(self._handle_symbol)
 
     def _handle_set_img_btn_clicked(self):
-        """选择元素图片并添加"""
+        """选择元素图片并添加（支持覆盖拖拽的路径）"""
+        # 打开文件选择框时，默认路径设为拖拽的图片路径（优化体验）
+        initial_dir = str(self.element_img_path.parent) if self.element_img_path else ""
         file_path, _ = QFileDialog.getOpenFileName(
-            self, f"选择【{self.UI.element_id_LineEdit.text()}】图片", "", "PNG图片 (*.png)"
+            self, f"选择【{self.UI.element_id_LineEdit.text()}】图片", initial_dir, "PNG图片 (*.png)"
         )
         if file_path:
             try:
-                self.logger.debug(file_path)
+                self.logger.debug(f"重新选择图片：{file_path}")
                 self.element_img_path = Path(file_path)
             except Exception as e:
-                QMessageBox.critical(self, "错误", f"添加【{self.UI.element_id_LineEdit.text()}】图片失败: {str(e)}")
+                QMessageBox.critical(self, "错误", f"添加图片失败: {str(e)}")
 
     def _handle_set_ratio_btn_clicked(self):
         """设置Ratio：在元素图片上点击获取比例"""
@@ -171,32 +176,39 @@ class NewElement(QDialog):
     def _handle_confirm(self):
         # 确认操作：添加场景后关闭对话框
         if self.UI.element_id_LineEdit.text():  # 简单校验：确保场景ID不为空
-            if self.element_img_path:
-                bgra, gray, mask = split_gray_alpha(self.element_img_path)
-                self.resource_manager.add_element_to_scene(
-                    scene_name=self.scene.name,
-                    element_name=self.UI.element_id_LineEdit.text(),
-                    type=self.UI.element_type_ComboBox.currentIndex(),
-                    threshold=self.UI.element_threshold_DoubleSpinBox_2.value(),
-                    match_type=self.UI.element_match_type_ComboBox_2.currentIndex(),
-                    ratio_x=self.element_ratio_x,
-                    ratio_y=self.element_ratio_y,
-                    bgra=bgra,
-                    gray=gray,
-                    mask=mask,
-                    width=gray.shape[1],
-                    height=gray.shape[0],
-                    channels=bgra.shape[-1]
-                )
+            if self.UI.element_type_ComboBox.currentIndex() == ElementType.IMG.value:
+                if self.element_img_path:
+                    bgra, gray, mask = split_gray_alpha(self.element_img_path)
+                    self.resource_manager.add_element_to_scene(
+                        scene_name=self.scene.name,
+                        element_name=self.UI.element_id_LineEdit.text(),
+                        symbol=self.UI.is_symbol.isChecked(),
+                        type=self.UI.element_type_ComboBox.currentIndex(),
+                        threshold=self.UI.element_threshold_DoubleSpinBox_2.value(),
+                        match_type=self.UI.element_match_type_ComboBox_2.currentIndex(),
+                        ratio_x=self.element_ratio_x,
+                        ratio_y=self.element_ratio_y,
+                        bgra=bgra,
+                        gray=gray,
+                        mask=mask
+                    )
+                else:
+                    self.resource_manager.add_element_to_scene(
+                        scene_name=self.scene.name,
+                        element_name=self.UI.element_id_LineEdit.text(),
+                        symbol=self.UI.is_symbol.isChecked(),
+                        type=self.UI.element_type_ComboBox.currentIndex(),
+                        threshold=self.UI.element_threshold_DoubleSpinBox_2.value(),
+                        match_type=self.UI.element_match_type_ComboBox_2.currentIndex(),
+                        ratio_x=self.element_ratio_x,
+                        ratio_y=self.element_ratio_y
+                    )
             else:
                 self.resource_manager.add_element_to_scene(
                     scene_name=self.scene.name,
                     element_name=self.UI.element_id_LineEdit.text(),
-                    type=self.UI.element_type_ComboBox.currentIndex(),
-                    threshold=self.UI.element_threshold_DoubleSpinBox_2.value(),
-                    match_type=self.UI.element_match_type_ComboBox_2.currentIndex(),
-                    ratio_x=self.element_ratio_x,
-                    ratio_y=self.element_ratio_y
+                    symbol=False,
+                    type=self.UI.element_type_ComboBox.currentIndex()
                 )
 
             self.accept()  # 关闭对话框，返回QDialog.Accepted
@@ -206,3 +218,11 @@ class NewElement(QDialog):
     def _handle_cancel(self):
         # 取消操作：直接关闭对话框
         self.reject()  # 关闭对话框，返回QDialog.Rejected
+
+    def _handle_symbol(self, flag):
+        if flag:
+            self.UI.element_id_LineEdit.setText("标志")
+            self.UI.element_type_ComboBox.setCurrentIndex(ElementType.IMG.value)
+            self.UI.element_type_ComboBox.setEnabled(False)
+        else:
+            self.UI.element_type_ComboBox.setEnabled(True)

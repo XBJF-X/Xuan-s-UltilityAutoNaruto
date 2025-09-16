@@ -1,162 +1,134 @@
 import logging
+import os
 import time
-from typing import Tuple, List, Dict
+from typing import Tuple, List, Union
 
 import cv2
 import numpy as np
 
-from StaticFunctions import get_real_path, cv_imread
+from StaticFunctions import cv_imread
+from StaticFunctions import setup_logging
+from tool.ResourceManager.ResourceDBManager import ResourceDBManager
+from tool.ResourceManager.model import Element, Scene
 from utils.Base.Enums import MatchType
-from utils.Base.Scene.Element import Element
-from utils.Base.Scene.Scene import Scene
 from utils.Base.Scene.SceneGraph import SceneGraph
 
 
-def visualize_confidence_heatmap(result, template_name):
-    """使用OpenCV绘制置信度热力图"""
-    # 将置信度值（范围[-1, 1]）归一化到[0, 255]
-    normalized = cv2.normalize(result, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
-
-    # 应用颜色映射（jet色彩方案）
-    heatmap = cv2.applyColorMap(normalized, cv2.COLORMAP_JET)
-
-    # 添加标题
-    cv2.putText(heatmap, f'置信度热力图 - {template_name}',
-                (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 0), 2)
-
-    return heatmap
-
-
 class Recognizer:
-    def __init__(self, scene_graph: SceneGraph, parent_logger):
+    def __init__(self, scene_graph: SceneGraph, parent_logger: str | logging.Logger = ""):
         if isinstance(parent_logger, str):
             self.logger = logging.getLogger("识别器")
         else:
             self.logger = parent_logger.getChild("识别器")
         self.scene_graph = scene_graph
+        self.coincident_scenes = {
+            "活动": ["每月签到", "一乐外卖"],
+            "主场景": ["主场景-装备", "购买体力", "二级密码"],
+            "装备": ["装备-材料详情", "材料详情-扫荡", "扫荡-继续扫荡", "扫荡-已足够"],
+            "生存挑战": ["生存挑战-扫荡确认", "生存挑战-传送"],
+            "福利站": ["福利站-签到成功", "福利站-活跃奖励-获得奖励", "福利站-每日签到",
+                "福利站-40活跃奖励-抽取中", "福利站-100活跃奖励-确认"],
+            "副本内": ["副本内-暂停", "副本内-暂停-退出战斗确认", "秘境奖励"],
+            "精英副本-便捷扫荡": ["体力不足", "便捷扫荡-继续扫荡", "便捷扫荡-扫荡结束"],
+            "修行之路": ["修行之路-重置", "修行之路-扫荡", "修行之路-扫荡完成", "修行之路-正在扫荡"],
+            "忍术对战-决斗任务": ["决斗任务-追回"],
+            "忍术对战": ["决斗场-匹配中"],
+            "任务集会所": ["任务集会所-一键领取", "任务集会所-接取"],
+            "决斗场-首页": ["上赛季获得段位", "新赛季初始段位"],
+            "决斗场-战斗中": ["决斗场-结算", "决斗场-单局结算", "你的对手离开了游戏"],
+            "组织": ["叛忍来袭"],
+            "地之战场": ["天地战场-战场奖励", "天地战场-确认退出"],
+            "天之战场": ["天地战场-战场奖励", "天地战场-确认退出"],
+            "天地战场": ["天地战场-确定进入"],
+            "秘境探险-匹配": ["离开队伍-确认", "秘境探险-匹配-继续挑战确认"],
+            "好友": ["领取好友体力成功"],
+            "组织祈福": ["组织祈福-今日次数已达上限", "昨日奖励"],
+            "小队突袭-组织助战": ["离开队伍-确认"],
+            "装备-材料详情": ["扫荡-已足够", "扫荡-继续扫荡"],
+            "扫荡-继续扫荡": ["体力不足"],
+            "材料详情-扫荡": ["体力不足"],
+            "商城": ["商城-商店"],
+            "大蛇丸试炼-副本内": ["更多玩法-结算"],
+            "火影格斗大赛-无差别": ["无差别-继续出战", "无差别-成就奖励"],
+            "大蛇丸试炼": ["更多玩法-匹配成功", "更多玩法-匹配中"],
+            "奖励": ["周活跃大礼"]
+        }
 
-    def scene(self, scene_img, bool_debug=True):
+    def scene(self, scene_img, bool_debug=False) -> Union[str | Scene]:
         """
-        结合Alpha通道的模板匹配，忽略透明区域
+        对场景进行分类的函数
 
         Args:
             scene_img(np.ndarray): 需要识别的图像
             bool_debug(bool): 是否回报日志
-
-        Returns:
-            (Scene):检测到的场景实例
         """
-        best_match_id = None
-        best_match_score = 0.0
+        # 存储已检查过的场景，避免循环
+        checked_scenes = set()
+        current_scene = None
+
+        # 先找到初始匹配的场景
         for scene_id, scene in self.scene_graph.scenes.items():
-            if scene.gray is None:
+            if not scene.elements:
                 continue
-
-            # 执行模板匹配
-            matched, match_score = self._single_template_match(
-                scene_img, scene, bool_debug
-            )
-
-            # 更新最佳匹配
-            if matched and match_score > best_match_score:
-                best_match_id = scene_id
-                best_match_score = match_score
-
-                # 如果匹配度非常高，提前终止
-                if match_score > 0.95:  # 可调阈值
-                    if bool_debug:
-                        self.logger.debug(f"提前终止: {scene_id}匹配度过高({match_score:.2f})")
-                    break
-
-        # 4. 结果验证
-        if best_match_id and best_match_score >= self.scene_graph.scenes.get(best_match_id).threshold:
             if bool_debug:
-                self.logger.info(f"匹配成功: {best_match_id} ({best_match_score:.4f})")
-            return self.scene_graph.scenes.get(best_match_id)
-        return "未知场景"
+                self.logger.debug(f"开始匹配场景: {scene.name}")
+            flag = self.scene_match(scene_img, scene, bool_debug)
 
-        start = time.perf_counter()
-        color_scores = []
-        for scene_id, scene in self.scene_graph.scenes.items():
-            scene_rgb = self._rgb_average(scene_img, scene.mask)
-            # 计算颜色相似度（欧氏距离的倒数）
-            color_dist = np.sqrt(
-                (scene_rgb[0] - scene.rgb[0]) ** 2 +
-                (scene_rgb[1] - scene.rgb[1]) ** 2 +
-                (scene_rgb[2] - scene.rgb[2]) ** 2
-            )
-            # 距离越小越相似，转换为相似度分数（0-1）
-            color_score = 1 / (1 + color_dist)
-            color_scores.append((scene_id, color_score))
-        # 按颜色相似度降序排序
-        color_scores.sort(key=lambda x: x[1], reverse=True)
-
-        # 3. 按颜色相似度顺序进行模板匹配
-        best_match_id = None
-        best_match_score = 0.0
-
-        for scene_id, color_score in color_scores:
-            scene = self.scene_graph.scenes.get(scene_id)
-
-            # 如果颜色相似度已经很低，提前终止
-            if color_score < 0.3 and best_match_score > 0:  # 可调阈值
-                if bool_debug:
-                    self.logger.debug(f"提前终止: {scene_id}颜色相似度过低({color_score:.2f})")
+            if flag:
+                current_scene = scene_id
                 break
 
-            # 执行模板匹配
-            matched, match_score = self._single_template_match(
-                scene_img, scene, bool_debug
-            )
+        # 如果没有找到初始场景，返回未知
+        if not current_scene:
+            for x in [
+                self.scene_graph.get_element("主场景", "X-普通"),
+                self.scene_graph.get_element("主场景", "X-广告-1"),
+                self.scene_graph.get_element("主场景", "X-广告-2")
+            ]:
+                matches = self.element_match(scene_img, x, bool_debug)
+                if matches:
+                    return "未知含X场景"
+            return "未知场景"
 
-            # 更新最佳匹配
-            if matched and match_score > best_match_score:
-                best_match_id = scene_id
-                best_match_score = match_score
+        # 递归检查子场景，使用集合避免循环
+        while current_scene in self.coincident_scenes and current_scene not in checked_scenes:
+            checked_scenes.add(current_scene)
+            found_sub_scene = None
 
-                # 如果匹配度非常高，提前终止
-                if match_score > 0.95:  # 可调阈值
-                    if bool_debug:
-                        self.logger.debug(f"提前终止: {scene_id}匹配度过高({match_score:.2f})")
-                    break
+            # 检查当前场景的所有子场景
+            for sub_scene_name in self.coincident_scenes[current_scene]:
+                # 跳过已检查过的场景
+                if sub_scene_name in checked_scenes:
+                    continue
 
-        # 4. 结果验证
-        if best_match_id and best_match_score >= self.scene_graph.scenes.get(best_match_id).threshold:
-            if bool_debug:
-                self.logger.info(f"匹配成功: {best_match_id} ({best_match_score:.4f})")
-            return best_match_id, best_match_score
+                sub_scene = self.scene_graph.scenes.get(sub_scene_name)
+                if not sub_scene:
+                    continue
 
-        if bool_debug:
-            self.logger.warning("未找到匹配场景")
-        return None, 0.0
+                self.logger.debug(f"检查子场景: {sub_scene_name}")
+                flag = self.scene_match(scene_img, sub_scene, bool_debug)
 
-    def _single_template_match(self, scene_img, scene, bool_debug=True):
-        """单个模板匹配实现"""
-        try:
-            # 灰度转换
-            scene_gray = cv2.cvtColor(scene_img, cv2.COLOR_BGR2GRAY)
+                if flag:
+                    found_sub_scene = sub_scene_name
+                    break  # 找到第一个匹配的子场景就继续深入检查
 
-            # 带掩码的模板匹配
-            result = cv2.matchTemplate(
-                scene_gray,
-                scene.gray,
-                method=cv2.TM_CCOEFF_NORMED,
-                mask=scene.mask
-            )
+            # 如果找到子场景则继续深入，否则结束
+            if found_sub_scene:
+                current_scene = found_sub_scene
+            else:
+                break
 
-            result = np.nan_to_num(result, nan=-1.0, posinf=-1.0, neginf=-1.0)
+        if current_scene == "主场景":
+            for x in [
+                self.scene_graph.get_element("主场景", "X-普通"),
+                self.scene_graph.get_element("主场景", "X-广告-1"),
+                self.scene_graph.get_element("主场景", "X-广告-2")
+            ]:
+                matches = self.element_match(scene_img, x, bool_debug)
+                if matches:
+                    return "未知含X场景"
 
-            # 获取最大匹配值
-            _, max_val, _, _ = cv2.minMaxLoc(result)
-
-            # if bool_debug:
-            #     self.logger.debug(f"[{scene.id}] 匹配度: {max_val:.4f}")
-
-            return max_val >= scene.threshold, max_val
-
-        except Exception as e:
-            self.logger.error(f"模板匹配出错[{scene.id}]: {str(e)}")
-            return False, 0.0
+        return self.scene_graph.scenes.get(current_scene)
 
     def scene_match(self, scene_img, template, bool_debug=True):
         """
@@ -169,31 +141,21 @@ class Recognizer:
         Returns:
 
         """
-        template_img = template.gray
-        mask = template.mask
-        threshold = template.threshold
-        scene_gray = cv2.cvtColor(scene_img, cv2.COLOR_BGR2GRAY).astype(np.uint8)
-        # 执行模板匹配（添加异常捕获）
-        try:
-            result = cv2.matchTemplate(
-                image=scene_gray,
-                templ=template_img,
-                method=cv2.TM_CCOEFF_NORMED,
-                mask=mask
-            )
-            # 修复非有限值：将 NaN/Inf 替换为 -1（有效值范围是[-1,1]）
-            result = np.nan_to_num(result, nan=-1.0, posinf=-1.0, neginf=-1.0)
-        except cv2.error as e:
-            self.logger.error(f"模板匹配出错：{e}")
-            return []
-        # # 检查result的统计信息
-        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-        if bool_debug:
-            self.logger.debug(f"[{template.id}]匹配结果统计：最大值={max_val:.2f}")
-        if max_val >= threshold:
-            return True, max_val
-        else:
-            return False, 0.0
+        result = []
+        for element in template.elements:
+            if not element.symbol:
+                continue
+            matches = self.element_match(scene_img, element, bool_debug)
+            if matches:
+                result.append(len(matches))
+            else:
+                # if bool_debug:
+                #     self.logger.info(f"[SCENE][{template.name}] 匹配元素: {element.name} 失败，提前退出")
+                return False
+        if result and max(result) > 0:
+            if bool_debug:
+                self.logger.info(f"匹配成功: {template.name}")
+            return True
 
     def element_match(self, scene_img, template, bool_debug=True):
         """
@@ -201,7 +163,7 @@ class Recognizer:
 
         Args:
             scene_img(np.ndarray): 场景图像（BGR格式的numpy数组，如截图）
-            template(Element): 模板图像名称（str）
+            template(Element): 模板图像
             bool_debug(bool): 是否回报日志
 
         Returns:
@@ -213,20 +175,14 @@ class Recognizer:
         else:
             return self.template_match(template, scene_img, bool_debug)
 
-    def sift_match(self, template, scene_img, ratio=0.75):
+    def sift_match(self, template: Element, scene_img, ratio=0.75):
         min_match_ratio = template.threshold
         # 1. 读取图像
         template_gray = template.gray
         scene_gray = cv2.cvtColor(scene_img, cv2.COLOR_BGR2GRAY).astype(np.uint8)
 
-        # 处理ROI
-        roi = template.roi
-        if roi:
-            x, y, w_roi, h_roi = roi
-            scene_gray_roi = scene_gray[y:y + h_roi, x:x + w_roi]
-        else:
-            x, y = 0, 0  # 如果没有ROI，偏移量为0
-            scene_gray_roi = scene_gray
+        x, y, w_roi, h_roi = template.roi_x, template.roi_y, template.roi_width, template.roi_height
+        scene_gray_roi = scene_gray[y:y + h_roi, x:x + w_roi]
 
         h, w = template_gray.shape[:2]  # 模板尺寸
 
@@ -243,11 +199,11 @@ class Recognizer:
         num_template_features = len(kp1)
         # 确保至少有4个匹配点（单应性矩阵计算的最小要求）
         min_good_matches = max(4, int(num_template_features * min_match_ratio))
-        self.logger.debug(f"[{template.id}] 模板特征数: {num_template_features}, 所需最小匹配: {min_good_matches}")
+        self.logger.debug(f"[{template.name}] 模板特征数: {num_template_features}, 所需最小匹配: {min_good_matches}")
 
         # 如果没有足够的特征点或描述符，直接返回空结果
         if des1 is None or des2 is None or len(kp1) < 4 or len(kp2) < 4:
-            self.logger.debug(f"[{template.id}] 特征点不足: 模板={len(kp1) if kp1 else 0}, 场景={len(kp2) if kp2 else 0}")
+            self.logger.debug(f"[{template.name}] 特征点不足: 模板={len(kp1) if kp1 else 0}, 场景={len(kp2) if kp2 else 0}")
             return []
 
         # 4. 匹配特征点（使用FLANN快速匹配器）
@@ -266,7 +222,7 @@ class Recognizer:
         for m, n in matches:
             if m.distance < ratio * n.distance:  # 最佳匹配距离远小于次佳匹配
                 good_matches.append(m)
-        self.logger.debug(f"[{template.id}] 有效匹配点数：{len(good_matches)}")
+        self.logger.debug(f"[{template.name}] 有效匹配点数：{len(good_matches)}")
 
         if len(good_matches) >= min_good_matches:
             # 提取匹配点坐标
@@ -277,7 +233,7 @@ class Recognizer:
             H, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC, 5.0)
 
             if H is None:
-                self.logger.debug(f"[{template.id}] 无法计算单应性矩阵")
+                self.logger.debug(f"[{template.name}] 无法计算单应性矩阵")
                 return []
 
             # 模板四个角点映射到场景图
@@ -301,37 +257,50 @@ class Recognizer:
             return []
 
     def template_match(self, template: Element, scene_img, bool_debug: bool = True):
+        start = time.perf_counter()
         template_img = template.gray
         mask = template.mask
         threshold = template.threshold
+
+        # 1. 转换场景图像为灰度图（先获取原始尺寸）
         scene_gray = cv2.cvtColor(scene_img, cv2.COLOR_BGR2GRAY).astype(np.uint8)
-        x, y, w, h = [0, 0, 1600, 900]
-        # 执行模板匹配（添加异常捕获）
+        scene_h, scene_w = scene_gray.shape  # 原始场景图像的高度、宽度
+
+        # 2. 修复ROI裁剪：确保不超出原始图像范围
+        x = template.roi_x
+        y = template.roi_y
+        w = template.roi_width
+        h = template.roi_height
+
+        # 计算合法的ROI边界（避免越界）
+        x_end = min(x + w, scene_w)  # 右边界不超过场景宽度
+        y_end = min(y + h, scene_h)  # 下边界不超过场景高度
+        x_start = max(x, 0)  # 左边界不小于0
+        y_start = max(y, 0)  # 上边界不小于0
+
+        # 裁剪合法的ROI区域
+        scene_gray_roi = scene_gray[y_start:y_end, x_start:x_end]
+
+        time_1 = time.perf_counter()
+        # print(f"[ELEMENT_MATCH]预处理耗时 {(time_1 - start) * 1000:.2f} ms")
+
+        # 6. 执行模板匹配（此时尺寸已合法）
         try:
-            roi = template.roi
-            if roi:
-                x, y, w, h = roi
-                scene_gray = scene_gray[y:y + h, x:x + w]
             result = cv2.matchTemplate(
-                image=scene_gray,
+                image=scene_gray_roi,
                 templ=template_img,
                 method=cv2.TM_CCOEFF_NORMED,
                 mask=mask
             )
-            # 修复非有限值：将 NaN/Inf 替换为 -1（有效值范围是[-1,1]）
             result = np.nan_to_num(result, nan=-1.0, posinf=-1.0, neginf=-1.0)
         except cv2.error as e:
-            self.logger.error(f"模板匹配出错：{e}")
+            self.logger.error(f"[{template.name}] 模板匹配执行错误：{e}")
             return []
+        time_2 = time.perf_counter()
         # # 检查result的统计信息
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
         if bool_debug:
-            self.logger.debug(f"[{template.id}]匹配结果统计：最大值={max_val:.2f}")
-        # vis_img = visualize_confidence_heatmap(result, template_name)
-        # timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:-3]  # 截取前3位毫秒
-        # # 构建带时间戳的文件名
-        # filename = f"confidence_heat/{template_name}_{timestamp}.png"
-        # cv_save(get_real_path(filename), vis_img)
+            self.logger.debug(f"[{template.name}]匹配结果统计：最大值={max_val:.2f}")
 
         # 5. 筛选超过阈值的匹配位置，并绑定置信度
         locations = np.where(result >= threshold)  # 所有符合条件的位置
@@ -444,6 +413,44 @@ class Recognizer:
 
 
 if __name__ == "__main__":
-    rg = Recognizer(SceneGraph(get_real_path("refactor_src/Template/Scene")))
-    img = cv_imread(r"F:\PyProject\DailyQuestsHelper\image\2025-08-01_07-24-49.069996.png")
-    print(rg.scene_match(img, True))
+    logger = setup_logging()
+    rg = Recognizer(SceneGraph(ResourceDBManager()))
+
+    # 图片目录路径
+    image_dir = r"F:\PyProject\Xuan\test_scene"
+
+    # 获取目录下所有图片文件
+    image_extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.gif']
+    image_files = [
+        f for f in os.listdir(image_dir)
+        if os.path.isfile(os.path.join(image_dir, f)) and
+           os.path.splitext(f)[1].lower() in image_extensions
+    ]
+
+    for img_file in image_files:
+        # 提取场景名（不含扩展名）
+        scene_name = os.path.splitext(img_file)[0]
+        img_path = os.path.join(image_dir, img_file)
+
+        try:
+            # 读取图片
+            img = cv_imread(img_path)
+            if img is None:
+                print(f"无法读取图片: {img_file}")
+                continue
+
+            # 执行识别并计时
+            start_time = time.perf_counter()
+            result = rg.scene(img, False)  # 假设该方法返回识别出的场景名
+            if isinstance(result, Scene):
+                result = result.name
+            elapsed_time = time.perf_counter() - start_time
+
+            # 比对结果
+            if result != scene_name:
+                print(f"⚠️ 不一致 - 图片: {img_file} | 预期: {scene_name} | 实际: {result} | 耗时: {elapsed_time:.2f}秒")
+            else:
+                print(f"✅ 一致 - 图片: {img_file} | 场景: {scene_name} | 耗时: {elapsed_time:.2f}秒")
+
+        except Exception as e:
+            print(f"处理图片 {img_file} 时出错: {str(e)}")

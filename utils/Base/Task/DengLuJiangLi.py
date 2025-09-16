@@ -1,43 +1,24 @@
 from datetime import timedelta, datetime
 from zoneinfo import ZoneInfo
 
-from utils.Base.Exceptions import StepFailedError, EndEarly
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
 class DengLuJiangLi(BaseTask):
     task_max_duration = timedelta(minutes=5)
 
-    @TransitionOn("Default")
-    def _(self):
+    def run(self):
         self.operationer.restart()
-        self.operationer.detect_element(
-            self.scene_graph.scenes.get("登录").elements.get("开始游戏"),
-            max_time=300,
-            wait_time=3)
-        self.operationer.click_and_wait(self.scene_graph.scenes.get("登录").elements.get("开始游戏"),
-                                        max_time=10)
-        if not self.operationer.search_and_detect(
-                [self.scene_graph.scenes.get("登录奖励")],
-                [
-                    {'click': self.scene_graph.scenes.get("主场景").elements.get("公告-X")},
-                    {'click': self.scene_graph.scenes.get("主场景").elements.get("广告-X")}
-                ],
-                search_max_time=120,
-                wait_time=3
-        ):
-            self.update_next_execute_time()
-            raise EndEarly("未弹出登录奖励窗口，可能已领取")
-        self.operationer.click_and_wait(self.scene_graph.scenes.get("登录奖励").elements.get("领取"))
-        self.operationer.search_and_detect(
-            [self.scene_graph.scenes.get("主场景")],
-            [
-                {'click': self.scene_graph.scenes.get("主场景").elements.get("公告-X")},
-                {'click': self.scene_graph.scenes.get("主场景").elements.get("广告-X")}
-            ],
-            search_max_time=60,
-            wait_time=3
-        )
+        super().run()
+
+    @TransitionOn("登录界面")
+    def _(self):
+        self.operationer.click_and_wait("开始游戏")
+        return False
+
+    @TransitionOn("登录奖励")
+    def _(self):
+        self.operationer.click_and_wait("领取")
         self.update_next_execute_time()
         return True
 

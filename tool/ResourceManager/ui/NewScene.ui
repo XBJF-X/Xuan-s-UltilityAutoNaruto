@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>263</width>
-    <height>223</height>
+    <height>125</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -196,55 +196,6 @@ color:#39C5BB;
         </item>
         <item row="0" column="1">
          <widget class="QLineEdit" name="scene_id_LineEdit"/>
-        </item>
-        <item row="1" column="0">
-         <widget class="QLabel" name="scene_thresholdLabel">
-          <property name="text">
-           <string>模版匹配阈值：</string>
-          </property>
-         </widget>
-        </item>
-        <item row="1" column="1">
-         <widget class="QDoubleSpinBox" name="scene_thresholdDoubleSpinBox">
-          <property name="maximum">
-           <double>1.000000000000000</double>
-          </property>
-          <property name="singleStep">
-           <double>0.010000000000000</double>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="set_scene_image_Label">
-          <property name="text">
-           <string>选择场景图片</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QWidget" name="set_scene_image_Widget" native="true">
-          <layout class="QVBoxLayout" name="verticalLayout_2">
-           <property name="leftMargin">
-            <number>0</number>
-           </property>
-           <property name="topMargin">
-            <number>0</number>
-           </property>
-           <property name="rightMargin">
-            <number>0</number>
-           </property>
-           <property name="bottomMargin">
-            <number>0</number>
-           </property>
-           <item>
-            <widget class="QPushButton" name="set_img_btn">
-             <property name="text">
-              <string>选择图片</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
         </item>
        </layout>
       </item>

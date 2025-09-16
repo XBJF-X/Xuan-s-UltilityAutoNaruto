@@ -3,6 +3,8 @@ import sys
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+from PySide6.QtCore import QThread
+
 from utils.Base.Config import Config
 from utils.Base.Exceptions import EndEarly, StepFailedError
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
@@ -12,15 +14,38 @@ class XiaoDuiTuXi(BaseTask):
     source_scene = "小队突袭"
     task_max_duration = timedelta(minutes=10)
 
-    zhuzhan_reward_collected = False
-    fight_finished_times = 0
-
-    def run(self):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.zhuzhan_reward_collected = False
         if self.data.get("四倍奖励勾选"):
-            self.four_reward_times = self.data.get("四倍奖励次数")
+            self.four_reward_times = self.config.get_task_config(self.task_name, "四倍奖励次数")
         else:
             self.four_reward_times = 0
-        super().run()
+        self.four_reward_collected_times = 0
+        self.finished = False
+
+    @TransitionOn("小队突袭")
+    def _(self):
+        self.operationer.click_and_wait("组织助战")
+        return False
+
+    @TransitionOn("小队突袭-组织助战")
+    def _(self):
+        if not self.zhuzhan_reward_collected:
+            self.operationer.click_and_wait("我的助战")
+            return False
+        if not self.operationer.detect_element(
+                "今日收益次数已达上限",
+                auto_raise=False
+        ):
+            if not self._select_four_rewards():
+                return True
+            self.logger.info("出战")
+            self.operationer.click_and_wait("出战")
+            return False
+        self.update_next_execute_time()
+        self.logger.info("小队突袭次数已用尽")
+        return True
 
     @TransitionOn("组织助战-助战忍者")
     def _(self):
@@ -32,64 +57,37 @@ class XiaoDuiTuXi(BaseTask):
         ):
             self.logger.info("助战奖励领取成功")
         self.zhuzhan_reward_collected = True
-        self.operationer.next_scene = "小队突袭"
-
-    @TransitionOn("小队突袭-组织助战")
-    def _(self):
-        self._select_four_rewards()
-        # 不能就出站
-        self.logger.info("出战")
-        # 点击出战
-        self.operationer.click_and_wait(
-            "出战",
-            wait_time=4
-        )
-        # 可能有二级密码
-        if self.operationer.pass_secondary_password():
-            self.logger.info("再次出战")
-            # 返回True说明检测到了二级密码的弹窗，则需要再次点击出战
-            self.operationer.click_and_wait(
-                "出战",
-                wait_time=5
-            )
-        self.logger.info("进入自动战斗")
-        # 使用连点器过小队突袭
-        self.operationer.auto_cycle_actioner([
-            ("CLICK", (800, 750))
-        ],
-            stop_conditions=[
-                self.scene_graph.scenes.get("小队突袭")
-            ]
-        )
-        self.four_reward_times -= 1
-        self.logger.info("战斗结束")
-        self.fight_finished_times += 1
-        self.operationer.next_scene = "小队突袭"
+        self.operationer.click_and_wait("X")
         return False
 
-    @TransitionOn("小队突袭")
+    @TransitionOn("离开队伍-确认")
     def _(self):
-        if not self.zhuzhan_reward_collected:
-            self.operationer.next_scene = "组织助战-助战忍者"
-            return False
-        if self.fight_finished_times < 2:
-            if self.operationer.detect_element(
-                    "今日收益次数已达上限",
-                    auto_raise=False
-            ):
-                self.update_next_execute_time()
-                raise EndEarly("小队突袭次数已用尽")
-            # # 先看看能不能扫荡
-            # self._handle_sweep_through()
-            self.operationer.next_scene = "小队突袭-组织助战"
-            return False
-        self.logger.info("执行结束")
-        self.update_next_execute_time()
-        return True
+        self.operationer.click_and_wait("确定")
+        return False
+
+    @TransitionOn("副本结算-点击任意位置关闭界面")
+    def _(self):
+        self.operationer.click_and_wait("点击任意位置关闭界面")
+        self.four_reward_collected_times += 1
+        return False
+
+    @TransitionOn("副本内")
+    def _(self):
+        QThread.msleep(1000)
+        return False
+
+    @TransitionOn("副本内-暂停")
+    def _(self):
+        self.operationer.click_and_wait("X")
+        return False
+
+    @TransitionOn("副本内-暂停-退出战斗确认")
+    def _(self):
+        self.operationer.click_and_wait("X")
+        return False
 
     def _select_four_rewards(self):
-        self.logger.info(f"收取四倍奖励次数：{self.four_reward_times}")
-        if self.four_reward_times > 0:
+        if self.four_reward_collected_times < self.four_reward_times:
             self.logger.info("勾选四倍奖励")
             if not self.operationer.detect_element(
                     "四倍奖励-选中",
@@ -99,7 +97,8 @@ class XiaoDuiTuXi(BaseTask):
                         "四倍奖励-未选中",
                         auto_raise=False
                 ):
-                    raise StepFailedError("小队突袭四倍奖励选中失败")
+                    self.logger.warning("小队突袭四倍奖励选中失败")
+                    return False
         else:
             self.logger.info("取消勾选四倍奖励")
             if not self.operationer.detect_element(
@@ -110,28 +109,9 @@ class XiaoDuiTuXi(BaseTask):
                         "四倍奖励-选中",
                         auto_raise=False
                 ):
-                    raise StepFailedError("小队突袭四倍奖励取消选中失败")
-
-    def _handle_sweep_through(self):
-        # 假如有扫荡按钮的话，就点击并直接回退，因为扫荡按钮代表只用打一次
-        if self.operationer.click_and_wait(
-                "扫荡",
-                auto_raise=False
-        ):
-            self.logger.info("存在扫荡按钮，有超影并且已经打过一次")
-            # 直接开始点击，点到小队突袭界面出现
-            self.logger.info("进入自动战斗")
-            # 使用连点器过小队突袭
-            self.operationer.auto_cycle_actioner(
-                [
-                    ("CLICK", (800, 750))
-                ],
-                stop_conditions=[
-                    self.scene_graph.scenes.get("小队突袭")
-                ]
-            )
-            self.logger.info("战斗结束")
-            raise EndEarly("已扫荡完成，提前结束")
+                    self.logger.warning("小队突袭四倍奖励取消选中失败")
+                    return False
+        return True
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         # 明确指定中国时区（带时区的当前时间）
@@ -173,6 +153,7 @@ class XiaoDuiTuXi(BaseTask):
         self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
         self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
         return True, self.next_execute_time
+
 
 def setup_logging():
     # 创建基础日志格式

@@ -1,21 +1,21 @@
 import logging
-import logging
 import os
+import shutil
+from pathlib import Path
 from typing import Dict
 
 from PySide6.QtCore import Qt, Signal, Slot, QPointF, QRectF, QPoint
 from PySide6.QtGui import QPixmap, QAction, QStandardItem, QStandardItemModel, QDragEnterEvent, \
-    QDropEvent, QMouseEvent, QPen, QColor, QBrush
+    QDropEvent, QMouseEvent, QPen, QColor, QBrush, QDragMoveEvent
 from PySide6.QtWidgets import (QDialog, QFileDialog, QMessageBox, QGraphicsScene,
                                QLabel, QMenu, QGraphicsView,
                                QGraphicsPixmapItem, QVBoxLayout, QWidget, QScrollArea,
-                               QGraphicsRectItem, QFrame)
+                               QGraphicsRectItem, QFrame, QTreeView)
 
-from StaticFunctions import cv_imread, split_gray_alpha, split_gray_alpha_bytes
+from StaticFunctions import cv_imread, split_gray_alpha, split_gray_alpha_bytes, get_real_path
 from tool.ResourceManager.NewElement import NewElement, RatioDialog
 from tool.ResourceManager.ResourceDBManager import ResourceDBManager
-from tool.ResourceManager.model import Element
-from tool.ResourceManager.utils import element_to_qpixmap
+from tool.ResourceManager.model import Element, element_to_qpixmap, Scene
 from ui.SceneEditor_ui import Ui_SceneEditor
 from utils.Base.Enums import ElementType, MatchType
 from utils.Base.Recognizer import Recognizer
@@ -26,14 +26,13 @@ class ImageGraphicsView(QGraphicsView):
     coordinateSelected = Signal(QPointF)  # 坐标选择信号
     coordinateHovered = Signal(QPointF)  # 新增：鼠标悬停坐标信号
 
-    def __init__(self, parent=None):
+    def __init__(self, current_scene, parent=None):
         super().__init__(parent)
         self.logger = logging.getLogger("场景编辑器-预览框")
         # 创建场景
         self.scene = QGraphicsScene(self)
         self.setScene(self.scene)
-        # 设置提示文本
-        self.scene.addText("拖拽图片到此处预览")
+        self.current_scene: Scene = current_scene
         # 启用拖拽功能
         self.setAcceptDrops(True)
         # 启用鼠标追踪
@@ -73,6 +72,43 @@ class ImageGraphicsView(QGraphicsView):
         self.coord_label.setText("(x, y)")
         self.coord_label.adjustSize()
         self.coord_label.hide()  # 初始隐藏
+        # -------------------------- 新增：默认加载1600×900白色图片 --------------------------
+        destination = Path(get_real_path("test_scene")) / f"{self.current_scene.name}.png"
+        if destination.exists():
+            # 显示背景图片
+            pixmap = QPixmap(destination)
+            if not pixmap.isNull():
+                # 创建背景项
+                self.background_item = QGraphicsPixmapItem(pixmap)
+                self.background_item.setZValue(0)  # 背景在底层
+                self.scene.addItem(self.background_item)
+                # 设置场景大小
+                self.scene.setSceneRect(pixmap.rect())
+                # 居中显示图片
+                self.fitInView(self.background_item, Qt.AspectRatioMode.KeepAspectRatio)
+        else:
+            self._load_default_white_image()  # 初始化时加载默认白色图片
+        # -----------------------------------------------------------------------------------
+
+    def _load_default_white_image(self):
+        """创建1600×900的白色图片并加载到场景"""
+        # 1. 清空场景（避免与默认提示文本冲突）
+        self.scene.clear()
+
+        # 2. 创建1600×900的白色画布（format设为ARGB32确保透明通道支持，fill填充白色）
+        default_pixmap = QPixmap(1600, 900)
+        default_pixmap.fill(Qt.GlobalColor.white)  # 填充白色
+
+        # 3. 创建背景图片项并添加到场景
+        self.background_item = QGraphicsPixmapItem(default_pixmap)
+        self.background_item.setZValue(0)  # 确保在最底层
+        self.scene.addItem(self.background_item)
+
+        # 4. 设置场景大小与图片一致，确保坐标匹配
+        self.scene.setSceneRect(default_pixmap.rect())
+
+        # 5. 居中显示默认图片（复用现有缩放逻辑）
+        self.fitInView(self.background_item, Qt.AspectRatioMode.KeepAspectRatio)
 
     def highlight_area(self, rect: QRectF):
         """
@@ -286,6 +322,9 @@ class ImageGraphicsView(QGraphicsView):
                 if url.isLocalFile():
                     file_path = url.toLocalFile()
                     if self.is_image_file(file_path):
+                        destination = Path(get_real_path("test_scene")) / f"{self.current_scene.name}.png"
+                        self.logger.debug(str(destination))
+                        shutil.copy2(file_path, destination)
                         # 显示背景图片
                         pixmap = QPixmap(file_path)
                         if not pixmap.isNull():
@@ -540,8 +579,19 @@ class SceneEditor(QDialog):
         self.element_coordinate_list = [0, 0]
 
         # 创建自定义的图片视图
-        self.img_graphics_view = ImageGraphicsView()
+        self.img_graphics_view = ImageGraphicsView(self.current_scene)
         self.UI.image_container.layout().addWidget(self.img_graphics_view)
+
+        # -------------------------- 新增：TreeView 拖拽配置 --------------------------
+        # 启用 TreeView 拖拽功能（接受外部文件拖拽）
+        self.UI.Element_tree.setAcceptDrops(True)
+        # 设置拖拽模式（可选，增强交互体验）
+        self.UI.Element_tree.setDragDropMode(QTreeView.DragDropMode.DropOnly)
+        # 连接拖拽事件（进入、移动、放下）
+        self.UI.Element_tree.dragEnterEvent = self.tree_drag_enter_event
+        self.UI.Element_tree.dragMoveEvent = self.tree_drag_move_event
+        self.UI.Element_tree.dropEvent = self.tree_drop_event
+        # -----------------------------------------------------------------------------
 
         # 连接点击信号
         self.UI.Element_tree.clicked.connect(self.on_item_clicked)
@@ -551,6 +601,7 @@ class SceneEditor(QDialog):
         self._init_tree_view()
         # 绑定信号槽
         self._bind_signals()
+        self.on_item_clicked(self.UI.Element_tree.model().index(0, 0))  # 默认选中场景节点
 
     def _init_tree_view(self):
         """初始化树视图显示场景和元素结构，按首字母排序节点"""
@@ -569,8 +620,14 @@ class SceneEditor(QDialog):
         for element_id in element_ids:
             element = self.resource_manager.get_scene_element(self.scene_id, element_id)
             child = QStandardItem(element_id)
-            if element.type == ElementType.IMG and element.match_type == MatchType.SIFT:
-                child.setData(QColor(255, 0, 0), Qt.ItemDataRole.ForegroundRole)
+
+            # 设置颜色：红色（symbol == 1），蓝色（type == IMG），绿色（match_type == SIFT）
+            if element.type == ElementType.IMG and element.match_type == MatchType.TEMPLATE:
+                child.setData(QColor(0, 0, 255), Qt.ItemDataRole.ForegroundRole)  # 蓝色
+            elif element.type == ElementType.IMG and element.match_type == MatchType.SIFT:
+                child.setData(QColor(0, 255, 0), Qt.ItemDataRole.ForegroundRole)  # 绿色
+            if element.symbol == 1:
+                child.setData(QColor(255, 0, 0), Qt.ItemDataRole.ForegroundRole)  # 红色
             root.appendRow(child)
 
         # 设置模型到TreeView
@@ -625,6 +682,7 @@ class SceneEditor(QDialog):
                 if element.type == ElementType.IMG:
                     # 加载当前值
                     self.UI.element_id_edit.setText(element.name)
+                    self.UI.is_symbol.setChecked(element.symbol)
                     self.UI.element_type.setCurrentIndex(element.type.value)
                     self.UI.element_threshold.setValue(element.threshold)
                     self.UI.element_ratio.setText(f"({element.ratio_x:.2f},{element.ratio_y:.2f})")
@@ -678,14 +736,11 @@ class SceneEditor(QDialog):
         self.UI.button_cancel.clicked.connect(self._handle_cancel)
 
         # 连接控件响应函数
-        self.UI.scene_view_image_btn.clicked.connect(self._handle_view_image_btn_clicked)
-        self.UI.scene_set_image_btn.clicked.connect(self._handle_set_img_btn_clicked)
         self.UI.element_view_image_btn.clicked.connect(self._handle_view_image_btn_clicked)
         self.UI.element_set_image_btn.clicked.connect(self._handle_set_img_btn_clicked)
         self.UI.set_roi_btn.clicked.connect(self._handle_set_roi_btn_clicked)
         self.UI.set_ratio_btn.clicked.connect(self._handle_set_ratio_btn_clicked)
         self.UI.set_coordinate_btn.clicked.connect(self._handle_set_coordinate_btn_clicked)
-        self.UI.scene_split_image_btn.clicked.connect(self._handle_split_img_btn_clicked)
         self.UI.element_split_image_btn.clicked.connect(self._handle_split_img_btn_clicked)
         self.UI.scene_match_btn.clicked.connect(self._handle_match_btn_clicked)
         self.UI.element_match_btn.clicked.connect(self._handle_match_btn_clicked)
@@ -721,13 +776,76 @@ class SceneEditor(QDialog):
             context_menu.addAction(delete_action)
             context_menu.exec(self.UI.Element_tree.viewport().mapToGlobal(position))
 
-    def _add_element(self):
-        self.logger.debug("新建元素窗口开启")
-        ne = NewElement(self.current_scene, self.resource_manager, self.UI.Element_tree)
-        # 显示模态对话框（用户必须完成操作才能返回）
-        result = ne.exec()  # 阻塞当前流程，直到对话框关闭
+    # -------------------------- 新增：TreeView 拖拽事件处理 --------------------------
+    @staticmethod
+    def is_image_file(file_path: str) -> bool:
+        """判断文件是否为图片格式（复用逻辑，与 ImageGraphicsView 一致）"""
+        image_extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.tiff']
+        ext = os.path.splitext(file_path)[1].lower()
+        return ext in image_extensions
 
-        # 根据对话框返回结果进行后续处理
+    def tree_drag_enter_event(self, event: QDragEnterEvent):
+        """拖拽进入 TreeView：判断是否为图片文件，是则接受拖拽"""
+        if event.mimeData().hasUrls():
+            for url in event.mimeData().urls():
+                if url.isLocalFile():
+                    file_path = url.toLocalFile()
+                    if self.is_image_file(file_path):
+                        event.acceptProposedAction()  # 接受拖拽
+                        return
+        event.ignore()  # 非图片文件，拒绝拖拽
+
+    def tree_drag_move_event(self, event: QDragMoveEvent):
+        """拖拽在 TreeView 内移动：仅允许拖到根节点（场景节点）下"""
+        if event.mimeData().hasUrls():
+            # 获取拖拽位置对应的节点索引
+            drop_index = self.UI.Element_tree.indexAt(event.position().toPoint())
+            # 允许两种情况：1. 拖到空白区域（默认添加到根节点）；2. 拖到根节点上
+            if not drop_index.isValid() or (drop_index.isValid() and not drop_index.parent().isValid()):
+                event.acceptProposedAction()
+                return
+        event.ignore()
+
+    def tree_drop_event(self, event: QDropEvent):
+        """拖拽放下：获取图片路径，打开新建元素窗口并传递路径"""
+        if event.mimeData().hasUrls():
+            for url in event.mimeData().urls():
+                if url.isLocalFile():
+                    file_path = url.toLocalFile()
+                    if self.is_image_file(file_path):
+                        self.logger.debug(f"TreeView 接收图片拖拽：{file_path}")
+                        # 打开新建元素窗口，并传递图片路径
+                        self._add_element_with_img_path(Path(file_path))
+                        event.acceptProposedAction()
+                        return
+        event.ignore()
+
+    def _add_element_with_img_path(self, img_path: Path):
+        """带图片路径的新建元素：打开窗口并自动填充图片路径"""
+        self.logger.debug(f"带图片路径新建元素：{img_path}")
+        # 创建 NewElement 窗口，传入图片路径（新增参数）
+        ne = NewElement(
+            scene=self.current_scene,
+            resource_manager=self.resource_manager,
+            tree=self.UI.Element_tree,
+            img_path=img_path  # 新增：传递拖拽的图片路径
+        )
+        # 显示模态对话框
+        result = ne.exec()
+        # 刷新树视图（与原 _add_element 逻辑一致）
+        if result == QDialog.DialogCode.Accepted:
+            self._init_tree_view()
+            self.logger.debug(f"确认创建新元素（图片路径：{img_path}）")
+        else:
+            self.logger.debug("取消创建新元素")
+
+    # -----------------------------------------------------------------------------
+
+    # （原 _add_element 方法保留，用于右键菜单"新建元素"，无图片路径场景）
+    def _add_element(self):
+        self.logger.debug("新建元素窗口开启（无图片路径）")
+        ne = NewElement(self.current_scene, self.resource_manager, self.UI.Element_tree)
+        result = ne.exec()
         if result == QDialog.DialogCode.Accepted:
             self._init_tree_view()
             self.logger.debug(f"确认创建新元素")
@@ -767,9 +885,7 @@ class SceneEditor(QDialog):
         item_type = self.current_item.get('type')
         item_id = self.current_item.get('id')
         try:
-            if item_type == "SCENE":
-                pass
-            elif item_type == "ELEMENT":
+            if item_type == "ELEMENT":
                 element: Element = self.resource_manager.get_scene_element(self.scene_id, item_id)
                 # 显示图片预览对话框
                 dialog = ImagePreviewDialog(element, self)
@@ -788,10 +904,7 @@ class SceneEditor(QDialog):
             return
         item_type = self.current_item.get('type')
         item_id = self.current_item.get('id')
-        if item_type == "SCENE":
-            pass
-        elif item_type == "ELEMENT":
-            element: Element = self.resource_manager.get_scene_element(self.scene_id, item_id)
+        if item_type == "ELEMENT":
             file_path, _ = QFileDialog.getOpenFileName(
                 self, f"选择【{item_id}】图片", "", "PNG图片 (*.png)"
             )
@@ -804,10 +917,7 @@ class SceneEditor(QDialog):
                         element_name=item_id,
                         bgra=bgra,
                         gray=gray,
-                        mask=mask,
-                        width=gray.shape[1],
-                        height=gray.shape[0],
-                        channels=bgra.shape[-1]
+                        mask=mask
                     )
                 except Exception as e:
                     QMessageBox.critical(self, "错误", f"添加【{item_id}】图片失败: {str(e)}")
@@ -818,9 +928,7 @@ class SceneEditor(QDialog):
             return
         item_type = self.current_item.get('type')
         item_id = self.current_item.get('id')
-        if item_type == "SCENE":
-            pass
-        elif item_type == "ELEMENT":
+        if item_type == "ELEMENT":
             element: Element = self.resource_manager.get_scene_element(self.scene_id, item_id)
             if element.bgra:
                 try:
@@ -830,10 +938,7 @@ class SceneEditor(QDialog):
                         element_name=element.name,
                         bgra=bgra,
                         gray=gray,
-                        mask=mask,
-                        width=gray.shape[1],
-                        height=gray.shape[0],
-                        channels=bgra.shape[-1]
+                        mask=mask
                     )
                 except Exception as e:
                     QMessageBox.critical(self, "错误", f"添加【{item_id}】图片失败: {str(e)}")
@@ -844,20 +949,21 @@ class SceneEditor(QDialog):
             return
         item_type = self.current_item.get('type')
         item_id = self.current_item.get('id')
+        destination = Path(get_real_path("test_scene")) / f"{self.current_scene.name}.png"
         if item_type == "SCENE":
-            if (self.current_scene.dir / "Example.png").exists():
+            if destination.exists():
                 try:
-                    scene_img = cv_imread(self.current_scene.dir / "Example.png")
-                    flag, confidence = self.recognizer.scene_match(scene_img, self.recognizer.scene_graph.scenes.get(self.current_scene.name))
+                    scene_img = cv_imread(destination)
+                    flag = self.recognizer.scene_match(scene_img, self.recognizer.scene_graph.get_scene(self.current_scene.name))
                 except Exception as e:
                     QMessageBox.critical(self, "错误", f"匹配失败: {str(e)}")
             else:
                 QMessageBox.critical(self, "错误", f"目标不存在示例图片")
         elif item_type == "ELEMENT":
-            element: Element = self.recognizer.scene_graph.scenes.get(self.current_scene.name).elements.get(item_id)
-            if (self.current_scene.dir / "Example.png").exists():
+            element: Element = self.recognizer.scene_graph.get_element(self.current_scene.name, item_id)
+            if destination.exists():
                 try:
-                    scene_img = cv_imread(self.current_scene.dir / "Example.png")
+                    scene_img = cv_imread(destination)
                     coordinates = self.recognizer.element_match(scene_img, element)
                 except Exception as e:
                     QMessageBox.critical(self, "错误", f"匹配失败: {str(e)}")
@@ -903,7 +1009,8 @@ class SceneEditor(QDialog):
             QMessageBox.warning(self, "警告", "请先选择一个元素")
             return
 
-        element: Element = self.resource_manager.get_scene_element(self.scene_id, self.current_item['id'])
+        element: Element = self.resource_manager.get_scene_element(self.scene_id,
+                                                                   self.current_item['id'])
 
         if not element.bgra:
             QMessageBox.warning(self, "警告", "元素图片不存在")
@@ -964,6 +1071,7 @@ class SceneEditor(QDialog):
                 scene_name=self.scene_id,
                 element_name=self.current_item.get('id'),
                 type=self.UI.element_type.currentIndex(),
+                symbol=self.UI.is_symbol.isChecked() if self.UI.element_type.currentIndex() != ElementType.COORDINATE.value else False,
                 threshold=self.UI.element_threshold.value(),
                 match_type=self.UI.element_match_type.currentIndex(),
                 ratio_x=self.element_ratio_list[0],
@@ -986,58 +1094,3 @@ class SceneEditor(QDialog):
     def _handle_cancel(self):
         # 取消操作：直接关闭对话框
         self.reject()  # 关闭对话框，返回QDialog.Rejected
-
-#
-# if __name__ == "__main__":
-#     def setup_logging():
-#         # 创建基础日志格式
-#         log_format = "%(asctime)s - %(levelname)s - %(message)s"
-#
-#         # 创建基础配置
-#         logging.basicConfig(
-#             level=logging.DEBUG,  # 设置默认日志级别
-#             format=log_format,
-#             handlers=[
-#                 logging.StreamHandler(sys.stdout)  # 输出到控制台
-#             ]
-#         )
-#
-#         # 获取根日志记录器
-#         logger = logging.getLogger()
-#
-#         # 设置更详细的日志格式（可选）
-#         formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-#
-#         # 更新所有处理器的格式
-#         for handler in logger.handlers:
-#             handler.setFormatter(formatter)
-#
-#         # 设置特定模块的日志级别（可选）
-#         # logging.getLogger("PySide6").setLevel(logging.WARNING)
-#         # logging.getLogger("urllib3").setLevel(logging.WARNING)
-#
-#         return logger
-#
-#
-#     # 设置日志系统
-#     logger = setup_logging()
-#     # 1. 首先设置DPI感知 - 使用兼容性更好的旧版API
-#     if sys.platform == 'win32':
-#         try:
-#             # 使用兼容性更好的旧版API
-#             ctypes.windll.user32.SetProcessDPIAware()
-#         except Exception as e:
-#             print(f"设置DPI感知失败: {e}")
-#
-#     # 2. 创建应用实例前设置高DPI策略
-#     os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1"
-#
-#     # 3. 创建应用实例
-#     app = QApplication(sys.argv)
-#
-#     # 4. 设置高DPI缩放策略（可选）
-#     # 在PySide6 6.4+版本中，这步可能不需要
-#     # app.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
-#     resource_manager = SceneResourceManager(Path(get_real_path("raw_src/Template/Scene")))
-#     editor = SceneEditor("主场景", resource_manager)
-#     editor.exec()

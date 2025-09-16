@@ -15,10 +15,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractItemView, QApplication, QComboBox, QDialog,
-    QDoubleSpinBox, QFormLayout, QHBoxLayout, QHeaderView,
-    QLabel, QLineEdit, QPushButton, QSizePolicy,
-    QStackedWidget, QTreeView, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox,
+    QDialog, QDoubleSpinBox, QFormLayout, QHBoxLayout,
+    QHeaderView, QLabel, QLineEdit, QPushButton,
+    QSizePolicy, QStackedWidget, QTreeView, QVBoxLayout,
+    QWidget)
 
 class Ui_SceneEditor(object):
     def setupUi(self, SceneEditor):
@@ -104,10 +105,35 @@ class Ui_SceneEditor(object):
 "                background-color: #dfdfdf;  /* \u80cc\u666f\u989c\u8272 */\n"
 "border-radius:10px;\n"
 "            }\n"
+"/* \u8c03\u6574\u52fe\u9009\u6846\u7684\u5927\u5c0f */\n"
+"QCheckBox::indicator {\n"
+"	width: 20px;      /* \u52fe\u9009\u6846\u5bbd\u5ea6 */\n"
+"	height: 20px;     /* \u52fe\u9009\u6846\u9ad8\u5ea6 */\n"
+"	outline:none;\n"
+"border:none;\n"
+"}\n"
 "\n"
+"/* \u53ef\u9009\uff1a\u8bbe\u7f6e\u52fe\u9009\u6846\u4e0d\u540c\u72b6\u6001\u7684\u6837\u5f0f */\n"
+"QCheckBox::indicator:unchecked {\n"
+"	border: 2px solid #0f322f;\n"
+"	border-radius: 3px;\n"
+"}\n"
+"QCheckBox::indicator:checked {\n"
+"	background-color:#39C5BB;\n"
+"	border: 2px solid #0f322f;\n"
+"	border-radius: 3px;\n"
+"	\n"
+"}\n"
+"\n"
+"/* \u7981\u7528\u72b6\u6001 */\n"
+"QCheckBox::indicator:disabled {\n"
+"	background-color: #f0f0f0;\n"
+"	border-color: #cccccc;\n"
+"}\n"
 "/* 1. \u672a\u9009\u4e2d\uff08\u9ed8\u8ba4\uff09\u72b6\u6001\u7684\u4e0b\u8fb9\u6846 */\n"
 "QLineEdit {\n"
-"                /* \u6e05\u9664\u9ed8\u8ba4\u8fb9\u6846\uff0c\u53ea\u4fdd\u7559\u4e0b\u8fb9\u6846 */\n"
+"                /* \u6e05\u9664\u9ed8\u8ba4\u8fb9\u6846"
+                        "\uff0c\u53ea\u4fdd\u7559\u4e0b\u8fb9\u6846 */\n"
 "				font-size:11pt;\n"
 "                border: none;\n"
 "                border-bottom: 3px solid #969696;  /* \u7070\u8272\u4e0b\u8fb9\u6846 */\n"
@@ -118,12 +144,12 @@ class Ui_SceneEditor(object):
 "            \n"
 "            /* 2. \u9009\u4e2d\uff08\u83b7\u5f97\u7126\u70b9\u70b9\uff09\u72b6\u6001\u7684\u4e0b\u8fb9\u6846 */\n"
 "QLineEdit:focus {\n"
-"                border-bottom: 4px solid #39C5BB;  /* \u84dd"
-                        "\u8272\u4e0b\u8fb9\u6846\uff08\u7a81\u51fa\u663e\u793a\uff09 */\n"
+"                border-bottom: 4px solid #39C5BB;  /* \u84dd\u8272\u4e0b\u8fb9\u6846\uff08\u7a81\u51fa\u663e\u793a\uff09 */\n"
 "                outline: none;  /* \u53bb\u9664\u7cfb\u7edf\u9ed8\u8ba4\u7684\u805a\u7126\u5916\u8fb9\u6846 */\n"
 "            }\n"
 "            \n"
-"            /* 3. \u9f20\u6807\u7565\u8fc7\uff08\u60ac\u505c\uff09\u72b6\u6001\u7684\u4e0b\u8fb9\u6846 */\n"
+"            /* 3. \u9f20\u6807\u7565\u8fc7\uff08\u60ac\u505c\uff09\u72b6\u6001\u7684"
+                        "\u4e0b\u8fb9\u6846 */\n"
 "QLineEdit:hover {\n"
 "                border-bottom: 4px solid #39C5BB;  /* \u6df1\u7070\u8272\u4e0b\u8fb9\u6846\uff08\u4e2d\u95f4\u72b6\u6001\uff09 */\n"
 "            }\n"
@@ -140,8 +166,7 @@ class Ui_SceneEditor(object):
 "\n"
 "/* \u9690\u85cfQComboBox\u9ed8\u8ba4\u4e0b\u62c9\u6309\u94ae */\n"
 "QComboBox::drop-down {\n"
-"    border: no"
-                        "ne;  /* \u53bb\u9664\u9ed8\u8ba4\u6309\u94ae\u8fb9\u6846 */\n"
+"    border: none;  /* \u53bb\u9664\u9ed8\u8ba4\u6309\u94ae\u8fb9\u6846 */\n"
 "\n"
 "}\n"
 "\n"
@@ -150,7 +175,8 @@ class Ui_SceneEditor(object):
 "    image: none;  /* \u53bb\u9664\u9ed8\u8ba4\u7bad\u5934 */\n"
 "}\n"
 "\n"
-"QComboBox::down-arrow:on {\n"
+""
+                        "QComboBox::down-arrow:on {\n"
 "    image: none;  /* \u4e0b\u62c9\u72b6\u6001\u4e5f\u4e0d\u663e\u793a\u9ed8\u8ba4\u7bad\u5934 */\n"
 "}\n"
 "\n"
@@ -175,8 +201,7 @@ class Ui_SceneEditor(object):
 "}\n"
 "\n"
 "/* QSpinBox \u6837\u5f0f */\n"
-"QSpinBox"
-                        " {\n"
+"QSpinBox {\n"
 "    border: 2px solid #0f322f;\n"
 "    border-radius: 3px;\n"
 "    padding: 5px 10px 5px 10px;  /* \u53f3\u4fa7\u9884\u7559\u7a7a\u95f4\u7ed9\u81ea\u5b9a\u4e49\u6309\u94ae */\n"
@@ -186,7 +211,8 @@ class Ui_SceneEditor(object):
 "	max-width:40px;\n"
 "}\n"
 "\n"
-"/* \u9690\u85cfQSpinBox\u9ed8\u8ba4\u4e0a\u4e0b\u6309\u94ae */\n"
+"/"
+                        "* \u9690\u85cfQSpinBox\u9ed8\u8ba4\u4e0a\u4e0b\u6309\u94ae */\n"
 "QSpinBox::up-button, QSpinBox::down-button {\n"
 "    border: none;\n"
 "    width: 0;  /* \u9690\u85cf\u9ed8\u8ba4\u6309\u94ae */\n"
@@ -213,8 +239,7 @@ class Ui_SceneEditor(object):
 "}\n"
 "/* QSpinBox \u6837\u5f0f */\n"
 "QDoubleSpinBox {\n"
-"    border: 2p"
-                        "x solid #0f322f;\n"
+"    border: 2px solid #0f322f;\n"
 "    border-radius: 3px;\n"
 "    padding: 5px 10px 5px 10px;  /* \u53f3\u4fa7\u9884\u7559\u7a7a\u95f4\u7ed9\u81ea\u5b9a\u4e49\u6309\u94ae */\n"
 "    background-color: #e7e7e7;\n"
@@ -223,7 +248,8 @@ class Ui_SceneEditor(object):
 "	max-width:50px;\n"
 "}\n"
 "\n"
-"/* \u9690\u85cfQSpinBox\u9ed8\u8ba4\u4e0a\u4e0b\u6309\u94ae */\n"
+"/* \u9690\u85cfQSpinBo"
+                        "x\u9ed8\u8ba4\u4e0a\u4e0b\u6309\u94ae */\n"
 "QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {\n"
 "    border: none;\n"
 "    width: 0;  /* \u9690\u85cf\u9ed8\u8ba4\u6309\u94ae */\n"
@@ -251,8 +277,7 @@ class Ui_SceneEditor(object):
 "\n"
 "QPushButton{\n"
 "min-height: 20px;\n"
-"max-width:100p"
-                        "x;\n"
+"max-width:100px;\n"
 "border: 2px solid #0f322f;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
 "background-color: #e7e7e7;\n"
 "border-radius:3px;\n"
@@ -262,7 +287,8 @@ class Ui_SceneEditor(object):
 "padding-bottom:2px;\n"
 "}\n"
 "QPushButton::hover {\n"
-"border: 2px solid #39C5BB;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
+"border: 2px solid #39C5BB;  /* 2p"
+                        "x\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
 "outline:none;\n"
 "color:#39C5BB;\n"
 "}\n"
@@ -301,46 +327,10 @@ class Ui_SceneEditor(object):
 
         self.formLayout.setWidget(2, QFormLayout.ItemRole.LabelRole, self.Label)
 
-        self.Widget = QWidget(self.SceneEditorPage)
-        self.Widget.setObjectName(u"Widget")
-        self.horizontalLayout_5 = QHBoxLayout(self.Widget)
-        self.horizontalLayout_5.setObjectName(u"horizontalLayout_5")
-        self.horizontalLayout_5.setContentsMargins(0, 0, 0, 0)
-        self.scene_view_image_btn = QPushButton(self.Widget)
-        self.scene_view_image_btn.setObjectName(u"scene_view_image_btn")
-
-        self.horizontalLayout_5.addWidget(self.scene_view_image_btn)
-
-        self.scene_match_btn = QPushButton(self.Widget)
+        self.scene_match_btn = QPushButton(self.SceneEditorPage)
         self.scene_match_btn.setObjectName(u"scene_match_btn")
 
-        self.horizontalLayout_5.addWidget(self.scene_match_btn)
-
-
-        self.formLayout.setWidget(2, QFormLayout.ItemRole.FieldRole, self.Widget)
-
-        self.set_scene_image_Label = QLabel(self.SceneEditorPage)
-        self.set_scene_image_Label.setObjectName(u"set_scene_image_Label")
-
-        self.formLayout.setWidget(3, QFormLayout.ItemRole.LabelRole, self.set_scene_image_Label)
-
-        self.set_scene_image_Widget = QWidget(self.SceneEditorPage)
-        self.set_scene_image_Widget.setObjectName(u"set_scene_image_Widget")
-        self.horizontalLayout_3 = QHBoxLayout(self.set_scene_image_Widget)
-        self.horizontalLayout_3.setObjectName(u"horizontalLayout_3")
-        self.horizontalLayout_3.setContentsMargins(0, 0, 0, 0)
-        self.scene_set_image_btn = QPushButton(self.set_scene_image_Widget)
-        self.scene_set_image_btn.setObjectName(u"scene_set_image_btn")
-
-        self.horizontalLayout_3.addWidget(self.scene_set_image_btn)
-
-        self.scene_split_image_btn = QPushButton(self.set_scene_image_Widget)
-        self.scene_split_image_btn.setObjectName(u"scene_split_image_btn")
-
-        self.horizontalLayout_3.addWidget(self.scene_split_image_btn)
-
-
-        self.formLayout.setWidget(3, QFormLayout.ItemRole.FieldRole, self.set_scene_image_Widget)
+        self.formLayout.setWidget(2, QFormLayout.ItemRole.FieldRole, self.scene_match_btn)
 
 
         self.verticalLayout_6.addLayout(self.formLayout)
@@ -400,7 +390,7 @@ class Ui_SceneEditor(object):
         self.element_threshold_Label_2 = QLabel(self.IMG_element_form)
         self.element_threshold_Label_2.setObjectName(u"element_threshold_Label_2")
 
-        self.formLayout_3.setWidget(0, QFormLayout.ItemRole.LabelRole, self.element_threshold_Label_2)
+        self.formLayout_3.setWidget(1, QFormLayout.ItemRole.LabelRole, self.element_threshold_Label_2)
 
         self.element_threshold = QDoubleSpinBox(self.IMG_element_form)
         self.element_threshold.setObjectName(u"element_threshold")
@@ -408,24 +398,24 @@ class Ui_SceneEditor(object):
         self.element_threshold.setSingleStep(0.010000000000000)
         self.element_threshold.setValue(0.800000000000000)
 
-        self.formLayout_3.setWidget(0, QFormLayout.ItemRole.FieldRole, self.element_threshold)
+        self.formLayout_3.setWidget(1, QFormLayout.ItemRole.FieldRole, self.element_threshold)
 
         self.element_match_type_Label_2 = QLabel(self.IMG_element_form)
         self.element_match_type_Label_2.setObjectName(u"element_match_type_Label_2")
 
-        self.formLayout_3.setWidget(1, QFormLayout.ItemRole.LabelRole, self.element_match_type_Label_2)
+        self.formLayout_3.setWidget(2, QFormLayout.ItemRole.LabelRole, self.element_match_type_Label_2)
 
         self.element_match_type = QComboBox(self.IMG_element_form)
         self.element_match_type.addItem("")
         self.element_match_type.addItem("")
         self.element_match_type.setObjectName(u"element_match_type")
 
-        self.formLayout_3.setWidget(1, QFormLayout.ItemRole.FieldRole, self.element_match_type)
+        self.formLayout_3.setWidget(2, QFormLayout.ItemRole.FieldRole, self.element_match_type)
 
         self.element_image_Label_2 = QLabel(self.IMG_element_form)
         self.element_image_Label_2.setObjectName(u"element_image_Label_2")
 
-        self.formLayout_3.setWidget(4, QFormLayout.ItemRole.LabelRole, self.element_image_Label_2)
+        self.formLayout_3.setWidget(5, QFormLayout.ItemRole.LabelRole, self.element_image_Label_2)
 
         self.widget = QWidget(self.IMG_element_form)
         self.widget.setObjectName(u"widget")
@@ -443,12 +433,12 @@ class Ui_SceneEditor(object):
         self.horizontalLayout_4.addWidget(self.element_split_image_btn)
 
 
-        self.formLayout_3.setWidget(4, QFormLayout.ItemRole.FieldRole, self.widget)
+        self.formLayout_3.setWidget(5, QFormLayout.ItemRole.FieldRole, self.widget)
 
         self.element_ratio_Label = QLabel(self.IMG_element_form)
         self.element_ratio_Label.setObjectName(u"element_ratio_Label")
 
-        self.formLayout_3.setWidget(6, QFormLayout.ItemRole.LabelRole, self.element_ratio_Label)
+        self.formLayout_3.setWidget(7, QFormLayout.ItemRole.LabelRole, self.element_ratio_Label)
 
         self.element_ratio_Widget = QWidget(self.IMG_element_form)
         self.element_ratio_Widget.setObjectName(u"element_ratio_Widget")
@@ -461,12 +451,12 @@ class Ui_SceneEditor(object):
         self.verticalLayout_9.addWidget(self.element_ratio)
 
 
-        self.formLayout_3.setWidget(6, QFormLayout.ItemRole.FieldRole, self.element_ratio_Widget)
+        self.formLayout_3.setWidget(7, QFormLayout.ItemRole.FieldRole, self.element_ratio_Widget)
 
         self.ratioLabel = QLabel(self.IMG_element_form)
         self.ratioLabel.setObjectName(u"ratioLabel")
 
-        self.formLayout_3.setWidget(7, QFormLayout.ItemRole.LabelRole, self.ratioLabel)
+        self.formLayout_3.setWidget(8, QFormLayout.ItemRole.LabelRole, self.ratioLabel)
 
         self.ratioWidget = QWidget(self.IMG_element_form)
         self.ratioWidget.setObjectName(u"ratioWidget")
@@ -479,27 +469,27 @@ class Ui_SceneEditor(object):
         self.verticalLayout_10.addWidget(self.set_ratio_btn)
 
 
-        self.formLayout_3.setWidget(7, QFormLayout.ItemRole.FieldRole, self.ratioWidget)
+        self.formLayout_3.setWidget(8, QFormLayout.ItemRole.FieldRole, self.ratioWidget)
 
         self.element_ratio_Label_3 = QLabel(self.IMG_element_form)
         self.element_ratio_Label_3.setObjectName(u"element_ratio_Label_3")
 
-        self.formLayout_3.setWidget(8, QFormLayout.ItemRole.LabelRole, self.element_ratio_Label_3)
+        self.formLayout_3.setWidget(9, QFormLayout.ItemRole.LabelRole, self.element_ratio_Label_3)
 
         self.element_roi = QLabel(self.IMG_element_form)
         self.element_roi.setObjectName(u"element_roi")
 
-        self.formLayout_3.setWidget(8, QFormLayout.ItemRole.FieldRole, self.element_roi)
+        self.formLayout_3.setWidget(9, QFormLayout.ItemRole.FieldRole, self.element_roi)
 
         self.ratioLabel_3 = QLabel(self.IMG_element_form)
         self.ratioLabel_3.setObjectName(u"ratioLabel_3")
 
-        self.formLayout_3.setWidget(9, QFormLayout.ItemRole.LabelRole, self.ratioLabel_3)
+        self.formLayout_3.setWidget(10, QFormLayout.ItemRole.LabelRole, self.ratioLabel_3)
 
         self.set_roi_btn = QPushButton(self.IMG_element_form)
         self.set_roi_btn.setObjectName(u"set_roi_btn")
 
-        self.formLayout_3.setWidget(9, QFormLayout.ItemRole.FieldRole, self.set_roi_btn)
+        self.formLayout_3.setWidget(10, QFormLayout.ItemRole.FieldRole, self.set_roi_btn)
 
         self.widget_4 = QWidget(self.IMG_element_form)
         self.widget_4.setObjectName(u"widget_4")
@@ -517,12 +507,22 @@ class Ui_SceneEditor(object):
         self.horizontalLayout_6.addWidget(self.element_match_btn)
 
 
-        self.formLayout_3.setWidget(2, QFormLayout.ItemRole.FieldRole, self.widget_4)
+        self.formLayout_3.setWidget(3, QFormLayout.ItemRole.FieldRole, self.widget_4)
 
         self.element_image_Label_4 = QLabel(self.IMG_element_form)
         self.element_image_Label_4.setObjectName(u"element_image_Label_4")
 
-        self.formLayout_3.setWidget(2, QFormLayout.ItemRole.LabelRole, self.element_image_Label_4)
+        self.formLayout_3.setWidget(3, QFormLayout.ItemRole.LabelRole, self.element_image_Label_4)
+
+        self.is_symbol_Label = QLabel(self.IMG_element_form)
+        self.is_symbol_Label.setObjectName(u"is_symbol_Label")
+
+        self.formLayout_3.setWidget(0, QFormLayout.ItemRole.LabelRole, self.is_symbol_Label)
+
+        self.is_symbol = QCheckBox(self.IMG_element_form)
+        self.is_symbol.setObjectName(u"is_symbol")
+
+        self.formLayout_3.setWidget(0, QFormLayout.ItemRole.FieldRole, self.is_symbol)
 
 
         self.verticalLayout_8.addLayout(self.formLayout_3)
@@ -640,7 +640,7 @@ class Ui_SceneEditor(object):
         self.retranslateUi(SceneEditor)
         self.element_type.currentIndexChanged.connect(self.stackedWidget_2.setCurrentIndex)
 
-        self.stackedWidget.setCurrentIndex(1)
+        self.stackedWidget.setCurrentIndex(0)
         self.stackedWidget_2.setCurrentIndex(0)
 
 
@@ -650,13 +650,9 @@ class Ui_SceneEditor(object):
     def retranslateUi(self, SceneEditor):
         SceneEditor.setWindowTitle(QCoreApplication.translate("SceneEditor", u"\u573a\u666f&\u5143\u7d20\u7f16\u8f91\u5668", None))
         self.scene_id_Label.setText(QCoreApplication.translate("SceneEditor", u"\u573a\u666fID\uff1a", None))
-        self.scene_thresholdLabel.setText(QCoreApplication.translate("SceneEditor", u"\u6a21\u7248\u5339\u914d\u9608\u503c\uff1a", None))
-        self.Label.setText(QCoreApplication.translate("SceneEditor", u"\u573a\u666f\u56fe\u7247", None))
-        self.scene_view_image_btn.setText(QCoreApplication.translate("SceneEditor", u"\u67e5\u770b\u56fe\u7247", None))
+        self.scene_thresholdLabel.setText(QCoreApplication.translate("SceneEditor", u"\u5339\u914d\u9608\u503c\uff1a", None))
+        self.Label.setText(QCoreApplication.translate("SceneEditor", u"\u573a\u666f\u5339\u914d\uff1a", None))
         self.scene_match_btn.setText(QCoreApplication.translate("SceneEditor", u"\u6267\u884c\u5339\u914d", None))
-        self.set_scene_image_Label.setText(QCoreApplication.translate("SceneEditor", u"\u9009\u62e9\u573a\u666f\u56fe\u7247", None))
-        self.scene_set_image_btn.setText(QCoreApplication.translate("SceneEditor", u"\u9009\u62e9\u56fe\u7247", None))
-        self.scene_split_image_btn.setText(QCoreApplication.translate("SceneEditor", u"\u5206\u79bb\u56fe\u7247", None))
         self.element_id_Label.setText(QCoreApplication.translate("SceneEditor", u"\u5143\u7d20ID\uff1a", None))
         self.element_type_Label.setText(QCoreApplication.translate("SceneEditor", u"\u5143\u7d20\u7c7b\u578b\uff1a", None))
         self.element_type.setItemText(0, QCoreApplication.translate("SceneEditor", u"IMG", None))
@@ -681,6 +677,7 @@ class Ui_SceneEditor(object):
         self.element_view_image_btn.setText(QCoreApplication.translate("SceneEditor", u"\u67e5\u770b\u56fe\u7247", None))
         self.element_match_btn.setText(QCoreApplication.translate("SceneEditor", u"\u6267\u884c\u5339\u914d", None))
         self.element_image_Label_4.setText(QCoreApplication.translate("SceneEditor", u"\u5143\u7d20\u56fe\u7247\uff1a", None))
+        self.is_symbol_Label.setText(QCoreApplication.translate("SceneEditor", u"\u662f\u5426\u4e3a\u6807\u5fd7", None))
         self.Label_2.setText(QCoreApplication.translate("SceneEditor", u"\u5750\u6807\uff1a", None))
         self.element_coordinate.setText(QCoreApplication.translate("SceneEditor", u"(0,0)", None))
         self.Label_3.setText(QCoreApplication.translate("SceneEditor", u"\u8bbe\u7f6e\u5750\u6807\uff1a", None))

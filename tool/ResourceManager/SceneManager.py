@@ -6,7 +6,7 @@ from pathlib import Path
 
 from PySide6.QtWidgets import QMainWindow, QApplication, QDialog
 
-from StaticFunctions import get_real_path
+from StaticFunctions import get_real_path, setup_logging
 from tool.ResourceManager.NewScene import NewScene
 from tool.ResourceManager.ResourceDBManager import ResourceDBManager
 from tool.ResourceManager.SceneGraphView import SceneGraphView
@@ -14,12 +14,12 @@ from ui.SceneManager_ui import Ui_SceneManager
 
 
 class SceneManager(QMainWindow):
-    def __init__(self, scenes_path=Path(get_real_path("src"))):
+    def __init__(self, db_path=Path(get_real_path("src"))):
         super().__init__()
         self.UI = Ui_SceneManager()
         self.UI.setupUi(self)
         self.logger = logging.getLogger("场景管理器")
-        self.resource_manager = ResourceDBManager(scenes_path)
+        self.resource_manager = ResourceDBManager(db_path)
         self.scene_graph_view = SceneGraphView(self.resource_manager, self.UI.centralwidget)
         self.UI.horizontalLayout.addWidget(self.scene_graph_view)
         self.UI.refresh.triggered.connect(self._handle_refresh)
@@ -45,37 +45,6 @@ class SceneManager(QMainWindow):
     def _handle_save(self):
         pass
         # self.resource_manager.save_global_info()
-
-
-# 配置日志系统
-def setup_logging():
-    # 创建基础日志格式
-    log_format = "%(asctime)s - %(levelname)s - %(message)s"
-
-    # 创建基础配置
-    logging.basicConfig(
-        level=logging.DEBUG,  # 设置默认日志级别
-        format=log_format,
-        handlers=[
-            logging.StreamHandler(sys.stdout)  # 输出到控制台
-        ]
-    )
-
-    # 获取根日志记录器
-    logger = logging.getLogger()
-
-    # 设置更详细的日志格式（可选）
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-
-    # 更新所有处理器的格式
-    for handler in logger.handlers:
-        handler.setFormatter(formatter)
-
-    # 设置特定模块的日志级别（可选）
-    # logging.getLogger("PySide6").setLevel(logging.WARNING)
-    # logging.getLogger("urllib3").setLevel(logging.WARNING)
-
-    return logger
 
 
 if __name__ == "__main__":

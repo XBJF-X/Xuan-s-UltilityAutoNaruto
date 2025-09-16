@@ -6,31 +6,14 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
 class MeiYueQianDao(BaseTask):
-    source_scene = "活动"
+    source_scene = "每月签到"
     task_max_duration = timedelta(minutes=3)
 
     @TransitionOn()
     def _(self):
-        if not self.operationer.search_and_click(
-            [
-                "每月签到-未选中",
-                "每月签到-选中",
-            ],
-            [
-                {
-                    "swipe": {
-                        "start_coordinate": [107, 846],
-                        "end_coordinate": [107, 213],
-                        "duration": 1
-                    }
-                }
-            ],
-            max_attempts=2
-        ):
-            raise StepFailedError("进入[每月签到]界面失败")
         self.logger.info("开始每月签到")
         if not self.operationer.click_and_wait(
-                "每月签到-签到",
+                "签到",
                 auto_raise=False
         ):
             self.update_next_execute_time()

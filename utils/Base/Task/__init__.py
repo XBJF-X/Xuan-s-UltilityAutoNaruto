@@ -1,3 +1,4 @@
+from .BenFuYaoSaiZhan import BenFuYaoSaiZhan
 from .DengLuJiangLi import DengLuJiangLi
 from .DianFengDuiJue import DianFengDuiJue
 from .FengRaoZhiJian import FengRaoZhiJian
@@ -28,7 +29,6 @@ from .TianDiZhanChang import TianDiZhanChang
 from .TuanBen import TuanBen
 from .XiaoDuiTuXi import XiaoDuiTuXi
 from .XiuXingZhiLu import XiuXingZhiLu
-from .BenFuYaoSaiZhan import BenFuYaoSaiZhan
 from .YiLeWaiMai import YiLeWaiMai
 from .ZhuangBeiHeCheng import ZhuangBeiHeCheng
 from .ZhuiJiXiaoZuZhi import ZhuiJiXiaoZuZhi

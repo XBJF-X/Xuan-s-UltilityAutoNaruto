@@ -7,14 +7,44 @@ from types import FrameType
 from typing import Dict, Callable
 from zoneinfo import ZoneInfo
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Signal, QThread
 
 from StaticFunctions import get_real_path
 from utils.Base.Config import Config
 from utils.Base.Exceptions import StepFailedError, TimeOut, Stop, EndEarly
 from utils.Base.Operationer import Operationer
-from utils.Base.Recognizer import Recognizer, SceneGraph
 from utils.Base.Scene.TransitionManager import TransitionManager
+
+
+class TransitionOn:
+    scenes = []
+    funcs = []
+
+    def __init__(self, scene: str | list[str] | None = None):
+        self.__class__.scenes.append(scene)
+
+    def __call__(self, func):
+        if func.__name__ != "_":
+            self.__class__.scenes = []
+            self.__class__.funcs = []
+            raise Exception('TransitionOn装饰的函数名必须是"_"')
+        self.__class__.funcs.append(func)
+
+        return self
+
+    def __set_name__(self, owner, name):
+        if not hasattr(owner, "source_scene"):
+            raise Exception(f"{owner.__name__}没有设置source_scene属性")
+        owner.transition_func = {}
+        for scene, func in zip(self.scenes, self.funcs):
+            if scene is None:
+                scene = owner.source_scene
+            if not isinstance(scene, list):
+                scene = [scene]
+            for s in scene:
+                owner.transition_func[s] = func
+        self.__class__.scenes = []
+        self.__class__.funcs = []
 
 
 def handle_transition_exceptions(func):
@@ -23,7 +53,7 @@ def handle_transition_exceptions(func):
         sys.settrace(self.trace_callback)
         try:
             result = func(self, *args, **kwargs)
-            self.logger.debug(f"装饰器接收的Result：{result}")
+            # self.logger.debug(f"装饰器接收的Result：{result}")
             return result
         except StepFailedError as e:
             self.logger.error(e)
@@ -79,7 +109,7 @@ def _handle_callback(self):
 class BaseTask:
     waiting_scene = []
     transition_return: str = ""
-    transition_func = {}
+    transition_func: Dict[str, Callable] = {}
     source_scene: str | None = None
     task_max_duration: timedelta | None = None
 
@@ -87,9 +117,7 @@ class BaseTask:
         self,
         task_name: str,
         config: Config,
-        scene_graph: SceneGraph,
         transition_manager: TransitionManager,
-        recognizer: Recognizer,
         operationer: Operationer,
         activate_another_task_signal: Signal(str),
         callback: Callable,
@@ -113,11 +141,14 @@ class BaseTask:
         self.is_activated = self.data.get('是否启用')
         self.next_execute_time = None
         self.update_next_execute_time(0)
+        self.transition_func = {}
+        for cls in reversed(self.__class__.mro()):
+            if hasattr(cls, "transition_func"):
+                self.transition_func.update(cls.transition_func)
+        for scene, func in self.transition_func.items():
+            self.logger.debug(f"注册场景处理函数: {scene} -> {func.__qualname__}")
 
-        # 任务执行需要的组件
-        self.scene_graph = scene_graph
         self.transition_manager = transition_manager
-        self.recognizer = recognizer
         self.operationer = operationer
         self.activate_another_task_signal = activate_another_task_signal
         self.callback = callback
@@ -140,7 +171,7 @@ class BaseTask:
         info_text = (f"任务名称: {self.task_name},"
                      f"任务ID:{self.task_id},"
                      f"是否启用:{self.is_activated},"
-                     f"任务状态:{self.current_status}," 
+                     f"任务状态:{self.current_status},"
                      f"下次执行时间:{self.next_execute_time}"
                      )
         return info_text
@@ -161,6 +192,7 @@ class BaseTask:
         """
         self.logger.info(f"正在停止任务: {self.task_name}")
         # 设置停止标志
+        self.operationer.clicker.stop()
         self.operationer.stop_event.set()
         # 如果任务线程正在运行，等待其结束
         if hasattr(self, '_execution_thread') and self._execution_thread.is_alive():
@@ -174,9 +206,6 @@ class BaseTask:
 
     @handle_task_exceptions
     def _execute(self):
-        """
-        任务的处理逻辑，默认需要自己重载为所用的逻辑
-        """
         if self.task_max_duration:
             self.dead_line = datetime.now(tz=ZoneInfo("Asia/Shanghai")) + self.task_max_duration
         self.operationer.next_scene = self.source_scene
@@ -188,51 +217,54 @@ class BaseTask:
                 raise Stop("任务停止")
 
             result = self.transition()
-            self.logger.debug(f"Exe接收的Result：{result}")
+            # self.logger.debug(f"Exe接收的Result：{result}")
             if result is not None:
-                self.logger.debug("结果非None")
+                # self.logger.debug("结果非None")
                 if result:
-                    self.logger.debug("任务执行完毕")
+                    # self.logger.debug("任务执行完毕")
                     return
 
     @handle_transition_exceptions
     def transition(self):
-        # 检查默认函数
-        if self.source_scene is None:
-            self.logger.debug("未设置起始场景，检查是否注册Default函数")
-            if "Default" in self.transition_func:
-                self.logger.info(f"使用默认函数处理: {self.task_name}")
-                return self.transition_func["Default"](self)
-
         # 获取当前屏幕截图并识别场景
         screenshot = self.operationer.screen_cap()
-        current_scene_obj = self.recognizer.scene(screenshot)
+        scene = self.operationer.recognizer.scene(screenshot)
 
-        if isinstance(current_scene_obj, str) and current_scene_obj == "未知场景":
-            self.logger.warning("未知场景，将尝试进入可识别场景")
-            self.operationer.click_and_wait(self.scene_graph.scenes.get("主场景").elements.get("公告-X"))
-            self.operationer.click_and_wait(self.scene_graph.scenes.get("主场景").elements.get("广告-X"))
-            return None
+        # 确保待调用的场景名为str
+        if isinstance(scene, str):
+            self.logger.debug(f"识别到场景: [Str] {scene}")
+            scene_name = scene
+        else:
+            self.logger.debug(f"识别到场景: [Scene] {scene.name}")
+            self.operationer.current_scene = scene
+            scene_name = scene.name
 
-        self.logger.debug(f"识别到：{current_scene_obj.id}")
-
-        self.operationer.current_scene = current_scene_obj
-        if self.operationer.next_scene:
-            if self.operationer.next_scene == current_scene_obj.id:
-                self.operationer.next_scene = None
-            else:
-                return self.transition_manager.transition(self.operationer)
-        current_scene_id = self.operationer.current_scene.id
-        # 优先使用注册的跳转函数（派生类逻辑）
-        if current_scene_id in self.transition_func:
-            self.logger.debug(f"寻找到{current_scene_id}注册函数")
-            # 执行派生类的场景处理函数
-            result = self.transition_func[current_scene_id](self)
-            self.logger.debug(f"{current_scene_id}注册函数执行完毕")
-            self.logger.debug(f"Transition的Result：{result}")
-            self.logger.debug(f"Transition的next_scene：{self.operationer.next_scene}")
+        # 确保跳转的时候不是未知场景
+        if scene_name in ["未知含X场景", "未知场景"]:
+            func = self.transition_func[scene_name]
+            self.logger.debug(f"场景{scene_name}绑定的函数：{func.__qualname__}")
+            result = self.transition_func[scene_name](self)
             return result
-        return self.transition_manager.transition(self.operationer)
+
+        if scene.name not in self.transition_func:
+            # 如果设置了next_scene，优先跳转
+            if self.operationer.next_scene:
+                if self.operationer.next_scene == scene_name:
+                    self.operationer.next_scene = None
+                else:
+                    return self.transition_manager.transition(self.operationer)
+            scene_name = "未注册场景"
+
+        # # 正常执行注册函数
+        # self.logger.debug(f"寻找注册函数: {scene_name}")
+        func = self.transition_func[scene_name]
+        self.logger.debug(f"场景{scene_name}绑定的函数：{func.__qualname__}")
+        # 执行派生类的场景处理函数
+        result = self.transition_func[scene_name](self)
+        # self.logger.debug(f"[{scene_name}]注册函数执行完毕")
+        # self.logger.debug(f"Transition的Result：{result}")
+        # self.logger.debug(f"Transition的next_scene：{self.operationer.next_scene}")
+        return result
 
     def trace_callback(self, frame: FrameType, event, arg):
         if event == "call":
@@ -325,33 +357,55 @@ class BaseTask:
         self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
         return True, self.next_execute_time
 
+    @TransitionOn("二级密码")
+    def _(self):
+        self.logger.debug("出现二级密码窗口")
+        passward = self.config.get_config("二级密码")
+        if len(passward) != 6:
+            raise StepFailedError("请检查二级密码！")
+        # 输入操作
+        self.operationer.click_and_input(
+            self.operationer.get_element("输入框"),
+            passward
+        )
+        # 点击二级密码-确定
+        if not self.operationer.click_and_wait(
+                self.operationer.get_element("确定"),
+                auto_raise=False
+        ):
+            raise StepFailedError("二级密码验证失败")
+        return False
 
-class TransitionOn:
-    scenes = []
-    funcs = []
+    @TransitionOn("好友排名至X位")
+    def _(self):
+        self.operationer.click_and_wait("确定")
+        return False
 
-    def __init__(self, scene: str | list[str] | None = None):
-        self.__class__.scenes.append(scene)
+    @TransitionOn("公告")
+    def _(self):
+        self.operationer.click_and_wait("X")
+        return False
 
-    def __call__(self, func):
-        if func.__name__ != "_":
-            self.__class__.scenes = []
-            self.__class__.funcs = []
-            raise Exception('TransitionOn装饰的函数名必须是"_"')
-        self.__class__.funcs.append(func)
+    @TransitionOn("未知含X场景")
+    def _(self):
+        if self.operationer.search_and_click(
+            [
+                self.operationer.get_element("X-普通", "主场景"),
+                self.operationer.get_element("X-广告-1", "主场景"),
+                self.operationer.get_element("X-广告-2", "主场景")
+            ],
+            [],
+            once_max_attempts=1,
+            max_attempts=1
+        ):
+            self.logger.info("点击X关闭")
+        return False
 
-        return self
+    @TransitionOn("未知场景")
+    def _(self):
+        QThread.msleep(1000)
+        return False
 
-    def __set_name__(self, owner, name):
-        if not hasattr(owner, "source_scene"):
-            raise Exception(f"{owner.__name__}没有设置source_scene属性")
-        owner.transition_func = {}
-        for scene, func in zip(self.scenes, self.funcs):
-            if scene is None:
-                scene = owner.source_scene
-            if not isinstance(scene, list):
-                scene = [scene]
-            for s in scene:
-                owner.transition_func[s] = func
-        self.__class__.scenes = []
-        self.__class__.funcs = []
+    @TransitionOn("未注册场景")
+    def _(self):
+        return False

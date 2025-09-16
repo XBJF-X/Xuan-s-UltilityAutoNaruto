@@ -16,7 +16,6 @@ class NewScene(QDialog):
         self.logger = logging.getLogger("新建场景节点")
         self.resource_manager = resource_manager
         self.scene_graph_view = scene_graph_view
-        self.UI.scene_thresholdDoubleSpinBox.setValue(0.8)
 
         self.UI.confirm.clicked.connect(self._handle_confirm)
         self.UI.cancel.clicked.connect(self._handle_cancel)

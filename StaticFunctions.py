@@ -1,4 +1,5 @@
 import ctypes
+import logging
 import os
 import sys
 
@@ -171,6 +172,11 @@ def split_gray_alpha(input_path, output_bgra_path=None, output_gray_path=None, o
     """
     将PNG分离为灰度图和掩码图（分别保存为单通道PNG）
     """
+    params = [
+        cv2.IMWRITE_PNG_COMPRESSION,
+        9  # 压缩等级0-9
+    ]
+
     try:
         # 读取原图（保留所有通道）
         img = cv_imread(input_path)
@@ -197,9 +203,9 @@ def split_gray_alpha(input_path, output_bgra_path=None, output_gray_path=None, o
             cv_save(output_mask_path, alpha, [cv2.IMWRITE_PNG_COMPRESSION, 9])
         print(f"分离成功: {os.path.basename(input_path)} -> 灰度图 + 掩码图")
         return (
-            np.ascontiguousarray(img),
-            np.ascontiguousarray(gray),
-            np.ascontiguousarray(alpha)
+            cv2.imencode('.png', img, params)[1].tobytes(),
+            cv2.imencode('.png', gray, params)[1].tobytes(),
+            cv2.imencode('.png', alpha, params)[1].tobytes(),
         )
     except Exception as e:
         print(f"处理失败 {os.path.basename(input_path)}: {str(e)}")
@@ -253,3 +259,31 @@ def split_gray_alpha_bytes(bgra_bytes):
         return None, None, None
 
 
+def setup_logging():
+    # 创建基础日志格式
+    log_format = "%(asctime)s - %(levelname)s - %(message)s"
+
+    # 创建基础配置
+    logging.basicConfig(
+        level=logging.DEBUG,  # 设置默认日志级别
+        format=log_format,
+        handlers=[
+            logging.StreamHandler(sys.stdout)  # 输出到控制台
+        ]
+    )
+
+    # 获取根日志记录器
+    logger = logging.getLogger()
+
+    # 设置更详细的日志格式（可选）
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
+    # 更新所有处理器的格式
+    for handler in logger.handlers:
+        handler.setFormatter(formatter)
+
+    # 设置特定模块的日志级别（可选）
+    # logging.getLogger("PySide6").setLevel(logging.WARNING)
+    # logging.getLogger("urllib3").setLevel(logging.WARNING)
+
+    return logger

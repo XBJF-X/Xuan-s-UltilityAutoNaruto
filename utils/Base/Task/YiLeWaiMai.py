@@ -6,32 +6,15 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
 class YiLeWaiMai(BaseTask):
-    source_scene = "活动"
+    source_scene = "一乐外卖"
     task_max_duration = timedelta(minutes=2)
 
     @TransitionOn()
     def _(self):
-        if not self.operationer.search_and_click(
-                [
-                    "一乐外卖-未选中",
-                    "一乐外卖-选中",
-                ],
-                [
-                    {
-                        "swipe": {
-                            "start_coordinate": [107, 846],
-                            "end_coordinate": [107, 213],
-                            "duration": 1
-                        }
-                    }
-                ],
-                max_attempts=2
-        ):
-            raise StepFailedError("进入[一乐外卖]失败")
         self.logger.info("开始领取[一乐外卖]")
         takeout_sum = 0
         while self.operationer.click_and_wait(
-                "一乐外卖-待领取",
+                "待领取",
                 auto_raise=False
         ):
             takeout_sum += 1

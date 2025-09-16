@@ -1,8 +1,8 @@
 from PySide6.QtWidgets import QMessageBox
 
+from utils.Base.Config import Config
 from utils.Base.Control.ADB import ADB
 from utils.Base.Control.U2 import U2
-from utils.Base.Config import Config
 from utils.Base.Enums import ControlMode
 
 

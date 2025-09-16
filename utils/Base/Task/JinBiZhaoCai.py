@@ -9,15 +9,12 @@ class JinBiZhaoCai(BaseTask):
     source_scene = "招财"
     task_max_duration = timedelta(minutes=3)
 
-    def run(self):
-        if self.data.get("已金币招财次数") >= self.data.get("招财次数", 0):
-            self.update_next_execute_time()
-            self.config.set_task_config("金币招财","已金币招财次数", 0)
-            raise EndEarly("已招满金币招财")
-        super().run()
-
     @TransitionOn("招财")
     def _(self):
+        if self.data.get("已金币招财次数") >= self.data.get("招财次数", 0):
+            self.update_next_execute_time()
+            self.config.set_task_config("金币招财", "已金币招财次数", 0)
+            raise EndEarly("已招满金币招财")
         # 确认免费招财按钮出现
         if self.operationer.detect_element(
                 "免费一次",
@@ -33,7 +30,7 @@ class JinBiZhaoCai(BaseTask):
         self.config.set_task_config("金币招财", "已金币招财次数", 2)
         times = self.data.get("已金币招财次数")
         while times < self.data.get("招财次数", 2):
-            self.operationer.click_and_wait("付费招财")
+            self.operationer.click_and_wait("金币招财")
             if not self.operationer.pass_secondary_password():
                 times += 1
                 self.config.set_task_config("金币招财", "已金币招财次数", times)

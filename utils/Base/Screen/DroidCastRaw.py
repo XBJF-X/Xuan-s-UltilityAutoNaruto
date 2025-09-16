@@ -9,8 +9,8 @@ import cv2
 import numpy as np
 from requests import Session
 
-from utils.Base.Config import Config
 from StaticFunctions import get_real_path
+from utils.Base.Config import Config
 
 
 class DroidCastRaw:

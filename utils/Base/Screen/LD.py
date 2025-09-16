@@ -1,5 +1,4 @@
 import ctypes
-import logging
 import os
 from ctypes import wintypes, POINTER, c_void_p, c_uint, c_char, c_ubyte, \
     create_string_buffer

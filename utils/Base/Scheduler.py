@@ -14,7 +14,6 @@ from StaticFunctions import get_real_path, cv_save
 from utils.Base.Config import Config
 from utils.Base.Device import Device
 from utils.Base.Operationer import Operationer
-from utils.Base.Recognizer import Recognizer
 from utils.Base.Scene.SceneGraph import SceneGraph
 from utils.Base.Scene.TransitionManager import TransitionManager
 from utils.Base.Task import TASK_TYPE_MAP
@@ -266,7 +265,6 @@ class Scheduler(QObject):
                  ui: Ui_Service,
                  config: Config,
                  scene_graph: SceneGraph,
-                 recognizer: Recognizer,
                  ref_map: Dict,
                  parent_logger
                  ):
@@ -277,8 +275,7 @@ class Scheduler(QObject):
         self.config = config
         self.task_common_control_ref_map = ref_map
         self.scene_graph = scene_graph
-        self.recognizer = recognizer
-        self.transition_manager = TransitionManager(self.config, self.scene_graph.scenes, self.logger)
+        self.transition_manager = TransitionManager(self.config, self.logger)
         self.running_queue = PriorityQueue[BaseTask]()  # 执行队列
         self.ready_queue = PriorityQueue[BaseTask]()  # 就绪队列
         self.waiting_queue = PriorityQueue[BaseTask]()  # 等待队列
@@ -323,7 +320,6 @@ class Scheduler(QObject):
                 task_name,
                 self.config,
                 self.device,
-                self.recognizer,
                 self.scene_graph,
                 self.screen_save_signal,
                 parent_logger=self.logger
@@ -331,9 +327,7 @@ class Scheduler(QObject):
             task_instance = task_class(
                 task_name,
                 self.config,
-                self.scene_graph,
                 self.transition_manager,
-                self.recognizer,
                 operationer_instance,
                 self.activate_another_task_signal,
                 self._execute_done_callback,
@@ -665,6 +659,7 @@ class Scheduler(QObject):
                 return True
         self.logger.warning(f"任务[{task_name}]不存在，无法设置临时优先级")
         return False
+
     def save_screen(self, name):
         """保存截图到文件"""
         try:

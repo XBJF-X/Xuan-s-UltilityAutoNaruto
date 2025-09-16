@@ -15,16 +15,16 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QComboBox, QDialog, QDoubleSpinBox,
-    QFormLayout, QHBoxLayout, QLabel, QLineEdit,
-    QPushButton, QSizePolicy, QStackedWidget, QVBoxLayout,
-    QWidget)
+from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QDialog,
+    QDoubleSpinBox, QFormLayout, QHBoxLayout, QLabel,
+    QLineEdit, QPushButton, QSizePolicy, QStackedWidget,
+    QVBoxLayout, QWidget)
 
 class Ui_NewElement(object):
     def setupUi(self, NewElement):
         if not NewElement.objectName():
             NewElement.setObjectName(u"NewElement")
-        NewElement.resize(318, 365)
+        NewElement.resize(318, 360)
         NewElement.setStyleSheet(u"font-family:\"Consolas\",\"\u9ed1\u4f53\";\n"
 "font-size:11pt;")
         self.verticalLayout_2 = QVBoxLayout(NewElement)
@@ -35,13 +35,32 @@ class Ui_NewElement(object):
 "                background-color: #dfdfdf;  /* \u80cc\u666f\u989c\u8272 */\n"
 "border-radius:10px;\n"
 "            }\n"
+"/* \u8c03\u6574\u52fe\u9009\u6846\u7684\u5927\u5c0f */\n"
+"QCheckBox::indicator {\n"
+"	width: 20px;      /* \u52fe\u9009\u6846\u5bbd\u5ea6 */\n"
+"	height: 20px;     /* \u52fe\u9009\u6846\u9ad8\u5ea6 */\n"
+"	outline:none;\n"
+"border:none;\n"
+"}\n"
 "\n"
+"/* \u53ef\u9009\uff1a\u8bbe\u7f6e\u52fe\u9009\u6846\u4e0d\u540c\u72b6\u6001\u7684\u6837\u5f0f */\n"
+"QCheckBox::indicator:unchecked {\n"
+"	border: 2px solid #0f322f;\n"
+"	border-radius: 3px;\n"
+"}\n"
+"QCheckBox::indicator:checked {\n"
+"	background-color:#39C5BB;\n"
+"	border: 2px solid #0f322f;\n"
+"	border-radius: 3px;\n"
+"	\n"
+"}\n"
 "/* 1. \u672a\u9009\u4e2d\uff08\u9ed8\u8ba4\uff09\u72b6\u6001\u7684\u4e0b\u8fb9\u6846 */\n"
 "QLineEdit {\n"
 "                /* \u6e05\u9664\u9ed8\u8ba4\u8fb9\u6846\uff0c\u53ea\u4fdd\u7559\u4e0b\u8fb9\u6846 */\n"
 "				font-size:11pt;\n"
 "                border: none;\n"
-"                border-bottom: 3px solid #969696;  /* \u7070\u8272\u4e0b\u8fb9\u6846 */\n"
+"                border-bottom:"
+                        " 3px solid #969696;  /* \u7070\u8272\u4e0b\u8fb9\u6846 */\n"
 "                padding: 5px 0;  /* \u4e0a\u4e0b\u4e0b\u5185\u8fb9\u8ddd\uff0c\u907f\u514d\u6587\u5b57\u7d27\u8d34\u7d27\u8d34\u8fb9\u6846 */\n"
 "				border-radius:0px;\n"
 "                background: transparent;  /* \u80cc\u666f\u900f\u660e\uff0c\u53ea\u663e\u793a\u4e0b\u8fb9\u6846 */\n"
@@ -49,14 +68,14 @@ class Ui_NewElement(object):
 "            \n"
 "            /* 2. \u9009\u4e2d\uff08\u83b7\u5f97\u7126\u70b9\u70b9\uff09\u72b6\u6001\u7684\u4e0b\u8fb9\u6846 */\n"
 "QLineEdit:focus {\n"
-"                border-bottom: 4px solid #39C5BB;  /* \u84dd"
-                        "\u8272\u4e0b\u8fb9\u6846\uff08\u7a81\u51fa\u663e\u793a\uff09 */\n"
+"                border-bottom: 4px solid #39C5BB;  /* \u84dd\u8272\u4e0b\u8fb9\u6846\uff08\u7a81\u51fa\u663e\u793a\uff09 */\n"
 "                outline: none;  /* \u53bb\u9664\u7cfb\u7edf\u9ed8\u8ba4\u7684\u805a\u7126\u5916\u8fb9\u6846 */\n"
 "            }\n"
 "            \n"
 "            /* 3. \u9f20\u6807\u7565\u8fc7\uff08\u60ac\u505c\uff09\u72b6\u6001\u7684\u4e0b\u8fb9\u6846 */\n"
 "QLineEdit:hover {\n"
-"                border-bottom: 4px solid #39C5BB;  /* \u6df1\u7070\u8272\u4e0b\u8fb9\u6846\uff08\u4e2d\u95f4\u72b6\u6001\uff09 */\n"
+"                border-bottom: 4px solid #39C5BB;  /* \u6df1\u7070\u8272\u4e0b\u8fb9\u6846"
+                        "\uff08\u4e2d\u95f4\u72b6\u6001\uff09 */\n"
 "            }\n"
 "/* QComboBox \u6837\u5f0f */\n"
 "QComboBox {\n"
@@ -71,8 +90,7 @@ class Ui_NewElement(object):
 "\n"
 "/* \u9690\u85cfQComboBox\u9ed8\u8ba4\u4e0b\u62c9\u6309\u94ae */\n"
 "QComboBox::drop-down {\n"
-"    border: no"
-                        "ne;  /* \u53bb\u9664\u9ed8\u8ba4\u6309\u94ae\u8fb9\u6846 */\n"
+"    border: none;  /* \u53bb\u9664\u9ed8\u8ba4\u6309\u94ae\u8fb9\u6846 */\n"
 "\n"
 "}\n"
 "\n"
@@ -84,7 +102,8 @@ class Ui_NewElement(object):
 "QComboBox::down-arrow:on {\n"
 "    image: none;  /* \u4e0b\u62c9\u72b6\u6001\u4e5f\u4e0d\u663e\u793a\u9ed8\u8ba4\u7bad\u5934 */\n"
 "}\n"
-"\n"
+""
+                        "\n"
 "/* \u4e0b\u62c9\u5217\u8868\u6837\u5f0f */\n"
 "QComboBox QAbstractItemView {\n"
 "    border: 2px solid #b5b5b5;\n"
@@ -106,8 +125,7 @@ class Ui_NewElement(object):
 "}\n"
 "\n"
 "/* QSpinBox \u6837\u5f0f */\n"
-"QSpinBox"
-                        " {\n"
+"QSpinBox {\n"
 "    border: 2px solid #0f322f;\n"
 "    border-radius: 3px;\n"
 "    padding: 5px 10px 5px 10px;  /* \u53f3\u4fa7\u9884\u7559\u7a7a\u95f4\u7ed9\u81ea\u5b9a\u4e49\u6309\u94ae */\n"
@@ -120,7 +138,8 @@ class Ui_NewElement(object):
 "/* \u9690\u85cfQSpinBox\u9ed8\u8ba4\u4e0a\u4e0b\u6309\u94ae */\n"
 "QSpinBox::up-button, QSpinBox::down-button {\n"
 "    border: none;\n"
-"    width: 0;  /* \u9690\u85cf\u9ed8\u8ba4\u6309\u94ae */\n"
+" "
+                        "   width: 0;  /* \u9690\u85cf\u9ed8\u8ba4\u6309\u94ae */\n"
 "    height: 0;\n"
 "}\n"
 "\n"
@@ -144,8 +163,7 @@ class Ui_NewElement(object):
 "}\n"
 "/* QSpinBox \u6837\u5f0f */\n"
 "QDoubleSpinBox {\n"
-"    border: 2p"
-                        "x solid #0f322f;\n"
+"    border: 2px solid #0f322f;\n"
 "    border-radius: 3px;\n"
 "    padding: 5px 10px 5px 10px;  /* \u53f3\u4fa7\u9884\u7559\u7a7a\u95f4\u7ed9\u81ea\u5b9a\u4e49\u6309\u94ae */\n"
 "    background-color: #e7e7e7;\n"
@@ -157,7 +175,8 @@ class Ui_NewElement(object):
 "/* \u9690\u85cfQSpinBox\u9ed8\u8ba4\u4e0a\u4e0b\u6309\u94ae */\n"
 "QDoubleSpinBox::up-button, QDoubleSpinBox::down-button {\n"
 "    border: none;\n"
-"    width: 0;  /* \u9690\u85cf\u9ed8\u8ba4\u6309\u94ae */\n"
+"    width:"
+                        " 0;  /* \u9690\u85cf\u9ed8\u8ba4\u6309\u94ae */\n"
 "    height: 0;\n"
 "}\n"
 "\n"
@@ -182,8 +201,7 @@ class Ui_NewElement(object):
 "\n"
 "QPushButton{\n"
 "min-height: 20px;\n"
-"max-width:100p"
-                        "x;\n"
+"max-width:100px;\n"
 "border: 2px solid #0f322f;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
 "background-color: #e7e7e7;\n"
 "border-radius:3px;\n"
@@ -250,7 +268,7 @@ class Ui_NewElement(object):
         self.element_threshold_Label_2 = QLabel(self.IMG_element_form)
         self.element_threshold_Label_2.setObjectName(u"element_threshold_Label_2")
 
-        self.formLayout_2.setWidget(0, QFormLayout.ItemRole.LabelRole, self.element_threshold_Label_2)
+        self.formLayout_2.setWidget(1, QFormLayout.ItemRole.LabelRole, self.element_threshold_Label_2)
 
         self.element_threshold_DoubleSpinBox_2 = QDoubleSpinBox(self.IMG_element_form)
         self.element_threshold_DoubleSpinBox_2.setObjectName(u"element_threshold_DoubleSpinBox_2")
@@ -258,34 +276,34 @@ class Ui_NewElement(object):
         self.element_threshold_DoubleSpinBox_2.setSingleStep(0.010000000000000)
         self.element_threshold_DoubleSpinBox_2.setValue(0.800000000000000)
 
-        self.formLayout_2.setWidget(0, QFormLayout.ItemRole.FieldRole, self.element_threshold_DoubleSpinBox_2)
+        self.formLayout_2.setWidget(1, QFormLayout.ItemRole.FieldRole, self.element_threshold_DoubleSpinBox_2)
 
         self.element_match_type_Label_2 = QLabel(self.IMG_element_form)
         self.element_match_type_Label_2.setObjectName(u"element_match_type_Label_2")
 
-        self.formLayout_2.setWidget(1, QFormLayout.ItemRole.LabelRole, self.element_match_type_Label_2)
+        self.formLayout_2.setWidget(2, QFormLayout.ItemRole.LabelRole, self.element_match_type_Label_2)
 
         self.element_match_type_ComboBox_2 = QComboBox(self.IMG_element_form)
         self.element_match_type_ComboBox_2.addItem("")
         self.element_match_type_ComboBox_2.addItem("")
         self.element_match_type_ComboBox_2.setObjectName(u"element_match_type_ComboBox_2")
 
-        self.formLayout_2.setWidget(1, QFormLayout.ItemRole.FieldRole, self.element_match_type_ComboBox_2)
+        self.formLayout_2.setWidget(2, QFormLayout.ItemRole.FieldRole, self.element_match_type_ComboBox_2)
 
         self.element_image_Label_2 = QLabel(self.IMG_element_form)
         self.element_image_Label_2.setObjectName(u"element_image_Label_2")
 
-        self.formLayout_2.setWidget(2, QFormLayout.ItemRole.LabelRole, self.element_image_Label_2)
+        self.formLayout_2.setWidget(3, QFormLayout.ItemRole.LabelRole, self.element_image_Label_2)
 
         self.set_img_btn = QPushButton(self.IMG_element_form)
         self.set_img_btn.setObjectName(u"set_img_btn")
 
-        self.formLayout_2.setWidget(2, QFormLayout.ItemRole.FieldRole, self.set_img_btn)
+        self.formLayout_2.setWidget(3, QFormLayout.ItemRole.FieldRole, self.set_img_btn)
 
         self.element_ratio_Label = QLabel(self.IMG_element_form)
         self.element_ratio_Label.setObjectName(u"element_ratio_Label")
 
-        self.formLayout_2.setWidget(3, QFormLayout.ItemRole.LabelRole, self.element_ratio_Label)
+        self.formLayout_2.setWidget(4, QFormLayout.ItemRole.LabelRole, self.element_ratio_Label)
 
         self.element_ratio_Widget = QWidget(self.IMG_element_form)
         self.element_ratio_Widget.setObjectName(u"element_ratio_Widget")
@@ -298,12 +316,12 @@ class Ui_NewElement(object):
         self.verticalLayout_4.addWidget(self.element_ratio)
 
 
-        self.formLayout_2.setWidget(3, QFormLayout.ItemRole.FieldRole, self.element_ratio_Widget)
+        self.formLayout_2.setWidget(4, QFormLayout.ItemRole.FieldRole, self.element_ratio_Widget)
 
         self.ratioLabel = QLabel(self.IMG_element_form)
         self.ratioLabel.setObjectName(u"ratioLabel")
 
-        self.formLayout_2.setWidget(4, QFormLayout.ItemRole.LabelRole, self.ratioLabel)
+        self.formLayout_2.setWidget(5, QFormLayout.ItemRole.LabelRole, self.ratioLabel)
 
         self.ratioWidget = QWidget(self.IMG_element_form)
         self.ratioWidget.setObjectName(u"ratioWidget")
@@ -316,7 +334,17 @@ class Ui_NewElement(object):
         self.verticalLayout_6.addWidget(self.set_ratio_btn)
 
 
-        self.formLayout_2.setWidget(4, QFormLayout.ItemRole.FieldRole, self.ratioWidget)
+        self.formLayout_2.setWidget(5, QFormLayout.ItemRole.FieldRole, self.ratioWidget)
+
+        self.Label = QLabel(self.IMG_element_form)
+        self.Label.setObjectName(u"Label")
+
+        self.formLayout_2.setWidget(0, QFormLayout.ItemRole.LabelRole, self.Label)
+
+        self.is_symbol = QCheckBox(self.IMG_element_form)
+        self.is_symbol.setObjectName(u"is_symbol")
+
+        self.formLayout_2.setWidget(0, QFormLayout.ItemRole.FieldRole, self.is_symbol)
 
 
         self.verticalLayout_5.addLayout(self.formLayout_2)
@@ -388,6 +416,7 @@ class Ui_NewElement(object):
         self.element_ratio.setText(QCoreApplication.translate("NewElement", u"(0.5,0.5)", None))
         self.ratioLabel.setText(QCoreApplication.translate("NewElement", u"\u8bbe\u7f6eRatio\uff1a", None))
         self.set_ratio_btn.setText(QCoreApplication.translate("NewElement", u"\u8bbe\u7f6eRatio", None))
+        self.Label.setText(QCoreApplication.translate("NewElement", u"\u662f\u5426\u4e3a\u6807\u5fd7", None))
         self.confirm.setText(QCoreApplication.translate("NewElement", u"\u786e\u8ba4", None))
         self.cancel.setText(QCoreApplication.translate("NewElement", u"\u53d6\u6d88", None))
     # retranslateUi

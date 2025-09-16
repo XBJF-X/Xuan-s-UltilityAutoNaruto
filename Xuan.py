@@ -14,6 +14,7 @@ from PySide6.QtGui import QIcon, QPainter, QBrush, QColor, QPainterPath
 from PySide6.QtWidgets import QMainWindow, QApplication, QPushButton, QDialog, QButtonGroup
 
 from StaticFunctions import resource_path, get_real_path
+from tool.ResourceManager.ResourceDBManager import ResourceDBManager
 from utils.AddConfig import AddConfig
 from utils.Base.Scene.SceneGraph import SceneGraph
 from utils.Base.Updater import Updater
@@ -60,7 +61,7 @@ class Xuan(QMainWindow):
         self.logger = self.setup_main_logger()
         self.logger.info("初始化配置...")
         self.config_path = Path(get_real_path("config"))
-        self.scene_graph = SceneGraph(parent_logger=self.logger)
+        self.scene_graph = SceneGraph(ResourceDBManager())
         self.logger.info("初始化环境...")
         self.mouse_position = None
         self.init_environment()
@@ -126,7 +127,7 @@ class Xuan(QMainWindow):
         os.environ['PATH'] = os.pathsep.join([get_real_path('bin/adb'), os.environ.get('PATH', '')])
         cv2.ocl.setUseOpenCL(True)
         self.setWindowIcon(QIcon(resource_path("src/ASDS.ico")))
-        # self.resize(1201, 800)
+        self.resize(1600, 800)
         app.aboutToQuit.connect(self._on_about_to_quit)
         # 设置窗口标志
         self.setWindowFlags(

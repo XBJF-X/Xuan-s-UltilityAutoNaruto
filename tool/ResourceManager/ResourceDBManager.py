@@ -1,17 +1,24 @@
+from logging import Logger
 from pathlib import Path
 from typing import Optional, List
 
-from sqlalchemy import create_engine, exc
+import cv2
+import numpy as np
+from sqlalchemy import create_engine, exc, text
 from sqlalchemy.orm import joinedload
 from sqlmodel import SQLModel, Session, select
 
 from StaticFunctions import get_real_path
-from tool.ResourceManager.model import Scene, Element, SceneElementLink, SceneEdge
+from tool.ResourceManager.model import Scene, Element, SceneEdge
+from utils.Base.Enums import ElementType
 
 
 class ResourceDBManager:
     _instance: Optional["ResourceDBManager"] = None
-    connect_args = {"check_same_thread": False}
+    connect_args = {
+        "check_same_thread": False,
+        "isolation_level": None
+    }
 
     # 禁止通过 __init__ 重复创建实例
     def __new__(cls, *args, **kwargs):
@@ -20,12 +27,15 @@ class ResourceDBManager:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def __init__(self, db_dir: Path = Path(get_real_path("src"))):
+    def __init__(self, db_dir: Path = Path(get_real_path("src")), parent_logger: Logger | str = ""):
         # 防止单例重复初始化（__new__ 会多次返回同一实例，__init__ 可能被多次调用）
         if hasattr(self, "_initialized") and self._initialized:
             return
 
-        self.logger = logging.getLogger("资源数据库管理器")
+        if isinstance(parent_logger, str):
+            self.logger = logging.getLogger("资源管理器")
+        else:
+            self.logger = parent_logger.getChild("资源管理器")
         self.db_dir = db_dir
         self.db_file_path = db_dir / "database.db"
         self.sqlite_url = f"sqlite:///{self.db_file_path}"
@@ -74,7 +84,7 @@ class ResourceDBManager:
             return False
 
     def delete_scene(self, name: str) -> bool:
-        """删除场景及其所有关联资源（包括边关系）"""
+        """删除场景及其所有关联资源（包括边关系和元素）"""
         if not name:
             self.logger.error("场景名称不能为空")
             return False
@@ -98,15 +108,18 @@ class ResourceDBManager:
                 for edge in outgoing_edges + incoming_edges:
                     session.delete(edge)
 
-                # 删除场景与元素的关联
-                links = session.exec(select(SceneElementLink).where(SceneElementLink.scene_id == scene.id)).all()
-                for link in links:
-                    session.delete(link)
+                # 删除场景的所有元素
+                elements = session.exec(
+                    select(Element).where(Element.scene_id == scene.id)
+                ).all()
+
+                for element in elements:
+                    session.delete(element)
 
                 # 删除场景
                 session.delete(scene)
                 session.commit()
-                self.logger.info(f"场景 '{name}' 及其关联资源已删除")
+                self.logger.info(f"场景 '{name}' 及其所有元素和边关系已删除")
                 return True
 
         except exc.SQLAlchemyError as e:
@@ -221,9 +234,8 @@ class ResourceDBManager:
                 # 检查元素是否已存在于该场景
                 existing_element = session.exec(
                     select(Element)
-                    .join(SceneElementLink)
                     .where(
-                        SceneElementLink.scene_id == scene.id,
+                        Element.scene_id == scene.id,
                         Element.name == element_name
                     )
                 ).first()
@@ -233,7 +245,10 @@ class ResourceDBManager:
                     return False
 
                 # 创建新元素
-                element_kwargs = {"name": element_name}
+                element_kwargs = {
+                    "name": element_name,
+                    "scene_id": scene.id  # 添加场景ID
+                }
                 element_kwargs.update(kwargs)
 
                 # 过滤掉元素模型中不存在的字段
@@ -241,8 +256,6 @@ class ResourceDBManager:
                 element_kwargs = {k: v for k, v in element_kwargs.items() if k in valid_fields}
                 element = Element(**element_kwargs)
 
-                # 建立关联
-                scene.elements.append(element)
                 session.add(element)
                 session.commit()
 
@@ -278,9 +291,8 @@ class ResourceDBManager:
                 # 查找元素
                 element = session.exec(
                     select(Element)
-                    .join(SceneElementLink)
                     .where(
-                        SceneElementLink.scene_id == scene.id,
+                        Element.scene_id == scene.id,
                         Element.name == element_name
                     )
                 ).first()
@@ -289,27 +301,10 @@ class ResourceDBManager:
                     self.logger.warning(f"删除元素失败，元素 '{element_name}' 不存在于场景 '{scene_name}' 中")
                     return False
 
-                # 查找关联并删除
-                link = session.exec(
-                    select(SceneElementLink)
-                    .where(
-                        SceneElementLink.scene_id == scene.id,
-                        SceneElementLink.element_id == element.id
-                    )
-                ).first()
-
-                if link:
-                    session.delete(link)
-
-                # 如果元素不再属于任何场景，则删除元素
-                remaining_links = session.exec(
-                    select(SceneElementLink).where(SceneElementLink.element_id == element.id)
-                ).first()
-
-                if not remaining_links:
-                    session.delete(element)
-
+                # 直接删除元素
+                session.delete(element)
                 session.commit()
+
                 self.logger.info(f"元素 '{element_name}' 已从场景 '{scene_name}' 中删除")
                 return True
 
@@ -347,9 +342,8 @@ class ResourceDBManager:
                 # 查找元素
                 element = session.exec(
                     select(Element)
-                    .join(SceneElementLink)
                     .where(
-                        SceneElementLink.scene_id == scene.id,
+                        Element.scene_id == scene.id,
                         Element.name == element_name
                     )
                 ).first()
@@ -360,7 +354,7 @@ class ResourceDBManager:
 
                 # 更新字段
                 for key, value in kwargs.items():
-                    if hasattr(element, key) and key != "id" and key != "name":  # 不允许修改id和name
+                    if hasattr(element, key) and key != "id" and key != "name" and key != "scene_id":  # 不允许修改id、name和scene_id
                         setattr(element, key, value)
                     else:
                         self.logger.warning(f"元素没有字段 '{key}' 或该字段不允许更新，将忽略")
@@ -403,9 +397,8 @@ class ResourceDBManager:
                 # 查找元素
                 element = session.exec(
                     select(Element)
-                    .join(SceneElementLink)
                     .where(
-                        SceneElementLink.scene_id == scene.id,
+                        Element.scene_id == scene.id,
                         Element.name == old_name
                     )
                 ).first()
@@ -417,9 +410,8 @@ class ResourceDBManager:
                 # 检查新名称是否已存在于该场景
                 existing_element = session.exec(
                     select(Element)
-                    .join(SceneElementLink)
                     .where(
-                        SceneElementLink.scene_id == scene.id,
+                        Element.scene_id == scene.id,
                         Element.name == new_name
                     )
                 ).first()
@@ -534,25 +526,22 @@ class ResourceDBManager:
 
         try:
             with Session(self.engine) as session:
-                # 先查询场景是否存在
-                scene = session.exec(
-                    select(Scene)
-                    .where(Scene.name == scene_name)
-                    .options(joinedload(Scene.elements))
+                # 直接查询元素
+                element = session.exec(
+                    select(Element)
+                    .join(Scene)
+                    .where(
+                        Scene.name == scene_name,
+                        Element.name == element_name
+                    )
                 ).first()
 
-                if not scene:
-                    self.logger.warning(f"未找到场景: {scene_name}")
+                if element:
+                    self.logger.info(f"在场景 {scene_name} 中找到元素: {element_name}")
+                    return element
+                else:
+                    self.logger.warning(f"场景 {scene_name} 中未找到元素: {element_name}")
                     return None
-
-                # 在场景的元素中查找指定名称的元素
-                for element in scene.elements:
-                    if element.name == element_name:
-                        self.logger.info(f"在场景 {scene_name} 中找到元素: {element_name}")
-                        return element
-
-                self.logger.warning(f"场景 {scene_name} 中未找到元素: {element_name}")
-                return None
         except exc.SQLAlchemyError as e:
             self.logger.error(f"查询场景 {scene_name} 中的元素 {element_name} 失败: {str(e)}")
             return None
@@ -768,13 +757,67 @@ def setup_global_logging(level: int = logging.INFO):
     root_logger.addHandler(console_handler)
 
 
+def convert_raw_bytes_to_png(resource_db_manager):
+    """将数据库中的原始字节图像数据转换为PNG压缩格式"""
+    params = [cv2.IMWRITE_PNG_COMPRESSION, 9]  # 最高压缩等级
+
+    def get_data_size(data):
+        return len(data) if data else 0
+
+    with Session(resource_db_manager.engine) as session:
+        for scene in session.exec(select(Scene)).all():
+            for element in scene.elements:
+                if element.type == ElementType.IMG:
+                    try:
+                        # 处理 BGRA
+                        if element.bgra and element.width and element.height:
+                            print(f"转换前: BGRA={get_data_size(element.bgra)} bytes")
+                            bgra_buf = np.frombuffer(element.bgra, dtype=np.uint8)
+                            bgra = bgra_buf.reshape(element.height, element.width, 4)
+                            success, encoded_bgra = cv2.imencode('.png', bgra, params)
+                            if success:
+                                # 清除旧数据并设置新数据
+                                element.bgra = None
+                                session.flush()  # 强制刷新
+                                element.bgra = encoded_bgra.tobytes()
+                                print(f"转换后: BGRA={get_data_size(element.bgra)} bytes")
+
+                        # 处理 gray
+                        if element.gray and element.width and element.height:
+                            print(f"转换前: GRAY={get_data_size(element.bgra)} bytes")
+                            gray_buf = np.frombuffer(element.gray, dtype=np.uint8)
+                            gray = gray_buf.reshape(element.height, element.width, 1)
+                            success, encoded_gray = cv2.imencode('.png', gray, params)
+                            if success:
+                                element.gray = None
+                                session.flush()
+                                element.gray = encoded_gray.tobytes()
+                                print(f"转换后: GRAY={get_data_size(element.bgra)} bytes")
+
+                        # 处理 mask
+                        if element.mask and element.width and element.height:
+                            print(f"转换前: MASK={get_data_size(element.bgra)} bytes")
+                            mask_buf = np.frombuffer(element.mask, dtype=np.uint8)
+                            mask = mask_buf.reshape(element.height, element.width, 1)
+                            success, encoded_mask = cv2.imencode('.png', mask, params)
+                            if success:
+                                element.mask = None
+                                session.flush()
+                                element.mask = encoded_mask.tobytes()
+                                print(f"转换后: MASK={get_data_size(element.bgra)} bytes")
+
+                        session.add(element)
+                        session.commit()
+                        print(f"转换成功: Scene[{scene.name}] Element[{element.name}]")
+
+                    except Exception as e:
+                        print(f"转换失败: Scene[{scene.name}] Element[{element.name}]: {str(e)}")
+                        session.rollback()
+
+
 if __name__ == "__main__":
     setup_global_logging()
     rdb = ResourceDBManager()
-    rdb.add_scene("主场景")
-    rdb.add_scene("场景1")
-    rdb.add_scene_edge("主场景", "场景1")
-    for scene in rdb.get_all_scenes():
-        print(scene.out_edges)
-    for edge in rdb.get_all_scene_edges():
-        print(edge.source_scene, edge.target_scene)
+    # convert_raw_bytes_to_png(rdb)
+    with rdb.engine.connect() as conn:
+        conn.execute(text("VACUUM"))

@@ -1,49 +1,58 @@
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
+from utils.Base.Enums import KEY_INDEX
 from utils.Base.Task import MeiRiShengChang
 from utils.Base.Task.BaseTask import TransitionOn
 
 
 class MeiZhouShengChang(MeiRiShengChang):
-    source_scene = "忍术对战-单人模式"
+    source_scene = "忍术对战"
+    task_max_duration = timedelta(hours=2)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.checked = False
+        self.finished = False
+        self.operationer.clicker.update_coordinates([
+            self.config.get_config("键位")[KEY_INDEX.BasicAttack],
+            self.config.get_config("键位")[KEY_INDEX.FirstSkill],
+            self.config.get_config("键位")[KEY_INDEX.SecondSkill],
+            self.config.get_config("键位")[KEY_INDEX.UltimateSkill],
+            self.config.get_config("键位")[KEY_INDEX.SecretScroll],
+            self.config.get_config("键位")[KEY_INDEX.Summon],
+            self.config.get_config("键位")[KEY_INDEX.Substitution]
+        ])
 
     @TransitionOn()
     def _(self):
-        self.logger.info("查看[决斗场-忍术对战-单人模式-决斗任务]")
-        self.operationer.click_and_wait("忍术对战-单人模式-决斗任务")
-        self.operationer.detect_scene("忍术对战-单人模式-决斗任务")
-        self.logger.info("领取所有待领取的决斗任务宝箱")
-        while self.operationer.click_and_wait(
-                "宝箱-待领取",
-                auto_raise=False
-        ):
-            continue
-
-        # 假如周胜场没满，则继续挂周胜
-        while not self.operationer.detect_element(
-                "满胜场",
-                max_time=1,
-                auto_raise=False
-        ):
-            self.logger.warning("周胜场未满，继续执行")
-            # 点掉决斗任务窗口
-            self.operationer.click_and_wait("X")
-            self.fight()
-            self.logger.info("查看[决斗场-忍术对战-单人模式-决斗任务]")
+        if not self.checked:
+            self.operationer.clicker.stop()
             self.operationer.click_and_wait("决斗任务")
-            self.operationer.detect_scene("忍术对战-单人模式-决斗任务")
-            self.logger.info("领取所有待领取的决斗任务宝箱")
-            while self.operationer.click_and_wait(
-                    "宝箱-待领取",
-                    auto_raise=False
-            ):
-                continue
-        self.logger.warning("周胜场已满")
-        # 点掉决斗任务弹窗
+            return False
+        if not self.finished:
+            self.operationer.click_and_wait("开战")
+            self.operationer.click_and_wait("开战")
+            self.operationer.clicker.start()
+            return False
         self.operationer.click_and_wait("X")
+        self.logger.info("结束执行")
         self.update_next_execute_time()
         return True
+
+    @TransitionOn("忍术对战-决斗任务")
+    def _(self):
+        self.operationer.clicker.stop()
+        if self.operationer.detect_element("满胜场"):
+            self.logger.debug("每周胜场已满")
+            self.checked = True
+            self.finished = True
+            self.operationer.click_and_wait("X")
+            self.update_next_execute_time()
+            return True
+        self.checked = True
+        self.operationer.click_and_wait("X")
+        return False
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         # 明确指定中国时区（带时区的当前时间）
@@ -74,7 +83,7 @@ class MeiZhouShengChang(MeiRiShengChang):
                 # 计算下一个周日的日期
                 # weekday() 返回：0=周一, 1=周二, ..., 6=周日
                 days_until_sunday = (6 - current_time.weekday()) % 7
-                next_sunday = current_time + timedelta(days=days_until_sunday+7)
+                next_sunday = current_time + timedelta(days=days_until_sunday + 7)
 
                 # 设置时间为下周日12:00:00
                 self.next_execute_time = datetime(

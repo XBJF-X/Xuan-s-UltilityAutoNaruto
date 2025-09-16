@@ -1,17 +1,19 @@
 import logging
 import math
+from pathlib import Path
 
 from PySide6.QtCore import Qt, QPointF, Signal, QObject, QLineF
 from PySide6.QtGui import QPainter, QBrush, QColor, QPen, QPainterPath, QAction, QFont
 from PySide6.QtWidgets import QGraphicsView, QGraphicsScene, QGraphicsItem, QGraphicsPathItem, QMenu, \
     QGraphicsTextItem, QDialog, \
-    QVBoxLayout, QListWidget, QLabel, QDialogButtonBox, QGraphicsRectItem
+    QVBoxLayout, QListWidget, QLabel, QDialogButtonBox, QGraphicsRectItem, QApplication
 
 from StaticFunctions import get_real_path
 from tool.ResourceManager.ResourceDBManager import ResourceDBManager
 from tool.ResourceManager.SceneEditor import SceneEditor
 from utils.Base.Recognizer import Recognizer
 from utils.Base.Scene.SceneGraph import SceneGraph
+from utils.Base.Scene.TransitionManager import TransitionManager
 
 
 class SceneNodeSignals(QObject):
@@ -32,7 +34,7 @@ class SceneNode(QGraphicsRectItem):
         self.text.setDefaultTextColor(Qt.GlobalColor.white)
         font = QFont()
         font.setFamily('SimHei')
-        font.setPointSize(20)
+        font.setPointSize(70)
         font.setWeight(QFont.Weight.Medium)
         self.text.setFont(font)
 
@@ -118,6 +120,13 @@ class SceneNode(QGraphicsRectItem):
         """处理右键菜单事件"""
         menu = QMenu()
 
+        # 添加"复制场景名称"菜单项
+        copy_action = QAction("复制场景名称", menu)
+        copy_action.triggered.connect(lambda: QApplication.clipboard().setText(self.scene_id))
+        menu.addAction(copy_action)
+
+        # 添加分隔线
+        menu.addSeparator()
         # 添加"连接节点"菜单项
         connect_action = QAction("连接到节点", menu)
         connect_action.triggered.connect(lambda: self.signals.request_connect.emit(self.scene_id))
@@ -151,20 +160,32 @@ class SceneNode(QGraphicsRectItem):
 
 
 class SceneEdge(QGraphicsPathItem):
-    """自定义场景边类，连接两个节点（修复箭头方向）"""
+    """自定义场景边类，连接两个节点"""
 
-    def __init__(self, source_node, target_node, parent=None):
+    def __init__(self, source_node, target_node, transition_manager, parent=None):
         super().__init__(parent)
         self.source_node = source_node
         self.target_node = target_node
-        self.normal_color = QColor(105, 105, 105)  # 正常颜色
+
+        # 颜色定义
+        self.normal_color = QColor(105, 105, 105)  # 正常颜色-灰色
+        self.warning_color = QColor(255, 140, 0)   # 警告颜色-橙色
+        self.error_color = QColor(220, 20, 60)     # 错误颜色-红色
+
+        # 只检查当前边的方向是否实现
+        source_to_target = (source_node.scene_id, target_node.scene_id) in transition_manager.transition_map
+
+        # 根据实现状态设置颜色
+        if source_to_target:
+            # 已实现
+            self.setPen(QPen(self.normal_color, 10))
+        else:
+            # 未实现
+            self.setPen(QPen(self.error_color, 10))
 
         # 添加边到节点的连接列表
         source_node.add_edge(self)
         target_node.add_edge(self)
-
-        # 设置边的样式
-        self.setPen(QPen(self.normal_color, 2))
         self.setZValue(0)
 
         # 初始更新位置
@@ -233,7 +254,7 @@ class SceneEdge(QGraphicsPathItem):
         path.lineTo(end_point)
 
         # 创建箭头 - 使用正确的角度计算
-        arrow_size = 10
+        arrow_size = 50
 
         # 4. 在终点处绘制箭头
         # 箭头位置：终点位置
@@ -272,9 +293,8 @@ class SceneGraphView(QGraphicsView):
         super().__init__(parent)
         self.logger = logging.getLogger("场景可视化视图")
         self.resource_manager = resource_manager
-        self.recognizer = Recognizer(
-            parent_logger=self.logger,
-            scene_graph=SceneGraph(get_real_path("raw_src/Template/Scene")))
+        self.transition_manager = TransitionManager(None)
+        self.recognizer = Recognizer(SceneGraph(self.resource_manager))
         self.scene = QGraphicsScene()
         self.setScene(self.scene)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -304,7 +324,7 @@ class SceneGraphView(QGraphicsView):
         for scene in self.resource_manager.get_all_scenes():
             self.add_node(scene.name)
         for edge in self.resource_manager.get_all_scene_edges():
-            self.logger.debug(f"连接[{edge.source_scene}]->[{edge.target_scene}]")
+            self.logger.debug(f"连接[{edge.source_scene.name}]->[{edge.target_scene.name}]")
             self.add_edge(edge.source_scene.name, edge.target_scene.name)
 
         # 初始化后自动布局
@@ -320,15 +340,13 @@ class SceneGraphView(QGraphicsView):
         self.scene.addItem(node)
         self.nodes[scene_id] = node
 
-        if len(self.resource_manager.get_scene_by_name(scene_id).elements) == 0:
+        if not any(element.symbol == 1 for element in
+                           self.resource_manager.get_scene_by_name(scene_id).elements):
             node.text.setDefaultTextColor(Qt.GlobalColor.red)
 
-        # flag = True
-        # for id, element in self.resource_manager.get_scene(scene_id).elements.items():
-        #     if element.id in ["X", "返回"]:
-        #         flag = False
-        # if flag:
-        #     node.text.setDefaultTextColor(Qt.GlobalColor.red)
+        destination = Path(get_real_path("test_scene")) / f"{scene_id}.png"
+        if not destination.exists():
+            node.text.setDefaultTextColor(Qt.GlobalColor.yellow)
 
         # 连接节点的信号
         node.signals.double_clicked.connect(self.node_double_clicked)
@@ -413,8 +431,8 @@ class SceneGraphView(QGraphicsView):
         source_node = self.nodes[source_id]
         target_node = self.nodes[target_id]
 
-        # 创建自定义边
-        edge = SceneEdge(source_node, target_node)
+        # 创建自定义边，传入 transition_manager
+        edge = SceneEdge(source_node, target_node, self.transition_manager)
         self.scene.addItem(edge)
         self.edges[key] = edge
 
@@ -510,7 +528,7 @@ class SceneGraphView(QGraphicsView):
         if self.scene.items():
             self.fitInView(self.scene.itemsBoundingRect(), Qt.AspectRatioMode.KeepAspectRatio)
 
-    def auto_layout(self, iterations=2000):
+    def auto_layout(self, iterations=30000):
         """
         使用networkx优化布局，替代手动实现的力导向算法
         参数:
@@ -538,10 +556,10 @@ class SceneGraphView(QGraphicsView):
         # 使用networkx的spring_layout布局算法
         pos = nx.spring_layout(
             G,
-            k=210 / len(G.nodes) ** 0.5,  # 节点间距参数
+            k=1000 / len(G.nodes) ** 0.5,  # 节点间距参数
             iterations=iterations,
             seed=42,  # 固定种子保证可重复布局
-            scale=100 * len(G.nodes) ** 0.5  # 布局缩放比例
+            scale=1000 * len(G.nodes) ** 0.5  # 布局缩放比例
         )
 
         # 应用布局到节点

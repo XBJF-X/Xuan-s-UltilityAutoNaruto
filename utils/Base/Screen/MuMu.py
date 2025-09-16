@@ -1,5 +1,4 @@
 import ctypes
-import logging
 import os
 from ctypes import wintypes, c_char_p, c_ubyte
 

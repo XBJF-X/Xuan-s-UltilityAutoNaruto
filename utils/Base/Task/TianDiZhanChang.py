@@ -11,101 +11,129 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 class TianDiZhanChang(BaseTask):
     source_scene = "天地战场"
     task_max_duration = timedelta(minutes=31)
-    pillar_took = False
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.guwu_done = False
+        self.pillar_took = False
+        self.operationer.clicker.update_coordinates([
+            self.config.get_config("键位")[KEY_INDEX.BasicAttack],
+            self.config.get_config("键位")[KEY_INDEX.FirstSkill],
+            self.config.get_config("键位")[KEY_INDEX.SecondSkill],
+            self.config.get_config("键位")[KEY_INDEX.UltimateSkill],
+            self.config.get_config("键位")[KEY_INDEX.SecretScroll],
+            self.config.get_config("键位")[KEY_INDEX.Summon],
+            self.config.get_config("键位")[KEY_INDEX.Substitution]
+        ])
 
     @TransitionOn()
     def _(self):
         self.operationer.click_and_wait("地之战场")
-        self.operationer.click_and_wait("确定进入-确认", max_time=0.5, stable_max_time=0.5, auto_raise=False)
-        self.operationer.click_and_wait("出战忍者-忍者")
-        self.operationer.click_and_wait("出战忍者-默认选择-1", stable_max_time=0.5)
-        self.operationer.click_and_wait("出战忍者-通灵兽", stable_max_time=0.5)
-        self.operationer.click_and_wait("出战忍者-默认选择-1", stable_max_time=0.5)
-        self.operationer.click_and_wait("出战忍者-默认选择-2", stable_max_time=0.5)
-        self.operationer.click_and_wait("出战忍者-默认选择-3", stable_max_time=0.5)
-        self.operationer.click_and_wait("出战忍者-秘卷", stable_max_time=0.5)
-        self.operationer.click_and_wait("出战忍者-默认选择-1", stable_max_time=0.5)
-        self.operationer.click_and_wait("出战忍者-确认", stable_max_time=0.5)
-        self.operationer.detect_element("地之战场-标识", max_time=10)
-        self.operationer.click_and_wait("组织鼓舞")
-        while datetime.now(tz=ZoneInfo("Asia/Shanghai")) <= self.dead_line:
-            if self.operationer.click_and_wait("战场战斗已经结束-确认", max_time=0.5, auto_raise=False):
-                # 领取所有战场奖励
-                self.operationer.click_and_wait("战场奖励")
-                while self.operationer.click_and_wait("战场奖励-领取", max_time=0.5, stable_max_time=0.5, auto_raise=False):
-                    if self.operationer.detect_element("战场奖励-恭喜你获得", stable_max_time=0.5, auto_raise=False):
-                        self.operationer.click_and_wait("空白点")
-                self.operationer.click_and_wait("空白点")
-                self.operationer.click_and_wait("X")
-                self.operationer.click_and_wait("确认退出天地战场-确认")
-                self.update_next_execute_time()
-                raise EndEarly("天地战场战斗已经结束")
+        return False
 
-            if self.pillar_took:
-                # 检测是否进入战斗
-                flag = self.operationer.search_and_detect(
-                    [
-                        self.operationer.current_scene.elements.get("60"),
-                        self.operationer.current_scene.elements.get("你的对手离开了游戏")
-                    ],
-                    [
-                        {'click': "你的对手离开了游戏-确定"}
-                    ],
-                    search_max_time=60,
-                )
-                match flag:
-                    case 0:
-                        self.logger.info("无人攻击...")
-                    case 1:
-                        self.logger.info("倒计时60s出现，连点执行中...")
-                        # 使用连点器，结束的标志定为举报反馈
-                        self.operationer.auto_cycle_actioner(
-                            [
-                                ("CLICK", self.config.get_config("键位")[KEY_INDEX.BasicAttack]),
-                                ("CLICK", self.config.get_config("键位")[KEY_INDEX.FirstSkill]),
-                                ("CLICK", self.config.get_config("键位")[KEY_INDEX.SecondSkill]),
-                                ("CLICK", self.config.get_config("键位")[KEY_INDEX.UltimateSkill]),
-                                ("CLICK", self.config.get_config("键位")[KEY_INDEX.SecretScroll]),
-                                ("CLICK", self.config.get_config("键位")[KEY_INDEX.Summon]),
-                                ("CLICK", self.config.get_config("键位")[KEY_INDEX.Substitution])
-                            ],
-                            stop_conditions=[
-                                self.operationer.current_scene.elements.get("你的对手离开了游戏"),
-                                self.operationer.current_scene.elements.get("举报反馈")
-                            ],
-                            max_workers=7
-                        )
-                        self.logger.info("对局结束，返回[单人模式-首页]")
-                        # 输连点器之后需要重新选角色，按系统默认的来
-                        self.operationer.click_and_wait(
-                            "出战忍者-确认",
-                            max_time=30,
-                            wait_time=0.5,
-                            auto_raise=False)
-                        self.pillar_took = False
-                    case 2:
-                        self.logger.warning("对手退出游戏，即将返回[地之战场]")
-                        self.pillar_took = True
-                # 先回到单人模式首页
-                if not self.operationer.search_and_detect(
-                        [
-                            self.operationer.current_scene.elements.get("地之战场-标识")
-                        ],
-                        [
-                            {'click': "空白点"},
-                            {'click': "你的对手离开了游戏-确定"}
-                        ],
-                        search_max_time=30
-                ):
-                    raise StepFailedError("战斗结束后无法退回[地之战场]")
-            else:
-                if self.operationer.click_and_wait("空闲柱子", max_time=60, auto_raise=False):
-                    self.pillar_took = True
+    @TransitionOn("天之战场")
+    def _(self):
+        if datetime.now(tz=ZoneInfo("Asia/Shanghai")) > self.dead_line:
+            self.update_next_execute_time()
+            return True
+        if not self.guwu_done:
+            self.operationer.click_and_wait("组织鼓舞")
+            self.guwu_done = True
+            return False
+        if self.operationer.click_and_wait("空闲柱子", auto_raise=False):
+            self.pillar_took = True
+            return False
+        self.operationer.click_and_wait("战场奖励")
+        return False
 
+    @TransitionOn("地之战场")
+    def _(self):
+        if datetime.now(tz=ZoneInfo("Asia/Shanghai")) > self.dead_line:
+            self.update_next_execute_time()
+            return True
+        if not self.guwu_done:
+            self.operationer.click_and_wait("组织鼓舞")
+            self.guwu_done = True
+            return False
+        if self.operationer.click_and_wait("空闲柱子", auto_raise=False):
+            self.pillar_took = True
+            return False
+        self.operationer.click_and_wait("战场奖励")
+        return False
+
+    @TransitionOn("天地战场-确定进入")
+    def _(self):
+        self.operationer.click_and_wait("确认")
+        return False
+
+    @TransitionOn("天地战场-配置阵容")
+    def _(self):
+        self.operationer.click_and_wait("忍者页")
+        self.operationer.click_and_wait("默认点位-1", stable_max_time=0.5)
+        self.operationer.click_and_wait("通灵兽页", stable_max_time=0.5)
+        self.operationer.click_and_wait("默认点位-1", stable_max_time=0.5)
+        self.operationer.click_and_wait("默认点位-2", stable_max_time=0.5)
+        self.operationer.click_and_wait("默认点位-3", stable_max_time=0.5)
+        self.operationer.click_and_wait("秘卷页", stable_max_time=0.5)
+        self.operationer.click_and_wait("默认点位-1", stable_max_time=0.5)
+        self.operationer.click_and_wait("确认", stable_max_time=0.5)
+        return False
+
+    @TransitionOn("天地战场-战场奖励")
+    def _(self):
+        while not self.operationer.click_and_wait("领取", auto_raise=False):
+            continue
+        if not self.operationer.detect_element("未达成"):
+            self.operationer.click_and_wait("X")
+            self.update_next_execute_time()
+            return True
         self.operationer.click_and_wait("X")
-        self.operationer.click_and_wait("确认退出天地战场-确认")
-        self.update_next_execute_time()
-        return True
+        return False
+
+    @TransitionOn("天地战场-战场已提前结束")
+    def _(self):
+        self.operationer.click_and_wait("确定")
+        return False
+
+    @TransitionOn("天地战场-确认退出")
+    def _(self):
+        self.operationer.click_and_wait("确认")
+        return False
+
+    @TransitionOn("恭喜你获得")
+    def _(self):
+        self.operationer.click_and_wait("")
+        return False
+
+    @TransitionOn("决斗场-结算")
+    def _(self):
+        self.operationer.clicker.stop()
+        self.operationer.click_and_wait("X")
+        self.pillar_took = False
+        return False
+
+    @TransitionOn("决斗场-单局结算")
+    def _(self):
+        self.operationer.clicker.stop()
+        self.pillar_took = False
+        return False
+
+    @TransitionOn("决斗场-战斗中")
+    def _(self):
+        self.operationer.clicker.start()
+        QThread.msleep(500)
+        return False
+
+    @TransitionOn("你的对手离开了游戏")
+    def _(self):
+        self.operationer.click_and_wait("确定")
+        return False
+
+    @TransitionOn("未知场景")
+    def _(self):
+        self.operationer.clicker.stop()
+        QThread.msleep(1000)
+        return False
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         # 辅助函数：计算下次周三9点的时间

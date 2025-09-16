@@ -1,18 +1,17 @@
 import concurrent.futures
-import logging
 import threading
 import time
 from typing import Tuple, List
 
 from PySide6.QtCore import QThread, Signal
 
+from tool.ResourceManager.model import Scene, Element
+from utils.Base.Clicker import Clicker
 from utils.Base.Config import Config
 from utils.Base.Device import Device
 from utils.Base.Enums import ElementType
 from utils.Base.Exceptions import StepFailedError, Stop
 from utils.Base.Recognizer import Recognizer
-from utils.Base.Scene.Element import Element
-from utils.Base.Scene.Scene import Scene
 from utils.Base.Scene.SceneGraph import SceneGraph
 
 
@@ -24,7 +23,6 @@ class Operationer:
                  task_name: str,
                  config: Config,
                  device: Device,
-                 recognizer: Recognizer,
                  scene_graph: SceneGraph,
                  screen_save_signal: Signal(str),
                  parent_logger
@@ -33,10 +31,11 @@ class Operationer:
         self.task_name = task_name
         self.config = config
         self.device = device
-        self.recognizer = recognizer
         self.scene_graph = scene_graph
         self.screen_save_signal = screen_save_signal
         self.logger = parent_logger.getChild(self.__class__.__name__)
+        self.recognizer = Recognizer(scene_graph, self.logger)
+        self.clicker = Clicker(self, parent_logger=self.logger)
 
     def _should_stop(self):
         """检查是否收到停止请求"""
@@ -49,6 +48,14 @@ class Operationer:
         self.logger.info(f"正在停止任务: {self.task_name}")
         # 设置停止标志
         self.stop_event.set()
+
+    def get_element(self, element_name, scene_name: str | None = None):
+        if scene_name:
+            return self.scene_graph.get_element(scene_name, element_name)
+        return self.scene_graph.get_element(self.current_scene.name, element_name)
+
+    def get_scene(self, scene_name):
+        return self.scene_graph.get_scene(scene_name)
 
     def detect_element(self, element, **kwargs):
         """
@@ -65,11 +72,11 @@ class Operationer:
             - bool_save_screen：是否保存截图（默认True）
         """
         if isinstance(element, str):
-            element = self.current_scene.elements.get(element)
+            element = self.get_element(element)
         interval: int = kwargs.get("interval", 80)
         auto_raise: bool = kwargs.get("auto_raise", True)
         wait_time: float = kwargs.get("wait_time", 1.0)
-        max_time: float = kwargs.get("max_time", 2.0)
+        max_time: float = kwargs.get("max_time", 1.0)
         max_attempts: int | None = kwargs.get("max_attempts")
         bool_debug: bool = kwargs.get("bool_debug", True)
         bool_save_screen: bool = kwargs.get("bool_save_screen", True)
@@ -104,7 +111,7 @@ class Operationer:
                 QThread.msleep(sleep_time)
         # 根据auto_raise参数决定是抛出异常还是返回结果
         if not success and auto_raise:
-            raise StepFailedError(f"元素 [{element.id}] 未出现")
+            raise StepFailedError(f"元素 [{element.name}] 未出现")
 
         return success
 
@@ -123,11 +130,11 @@ class Operationer:
                 - bool_save_screen：是否保存截图（默认True）
             """
         if isinstance(scene, str):
-            scene = self.scene_graph.scenes.get(scene)
+            scene = self.scene_graph.get_scene(scene)
         interval: int = kwargs.get("interval", 80)
         auto_raise: bool = kwargs.get("auto_raise", True)
         wait_time: float = kwargs.get("wait_time", 1.0)
-        max_time: float = kwargs.get("max_time", 2.0)
+        max_time: float = kwargs.get("max_time", 1.0)
         max_attempts: int | None = kwargs.get("max_attempts")
         bool_debug: bool = kwargs.get("bool_debug", True)
         bool_save_screen: bool = kwargs.get("bool_save_screen", True)
@@ -139,7 +146,7 @@ class Operationer:
         if max_attempts is not None:
             for i in range(max_attempts):
                 time_1 = time.perf_counter()
-                flag, confidence = self.recognizer.scene_match(self.device.screen_cap(), scene, bool_debug)
+                flag = self.recognizer.scene_match(self.device.screen_cap(), scene, bool_debug)
                 if flag:
                     if bool_save_screen:
                         self.screen_save_signal.emit(self.task_name)
@@ -151,7 +158,7 @@ class Operationer:
         else:
             while time.perf_counter() - start_time < max_time:
                 time_1 = time.perf_counter()
-                flag, confidence = self.recognizer.scene_match(self.device.screen_cap(), scene, bool_debug)
+                flag = self.recognizer.scene_match(self.device.screen_cap(), scene, bool_debug)
                 if flag:
                     if bool_save_screen:
                         self.screen_save_signal.emit(self.task_name)
@@ -162,7 +169,7 @@ class Operationer:
                 QThread.msleep(sleep_time)
         # 根据auto_raise参数决定是抛出异常还是返回结果
         if not success and auto_raise:
-            raise StepFailedError(f"场景 [{scene.id}] 未出现")
+            raise StepFailedError(f"场景 [{scene.name}] 未出现")
 
         return success
 
@@ -185,20 +192,22 @@ class Operationer:
             - stable_bool_debug：wait_until_stable参数
         """
         if isinstance(element, str):
-            element = self.current_scene.elements.get(element)
+            element = self.get_element(element)
+            if element is None:
+                raise StepFailedError(f"元素 [{element}] 未定义")
         interval: int = kwargs.get("interval", 80)
         auto_raise: bool = kwargs.get("auto_raise", True)
         wait_time: float | None = kwargs.get("wait_time", None)
-        max_time: float = kwargs.get("max_time", 1.0)
+        max_time: float = kwargs.get("max_time", 0.7)
         max_attempts: int | None = kwargs.get("max_attempts")
         click_times: int = kwargs.get("click_times", 1)
 
         # wait_until_stable的参数
-        stable_threshold = kwargs.get("stable_threshold", 0.1)  # 默认1%的像素变化
+        stable_threshold = kwargs.get("stable_threshold", 0.2)  # 默认1%的像素变化
         stable_duration = kwargs.get("stable_duration", 1)  # 默认需要稳定1秒
         stable_check_interval = kwargs.get("stable_check_interval", 100)  # 默认每200ms检查一次
         stable_max_time = kwargs.get("stable_max_time", 10.0)  # 默认最多等待10秒
-        stable_bool_debug = kwargs.get("stable_bool_debug", True)  # 默认不输出调试信息
+        stable_bool_debug = kwargs.get("stable_bool_debug", False)  # 默认不输出调试信息
 
         start_time = time.perf_counter()
         success = False
@@ -207,7 +216,9 @@ class Operationer:
             for i in range(max_attempts):
                 time_1 = time.perf_counter()
                 if element.type == ElementType.COORDINATE:
-                    self.device.click(element.coordinate, times=click_times)
+                    self.logger.debug(f"[{element.name}] Click"
+                                      f" ({element.coordinate_x},{element.coordinate_y})")
+                    self.device.click(element.coordinate_x, element.coordinate_y, times=click_times)
                     self.screen_save_signal.emit(self.task_name)
                     if wait_time is not None:
                         QThread.msleep(int(wait_time * 1000))
@@ -224,14 +235,13 @@ class Operationer:
                 elif element.type == ElementType.IMG:
                     coordinates = self.recognizer.element_match(self.device.screen_cap(), element)
                     if coordinates:
-                        QThread.msleep(500)
                         coordinate = coordinates[0]
-                        x_ratio, y_ratio = element.ratio
+                        x_ratio, y_ratio = element.ratio_x, element.ratio_y
                         # 按照元素可点击位置相对于模版左上角，相对整体的比例确定点击坐标
                         x, y = (coordinate[0] * (1 - x_ratio) + coordinate[2] * x_ratio), (
                                 coordinate[1] * (1 - y_ratio) + coordinate[3] * y_ratio)
-                        self.logger.debug(f"[{element.id}] Click ({x},{y})")
-                        self.device.click((x, y), times=click_times)
+                        self.logger.debug(f"[{element.name}] Click ({x},{y})")
+                        self.device.click(x, y, times=click_times)
                         self.screen_save_signal.emit(self.task_name)
                         if wait_time is not None:
                             QThread.msleep(int(wait_time * 1000))
@@ -251,7 +261,9 @@ class Operationer:
             while time.perf_counter() - start_time < max_time:
                 time_1 = time.perf_counter()
                 if element.type == ElementType.COORDINATE:
-                    self.device.click(element.coordinate, times=click_times)
+                    self.logger.debug(f"[{element.name}] Click"
+                                      f" ({element.coordinate_x},{element.coordinate_y})")
+                    self.device.click(element.coordinate_x, element.coordinate_y, times=click_times)
                     self.screen_save_signal.emit(self.task_name)
                     if wait_time is not None:
                         QThread.msleep(int(wait_time * 1000))
@@ -268,14 +280,13 @@ class Operationer:
                 elif element.type == ElementType.IMG:
                     coordinates = self.recognizer.element_match(self.device.screen_cap(), element)
                     if coordinates:
-                        QThread.msleep(500)
                         coordinate = coordinates[0]
-                        x_ratio, y_ratio = element.ratio
+                        x_ratio, y_ratio = element.ratio_x, element.ratio_y
                         # 按照元素可点击位置相对于模版左上角，相对整体的比例确定点击坐标
                         x, y = (coordinate[0] * (1 - x_ratio) + coordinate[2] * x_ratio), (
                                 coordinate[1] * (1 - y_ratio) + coordinate[3] * y_ratio)
-                        self.logger.debug(f"[{element.id}] Click ({x},{y})")
-                        self.device.click((x, y), times=click_times)
+                        self.logger.debug(f"[{element.name}] Click ({x},{y})")
+                        self.device.click(x, y, times=click_times)
                         self.screen_save_signal.emit(self.task_name)
                         if wait_time is not None:
                             QThread.msleep(int(wait_time * 1000))
@@ -295,9 +306,9 @@ class Operationer:
         # 根据auto_raise参数决定是抛出异常还是返回结果
         if not success and auto_raise:
             if element.type == ElementType.IMG:
-                raise StepFailedError(f"点击元素 [{element.id}] 失败")
+                raise StepFailedError(f"点击元素 [{element.name}] 失败")
             elif element.type == ElementType.COORDINATE:
-                raise StepFailedError(f"点击坐标 {element.coordinate} 失败")
+                raise StepFailedError(f"点击坐标 ({element.coordinate_x},{element.coordinate_y}) 失败")
 
         return success
 
@@ -333,136 +344,6 @@ class Operationer:
         self.screen_save_signal.emit(self.task_name)
         return True
 
-    def auto_cycle_actioner(self, actions: list[Tuple], **kwargs, ):
-        """
-        自动连点器 - 按坐标列表循环点击，支持两种停止条件
-
-        Args:
-            actions: 操作格式为[(action, (x1,y1)) , ...]
-            **kwargs:
-            - stop_conditions (List|None): 停止条件列表，用于传入判定的对象，Element或Scene
-            - max_time(float|None): 最大点击时间
-            - max_workers(int): 最大工作线程数，默认1
-            - bool_debug(bool): 要不要输出日志（避免有的过程检测次数过多导致日志累积）
-
-        Returns:
-            int 因为哪种条件而停止，返回1-based停止条件索引
-        """
-        stop_conditions: List | None = kwargs.get("stop_conditions")
-        max_time: float | None = kwargs.get("max_time")
-        max_workers: int = kwargs.get("max_workers", 1)
-        bool_debug: bool = kwargs.get("bool_debug", False)
-
-        # 添加一个变量用于存储停止原因
-        stop_result = 0  # 默认为0表示未正常停止
-
-        # 检查参数
-        if not actions:
-            self.logger.warning("操作列表为空，无法执行")
-            return 0
-
-        # 检查停止条件
-        if stop_conditions is None and max_time is None:
-            self.logger.warning("未设置停止条件，将执行无限循环点击")
-
-        start = time.perf_counter()
-        stop_event = threading.Event()  # 用于通知停止的事件
-        checker_thread = None
-        self.screen_save_signal.emit(self.task_name)
-
-        # 判定线程函数
-        def check_stop_condition():
-            nonlocal stop_event, stop_result  # 使用nonlocal关键字共享变量
-            while not stop_event.is_set():
-                # 执行检查
-                if self._should_stop():
-                    stop_event.set()
-                    raise Stop
-                if max_time is not None and time.perf_counter() - start >= max_time:
-                    self.logger.debug(f"达到最大时长 {max_time}，操作停止")
-                    stop_event.set()
-                    stop_result = -1  # 标记为超时停止
-                    return
-                if stop_conditions is not None:
-                    for index, stop_condition in enumerate(stop_conditions):
-                        if self._should_stop():
-                            stop_event.set()
-                            raise Stop
-                        if isinstance(stop_condition, Element):
-                            if self.detect_element(
-                                    stop_condition,
-                                    wait_time=0,
-                                    max_attempts=1,
-                                    interval=0,
-                                    bool_debug=bool_debug,
-                                    bool_save_screen=False,
-                                    auto_raise=False
-                            ):
-                                stop_event.set()
-                                stop_result = index + 1  # 存储1-based索引
-                                self.screen_save_signal.emit(self.task_name)
-                                self.logger.debug(f"条件[{stop_condition.id}]成立，点击停止")
-                                return
-                        elif isinstance(stop_condition, Scene):
-                            if self.detect_scene(
-                                    stop_condition,
-                                    wait_time=0,
-                                    max_attempts=1,
-                                    interval=0,
-                                    bool_debug=bool_debug,
-                                    bool_save_screen=False,
-                                    auto_raise=False
-                            ):
-                                stop_event.set()
-                                stop_result = index + 1  # 存储1-based索引
-                                self.screen_save_signal.emit(self.task_name)
-                                self.logger.debug(f"条件[{stop_condition.id}]成立，点击停止")
-                                return
-                QThread.msleep(10)
-
-        # 点击工作函数（保持不变）
-        def click_worker(coord):
-            nonlocal stop_event
-            x, y = coord
-            while not stop_event.is_set():
-                self.device.click((x, y))
-            return x, y
-
-        def press_worker(coord):
-            nonlocal stop_event
-            x, y = coord
-            instance = self.device.controller.touch_down(x, y)
-            while not stop_event.is_set():
-                QThread.msleep(50)
-                continue
-            instance.touch_up(x, y)
-            return x, y
-
-        # 如果设置了停止条件，启动判定线程
-        if stop_conditions is not None or max_time is not None:
-            checker_thread = threading.Thread(target=check_stop_condition, daemon=True)
-            checker_thread.start()
-
-        try:
-            # 创建线程池
-            with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-                futures = []
-                for action in actions:
-                    futures.append(executor.submit(click_worker, action[1]))
-                    # # 根据action类型选择不同的worker
-                    # if action[0] == "CLICK":
-                    #     futures.append(executor.submit(click_worker, action[1]))
-                    # elif action[0] == "PRESS":
-                    #     futures.append(executor.submit(press_worker, action[1]))
-        except Exception as e:
-            self.logger.error(f"操作过程中发生错误: {e}")
-
-        # 等待判定线程结束（如果有）
-        if stop_conditions is not None or max_time is not None:
-            checker_thread.join(timeout=1.0)
-        self.logger.debug(f"返回：{stop_result}")
-        # 返回存储的停止原因
-        return stop_result
 
     def search_and_click(self, element_list, search_actions, **kwargs, ):
         """
@@ -485,20 +366,20 @@ class Operationer:
         search_max_time: float | None = kwargs.get("search_max_time")
         max_attempts: int | None = kwargs.get("max_attempts")
         once_max_time: float = kwargs.get("once_max_time", 1)
+        once_max_attempts: int | None = kwargs.get("once_max_attempts")
         wait_time: float | None = kwargs.get("wait_time", None)
 
         # wait_until_stable的参数
-        stable_threshold = kwargs.get("stable_threshold", 0.1)  # 默认1%的像素变化
+        stable_threshold = kwargs.get("stable_threshold", 0.2)  # 默认1%的像素变化
         stable_duration = kwargs.get("stable_duration", 1)  # 默认需要稳定1秒
         stable_check_interval = kwargs.get("stable_check_interval", 100)  # 默认每200ms检查一次
         stable_max_time = kwargs.get("stable_max_time", 10.0)  # 默认最多等待10秒
-        stable_bool_debug = kwargs.get("stable_bool_debug", True)  # 默认不输出调试信息
+        stable_bool_debug = kwargs.get("stable_bool_debug", False)  # 默认不输出调试信息
 
         self.logger.debug(f"元素点击搜索内容：")
-        self.logger.debug(element_list)
         for element_id in element_list:
             if isinstance(element_id, Element):
-                self.logger.debug(f"[元素] {element_id.id}")
+                self.logger.debug(f"[元素] {element_id.name}")
             else:
                 self.logger.debug(f"[元素] {element_id}")
         start = time.perf_counter()
@@ -522,6 +403,7 @@ class Operationer:
                         element_id,
                         wait_time=wait_time,
                         max_time=once_max_time,
+                        max_attempts=once_max_attempts,
                         auto_raise=False,
                         stable_threshold=stable_threshold,
                         stable_duration=stable_duration,
@@ -569,17 +451,18 @@ class Operationer:
         search_max_time: float | None = kwargs.get("search_max_time")
         max_attempts: int | None = kwargs.get("max_attempts")
         once_max_time: float = kwargs.get("once_max_time", 1.0)
+        once_max_attempts: int | None = kwargs.get("once_max_attempts")
         wait_time: float = kwargs.get("wait_time", 1.0)
         bool_debug: bool = kwargs.get("bool_debug", True)
         self.logger.debug(f"元素检测搜索内容：")
         for item in item_list:
             if isinstance(item, Scene):
-                self.logger.debug(f"[场景] {item.id}")
+                self.logger.debug(f"[场景] {item.name}")
             elif isinstance(item, Element):
                 if item.type == ElementType.IMG:
-                    self.logger.debug(f"[图像] {item.id}")
+                    self.logger.debug(f"[图像] {item.name}")
                 elif item.type == ElementType.COORDINATE:
-                    self.logger.debug(f"[坐标] {item.coordinate}")
+                    self.logger.debug(f"[坐标] ({item.coordinate_x},{item.coordinate_y})")
         start = time.perf_counter()
         attempts = 0
         self.screen_save_signal.emit(self.task_name)
@@ -594,6 +477,7 @@ class Operationer:
                             item,
                             wait_time=wait_time,
                             max_time=once_max_time,
+                            max_attempts=once_max_attempts,
                             bool_save_screen=False,
                             bool_debug=bool_debug,
                             auto_raise=False
@@ -605,6 +489,7 @@ class Operationer:
                             item,
                             wait_time=wait_time,
                             max_time=once_max_time,
+                            max_attempts=once_max_attempts,
                             bool_save_screen=False,
                             bool_debug=bool_debug,
                             auto_raise=False
@@ -663,7 +548,6 @@ class Operationer:
         过二级密码的通用函数,返回True表示检测到了二级密码的弹窗,反之没有
         """
         self.screen_save_signal.emit(self.task_name)
-        scene = self.scene_graph.scenes.get("二级密码")
         # 可能有二级密码，用户输入密码
         if self.detect_scene(
                 "二级密码",
@@ -676,13 +560,13 @@ class Operationer:
             self.screen_save_signal.emit(self.task_name)
             # 输入操作
             self.click_and_input(
-                scene.elements.get("输入框"),
+                self.get_element("输入框"),
                 passward
             )
             self.screen_save_signal.emit(self.task_name)
             # 点击二级密码-确定
             if not self.click_and_wait(
-                    scene.elements.get("确定"),
+                    self.get_element("确定"),
                     auto_raise=False
             ):
                 raise StepFailedError("二级密码验证失败")
@@ -754,11 +638,11 @@ class Operationer:
         import time
 
         # 获取参数
-        threshold = kwargs.get("threshold", 0.1)  # 默认1%的像素变化
+        threshold = kwargs.get("threshold", 0.2)  # 默认1%的像素变化
         stable_duration = kwargs.get("stable_duration", 1)  # 默认需要稳定1秒
         check_interval = kwargs.get("check_interval", 100)  # 默认每200ms检查一次
         max_time = kwargs.get("max_time", 10.0)  # 默认最多等待10秒
-        bool_debug = kwargs.get("bool_debug", True)  # 默认输出调试信息
+        bool_debug = kwargs.get("bool_debug", False)  # 默认输出调试信息
         invalid_threshold = kwargs.get("invalid_threshold", 0.9)  # 无效帧判断阈值
 
         def is_invalid_frame(frame):
@@ -798,7 +682,7 @@ class Operationer:
 
             # 转换为灰度图并调整大小以减少计算量
             current_gray = cv2.cvtColor(np.array(current_frame), cv2.COLOR_RGB2GRAY)
-            current_gray = cv2.resize(current_gray, (300, 300))  # 调整到较小尺寸
+            # current_gray = cv2.resize(current_gray, (300, 300))  # 调整到较小尺寸
 
             # 检查是否为无效帧
             if is_invalid_frame(current_gray):
@@ -808,7 +692,7 @@ class Operationer:
                 if last_valid_frame is not None:
                     # 计算帧间差异
                     diff = cv2.absdiff(last_valid_frame, current_gray)
-                    _, diff_thresh = cv2.threshold(diff, 30, 255, cv2.THRESH_BINARY)
+                    _, diff_thresh = cv2.threshold(diff, 10, 255, cv2.THRESH_BINARY)
 
                     # 计算变化比例
                     change_ratio = np.count_nonzero(diff_thresh) / diff_thresh.size
@@ -837,4 +721,3 @@ class Operationer:
         if bool_debug:
             self.logger.debug("等待画面稳定超时")
         return False
-

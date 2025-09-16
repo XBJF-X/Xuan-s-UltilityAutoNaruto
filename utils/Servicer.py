@@ -3,15 +3,15 @@ from collections import defaultdict
 from datetime import datetime
 from typing import Dict
 from zoneinfo import ZoneInfo
+
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QFileDialog
+
 from utils.Base.Config import Config
 from utils.Base.Device import Device
 from utils.Base.LogWindow import LogWindow
-from utils.Base.Recognizer import Recognizer
-from utils.Base.Scene.SceneGraph import SceneGraph
+from utils.Base.Scheduler import Scheduler
 from utils.Base.Task import TASK_NAME_CN2EN_MAP, TREE_INDEX_DIC
 from utils.KeyMapConfiguration import KeyMapConfiguration
-from utils.Base.Scheduler import Scheduler
 from utils.SerialChoose import SerialChoose
 from utils.ui.Service_ui import Ui_Service
 
@@ -34,14 +34,11 @@ class Service(QWidget):
         self.alloc_ui_ref_map()
         self.logger.info("初始化UI响应函数...")
         self.bind_signals()
-        self.scene_graph: SceneGraph = scene_graph
-        self.recognizer = Recognizer(self.scene_graph, parent_logger=self.logger)
         self.logger.info("初始化调度器...")
         self.scheduler = Scheduler(
             self.UI,
             self.config,
-            self.scene_graph,
-            self.recognizer,
+            scene_graph,
             self.task_common_control_ref_map,
             parent_logger=self.logger
         )
