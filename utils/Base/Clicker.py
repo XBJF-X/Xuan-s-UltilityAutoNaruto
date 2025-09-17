@@ -18,11 +18,6 @@ class Clicker:
         self.executor = ThreadPoolExecutor(max_workers=self.max_workers)
         self._thread = None  # 初始化时不启动线程，等待start()调用
 
-    def __del__(self):
-        """对象销毁时确保线程池关闭"""
-        self.stop()  # 先停止任务
-        self.executor.shutdown(wait=True)  # 关闭线程池
-
     def start(self):
         """Start the clicker (reinitialize executor if necessary)."""
         self.logger.debug("启动连点器")
@@ -57,7 +52,7 @@ class Clicker:
         """单次点击任务（执行前检查停止信号）"""
         if self._stop_event.is_set():
             return
-        self.logger.debug("点击坐标: ({}, {})".format(x, y))
+        # self.logger.debug("点击坐标: ({}, {})".format(x, y))
         self.operationer.device.click(x, y)
 
     def _click_loop(self):
