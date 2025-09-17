@@ -210,6 +210,7 @@ class TransitionManager:
         @self.register("决斗场-结算", "天之战场")
         @self.register("决斗场-结算", "地之战场")
         @self.register("决斗场-结算", "要塞内部")
+        @self.register("决斗场-结算", "火影格斗大赛-无差别")
         @self.register("决斗任务-追回", "忍术对战-决斗任务")
         @self.register("积分赛-选择对手", "积分赛")
         @self.register("更多玩法-任务", "更多玩法")
@@ -233,6 +234,7 @@ class TransitionManager:
         @self.register("地之战场", "天地战场-确认退出")
         @self.register("无差别-继续出战", "火影格斗大赛-无差别")
         @self.register("无差别-成就奖励", "火影格斗大赛-无差别")
+        @self.register("丰饶之间-暂停", "丰饶之间-内部")
         def _(operationer: Operationer, *args, **kwargs):
             """通用返回函数，点击[X]"""
             operationer.click_and_wait("X")
@@ -301,7 +303,7 @@ class TransitionManager:
                     (1345, 340),
                     (650, 340),
                     duration=0.7,
-                    wait_time=0
+                    wait_time=0.4
                 )
 
         @self.register("好友排名至X位", "主场景")
@@ -327,6 +329,10 @@ class TransitionManager:
         @self.register("你的对手离开了游戏", "要塞内部")
         @self.register("你的对手离开了游戏", "天之战场")
         @self.register("你的对手离开了游戏", "地之战场")
+        @self.register("你的对手离开了游戏", "火影格斗大赛-无差别")
+        @self.register("对手已经掉线了", "火影格斗大赛-无差别")
+        @self.register("天地战场-战场战斗已经结束", "天地战场")
+        @self.register("天地战场-战场战斗已经结束", "火影格斗大赛-无差别")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("确定")
 
@@ -383,6 +389,16 @@ class TransitionManager:
         @self.register("大蛇丸试炼-副本内", "更多玩法-结算")
         @self.register("更多玩法-匹配成功", "绝迹战场")
         @self.register("更多玩法-匹配成功", "大蛇丸试炼")
+        @self.register("无差别-禁用秘卷选择", "无差别-等待对方选择")
+        @self.register("无差别-禁用忍者选择", "无差别-等待对方选择")
+        @self.register("无差别-秘卷选择", "无差别-等待对方选择")
+        @self.register("无差别-忍者选择", "无差别-等待对方选择")
+        @self.register("无差别-等待对方选择", "无差别-禁用秘卷选择")
+        @self.register("无差别-等待对方选择", "无差别-禁用忍者选择")
+        @self.register("无差别-等待对方选择", "无差别-秘卷选择")
+        @self.register("无差别-等待对方选择", "无差别-忍者选择")
+        @self.register("无差别-等待对方选择", "火影格斗大赛-无差别")
+        @self.register("丰饶之间-内部", "副本结算-点击任意位置关闭界面")
         def _(operationer: Operationer, *args, **kwargs):
             QThread.msleep(1000)
 
@@ -526,6 +542,7 @@ class TransitionManager:
 
         @self.register("决斗场-匹配中", "忍术对战")
         @self.register("决斗场-匹配中", "要塞内部")
+        @self.register("决斗场-匹配中", "火影格斗大赛-无差别")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("取消匹配", auto_raise=False)
 
@@ -557,9 +574,11 @@ class TransitionManager:
             operationer.click_and_wait("继续")
 
         @self.register("副本内", "副本内-暂停")
+        @self.register("丰饶之间-内部", "丰饶之间-暂停")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("暂停")
 
         @self.register("副本内-暂停", "副本内-暂停-退出战斗确认")
+        @self.register("丰饶之间-暂停", "丰饶之间")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("退出战斗")

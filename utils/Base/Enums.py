@@ -1,6 +1,15 @@
 import enum
 
 
+class TaskCycleType(enum.IntEnum):
+    """任务周期类型枚举"""
+    DAILY = 0
+    WEEKLY = 1
+    MONTHLY = 2
+    PERIODIC = 3
+    AVTIVITY = 4
+
+
 class ScreenMode(enum.IntEnum):
     """截图模式枚举"""
     DroidCastRaw = 0

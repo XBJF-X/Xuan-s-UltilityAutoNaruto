@@ -27,6 +27,7 @@ from .ShangChengJiangLi import ShangChengJiangLi
 from .ShengCunTiaoZhan import ShengCunTiaoZhan
 from .TianDiZhanChang import TianDiZhanChang
 from .TuanBen import TuanBen
+from .WuChaBieYuXuanSai import WuChaBieYuXuanSai
 from .XiaoDuiTuXi import XiaoDuiTuXi
 from .XiuXingZhiLu import XiuXingZhiLu
 from .YiLeWaiMai import YiLeWaiMai
@@ -75,6 +76,8 @@ TASK_TYPE_MAP = {
 
     '装备合成': ZhuangBeiHeCheng,
     '高级忍者招募': GaoJiRenZheZhaoMu,
+
+    '无差别预选赛': WuChaBieYuXuanSai,
 }
 
 TASK_NAME_CN2EN_MAP = {
@@ -117,46 +120,4 @@ TASK_NAME_CN2EN_MAP = {
 
     '装备合成': "ZhuangBeiHeCheng",
     '高级忍者招募': "GaoJiRenZheZhaoMu",
-}
-TREE_INDEX_DIC = {
-    '登录奖励': 1,
-    "排行榜点赞": 2,
-    "每月签到": 3,
-    '购买体力': 4,
-    '金币招财': 5,
-    '小队突袭': 6,
-    '组织祈福': 7,
-    '好友体力': 8,
-    '普通忍者招募': 9,
-    '每日分享': 10,
-    '丰饶之间': 11,
-    '任务集会所': 12,
-    "一乐外卖": 13,
-    "每日胜场": 14,
-    '生存挑战': 15,
-    '秘境探险': 16,
-    '商城奖励': 17,
-    '情报站': 18,
-    '冒险副本': 19,
-    '活跃度奖励': 20,
-    '清空邮件': 21,
-
-    '修行之路': 22,
-    "每周胜场": 23,
-    "忍法帖点赞分享": 24,
-    '更多玩法': 25,
-    '团本': 26,
-    '本服要塞战': 27,
-    '叛忍来袭': 28,
-    '天地战场': 29,
-    '追击晓组织': 30,
-
-    '跨服要塞战': 31,
-    '巅峰对决': 32,
-    '组织争霸': 33,
-    "赛季胜场": 34,
-
-    '装备合成': 35,
-    '高级忍者招募': 36,
-    '助手设置': 37,
 }

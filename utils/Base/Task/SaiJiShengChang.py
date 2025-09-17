@@ -26,6 +26,7 @@ class SaiJiShengChang(MeiRiShengChang):
 
     @TransitionOn()
     def _(self):
+        self.operationer.clicker.stop()
         if not self.checked:
             while self.operationer.click_and_wait(
                     "领取",
@@ -56,6 +57,7 @@ class SaiJiShengChang(MeiRiShengChang):
 
     @TransitionOn("决斗场-首页")
     def _(self):
+        self.operationer.clicker.stop()
         if self.checked:
             self.operationer.click_and_wait("忍术对战")
         else:
@@ -64,14 +66,43 @@ class SaiJiShengChang(MeiRiShengChang):
 
     @TransitionOn("忍术对战")
     def _(self):
+        self.operationer.clicker.stop()
         if not self.finished:
             self.operationer.click_and_wait("开战")
             self.operationer.click_and_wait("开战")
-            self.operationer.clicker.start()
             return False
-        self.operationer.clicker.stop()
         self.update_next_execute_time()
         return True
+
+    @property
+    def next_execute_time(self):
+        china_tz = ZoneInfo("Asia/Shanghai")
+        current_time = datetime.now(china_tz)
+        next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
+
+        # 辅助函数：获取指定月份的最后一天
+        def get_last_day_of_month(dt: datetime) -> datetime:
+            # 如果是12月，下个月是1月，年份加1
+            if dt.month == 12:
+                next_month = 1
+                next_year = dt.year + 1
+            else:
+                next_month = dt.month + 1
+                next_year = dt.year
+            # 下个月第一天减去一天就是当月最后一天
+            first_day_of_next_month = datetime(next_year, next_month, 1, tzinfo=dt.tzinfo)
+            last_day_of_current_month = first_day_of_next_month - timedelta(days=1)
+            return last_day_of_current_month
+
+        if next_exec_ts == 0:
+            last_day = get_last_day_of_month(current_time)
+            return datetime(
+                last_day.year, last_day.month, last_day.day, 5, 0,
+                tzinfo=china_tz
+            )
+        else:
+            # 从时间戳转换为datetime对象
+            return datetime.fromtimestamp(next_exec_ts, tz=china_tz)
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         # 明确指定中国时区（带时区的当前时间）
@@ -93,19 +124,8 @@ class SaiJiShengChang(MeiRiShengChang):
             return last_day_of_current_month
 
         match flag:
-
             case 0:  # 创建任务时使用，需要读取config中的时间，按照空/已存在分别处理
-                next_exec_ts = self.data.get('下次执行时间')
-                if next_exec_ts == 0:
-                    # 若初始值为0，设置为当前月最后一天5点
-                    last_day = get_last_day_of_month(current_time)
-                    self.next_execute_time = datetime(
-                        last_day.year, last_day.month, last_day.day, 5, 0,
-                        tzinfo=china_tz
-                    )
-                else:
-                    # 从时间戳转换为datetime对象（指定UTC时区避免歧义）
-                    self.next_execute_time = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+                next_execute_time = self.next_execute_time
 
             case 1:  # 正常执行完毕，更新为下次执行的时间
                 # 计算当前时间的下个月
@@ -122,24 +142,20 @@ class SaiJiShengChang(MeiRiShengChang):
                 last_day_of_next_month = get_last_day_of_month(first_day_of_next_month)
 
                 # 设置为下个月最后一天的5点
-                self.next_execute_time = datetime(
+                next_execute_time = datetime(
                     last_day_of_next_month.year, last_day_of_next_month.month,
                     last_day_of_next_month.day, 5, 0, tzinfo=china_tz
                 )
 
             case 2:  # 立刻执行，通常把时间重置到能保证第二天之前即可，不同的任务分别处理
-                self.next_execute_time = datetime.now(china_tz)
+                next_execute_time = datetime.now(china_tz)
 
             case 3:  # 把执行时间推迟delta时间，要求 delta!=None
                 if delta is None:
                     self.logger.warning(f"update_next_execute_time传入的delta为空")
                     return False, None
-                self.next_execute_time = current_time + delta
+                next_execute_time = current_time + delta
 
-            case _:
-                self.logger.warning(f"请检查update_next_execute_time传入的参数：flag={flag},delta={delta}")
-                return False, None
-
-        self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
-        self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
-        return True, self.next_execute_time
+        self.logger.info(f"下次执行时间为：{next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
+        self.config.set_task_base_config(self.task_name, "下次执行时间", int(next_execute_time.timestamp()))
+        return True, next_execute_time

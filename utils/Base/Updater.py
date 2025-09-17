@@ -33,13 +33,17 @@ class Updater:
             if response.status_code == 200:
                 new_version = json.loads(response.content.decode("utf-8"))
                 new_commit = new_version["commit"]
-                self.logger.info(f"最新提交 SHA：{new_commit['sha']}")
-                self.logger.info(f"最新提交 Committer：{new_commit['commit']["committer"]["name"]}")
-                self.logger.info(f"最新提交 Date：{new_commit['commit']["committer"]["date"]}")
-                self.logger.info(f"最新提交 Message：{new_commit['commit']['message']}")
-                return current_version["commit"]["sha"] != new_version["commit"]["sha"], new_version
+                if current_version["commit"]["sha"] != new_version["commit"]["sha"]:
+                    self.logger.info("检测到新版本！")
+                    self.logger.info(f"最新提交 SHA：{new_commit['sha']}")
+                    self.logger.info(f"最新提交 Committer：{new_commit['commit']["committer"]["name"]}")
+                    self.logger.info(f"最新提交 Date：{new_commit['commit']["committer"]["date"]}")
+                    self.logger.info(f"最新提交 Message：{new_commit['commit']['message']}")
+                    return True, new_version
+                self.logger.info("当前已是最新版本")
             else:
-                return False, {}
+                self.logger.error(f"检查更新失败，HTTP状态码：{response.status_code}")
+            return False, {}
         except Exception as e:
             self.logger.error(f"检查更新出错：{e}")
             return False, {}

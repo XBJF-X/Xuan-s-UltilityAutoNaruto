@@ -309,8 +309,7 @@ class Scheduler(QObject):
         self.running = True
         self.device = Device(self.config, parent_logger=self.logger)
 
-        for task_info in self.config.tasks.values():
-            task_name = task_info.get('任务名称')
+        for task_name, task_info in self.config.tasks.items():
             self.logger.debug(f"[{task_name}]任务准备进入调度器")
             task_class = TASK_TYPE_MAP.get(task_name, None)
             if not task_class:
@@ -379,26 +378,10 @@ class Scheduler(QObject):
     def toggle_task_activation(self, state, task_name: str):
         """切换任务的启用/禁用状态"""
         checkbox_widget = self.task_common_control_ref_map[task_name]["CheckBox"]
-        self.config.set_task_config(task_name, "是否启用", checkbox_widget.isChecked())
-        if not self.running:
-            return
         checkbox_widget.setEnabled(False)
-        is_activated = checkbox_widget.isChecked()
-        self.logger.info(f"任务 {task_name} 切换为 {'已启用' if is_activated else '已禁用'}")
-
-        if not self.waiting_queue.update(task_name, is_activated=is_activated):
-            if not self.ready_queue.update(task_name, is_activated=is_activated):
-                if not self.running_queue.update(task_name, is_activated=is_activated):
-                    self.logger.error(f"切换 {task_name} 为 {checkbox_widget.isChecked()}失败")
-                    return
-                else:
-                    self.running_widget_list.update_task_widget(task_name, is_activated=is_activated)
-            else:
-                self.ready_widget_list.update_task_widget(task_name, is_activated=is_activated)
-        else:
-            self.waiting_widget_list.update_task_widget(task_name, is_activated=is_activated)
+        self.config.set_task_base_config(task_name, "是否启用", state)
         checkbox_widget.setEnabled(True)
-        self.logger.info(f"任务 {task_name} {'已启用' if is_activated else '已禁用'}")
+        self.logger.info(f"任务 {task_name} {'已启用' if state else '已禁用'}")
 
     def task_next_execute_time_editfinished(self, task_name):
         """如果清空则立即执行任务"""
@@ -419,12 +402,12 @@ class Scheduler(QObject):
                 if not flag:
                     self.logger.error(f"任务 {task_name} 放入等待队列等待立即执行失败")
                     return
-                else:
-                    self.running_widget_list.update_task_widget(task_name, next_execute_time=net)
-            else:
-                self.ready_widget_list.update_task_widget(task_name, next_execute_time=net)
-        else:
-            self.waiting_widget_list.update_task_widget(task_name, next_execute_time=net)
+        #         else:
+        #             self.running_widget_list.update_task_widget(task_name, next_execute_time=net)
+        #     else:
+        #         self.ready_widget_list.update_task_widget(task_name, next_execute_time=net)
+        # else:
+        #     self.waiting_widget_list.update_task_widget(task_name, next_execute_time=net)
         lineedit_widget.setText(net.strftime("%Y-%m-%d %H:%M:%S"))
         lineedit_widget.setEnabled(True)
 
@@ -444,12 +427,12 @@ class Scheduler(QObject):
                 if not flag:
                     self.logger.error(f"任务 {task_name} 放入等待队列等待立即执行失败")
                     return
-                else:
-                    self.running_widget_list.update_task_widget(task_name, next_execute_time=net)
-            else:
-                self.ready_widget_list.update_task_widget(task_name, next_execute_time=net)
-        else:
-            self.waiting_widget_list.update_task_widget(task_name, next_execute_time=net)
+        #         else:
+        #             self.running_widget_list.update_task_widget(task_name, next_execute_time=net)
+        #     else:
+        #         self.ready_widget_list.update_task_widget(task_name, next_execute_time=net)
+        # else:
+        #     self.waiting_widget_list.update_task_widget(task_name, next_execute_time=net)
         self.logger.info(f"任务 {task_name} 已放入等待队列等待立即执行")
 
     def clear_ui(self):
@@ -488,6 +471,7 @@ class Scheduler(QObject):
 
     def create_task_ui(self, task: BaseTask, status):
         """为任务创建UI元素并添加到对应队列区域"""
+        self.logger.debug("创建任务控件")
         # 创建任务控件
         widget, _, _ = create_task_widget(task)
         # 根据任务状态添加到对应列表
@@ -714,7 +698,7 @@ def create_task_widget(task: BaseTask) -> tuple[QWidget, QLabel, QLabel]:
     name_label.setStyleSheet("""
             border: none;
             background-color: transparent;
-            font-size: 14pt; 
+            font-size: 13pt; 
             color: black;
         """)
     item_layout.addWidget(name_label, alignment=Qt.AlignmentFlag.AlignLeft)

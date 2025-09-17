@@ -130,16 +130,12 @@ class BaseTask:
         # 1 - 就绪状态，等待执行
         # 2 - 等待状态，等待就绪
         self.config = config
-        self.data: Dict = config.tasks.get(task_name)
         self._execution_thread = None
-        self.task_name = self.data.get('任务名称')
+        self.task_name = task_name
         self.logger = parent_logger.getChild(self.task_name)
-        self.task_id = self.data.get('任务ID')
-        self.base_priority = self.data.get('基础优先级', 0)  # 静态默认优先级
+        self.task_id = config.get_task_base_config(self.task_name, "优先级")
+        self.base_priority = 0  # 静态默认优先级
         self.temp_priority = None  # 临时优先级（None表示未启用）
-
-        self.is_activated = self.data.get('是否启用')
-        self.next_execute_time = None
         self.update_next_execute_time(0)
         self.transition_func = {}
         for cls in reversed(self.__class__.mro()):
@@ -152,6 +148,21 @@ class BaseTask:
         self.operationer = operationer
         self.activate_another_task_signal = activate_another_task_signal
         self.callback = callback
+
+    @property
+    def next_execute_time(self):
+        china_tz = ZoneInfo("Asia/Shanghai")
+        next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
+        if next_exec_ts == 0:
+            # 若初始值为0，设置为当前UTC时间（或其他合理时间）
+            return datetime.now(china_tz)
+        else:
+            # 从时间戳转换为datetime对象
+            return datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+
+    @property
+    def is_activated(self):
+        return self.config.get_task_base_config(self.task_name, "是否启用")
 
     def __lt__(self, other):
         """
@@ -310,7 +321,7 @@ class BaseTask:
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         """
-        用于更新本任务的下次执行时间，默认需要派生类自己重载
+        用于更新本任务的下次执行时间，默认为更新到第二天五点（也就是火影服务器任务刷新的时间）
 
         Args:
             flag: 更新下次执行时间的模式
@@ -325,37 +336,30 @@ class BaseTask:
         # 明确指定中国时区（带时区的当前时间）
         china_tz = ZoneInfo("Asia/Shanghai")
         current_time = datetime.now(china_tz)
-
+        next_execute_time = current_time
         match flag:
-
             case 0:  # 创建任务时使用，需要读取config中的时间，按照空/已存在分别处理
-                next_exec_ts = self.data.get('下次执行时间')
-                if next_exec_ts == 0:
-                    # 若初始值为0，设置为当前UTC时间（或其他合理时间）
-                    self.next_execute_time = datetime.now(china_tz)
-                else:
-                    # 从时间戳转换为datetime对象（指定UTC时区避免歧义）
-                    self.next_execute_time = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+                next_execute_time = self.next_execute_time
 
             case 1:  # 正常执行完毕，更新为下次执行的时间
-                pass
+                next_day = current_time + timedelta(days=1)
+                next_execute_time = datetime(
+                    next_day.year, next_day.month, next_day.day, 5, 0,
+                    tzinfo=china_tz
+                )
 
             case 2:  # 立刻执行，通常把时间重置到能保证第二天之前即可，不同的任务分别处理
-                self.next_execute_time = datetime.now(china_tz)
+                next_execute_time = current_time
 
             case 3:  # 把执行时间推迟delta时间，要求 delta!=None
                 if delta is None:
                     self.logger.warning(f"update_next_execute_time传入的delta为空")
                     return False, None
-                self.next_execute_time = current_time + delta
+                next_execute_time = current_time + delta
 
-            case _:
-                self.logger.warning(f"请检查update_next_execute_time传入的参数：flag={flag},delta={delta}")
-                return False, None
-
-        self.logger.info(f"下次执行时间为：{self.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
-        self.config.set_task_config(self.task_name, "下次执行时间", int(self.next_execute_time.timestamp()))
-        return True, self.next_execute_time
+        self.logger.info(f"下次执行时间为：{next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
+        self.config.set_task_base_config(self.task_name, "下次执行时间", int(next_execute_time.timestamp()))
+        return True, next_execute_time
 
     @TransitionOn("二级密码")
     def _(self):
@@ -389,14 +393,14 @@ class BaseTask:
     @TransitionOn("未知含X场景")
     def _(self):
         if self.operationer.search_and_click(
-            [
-                self.operationer.get_element("X-普通", "主场景"),
-                self.operationer.get_element("X-广告-1", "主场景"),
-                self.operationer.get_element("X-广告-2", "主场景")
-            ],
-            [],
-            once_max_attempts=1,
-            max_attempts=1
+                [
+                    self.operationer.get_element("X-普通", "主场景"),
+                    self.operationer.get_element("X-广告-1", "主场景"),
+                    self.operationer.get_element("X-广告-2", "主场景")
+                ],
+                [],
+                once_max_attempts=1,
+                max_attempts=1
         ):
             self.logger.info("点击X关闭")
         return False

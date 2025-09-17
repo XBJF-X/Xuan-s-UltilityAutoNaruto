@@ -21,7 +21,7 @@ class U2:
         except Exception as e:
             self.logger.error(e)
 
-    def click(self, x, y, duration=100):
+    def click(self, x, y, duration=130):
         self.u2_device.touch.down(x, y)
         # self.logger.debug(f"[PressDown] ({x},{y})")
         QThread.msleep(duration)

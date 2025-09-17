@@ -269,8 +269,8 @@ class Xuan(QMainWindow):
                     new_config_name = f"Config_{x}.json"  # 生成文件名
                     new_config_path = config_dir / new_config_name
 
-                    # 准备配置数据（可根据需要从默认配置复制或新建）
-                    config_data = {"用户名": username}
+                    config_data = json.load(open(get_real_path("src/DefaultConfig.json"), encoding="utf-8"))
+                    config_data["用户名"] = username
 
                     # 写入配置文件
                     with open(new_config_path, "w", encoding="utf-8") as f:
