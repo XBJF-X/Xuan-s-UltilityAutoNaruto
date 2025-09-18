@@ -45,7 +45,7 @@ class HuoYueDuJiangLi(BaseTask):
     @TransitionOn("周活跃大礼")
     def _(self):
         if self.operationer.click_and_wait(
-                "周活跃大礼-领取",
+                "领取",
                 auto_raise=False
         ):
             self.logger.info("周活跃奖励领取成功")
