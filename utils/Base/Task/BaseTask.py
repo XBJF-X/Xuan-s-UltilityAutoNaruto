@@ -203,13 +203,13 @@ class BaseTask:
         """
         self.logger.info(f"正在停止任务: {self.task_name}")
         # 设置停止标志
-        self.operationer.clicker.stop()
         self.operationer.stop_event.set()
         # 如果任务线程正在运行，等待其结束
         if hasattr(self, '_execution_thread') and self._execution_thread.is_alive():
             self._execution_thread.join(timeout=5.0)
             if self._execution_thread.is_alive():
                 self.logger.warning(f"任务 {self.task_name} 线程未能在5秒内停止")
+        self.operationer.clicker.stop()
 
     def _should_stop(self):
         """检查是否收到停止请求"""

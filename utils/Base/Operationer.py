@@ -74,7 +74,7 @@ class Operationer:
         if isinstance(element, str):
             element = self.get_element(element)
         interval: int = kwargs.get("interval", 80)
-        auto_raise: bool = kwargs.get("auto_raise", True)
+        auto_raise: bool = kwargs.get("auto_raise", False)
         wait_time: float = kwargs.get("wait_time", 1.0)
         max_time: float = kwargs.get("max_time", 1.0)
         max_attempts: int | None = kwargs.get("max_attempts")
@@ -111,7 +111,7 @@ class Operationer:
                 QThread.msleep(sleep_time)
         # 根据auto_raise参数决定是抛出异常还是返回结果
         if not success and auto_raise:
-            raise StepFailedError(f"元素 [{element.name}] 未出现")
+            self.logger.warning(f"元素 [{element.name}] 未出现")
 
         return success
 
@@ -132,7 +132,7 @@ class Operationer:
         if isinstance(scene, str):
             scene = self.scene_graph.get_scene(scene)
         interval: int = kwargs.get("interval", 80)
-        auto_raise: bool = kwargs.get("auto_raise", True)
+        auto_raise: bool = kwargs.get("auto_raise", False)
         wait_time: float = kwargs.get("wait_time", 1.0)
         max_time: float = kwargs.get("max_time", 1.0)
         max_attempts: int | None = kwargs.get("max_attempts")
@@ -196,7 +196,7 @@ class Operationer:
             if element is None:
                 raise StepFailedError(f"元素 [{element}] 未定义")
         interval: int = kwargs.get("interval", 80)
-        auto_raise: bool = kwargs.get("auto_raise", True)
+        auto_raise: bool = kwargs.get("auto_raise", False)
         wait_time: float | None = kwargs.get("wait_time", None)
         max_time: float = kwargs.get("max_time", 0.7)
         max_attempts: int | None = kwargs.get("max_attempts")
@@ -306,8 +306,10 @@ class Operationer:
         # 根据auto_raise参数决定是抛出异常还是返回结果
         if not success and auto_raise:
             if element.type == ElementType.IMG:
+                self.logger.warning(f"点击元素 [{element.name}] 失败")
                 raise StepFailedError(f"点击元素 [{element.name}] 失败")
             elif element.type == ElementType.COORDINATE:
+                self.logger.warning(f"点击元素 [{element.name}] 失败")
                 raise StepFailedError(f"点击坐标 ({element.coordinate_x},{element.coordinate_y}) 失败")
 
         return success

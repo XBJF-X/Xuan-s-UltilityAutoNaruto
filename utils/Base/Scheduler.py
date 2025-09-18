@@ -380,6 +380,19 @@ class Scheduler(QObject):
         checkbox_widget = self.task_common_control_ref_map[task_name]["CheckBox"]
         checkbox_widget.setEnabled(False)
         self.config.set_task_base_config(task_name, "是否启用", state)
+        if not state:
+            # 禁用任务
+            # 从所有队列中移除任务
+            flag = self.running_queue.remove(task_name)
+            if flag:
+                self.remove_task_ui_signal.emit(self.running_queue.task_dic.get(task_name), 0)
+            flag = self.ready_queue.remove(task_name)
+            if flag:
+                self.remove_task_ui_signal.emit(self.ready_queue.task_dic.get(task_name), 1)
+            flag = self.waiting_queue.remove(task_name)
+            if flag:
+                self.remove_task_ui_signal.emit(self.waiting_queue.task_dic.get(task_name), 2)
+
         checkbox_widget.setEnabled(True)
         self.logger.info(f"任务 {task_name} {'已启用' if state else '已禁用'}")
 
@@ -471,7 +484,6 @@ class Scheduler(QObject):
 
     def create_task_ui(self, task: BaseTask, status):
         """为任务创建UI元素并添加到对应队列区域"""
-        self.logger.debug("创建任务控件")
         # 创建任务控件
         widget, _, _ = create_task_widget(task)
         # 根据任务状态添加到对应列表
