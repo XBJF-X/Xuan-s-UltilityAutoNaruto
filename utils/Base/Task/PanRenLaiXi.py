@@ -1,12 +1,8 @@
+from datetime import timedelta
+
 from utils.Base.Task.BaseTask import BaseTask
 
 
 class PanRenLaiXi(BaseTask):
-    def _execute(self):
-        # 确定在主场景
-        if not self.home():
-            raise self.StepFailedError("无法回到[主场景]")
-
-        # 执行逻辑部分
-
-        self.update_next_execute_time()
+    source_scene = "叛忍来袭"
+    task_max_duration = timedelta(minutes=30)

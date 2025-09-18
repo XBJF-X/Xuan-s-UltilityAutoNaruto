@@ -196,7 +196,7 @@ class TaskConfigWidget(QWidget):
         self.scroll_content = QScrollAreaWidgetContents()
         self.scroll_layout = QVBoxLayout(self.scroll_content)
         self.scroll_layout.setSpacing(20)
-        self.scroll_layout.setContentsMargins(0, 10, 0, 0)
+        self.scroll_layout.setContentsMargins(0, 0, 0, 0)
         self.scroll_layout.setAlignment(Qt.AlignmentFlag.AlignTop)  # 设置顶部对齐
         # 组装滚动区域
         self.scroll_area.setWidget(self.scroll_content)

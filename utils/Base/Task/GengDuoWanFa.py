@@ -9,7 +9,7 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 class GengDuoWanFa(BaseTask):
     source_scene = "更多玩法"
-    task_max_duration = timedelta(hours=3)
+    task_max_duration = timedelta(hours=2)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -10,7 +10,7 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 class MeiRiShengChang(BaseTask):
     source_scene = "忍术对战"
-    task_max_duration = timedelta(hours=1)
+    task_max_duration = timedelta(hours=2)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

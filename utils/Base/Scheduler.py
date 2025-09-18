@@ -8,7 +8,7 @@ from zoneinfo import ZoneInfo
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import QThread, Signal, QMutex, QWaitCondition, Qt, QObject, Slot
-from PySide6.QtWidgets import QWidget, QLabel, QBoxLayout, QVBoxLayout
+from PySide6.QtWidgets import QWidget, QLabel, QBoxLayout, QVBoxLayout, QFrame
 
 from StaticFunctions import get_real_path, cv_save
 from utils.Base.Config import Config
@@ -20,16 +20,94 @@ from utils.Base.Task import TASK_TYPE_MAP
 from utils.Base.Task.BaseTask import BaseTask
 from utils.ui.Service_ui import Ui_Service
 
-T = TypeVar('T', bound=BaseTask)
-W = TypeVar('W', bound=QWidget)
+
+class TaskWidget(QFrame):
+    def __init__(self, task: BaseTask, parent=None):
+        super().__init__(parent)
+        self.setFrameStyle(QFrame.Shape.Box)  # 明确设置边框样式
+        self.setFixedHeight(50)
+        self.setContentsMargins(0, 5, 0, 5)
+        self.setStyleSheet(
+            """
+                QWidget {
+                    border: 2px solid #888;
+                    border-radius: 5px;
+                    background-color: #f0f0f0;
+                }
+            """)
+
+        # 创建水平布局并设置为居中对齐
+        self.item_layout = QVBoxLayout(self)
+        self.item_layout.setContentsMargins(5, 0, 5, 0)
+        self.item_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
+        # 任务名称标签（第一个标签）
+        self.name_label = QLabel(task.task_name)
+        self.name_label.setStyleSheet(
+            """
+                border: none;
+                background-color: transparent;
+                font-size: 13pt; 
+                color: black;
+            """)
+        self.item_layout.addWidget(self.name_label, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        # 执行时间标签（第二个标签，灰色小字体）
+        current_date = datetime.now(ZoneInfo("Asia/Shanghai")).date()
+        task_date = task.next_execute_time.date()
+        delta = (task_date - current_date).days
+
+        if delta == 0:
+            date_str = "今天"
+        elif delta == 1:
+            date_str = "明天"
+        else:
+            date_str = task.next_execute_time.strftime("%Y-%m-%d")
+
+        time_str = task.next_execute_time.strftime("%H:%M:%S")
+        self.time_label = QLabel(f"下次执行 ：{date_str} {time_str}")
+        self.time_label.setStyleSheet(
+            """
+                border: none;
+                background-color: transparent;
+                font-family: 'Microsoft YaHei'; 
+                font-size: 10pt;  /* 小字体 */
+                font-weight: bold; 
+                color: #666666;   /* 灰色 */
+            """)
+        self.item_layout.addWidget(self.time_label, alignment=Qt.AlignmentFlag.AlignLeft)
+        self.setVisible(task.is_activated)
+
+    def update_display(self, task: BaseTask):
+        """更新显示内容"""
+        self.name_label.setText(task.task_name)
+
+        current_date = datetime.now(ZoneInfo("Asia/Shanghai")).date()
+        task_date = task.next_execute_time.date()
+        delta = (task_date - current_date).days
+
+        if delta == 0:
+            date_str = "今天"
+        elif delta == 1:
+            date_str = "明天"
+        else:
+            date_str = task.next_execute_time.strftime("%Y-%m-%d")
+
+        time_str = task.next_execute_time.strftime("%H:%M:%S")
+        self.time_label.setText(f"下次执行 ：{date_str} {time_str}")
+        self.setVisible(task.is_activated)
 
 
-class PriorityQueue(Generic[T]):
+B = TypeVar('B', bound=BaseTask)
+T = TypeVar('T', bound=TaskWidget)
+
+
+class PriorityQueue(Generic[B]):
     def __init__(self):
-        self.heap: List[T] = []  # 存储 Task 的列表
-        self.task_dic: Dict[str:T] = {}
+        self.heap: List[B] = []  # 存储 Task 的列表
+        self.task_dic: Dict[str:B] = {}
 
-    def enqueue(self, item: T):
+    def enqueue(self, item: B):
         heapq.heappush(self.heap, item)  # 插入元素，自动维护堆序
         self.task_dic[item.task_name] = item
 
@@ -38,6 +116,7 @@ class PriorityQueue(Generic[T]):
             item = heapq.heappop(self.heap)
             del self.task_dic[item.task_name]
             return item  # 返回优先级最小的元素
+        return None
 
     def is_empty(self):
         return len(self.heap) == 0
@@ -45,43 +124,19 @@ class PriorityQueue(Generic[T]):
     def peek(self):
         return self.heap.copy()
 
-    def remove(self, task_name: str):
-        """从队列中移除指定任务"""
-        try:
-            self.heap.remove(self.task_dic[task_name])
-            heapq.heapify(self.heap)  # 重新堆化
-            return True
-        except ValueError:
-            return False
-
-    def update(self, task_name: str, **kwargs) -> bool:
-        """在队列中更新某个任务的状态"""
-        if task_name not in self.task_dic:
-            return False
-        task = self.task_dic[task_name]
-        # 更新任务属性
-        for key, value in kwargs.items():
-            if hasattr(task, key):
-                setattr(task, key, value)
-            else:
-                # 可以记录警告或忽略
-                pass
-        # 从堆中移除并重新插入
-        try:
-            self.heap.remove(task)
-            heapq.heapify(self.heap)  # 重新堆化
-            heapq.heappush(self.heap, task)  # 重新插入
-            return True
-        except ValueError:
-            return False
+    def get_task(self, task_name: str) -> Optional[B]:
+        """获取任务而不删除它"""
+        return self.task_dic.get(task_name)
 
     def execute_at_once(self, task_name: str):
-        """在队列中更新某个任务的状态"""
+        """立刻运行任务"""
         if task_name not in self.task_dic:
             return False, None
         task = self.task_dic[task_name]
         # 更新任务属性
         flag, net = task.update_next_execute_time(2)
+        if not flag:  # 新增：更新失败直接返回
+            return False, net
         # 从堆中移除并重新插入
         try:
             self.heap.remove(task)
@@ -91,98 +146,261 @@ class PriorityQueue(Generic[T]):
         except ValueError:
             return False, None
 
+    def get_tasks_by_status(self, status: int) -> List[B]:
+        """获取指定状态的所有任务"""
+        return [task for task in self.heap if task.current_status == status]
 
-class TaskWidgetList(Generic[W]):
-    def __init__(self, layout: QBoxLayout):
-        self.widgets: List[W] = []  # 存储QWidget的列表
-        self.tasks: Dict[str, T] = {}  # 任务名到任务对象的映射
-        self.layout = layout  # 关联的布局
+    def update_task_status(self, task_name: str, new_status: int) -> bool:
+        """更新任务状态"""
+        if task_name not in self.task_dic:
+            return False
+        task = self.task_dic[task_name]
+        task.current_status = new_status
+        # 更新堆结构
+        self.heap.remove(task)
+        heapq.heapify(self.heap)
+        heapq.heappush(self.heap, task)
+        return True
 
-    def add_widget(self, widget: W, task: T):
+
+class TaskWidgetList(Generic[B, T]):
+    def __init__(
+        self,
+        task_queue: PriorityQueue[B],
+        running_layout: QBoxLayout,
+        ready_layout: QBoxLayout,
+        waiting_layout: QBoxLayout
+    ):
+        self.task_queue = task_queue
+
+        # 初始化数据结构
+        self.widgets: Dict[str, T] = {}  # 用字典存储控件，提高查找效率
+
+        # 状态到布局的映射
+        self.status_to_layout = {
+            0: running_layout,
+            1: ready_layout,
+            2: waiting_layout
+        }
+
+    def add_widget(self, task: B) -> T:
         """添加控件并保持有序"""
-
-        # 存储任务引用
-        self.tasks[task.task_name] = task
-        # 计算插入位置
-        insert_index = self._find_insert_index(task)
-
-        # 插入到列表
-        self.widgets.insert(insert_index, widget)
-
-        # 插入到布局
-        self.layout.insertWidget(insert_index, widget)
-
+        # 如果控件已存在则先移除
+        if task.task_name in self.widgets:
+            self.remove_widget(task.task_name)
+        layout = self._get_layout_for_task(task)
+        if not layout:
+            raise ValueError(f"No layout found for task status: {task.current_status}")
+        # 创建新控件
+        widget = TaskWidget(task, parent=layout.parentWidget())
         # 设置控件属性以便后续查找
         widget.setProperty("task_name", task.task_name)
+        # 计算插入位置
+        insert_index = self._find_insert_index(layout, task)
+        # 插入到布局
+        layout.insertWidget(insert_index, widget)
+        # 存储控件引用
+        self.widgets[task.task_name] = widget
 
-        # 根据任务状态设置初始可见性
-        widget.setVisible(task.is_activated)
+        return widget
 
-    def remove_widget(self, task_name: str):
+    def remove_widget(self, task_name: str) -> bool:
         """移除指定任务的控件"""
-
-        # 从任务映射中移除
-        if task_name in self.tasks:
-            del self.tasks[task_name]
-
-        # 从控件列表中移除
-        for i, widget in enumerate(self.widgets):
-            widget_task_name = widget.property("task_name")
-            if widget_task_name == task_name:
-                # 从列表中移除
-                self.widgets.pop(i)
-
-                # 从布局中移除
-                self.layout.takeAt(i)
-                widget.deleteLater()
-                return True
-        return False
-
-    def find_widget(self, task_name: str) -> Optional[W]:
-        """查找指定任务的控件"""
-        for widget in self.widgets:
-            if widget.property("task_name") == task_name:
-                return widget
-        return None
-
-    def update_task_widget(self, task_name: str, **kwargs) -> bool:
-        """更新任务控件的显示信息（如下次次执行时间）"""
-        if task_name not in self.tasks:
+        if task_name not in self.widgets:
             return False
-        task = self.tasks[task_name]
+
+        # 获取控件和对应的布局
+        widget = self.widgets[task_name]
+        task = self.task_queue.get_task(task_name)
+
+        # 从布局中移除
+        if task:
+            layout = self._get_layout_for_task(task)
+            if layout:
+                index = self._find_widget_index(layout, widget)
+                if index != -1:
+                    layout.takeAt(index)
+
+        # 清理
+        widget.deleteLater()
+        del self.widgets[task_name]
+        return True
+
+    def find_widget(self, task_name: str) -> Optional[T]:
+        """查找指定任务的控件"""
+        return self.widgets.get(task_name)
+
+    def refresh_task_widget(self, task_name: str) -> bool:
+        """刷新指定任务的UI显示（仅移动布局/更新显示，不删除控件）"""
+        task = self.task_queue.get_task(task_name)
+        if not task:
+            return False  # 任务不存在，无需刷新
+
         widget = self.find_widget(task_name)
         if not widget:
-            return False
-        # 更新属性
-        for key, value in kwargs.items():
-            if hasattr(task, key):
-                setattr(task, key, value)
-        widget, _, _ = create_task_widget(task)
+            # 若控件不存在，可选择创建（也可返回False，根据业务决定）
+            widget = self.add_widget(task)  # 复用add_widget的创建逻辑，避免重复代码
+            if not widget:
+                return False
 
-        # 重新排序控件（因为执行时间变更可能影响优先级）
-        if task in self.tasks.values():
-            # 先移除再重新添加以触发排序
-            self.remove_widget(task.task_name)
-            self.add_widget(widget, task)
+        # 1. 统一更新显示（含可见性：update_display已绑定task.is_activated）
+        widget.update_display(task)
 
-    def _find_insert_index(self, task: T) -> int:
+        # 2. 状态变化时移动控件到正确布局（不删除，仅调整布局归属）
+        target_layout = self._get_layout_for_task(task)  # 任务应在的目标布局
+        current_layout = self._get_widget_layout(widget)  # 控件当前所在布局
+
+        if target_layout != current_layout:
+            # 从原布局移除（takeAt仅移除布局项，不删除控件实例）
+            if current_layout:
+                idx = self._find_widget_index(current_layout, widget)
+                if idx != -1:
+                    current_layout.takeAt(idx)  # 仅移除布局关联，控件实例保留
+
+            # 插入目标布局的正确排序位置
+            insert_idx = self._find_insert_index(target_layout, task)
+            target_layout.insertWidget(insert_idx, widget)
+
+        return True
+
+    def refresh_all_task_widgets(self) -> None:
+        """刷新所有任务UI（复用控件+仅调整布局+统一可见性，不主动删除控件）"""
+        # 1. 先按任务状态分组（从优先级队列获取最新任务列表）
+        tasks_by_status = {}
+        for task in self.task_queue.heap:
+            status = task.current_status
+            if status not in tasks_by_status:
+                tasks_by_status[status] = []
+            tasks_by_status[status].append(task)
+
+        # 2. 记录所有"仍在队列中的任务名"（用于后续清理无效控件）
+        valid_task_names = set(task.task_name for task in self.task_queue.heap)
+
+        # 3. 逐个处理每个布局（仅移动/更新控件，不删除）
+        for status, target_layout in self.status_to_layout.items():
+            # 3.1 取出当前布局的所有控件（暂存，后续按排序重新插入）
+            current_widgets_in_layout = []
+            while target_layout.count() > 0:
+                item = target_layout.takeAt(0)  # 移除布局项，保留控件实例
+                if item.widget():
+                    current_widgets_in_layout.append(item.widget())
+
+            # 3.2 获取当前状态下的所有任务（已按优先级排序）
+            tasks_in_status = tasks_by_status.get(status, [])
+            # 确保任务排序规则不变（与原逻辑一致）
+            tasks_in_status.sort(key=lambda x: (x.next_execute_time, x.task_id, x.create_time))
+
+            # 3.3 按排序后的任务，重新组织布局控件（复用现有控件）
+            for task in tasks_in_status:
+                task_name = task.task_name
+                widget = self.find_widget(task_name)  # 从全局控件字典找已有控件
+
+                if widget:
+                    # 情况1：控件已存在——更新显示+加入目标布局
+                    widget.update_display(task)
+                    # 从"当前布局暂存列表"中移除（避免后续被误处理）
+                    if widget in current_widgets_in_layout:
+                        current_widgets_in_layout.remove(widget)
+                else:
+                    # 情况2：控件不存在——创建新控件（仅在首次出现时创建）
+                    widget = TaskWidget(task)
+                    widget.setProperty("task_name", task_name)
+                    self.widgets[task_name] = widget  # 加入全局控件字典管理
+
+                # 插入目标布局的正确位置（维持排序）
+                insert_idx = self._find_insert_index(target_layout, task)
+                target_layout.insertWidget(insert_idx, widget)
+
+            # 3.4 处理当前布局中"不属于该状态"的控件（移到正确布局，不删除）
+            for orphan_widget in current_widgets_in_layout:
+                orphan_task_name = orphan_widget.property("task_name")
+                if not orphan_task_name:
+                    continue
+                # 找到控件对应的任务，移动到正确布局
+                orphan_task = self.task_queue.get_task(str(orphan_task_name))
+                if orphan_task:
+                    # 递归调用单任务刷新，自动处理布局移动
+                    self.refresh_task_widget(str(orphan_task_name))
+
+        # 4. 最后清理"任务已从队列移除，但控件仍存在"的无效控件（避免内存泄漏）
+        # （这一步不是"主动删除有效控件"，而是清理无效控件，可选保留但建议加）
+        invalid_widget_names = []
+        for task_name, widget in self.widgets.items():
+            if task_name not in valid_task_names:
+                invalid_widget_names.append(task_name)
+        for task_name in invalid_widget_names:
+            widget = self.widgets.pop(task_name)
+            # 从所有布局中移除（防止残留）
+            for layout in self.status_to_layout.values():
+                idx = self._find_widget_index(layout, widget)
+                if idx != -1:
+                    layout.takeAt(idx)
+            widget.deleteLater()  # 仅清理无效控件
+
+    def clear_all_widgets(self):
+        """清除所有布局中的控件"""
+        # 清除所有布局中的控件
+        for layout in self.status_to_layout.values():
+            while layout.count() > 0:
+                item = layout.takeAt(0)
+                if item.widget():
+                    item.widget().deleteLater()
+
+        # 清空控件字典
+        for widget in self.widgets.values():
+            widget.deleteLater()
+        self.widgets.clear()
+
+    def _find_insert_index(self, layout: QBoxLayout, task: B) -> int:
         """使用二分查找确定插入位置"""
-        lo, hi = 0, len(self.widgets)
+        # 从布局中获取所有任务并提取排序键
+        tasks = []
+        for i in range(layout.count()):
+            item = layout.itemAt(i)
+            if item.widget():
+                task_name = item.widget().property("task_name")
+                if task_name:
+                    t = self.task_queue.get_task(str(task_name))
+                    if t:
+                        tasks.append(t)
+
+        # 二分查找
+        lo, hi = 0, len(tasks)
         while lo < hi:
             mid = (lo + hi) // 2
-            mid_widget = self.widgets[mid]
-            mid_task_name = mid_widget.property("task_name")
-            mid_task = self.tasks[mid_task_name]
+            mid_task = tasks[mid]
 
-            # 直接比较任务对象
+            # 比较任务
             if self._compare_tasks(task, mid_task) < 0:
                 hi = mid
             else:
                 lo = mid + 1
         return lo
 
+    def _get_layout_for_task(self, task: B) -> Optional[QBoxLayout]:
+        """获取任务状态对应的布局"""
+        return self.status_to_layout.get(task.current_status)
+
+    def _get_widget_layout(self, widget: T) -> Optional[QBoxLayout]:
+        """获取控件当前所在的布局"""
+        for layout in self.status_to_layout.values():
+            for i in range(layout.count()):
+                item = layout.itemAt(i)
+                if item.widget() == widget:
+                    return layout
+        return None
+
     @staticmethod
-    def _compare_tasks(task1: T, task2: T) -> int:
+    def _find_widget_index(layout: QBoxLayout, widget: T) -> int:
+        """查找控件在布局中的索引"""
+        for i in range(layout.count()):
+            item = layout.itemAt(i)
+            if item.widget() == widget:
+                return i
+        return -1
+
+    @staticmethod
+    def _compare_tasks(task1: B, task2: B) -> int:
         """比较两个任务的优先级"""
 
         # 比较执行时间
@@ -256,8 +474,6 @@ class TimerThread(QThread):
 
 
 class Scheduler(QObject):
-    add_task_ui_signal = Signal(BaseTask, int)
-    remove_task_ui_signal = Signal(BaseTask, int)
     activate_another_task_signal = Signal(str)
     screen_save_signal = Signal(str)
 
@@ -276,19 +492,16 @@ class Scheduler(QObject):
         self.task_common_control_ref_map = ref_map
         self.scene_graph = scene_graph
         self.transition_manager = TransitionManager(self.config, self.logger)
-        self.running_queue = PriorityQueue[BaseTask]()  # 执行队列
-        self.ready_queue = PriorityQueue[BaseTask]()  # 就绪队列
-        self.waiting_queue = PriorityQueue[BaseTask]()  # 等待队列
 
         # 初始化UI相关属性
         self.init_scroll_area_layouts()  # 初始化滚动区域布局
-        self.running_widget_list = TaskWidgetList(self.running_layout)  # 执行队列
-        self.ready_widget_list = TaskWidgetList(self.ready_layout)  # 就绪队列
-        self.waiting_widget_list = TaskWidgetList(self.waiting_layout)  # 等待队列
-
-        # 连接信号到槽
-        self.add_task_ui_signal.connect(self.create_task_ui)
-        self.remove_task_ui_signal.connect(self.remove_task_ui)
+        self.task_queue = PriorityQueue[BaseTask]()
+        self.task_widget_list = TaskWidgetList[BaseTask, TaskWidget](
+            self.task_queue,
+            self.running_layout,
+            self.ready_layout,
+            self.waiting_layout
+        )
         self.activate_another_task_signal.connect(self.activate_another_task_implement)
         self.screen_save_signal.connect(self._handle_screen_save)
 
@@ -298,9 +511,6 @@ class Scheduler(QObject):
         self.timer_thread.timeout.connect(self.scan)
         # 启动调度器开始扫描
         self.timer_thread.start()  # 启动线程，线程会进入等待状态
-
-        # tracemalloc.start()
-        # self.snapshot1 = tracemalloc.take_snapshot()
         self.logger.info("初始化完成...")
 
     def start(self):
@@ -332,35 +542,27 @@ class Scheduler(QObject):
                 self._execute_done_callback,
                 parent_logger=self.logger
             )
-            self.waiting_queue.enqueue(task_instance)
-            self.create_task_ui(task_instance, 2)
-        # for task in self.waiting_queue.peek()[:]:
-        #     self.logger.debug(task)
+            self.task_queue.enqueue(task_instance)
+            self.task_widget_list.add_widget(task_instance)
         self.timer_thread.trigger(self.config.get_config("扫描间隔"), 1000)
         self.UI.start_schedule_button.setEnabled(True)
         self.UI.start_schedule_button.setText("暂停")
         self.logger.info("调度器已完成启动")
 
     def stop(self):
-        """
-            停止调度器及其所有任务
-        """
+        """停止调度器及其所有任务"""
         self.logger.info("正在停止调度器...")
         self.UI.start_schedule_button.setEnabled(False)
         self.running = False
 
         # 停止所有正在运行的任务
-        running_tasks = self.running_queue.peek()[:]  # 复制当前运行队列
-        for task in running_tasks:
+        for task in self.task_queue.get_tasks_by_status(0):
             task.stop()
 
         # 清空所有队列
-        self.running_queue = PriorityQueue[BaseTask]()
-        self.ready_queue = PriorityQueue[BaseTask]()
-        self.waiting_queue = PriorityQueue[BaseTask]()
-
-        # 清空UI显示
-        self.clear_ui()
+        self.task_queue = PriorityQueue[BaseTask]()
+        # 清除所有任务控件
+        self.task_widget_list.clear_all_widgets()
         if self.device:
             # 释放设备资源
             if self.device.controller:
@@ -380,21 +582,13 @@ class Scheduler(QObject):
         checkbox_widget = self.task_common_control_ref_map[task_name]["CheckBox"]
         checkbox_widget.setEnabled(False)
         self.config.set_task_base_config(task_name, "是否启用", state)
-        if not state:
-            # 禁用任务
-            # 从所有队列中移除任务
-            flag = self.running_queue.remove(task_name)
-            if flag:
-                self.remove_task_ui_signal.emit(self.running_queue.task_dic.get(task_name), 0)
-            flag = self.ready_queue.remove(task_name)
-            if flag:
-                self.remove_task_ui_signal.emit(self.ready_queue.task_dic.get(task_name), 1)
-            flag = self.waiting_queue.remove(task_name)
-            if flag:
-                self.remove_task_ui_signal.emit(self.waiting_queue.task_dic.get(task_name), 2)
-
+        temp_task = self.task_queue.get_task(task_name)
+        if temp_task:
+            if not state:
+                temp_task.stop()
+            self.task_widget_list.refresh_task_widget(task_name)
+            self.logger.info(f"任务 {task_name} {'已启用' if state else '已禁用'}")
         checkbox_widget.setEnabled(True)
-        self.logger.info(f"任务 {task_name} {'已启用' if state else '已禁用'}")
 
     def task_next_execute_time_editfinished(self, task_name):
         """如果清空则立即执行任务"""
@@ -404,66 +598,27 @@ class Scheduler(QObject):
 
         if not self.running:
             return
-
         lineedit_widget.setEnabled(False)
-
-        flag, net = self.waiting_queue.execute_at_once(task_name)
-        if not flag:
-            flag, net = self.ready_queue.execute_at_once(task_name)
-            if not flag:
-                flag, net = self.running_queue.execute_at_once(task_name)
-                if not flag:
-                    self.logger.error(f"任务 {task_name} 放入等待队列等待立即执行失败")
-                    return
-        #         else:
-        #             self.running_widget_list.update_task_widget(task_name, next_execute_time=net)
-        #     else:
-        #         self.ready_widget_list.update_task_widget(task_name, next_execute_time=net)
-        # else:
-        #     self.waiting_widget_list.update_task_widget(task_name, next_execute_time=net)
+        flag, net = self.task_queue.execute_at_once(task_name)
+        self.task_widget_list.refresh_task_widget(task_name)
         lineedit_widget.setText(net.strftime("%Y-%m-%d %H:%M:%S"))
         lineedit_widget.setEnabled(True)
-
+        if not flag:
+            self.logger.error(f"任务 {task_name} 放入等待队列等待立即执行失败")
+            return
         self.logger.info(f"任务 {task_name} 已放入等待队列等待立即执行")
 
     def activate_another_task_implement(self, task_name):
         """任务调用其他任务立刻执行"""
-
         if not self.running:
             return
 
-        flag, net = self.waiting_queue.execute_at_once(task_name)
+        flag, net = self.task_queue.execute_at_once(task_name)
+        self.task_widget_list.refresh_task_widget(task_name)
         if not flag:
-            flag, net = self.ready_queue.execute_at_once(task_name)
-            if not flag:
-                flag, net = self.running_queue.execute_at_once(task_name)
-                if not flag:
-                    self.logger.error(f"任务 {task_name} 放入等待队列等待立即执行失败")
-                    return
-        #         else:
-        #             self.running_widget_list.update_task_widget(task_name, next_execute_time=net)
-        #     else:
-        #         self.ready_widget_list.update_task_widget(task_name, next_execute_time=net)
-        # else:
-        #     self.waiting_widget_list.update_task_widget(task_name, next_execute_time=net)
+            self.logger.error(f"任务 {task_name} 放入等待队列等待立即执行失败")
+            return
         self.logger.info(f"任务 {task_name} 已放入等待队列等待立即执行")
-
-    def clear_ui(self):
-        """清空所有UI队列显示"""
-        # 清空运行队列UI
-        for widget in self.running_widget_list.widgets[:]:
-            task_name = widget.property("task_name")
-            self.running_widget_list.remove_widget(task_name)
-
-        # 清空就绪队列UI
-        for widget in self.ready_widget_list.widgets[:]:
-            task_name = widget.property("task_name")
-            self.ready_widget_list.remove_widget(task_name)
-
-        # 清空等待队列UI
-        for widget in self.waiting_widget_list.widgets[:]:
-            task_name = widget.property("task_name")
-            self.waiting_widget_list.remove_widget(task_name)
 
     def init_scroll_area_layouts(self):
         """初始化三个滚动区域的布局"""
@@ -482,28 +637,6 @@ class Scheduler(QObject):
         self.waiting_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.waiting_layout.setSpacing(5)
 
-    def create_task_ui(self, task: BaseTask, status):
-        """为任务创建UI元素并添加到对应队列区域"""
-        # 创建任务控件
-        widget, _, _ = create_task_widget(task)
-        # 根据任务状态添加到对应列表
-        if status == 0:  # 运行中
-            self.running_widget_list.add_widget(widget, task)
-        elif status == 1:  # 就绪
-            self.ready_widget_list.add_widget(widget, task)
-        elif status == 2:  # 等待中
-            self.waiting_widget_list.add_widget(widget, task)
-
-    def remove_task_ui(self, task: BaseTask, status):
-        """从UI中移除任务元素"""
-        # 从对应列表中移除
-        if status == 0:  # 运行中
-            self.running_widget_list.remove_widget(task.task_name)
-        elif status == 1:  # 就绪
-            self.ready_widget_list.remove_widget(task.task_name)
-        elif status == 2:  # 等待中
-            self.waiting_widget_list.remove_widget(task.task_name)
-
     def _handle_screen_save(self, task_name):
         threading.Thread(target=self.save_screen, args=(task_name,)).start()
 
@@ -520,7 +653,7 @@ class Scheduler(QObject):
         moved_tasks = []  # 记录从等待队列移动到就绪队列的任务
 
         # 扫描等待队列，检查任务是否可以执行
-        waiting_tasks = self.waiting_queue.peek()[:]  # 复制一份当前等待队列
+        waiting_tasks = self.task_queue.get_tasks_by_status(2)
         # self.logger.debug(len(waiting_tasks))
         for task in waiting_tasks:
             # self.logger.debug(f"检查{task}")
@@ -529,17 +662,9 @@ class Scheduler(QObject):
             if task.current_status != 2:  # 只处理等待状态的任务
                 continue
 
-            # 根据周期类型判断是否需要执行
-            should_execute = task.next_execute_time <= datetime.now(ZoneInfo("Asia/Shanghai"))
-            # 如果满足执行条件，将任务从等待队列移至就绪队列
-            if should_execute:
-                # self.logger.debug(f"{task.task_name}满足")
-                self.waiting_queue.remove(task.task_name)  # 从等待队列移除
-                # self.waiting_queue.dequeue()  # 从等待队列移除
-                self.remove_task_ui_signal.emit(task, 2)
-                task.current_status = 1  # 更新状态为就绪
-                self.ready_queue.enqueue(task)  # 添加到就绪队列
-                self.add_task_ui_signal.emit(task, 1)
+            if task.next_execute_time <= datetime.now(ZoneInfo("Asia/Shanghai")):
+                self.task_queue.update_task_status(task.task_name, 1)  # 更新为就绪状态
+                self.task_widget_list.refresh_task_widget(task.task_name)
                 moved_tasks.append(task)
                 self.logger.info(f"[{task.task_name}]-[{task.task_id}] 进入就绪队列")
 
@@ -550,40 +675,17 @@ class Scheduler(QObject):
                 self.timer_thread.trigger(100)  # 立即触发下一次扫描
                 return
 
-        # # 新增：检查是否有高优先级任务需要抢占
-        # self._check_preemption()
-
-        # 扫描就绪队列，当执行队列为空时将就绪队列中的任务移至执行队列
-        if self.running_queue.is_empty() and not self.ready_queue.is_empty():
-            # 移除就绪队列中的任务
-            task_to_execute = self.ready_queue.dequeue()
-            self.remove_task_ui_signal.emit(task_to_execute, 1)
-            self.logger.info(f"[{task_to_execute.task_name}]-[{task_to_execute.task_id}] 移出就绪队列")
-
-            # 检查任务是否仍处于启用状态
-            if not task_to_execute.is_activated:
-                # 如果已被禁用，将其移至等待队列
-                task_to_execute.current_status = 2
-                self.waiting_queue.enqueue(task_to_execute)
-                self.add_task_ui_signal.emit(task_to_execute, 2)
-                self.logger.info(f"[{task_to_execute.task_name}]-[{task_to_execute.task_id}] 进入等待队列")
-                if self.running:
-                    # 继续下一次扫描
-                    wait_time = max(100, self.config.get_config("扫描间隔") - 1000 * (
-                            time.perf_counter() - start))
-                    self.timer_thread.trigger(int(wait_time))  # 每秒扫描一次
-                    return
-
-            # 增加运行队列中的任务
-            task_to_execute.current_status = 0  # 更新状态为执行中
-            self.running_queue.enqueue(task_to_execute)
-            self.add_task_ui_signal.emit(task_to_execute, 0)
-            self.logger.info(f"[{task_to_execute.task_name}]-[{task_to_execute.task_id}] 进入执行队列")
-
-            task_to_execute.run()
-
-        # if self.running_queue.is_empty() and not self.ready_queue.is_empty():
-        #     self._schedule_next_task()  # 提取就绪队列中最高优先级任务执行
+        # 检查是否有运行中的任务
+        running_tasks = self.task_queue.get_tasks_by_status(0)
+        if not running_tasks:  # 没有运行中的任务
+            # 获取就绪状态的任务
+            ready_tasks = self.task_queue.get_tasks_by_status(1)
+            if ready_tasks:  # 有就绪任务
+                # 获取优先级最高的就绪任务
+                next_task = min(ready_tasks)  # 使用堆的特性
+                self.task_queue.update_task_status(next_task.task_name, 0)
+                self.task_widget_list.refresh_task_widget(next_task.task_name)
+                next_task.run()
 
         if self.running:
             # 继续下一次扫描
@@ -591,70 +693,14 @@ class Scheduler(QObject):
                     time.perf_counter() - start))
             self.timer_thread.trigger(int(wait_time))  # 每秒扫描一次
 
-    def _check_preemption(self):
-        """检查是否有高优先级任务需要抢占当前运行任务"""
-        if self.running_queue.is_empty() or self.ready_queue.is_empty():
-            return  # 无运行任务或无就绪任务，无需抢占
-
-        current_running_task = self.running_queue.peek()[0]  # 运行队列中唯一任务
-        highest_ready_task = self.ready_queue.peek()[0]  # 就绪队列中最高优先级任务
-
-        # 如果就绪队列中存在更高优先级的任务，触发抢占
-        if highest_ready_task.current_priority > current_running_task.current_priority:
-            self.logger.info(
-                f"高优先级任务[{highest_ready_task.task_name}]抢占低优先级任务[{current_running_task.task_name}]"
-            )
-            # 1. 停止当前运行任务
-            current_running_task.stop()
-            # 2. 将被抢占的任务移回就绪队列（保留其状态）
-            self.running_queue.dequeue()
-            self.remove_task_ui_signal.emit(current_running_task, 0)
-            current_running_task.current_status = 1
-            self.ready_queue.enqueue(current_running_task)
-            self.add_task_ui_signal.emit(current_running_task, 1)
-            # 3. 调度高优先级任务执行
-            self._schedule_next_task()
-
-    def _schedule_next_task(self):
-        """从就绪队列调度最高优先级任务执行"""
-        task_to_execute = self.ready_queue.dequeue()
-        self.remove_task_ui_signal.emit(task_to_execute, 1)
-        task_to_execute.current_status = 0
-        self.running_queue.enqueue(task_to_execute)
-        self.add_task_ui_signal.emit(task_to_execute, 0)
-        self.logger.info(f"任务[{task_to_execute.task_name}]开始执行（优先级：{task_to_execute.current_priority}）")
-        task_to_execute.run()
-
     def _execute_done_callback(self, task: BaseTask):
         lineedit = self.task_common_control_ref_map[task.task_name]["LineEdit"]
         lineedit.setText(task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
-        self.running_queue.dequeue()
-        self.remove_task_ui_signal.emit(task, 0)
-        self.logger.info(f"[{task.task_name}]-[{task.task_id}] 移出执行队列")
-        # 只有启用的非临时任务才会回到等待队列
+        self.task_queue.update_task_status(task.task_name, 2)
+        self.task_widget_list.refresh_task_widget(task.task_name)
+        self.logger.info(f"[{task.task_name}]-[{task.task_id}] 移出执行队列，进入等待队列")
         if task.is_activated and self.running:
-            task.current_status = 2
             task.create_time = datetime.now(ZoneInfo("Asia/Shanghai"))
-            # 添加到等待队列
-            self.waiting_queue.enqueue(task)
-            self.logger.info(f"[{task.task_name}]-[{task.task_id}] 进入等待队列")
-            self.add_task_ui_signal.emit(task, 2)
-
-    def set_task_temp_priority(self, task_name: str, priority: int):
-        """临时提高指定任务的优先级"""
-        # 检查任务在哪个队列
-        for queue in [self.running_queue, self.ready_queue, self.waiting_queue]:
-            if task_name in queue.task_dic:
-                task = queue.task_dic[task_name]
-                task.set_temp_priority(priority)
-                # 更新队列排序（因为优先级变化会影响堆结构）
-                queue.update(task_name)
-                self.logger.info(f"任务[{task_name}]临时优先级已设为{priority}")
-                # 触发重新扫描，立即检查抢占
-                self.timer_thread.trigger(100)
-                return True
-        self.logger.warning(f"任务[{task_name}]不存在，无法设置临时优先级")
-        return False
 
     def save_screen(self, name):
         """保存截图到文件"""
@@ -677,66 +723,5 @@ class Scheduler(QObject):
             cv_save(save_path, screen)
             self.logger.info("截图保存到%s", save_path)
 
-            # success = cv2.imwrite(save_path, self.screen, [cv2.IMWRITE_PNG_COMPRESSION, 0])
-            # if success:
-            #     self.logger.info(f"截图保存到{save_path}")
-            # else:
-            #     self.logger.error(f"保存图像失败: {save_path}")
-
         except Exception as e:
             self.logger.error(f"保存图像时发生错误: {e}")
-
-
-def create_task_widget(task: BaseTask) -> tuple[QWidget, QLabel, QLabel]:
-    """创建任务控件，包含两个独立标签（任务名称和执行时间）"""
-    item_widget = QWidget()
-    item_widget.setFixedHeight(50)
-    item_widget.setContentsMargins(0, 5, 0, 5)
-    item_widget.setStyleSheet("""
-            QWidget {
-                border: 1px solid #888;
-                border-radius: 5px;
-                background-color: #f0f0f0;
-            }
-        """)
-
-    # 创建水平布局并设置为居中对齐
-    item_layout = QVBoxLayout(item_widget)
-    item_layout.setContentsMargins(5, 0, 5, 0)
-    item_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
-
-    # 任务名称标签（第一个标签）
-    name_label = QLabel(task.task_name)
-    name_label.setStyleSheet("""
-            border: none;
-            background-color: transparent;
-            font-size: 13pt; 
-            color: black;
-        """)
-    item_layout.addWidget(name_label, alignment=Qt.AlignmentFlag.AlignLeft)
-
-    # 执行时间标签（第二个标签，灰色小字体）
-    current_date = datetime.now(ZoneInfo("Asia/Shanghai")).date()
-    task_date = task.next_execute_time.date()
-    delta = (task_date - current_date).days
-
-    if delta == 0:
-        date_str = "今天"
-    elif delta == 1:
-        date_str = "明天"
-    else:
-        date_str = task.next_execute_time.strftime("%Y-%m-%d")
-
-    time_str = task.next_execute_time.strftime("%H:%M:%S")
-    time_label = QLabel(f"下次执行 ：{date_str} {time_str}")
-    time_label.setStyleSheet("""
-            border: none;
-            background-color: transparent;
-            font-family: 'Microsoft YaHei'; 
-            font-size: 10pt;  /* 小字体 */
-            font-weight: bold; 
-            color: #666666;   /* 灰色 */
-        """)
-    item_layout.addWidget(time_label, alignment=Qt.AlignmentFlag.AlignLeft)
-
-    return item_widget, name_label, time_label

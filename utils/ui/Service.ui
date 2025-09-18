@@ -508,7 +508,7 @@ QTreeWidget QScrollBar::add-line:vertical {
               <number>0</number>
              </property>
              <property name="topMargin">
-              <number>10</number>
+              <number>0</number>
              </property>
              <property name="rightMargin">
               <number>0</number>
@@ -1468,7 +1468,7 @@ QScrollArea &gt; QWidget &gt; QWidget {
                         <x>0</x>
                         <y>0</y>
                         <width>232</width>
-                        <height>124</height>
+                        <height>128</height>
                        </rect>
                       </property>
                      </widget>
@@ -1786,7 +1786,7 @@ QScrollArea &gt; QWidget &gt; QWidget {
                         <x>0</x>
                         <y>0</y>
                         <width>232</width>
-                        <height>250</height>
+                        <height>255</height>
                        </rect>
                       </property>
                      </widget>
@@ -1974,7 +1974,7 @@ QCheckBox::indicator:disabled {
               <number>0</number>
              </property>
              <property name="topMargin">
-              <number>10</number>
+              <number>0</number>
              </property>
              <property name="rightMargin">
               <number>0</number>
@@ -2013,7 +2013,7 @@ QCheckBox::indicator:disabled {
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>493</width>
+                     <width>877</width>
                      <height>1144</height>
                     </rect>
                    </property>

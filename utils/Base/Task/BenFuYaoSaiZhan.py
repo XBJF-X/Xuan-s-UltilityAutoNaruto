@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from zoneinfo import ZoneInfo
 
 from PySide6.QtCore import QThread
@@ -10,6 +10,7 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn, handle_task_excepti
 
 class BenFuYaoSaiZhan(BaseTask):
     source_scene = "要塞战略图"
+    dead_line = time(20, 30)
     task_max_duration = timedelta(minutes=30)
 
     def __init__(self, *args, **kwargs):
@@ -25,15 +26,6 @@ class BenFuYaoSaiZhan(BaseTask):
             self.config.get_config("键位")[KEY_INDEX.Summon],
             self.config.get_config("键位")[KEY_INDEX.Substitution]
         ])
-
-    @handle_task_exceptions
-    def _execute(self):
-        current_time = datetime.now(tz=ZoneInfo("Asia/Shanghai"))
-        if current_time > current_time.replace(hour=20, minute=30, second=0, microsecond=0):
-            self.logger.info("本服要塞战时间已过，停止执行")
-            self.update_next_execute_time()
-            return True
-        super()._execute()
 
     @TransitionOn()
     def _(self):

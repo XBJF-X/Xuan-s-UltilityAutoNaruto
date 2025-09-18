@@ -1,7 +1,7 @@
 import inspect
 import sys
 import threading
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from pathlib import Path
 from types import FrameType
 from typing import Dict, Callable
@@ -107,11 +107,18 @@ def _handle_callback(self):
 
 
 class BaseTask:
-    waiting_scene = []
-    transition_return: str = ""
     transition_func: Dict[str, Callable] = {}
+    """场景名到处理函数的映射，由TransitionOn装饰器填充"""
+    transition_return: str | None = ""
+    """记录transition返回的位置，方便调试"""
     source_scene: str | None = None
+    """任务的初始场景"""
     task_max_duration: timedelta | None = None
+    """任务最长执行时间（无DDL的情况下生效）"""
+    task_once_transition_on_max_duration: timedelta | None = None
+    """预估单个TransitionOn最大执行时间，用于调度器计算是否应提前停止任务"""
+    dead_line: time | datetime | None = None
+    """任务截至的时间点（超过当天该时间点将强制结束任务）"""
 
     def __init__(
         self,
@@ -136,6 +143,7 @@ class BaseTask:
         self.task_id = config.get_task_base_config(self.task_name, "优先级")
         self.base_priority = 0  # 静态默认优先级
         self.temp_priority = None  # 临时优先级（None表示未启用）
+
         self.update_next_execute_time(0)
         self.transition_func = {}
         for cls in reversed(self.__class__.mro()):
@@ -205,7 +213,8 @@ class BaseTask:
         # 设置停止标志
         self.operationer.stop_event.set()
         # 如果任务线程正在运行，等待其结束
-        if hasattr(self, '_execution_thread') and self._execution_thread.is_alive():
+        if (hasattr(self, '_execution_thread') and self._execution_thread
+                and self._execution_thread.is_alive()):
             self._execution_thread.join(timeout=5.0)
             if self._execution_thread.is_alive():
                 self.logger.warning(f"任务 {self.task_name} 线程未能在5秒内停止")
@@ -217,15 +226,24 @@ class BaseTask:
 
     @handle_task_exceptions
     def _execute(self):
-        if self.task_max_duration:
-            self.dead_line = datetime.now(tz=ZoneInfo("Asia/Shanghai")) + self.task_max_duration
+        if not self.dead_line:
+            if self.task_max_duration:
+                self.dead_line = datetime.now(tz=ZoneInfo("Asia/Shanghai")) + self.task_max_duration
+        else:
+            self.dead_line = datetime.now(tz=ZoneInfo("Asia/Shanghai")).replace(
+                hour=self.dead_line.hour,
+                minute=self.dead_line.minute,
+                second=self.dead_line.second,
+                microsecond=self.dead_line.microsecond
+            )
         self.operationer.next_scene = self.source_scene
         while True:
-            if self.task_max_duration:
-                if datetime.now(tz=ZoneInfo("Asia/Shanghai")) > self.dead_line:
-                    raise TimeOut(f"任务超时")
+            if self.dead_line and datetime.now(tz=ZoneInfo("Asia/Shanghai")) > self.dead_line:
+                self.logger.warning("任务达到最大执行时长，强制结束")
+                self.update_next_execute_time()
+                raise TimeOut(f"任务超时")
             if self._should_stop():
-                raise Stop("任务停止")
+                raise Stop("任务被停止")
 
             result = self.transition()
             # self.logger.debug(f"Exe接收的Result：{result}")

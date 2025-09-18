@@ -77,7 +77,7 @@ class SceneGraph:
             element = scene.element_dict.get(element_name, None)
             if element:
                 return element
-            self.logger.error("元素不存在")
+            self.logger.error(f"获取[{scene_name}]的[{element_name}]元素失败")
             return None
         self.logger.error("场景不存在，无法获取元素")
         return None
