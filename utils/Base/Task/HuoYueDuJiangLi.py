@@ -51,7 +51,7 @@ class HuoYueDuJiangLi(BaseTask):
             self.logger.info("周活跃奖励领取成功")
         self.operationer.click_and_wait("X")
         self.week_reward = True
-        return True
+        return False
 
     def _handle_daily_activity_reward(self, num):
         # 点击待领取的宝箱
