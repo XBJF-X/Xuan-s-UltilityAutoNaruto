@@ -84,7 +84,8 @@ class XiaoDuiTuXi(BaseTask):
         return False
 
     def _select_four_rewards(self):
-        if self.four_reward_times == 2 and self.four_reward_collected_times:
+        if ((self.four_reward_times == 2) or
+                (self.four_reward_times == 1 and not self.four_reward_collected_times)):
             self.logger.info("勾选四倍奖励")
             if not self.operationer.detect_element(
                     "四倍奖励-选中",
