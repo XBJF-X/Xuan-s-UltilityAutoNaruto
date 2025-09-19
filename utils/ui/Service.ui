@@ -260,142 +260,123 @@ padding-bottom:2px;
             <property name="topMargin">
              <number>0</number>
             </property>
+            <property name="rightMargin">
+             <number>0</number>
+            </property>
             <property name="bottomMargin">
              <number>0</number>
             </property>
             <item>
-             <widget class="QTreeWidget" name="treeWidget">
-              <property name="maximumSize">
-               <size>
-                <width>16777215</width>
-                <height>16777215</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <family>Consolas</family>
-                <pointsize>-1</pointsize>
-                <italic>false</italic>
-                <bold>false</bold>
-               </font>
-              </property>
+             <widget class="QTreeView" name="treeView">
               <property name="styleSheet">
-               <string notr="true">QTreeWidget {
-	background-color:#f5f5f5;
-	margin-left:10px;
-	background: #F9F9F9;
-	border-radius: 10px;
-	outline: none;
-	font-size: 20px;
+               <string notr="true">/* QTreeView 整体样式 */
+QTreeView {
+    background-color:#f5f5f5;
+    margin-left:10px;
+    background: #F9F9F9;
+    border-radius: 10px;
+    outline: none;
+    font-size: 20px;
 }
-QTreeWidget::item {
-	height: 28px;
-	font-weight: 400;
-	color: #0f322f;
-	padding-left:10px;
-	padding-top:0px;
-	padding-bottom:0px;
-	margin-top:5px;
-	margin-bottom:5px;
-	outline: 0px;
-	font-size: 10px;
+
+/* QTreeView 节点基础样式（关键修改：用 QAbstractItemView::item） */
+QAbstractItemView::item {
+    height: 28px;
+    font-weight: 400;
+    /*color: #0f322f;*/
+    padding-left:10px;
+    padding-top:0px;
+    padding-bottom:0px;
+    margin-top:5px;
+    margin-bottom:5px;
+    outline: 0px;
+    font-size: 10px;
 }
-QTreeWidget::item:hover {
-	border: 0px;
-	outline: 0px;
-	border-left: 3px solid #39C5BB;
-    color: #39C5BB;
-}
-QTreeWidget::item:selected{
+
+/* QTreeView 节点 hover/选中状态 */
+QAbstractItemView::item:hover {
     border: 0px;
-	outline: 0px;
-	border-left: 3px solid #39C5BB;
+    outline: 0px;
+    border-left: 3px solid #39C5BB;
     color: #39C5BB;
 }
-QTreeWidget::item:selected:active{
+QAbstractItemView::item:selected{
     border: 0px;
-	outline: 0px;
-	border-left: 3px solid #39C5BB;
+    outline: 0px;
+    border-left: 3px solid #39C5BB;
     color: #39C5BB;
 }
- 
-QTreeWidget::item:selected:!active {
+QAbstractItemView::item:selected:active{
     border: 0px;
-	outline: 0px;
-	border-left: 3px solid #39C5BB;
+    outline: 0px;
+    border-left: 3px solid #39C5BB;
     color: #39C5BB;
 }
-QTreeWidget::branch {
-	height: 28px;
-	width: 28px;
-	color:#0f322f;
+QAbstractItemView::item:selected:!active {
+    border: 0px;
+    outline: 0px;
+    border-left: 3px solid #39C5BB;
+    color: #39C5BB;
 }
-QTreeWidget::branch::hover {
-	height: 28px;
-	width: 28px;
-	color:#39C5BB;
+
+/* QTreeView 分支样式 */
+QTreeView::branch {
+    height: 28px;
+    width: 28px;
+    color:#0f322f;
 }
-QTreeWidget::indicator {
-	height: 20px;
-	width: 20px;
+QTreeView::branch::hover {
+    height: 28px;
+    width: 28px;
+    color:#39C5BB;
 }
-QTreeWidget QScrollBar:vertical {
+
+/* QTreeView 指示器（复选框/单选框）样式 */
+QTreeView::indicator {
+    height: 20px;
+    width: 20px;
+}
+
+/* QTreeView 垂直滚动条样式 */
+QTreeView QScrollBar:vertical {
     background-color: #ffffff;
     width: 7px;
     margin: 0px;
     border-radius: 4px;
 }
-QTreeWidget QScrollBar::handle:vertical {
+QTreeView QScrollBar::handle:vertical {
     background-color: #8b8b8b;
     border-radius: 3px;
     margin: 3 0px 6 0px;
     min-height: 30px;
 }
-QTreeWidget QScrollBar::handle:vertical:hover,
-QTreeWidget QScrollBar::handle:vertical:pressed {
+QTreeView QScrollBar::handle:vertical:hover,
+QTreeView QScrollBar::handle:vertical:pressed {
     background-color: #3c3f41;
     border-radius: 3px;
     margin: 0 0px 0 0px;
 }
-QTreeWidget QScrollBar::sub-line:vertical,
-QTreeWidget QScrollBar::add-line:vertical {
+QTreeView QScrollBar::sub-line:vertical,
+QTreeView QScrollBar::add-line:vertical {
     border: none;
     height: 0px;
-}
-</string>
+}</string>
               </property>
-              <property name="frameShape">
-               <enum>QFrame::Shape::NoFrame</enum>
+              <property name="horizontalScrollBarPolicy">
+               <enum>Qt::ScrollBarPolicy::ScrollBarAlwaysOff</enum>
               </property>
-              <property name="autoScrollMargin">
-               <number>16</number>
+              <property name="editTriggers">
+               <set>QAbstractItemView::EditTrigger::NoEditTriggers</set>
               </property>
-              <property name="indentation">
-               <number>19</number>
-              </property>
-              <property name="rootIsDecorated">
+              <property name="itemsExpandable">
                <bool>true</bool>
-              </property>
-              <property name="uniformRowHeights">
-               <bool>false</bool>
-              </property>
-              <property name="sortingEnabled">
-               <bool>false</bool>
               </property>
               <property name="animated">
-               <bool>true</bool>
-              </property>
-              <property name="headerHidden">
                <bool>true</bool>
               </property>
               <attribute name="headerVisible">
                <bool>false</bool>
               </attribute>
-              <column>
-               <property name="text">
-                <string>配置</string>
-               </property>
-              </column>
              </widget>
             </item>
            </layout>
@@ -2013,7 +1994,7 @@ QCheckBox::indicator:disabled {
                     <rect>
                      <x>0</x>
                      <y>0</y>
-                     <width>877</width>
+                     <width>586</width>
                      <height>1144</height>
                     </rect>
                    </property>

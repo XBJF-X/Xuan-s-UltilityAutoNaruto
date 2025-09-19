@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Dict
 from zoneinfo import ZoneInfo
 
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QBrush, QColor, QStandardItemModel, QStandardItem
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QFileDialog, QTreeWidgetItem
 
 from StaticFunctions import get_real_path, setup_logging
@@ -34,6 +36,7 @@ class Service(QWidget):
         )
         self.task_common_control_ref_map: Dict[str:Dict[str:QWidget]] = defaultdict(dict)  # 任务控制控件
         self.task_index_dic: Dict[str, int] = {"助手设置": 1}
+        self.tree_items = {}
         self.logger.info("初始化UI...")
         self.alloc_ui_ref_map()
         self.logger.info("初始化UI响应函数...")
@@ -67,14 +70,24 @@ class Service(QWidget):
         self.UI.MuMu_instance_index.setValue(self.config.get_config('MuMu实例索引', 0))
         self.UI.scan_inerval.setValue(self.config.get_config('扫描间隔', 1000))
         self.UI.secondary_password.setText(self.config.get_config('二级密码', ""))
+
+        model = QStandardItemModel(0, 1, self)
         roots = []
         for root in ["每日任务", "每周任务", "每月任务", "周期任务", "活动任务", "助手设置"]:
-            roots.append(QTreeWidgetItem(self.UI.treeWidget, [root]))
+            temp_root = QStandardItem(root)
+            model.appendRow(temp_root)
+            roots.append(temp_root)
 
         task_config = json.load(open(get_real_path("src/DefaultConfig.json"), encoding="utf-8"))["任务"]
         start_index = 2
         for task_name, task in task_config.items():
-            QTreeWidgetItem(roots[task["类型"]], [task_name])
+            child = QStandardItem(task_name)
+            self.tree_items[task_name] = child
+            if self.config.get_task_base_config(task_name, "是否启用"):
+                child.setData(QColor("#779977"), Qt.ItemDataRole.ForegroundRole)
+            else:
+                child.setData(QColor("#000000"), Qt.ItemDataRole.ForegroundRole)
+            roots[task["类型"]].appendRow(child)
             temp_task_widget = TaskConfigWidget(task_name, task, self)
             self.UI.stackedWidget.addWidget(temp_task_widget)
             # 保存任务配置控件引用
@@ -82,7 +95,7 @@ class Service(QWidget):
             self.task_common_control_ref_map[task_name]["CheckBox"] = temp_widget
             temp_widget.setChecked(self.config.get_task_base_config(task_name, "是否启用"))
             temp_widget.toggled.connect(
-                lambda state, tn=task_name: self.scheduler.toggle_task_activation(state, tn))
+                lambda state, tn=task_name: self._on_task_activation_toggled(state, tn))
             temp_widget = temp_task_widget.task_widget_dic["下次执行时间"]
             self.task_common_control_ref_map[task_name]["LineEdit"] = temp_widget
             temp_widget.setText(
@@ -108,12 +121,13 @@ class Service(QWidget):
 
             self.task_index_dic[task_name] = start_index
             start_index += 1
+        self.UI.treeView.setModel(model)
         self.UI.stackedWidget.setCurrentIndex(0)
 
     def bind_signals(self):
         self.UI.start_schedule_button.clicked.connect(self._on_start_schedule_button_clicked)
         self.UI.overview_panel_button.clicked.connect(lambda _: self.UI.stackedWidget.setCurrentIndex(0))
-        self.UI.treeWidget.itemClicked.connect(self._on_tree_item_clicked)
+        self.UI.treeView.clicked.connect(self._on_tree_item_clicked)
         self.UI.bool_debug.toggled.connect(self._on_bool_debug_toggled)
         self.UI.screen_mode.currentIndexChanged.connect(self._on_screen_mode_change)
         self.UI.control_mode.currentIndexChanged.connect(self._on_control_mode_change)
@@ -129,14 +143,27 @@ class Service(QWidget):
         self.UI.key_map_configuration_button.clicked.connect(self._on_key_map_configuration_button_clicked)
         self.UI.serial_list_button.clicked.connect(self._on_serial_list_button_clicked)
 
+    def _on_task_activation_toggled(self, state, tn):
+        item = self.tree_items.get(tn)
+        if item is not None:
+            if state:
+                item.setData(QColor("#779977"), Qt.ItemDataRole.ForegroundRole)
+            else:
+                item.setData(QColor("#000000"), Qt.ItemDataRole.ForegroundRole)
+        self.scheduler.toggle_task_activation(state, tn)
+
     def _on_start_schedule_button_clicked(self):
         if not self.scheduler.running:
             self.scheduler.start()
         else:
             self.scheduler.stop()
 
-    def _on_tree_item_clicked(self, item, column):
-        text = item.text(column)
+    def _on_tree_item_clicked(self, index):
+        # 获取模型和项目
+        model = self.UI.treeView.model()
+        item = model.itemFromIndex(index)
+        text = item.text()
+
         if self.task_index_dic.get(text, 0):
             self.UI.stackedWidget.setCurrentIndex(self.task_index_dic[text])
 

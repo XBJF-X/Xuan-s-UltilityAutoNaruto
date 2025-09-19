@@ -30,7 +30,7 @@ class TaskWidget(QFrame):
         self.setStyleSheet(
             """
                 QWidget {
-                    border: 2px solid #888;
+                    border: 2px solid #0f322f;
                     border-radius: 5px;
                     background-color: #f0f0f0;
                 }
@@ -584,7 +584,7 @@ class Scheduler(QObject):
         self.config.set_task_base_config(task_name, "是否启用", state)
         temp_task = self.task_queue.get_task(task_name)
         if temp_task:
-            if not state:
+            if not state and temp_task.current_status == 0:
                 temp_task.stop()
             self.task_widget_list.refresh_task_widget(task_name)
             self.logger.info(f"任务 {task_name} {'已启用' if state else '已禁用'}")

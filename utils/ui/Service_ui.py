@@ -15,11 +15,11 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QCheckBox, QComboBox, QFrame,
-    QGridLayout, QHBoxLayout, QHeaderView, QLabel,
-    QLayout, QLineEdit, QPushButton, QScrollArea,
-    QSizePolicy, QSpacerItem, QSpinBox, QStackedWidget,
-    QTreeWidget, QTreeWidgetItem, QVBoxLayout, QWidget)
+from PySide6.QtWidgets import (QAbstractItemView, QApplication, QCheckBox, QComboBox,
+    QFrame, QGridLayout, QHBoxLayout, QHeaderView,
+    QLabel, QLayout, QLineEdit, QPushButton,
+    QScrollArea, QSizePolicy, QSpacerItem, QSpinBox,
+    QStackedWidget, QTreeView, QVBoxLayout, QWidget)
 
 class Ui_Service(object):
     def setupUi(self, Service):
@@ -117,110 +117,110 @@ class Ui_Service(object):
         self.widget_11.setObjectName(u"widget_11")
         self.verticalLayout_9 = QVBoxLayout(self.widget_11)
         self.verticalLayout_9.setObjectName(u"verticalLayout_9")
-        self.verticalLayout_9.setContentsMargins(0, 0, -1, 0)
-        self.treeWidget = QTreeWidget(self.widget_11)
-        self.treeWidget.setObjectName(u"treeWidget")
-        self.treeWidget.setMaximumSize(QSize(16777215, 16777215))
-        font1 = QFont()
-        font1.setFamilies([u"Consolas"])
-        font1.setBold(False)
-        font1.setItalic(False)
-        self.treeWidget.setFont(font1)
-        self.treeWidget.setStyleSheet(u"QTreeWidget {\n"
-"	background-color:#f5f5f5;\n"
-"	margin-left:10px;\n"
-"	background: #F9F9F9;\n"
-"	border-radius: 10px;\n"
-"	outline: none;\n"
-"	font-size: 20px;\n"
+        self.verticalLayout_9.setContentsMargins(0, 0, 0, 0)
+        self.treeView = QTreeView(self.widget_11)
+        self.treeView.setObjectName(u"treeView")
+        self.treeView.setStyleSheet(u"/* QTreeView \u6574\u4f53\u6837\u5f0f */\n"
+"QTreeView {\n"
+"    background-color:#f5f5f5;\n"
+"    margin-left:10px;\n"
+"    background: #F9F9F9;\n"
+"    border-radius: 10px;\n"
+"    outline: none;\n"
+"    font-size: 20px;\n"
 "}\n"
-"QTreeWidget::item {\n"
-"	height: 28px;\n"
-"	font-weight: 400;\n"
-"	color: #0f322f;\n"
-"	padding-left:10px;\n"
-"	padding-top:0px;\n"
-"	padding-bottom:0px;\n"
-"	margin-top:5px;\n"
-"	margin-bottom:5px;\n"
-"	outline: 0px;\n"
-"	font-size: 10px;\n"
+"\n"
+"/* QTreeView \u8282\u70b9\u57fa\u7840\u6837\u5f0f\uff08\u5173\u952e\u4fee\u6539\uff1a\u7528 QAbstractItemView::item\uff09 */\n"
+"QAbstractItemView::item {\n"
+"    height: 28px;\n"
+"    font-weight: 400;\n"
+"    /*color: #0f322f;*/\n"
+"    padding-left:10px;\n"
+"    padding-top:0px;\n"
+"    padding-bottom:0px;\n"
+"    margin-top:5px;\n"
+"    margin-bottom:5px;\n"
+"    outline: 0px;\n"
+"    font-size: 10px;\n"
 "}\n"
-"QTreeWidget::item:hover {\n"
-"	border: 0px;\n"
-"	outline: 0px;\n"
-"	border-left: 3px solid #39C5BB;\n"
-"    color: #39C5BB;\n"
-"}\n"
-"QTreeWidget::item:selected{\n"
+"\n"
+"/* QTreeView \u8282\u70b9 hover/\u9009\u4e2d\u72b6\u6001 */\n"
+"QAbstractItemView::item:hover {\n"
 "    border: 0px;\n"
-"	outline: 0px;\n"
-"	border-left: 3px solid #39C5BB;\n"
+"    outline: 0px;\n"
+"    border-left: 3px solid #39C5BB;\n"
 "    color: #39C5BB;\n"
 "}\n"
-"QTreeWidget::item:selected:active{\n"
+"QAbstractItemView::item:selected{\n"
 "    border: 0px;\n"
-"	outline: 0px;\n"
-"	border-left: 3px solid #39C5BB;\n"
+"    outline: 0px;\n"
+"    border-left: 3px solid #39C5BB;\n"
 "    color: #39C5BB;\n"
 "}\n"
-" \n"
-"QTreeWidget::item:selected:!active {\n"
+""
+                        "QAbstractItemView::item:selected:active{\n"
 "    border: 0px;\n"
-"	outline: 0px;\n"
-"	border-left: 3px solid #39C5BB;\n"
+"    outline: 0px;\n"
+"    border-left: 3px solid #39C5BB;\n"
 "    color: #39C5BB;\n"
 "}\n"
-"QTreeWidget::branch {\n"
-"	hei"
-                        "ght: 28px;\n"
-"	width: 28px;\n"
-"	color:#0f322f;\n"
+"QAbstractItemView::item:selected:!active {\n"
+"    border: 0px;\n"
+"    outline: 0px;\n"
+"    border-left: 3px solid #39C5BB;\n"
+"    color: #39C5BB;\n"
 "}\n"
-"QTreeWidget::branch::hover {\n"
-"	height: 28px;\n"
-"	width: 28px;\n"
-"	color:#39C5BB;\n"
+"\n"
+"/* QTreeView \u5206\u652f\u6837\u5f0f */\n"
+"QTreeView::branch {\n"
+"    height: 28px;\n"
+"    width: 28px;\n"
+"    color:#0f322f;\n"
 "}\n"
-"QTreeWidget::indicator {\n"
-"	height: 20px;\n"
-"	width: 20px;\n"
+"QTreeView::branch::hover {\n"
+"    height: 28px;\n"
+"    width: 28px;\n"
+"    color:#39C5BB;\n"
 "}\n"
-"QTreeWidget QScrollBar:vertical {\n"
+"\n"
+"/* QTreeView \u6307\u793a\u5668\uff08\u590d\u9009\u6846/\u5355\u9009\u6846\uff09\u6837\u5f0f */\n"
+"QTreeView::indicator {\n"
+"    height: 20px;\n"
+"    width: 20px;\n"
+"}\n"
+"\n"
+"/* QTreeView \u5782\u76f4\u6eda\u52a8\u6761\u6837\u5f0f */\n"
+"QTreeView QScrollBar:vertical {\n"
 "    background-color: #ffffff;\n"
 "    width: 7px;\n"
 "    margin: 0px;\n"
 "    border-radius: 4px;\n"
 "}\n"
-"QTreeWidget QScrollBar::handle:vertical {\n"
-"    background-color: #8b8b8b;\n"
+"QTreeView QScrollBar::handle:vertical {\n"
+"    background-colo"
+                        "r: #8b8b8b;\n"
 "    border-radius: 3px;\n"
 "    margin: 3 0px 6 0px;\n"
 "    min-height: 30px;\n"
 "}\n"
-"QTreeWidget QScrollBar::handle:vertical:hover,\n"
-"QTreeWidget QScrollBar::handle:vertical:pressed {\n"
+"QTreeView QScrollBar::handle:vertical:hover,\n"
+"QTreeView QScrollBar::handle:vertical:pressed {\n"
 "    background-color: #3c3f41;\n"
 "    border-radius: 3px;\n"
 "    margin: 0 0px 0 0px;\n"
 "}\n"
-"QTreeWidget QScrollBar::sub-line:vertical,\n"
-"QTreeWidget QScrollBar::add-line:vertical {\n"
+"QTreeView QScrollBar::sub-line:vertical,\n"
+"QTreeView QScrollBar::add-line:vertical {\n"
 "    border: none;\n"
 "    height: 0px;\n"
-"}\n"
-"")
-        self.treeWidget.setFrameShape(QFrame.Shape.NoFrame)
-        self.treeWidget.setAutoScrollMargin(16)
-        self.treeWidget.setIndentation(19)
-        self.treeWidget.setRootIsDecorated(True)
-        self.treeWidget.setUniformRowHeights(False)
-        self.treeWidget.setSortingEnabled(False)
-        self.treeWidget.setAnimated(True)
-        self.treeWidget.setHeaderHidden(True)
-        self.treeWidget.header().setVisible(False)
+"}")
+        self.treeView.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.treeView.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.treeView.setItemsExpandable(True)
+        self.treeView.setAnimated(True)
+        self.treeView.header().setVisible(False)
 
-        self.verticalLayout_9.addWidget(self.treeWidget)
+        self.verticalLayout_9.addWidget(self.treeView)
 
 
         self.verticalLayout_5.addWidget(self.widget_11)
@@ -793,6 +793,10 @@ class Ui_Service(object):
         self.horizontalLayout_4.setObjectName(u"horizontalLayout_4")
         self.log_text_label = QLabel(self.widget_12)
         self.log_text_label.setObjectName(u"log_text_label")
+        font1 = QFont()
+        font1.setFamilies([u"Consolas"])
+        font1.setBold(False)
+        font1.setItalic(False)
         self.log_text_label.setFont(font1)
         self.log_text_label.setStyleSheet(u"font-size:25px;\n"
 "")
@@ -854,7 +858,7 @@ class Ui_Service(object):
         self.scrollArea_8.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_5 = QWidget()
         self.scrollAreaWidgetContents_5.setObjectName(u"scrollAreaWidgetContents_5")
-        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 877, 1144))
+        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 586, 1144))
         self.verticalLayout_25 = QVBoxLayout(self.scrollAreaWidgetContents_5)
         self.verticalLayout_25.setSpacing(20)
         self.verticalLayout_25.setObjectName(u"verticalLayout_25")
@@ -2099,8 +2103,6 @@ class Ui_Service(object):
     def retranslateUi(self, Service):
         Service.setWindowTitle(QCoreApplication.translate("Service", u"Form", None))
         self.overview_panel_button.setText(QCoreApplication.translate("Service", u"\u603b\u89c8\u9762\u677f", None))
-        ___qtreewidgetitem = self.treeWidget.headerItem()
-        ___qtreewidgetitem.setText(0, QCoreApplication.translate("Service", u"\u914d\u7f6e", None));
         self.label.setText(QCoreApplication.translate("Service", u"\u8c03\u5ea6\u5668", None))
         self.start_schedule_button.setText(QCoreApplication.translate("Service", u"\u542f\u52a8", None))
         self.label_2.setText(QCoreApplication.translate("Service", u"\u8fd0\u884c\u961f\u5217", None))
