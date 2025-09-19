@@ -14,7 +14,6 @@ class FengRaoZhiJian(BaseTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.checked = False
         self.free_tryed = False
         self.finished = False
         self.operationer.clicker.update_coordinates([
@@ -26,16 +25,13 @@ class FengRaoZhiJian(BaseTask):
 
     @TransitionOn("丰饶之间")
     def _(self):
-        if not self.checked:
-            if self.operationer.detect_element(
-                    "今日已完成挑战",
-                    max_time=0.3,
-                    auto_raise=False
-            ):
-                self.update_next_execute_time()
-                raise EndEarly("已完成挑战，提前结束执行")
-            self.checked = True
-            return False
+        if self.operationer.detect_element(
+                "今日已完成挑战",
+                max_time=0.3,
+                auto_raise=False
+        ):
+            self.update_next_execute_time()
+            return True
         if not self.free_tryed:
             self.operationer.click_and_wait("一键完成")
             return False
