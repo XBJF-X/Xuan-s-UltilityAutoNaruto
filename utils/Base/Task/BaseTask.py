@@ -53,20 +53,7 @@ def handle_transition_exceptions(func):
         sys.settrace(self.trace_callback)
         try:
             result = func(self, *args, **kwargs)
-            # self.logger.debug(f"装饰器接收的Result：{result}")
             return result
-        except StepFailedError as e:
-            self.logger.error(e)
-            return True
-        except EndEarly as e:
-            self.logger.warning(e)
-            return True
-        except Stop as e:
-            self.logger.warning("线程被要求停止")
-            return True
-        except TimeOut as e:
-            self.logger.error(f"任务超时：{e}")
-            return True
         except Exception as e:
             self.logger.error(f"未知错误：{e}")
             return True
@@ -85,6 +72,7 @@ def handle_task_exceptions(func):
             self.logger.error(e)
         except EndEarly as e:
             self.logger.warning(e)
+            return True
         except Stop as e:
             self.logger.warning("线程被要求停止")
         except TimeOut as e:
@@ -117,8 +105,10 @@ class BaseTask:
     """任务最长执行时间（无DDL的情况下生效）"""
     task_once_transition_on_max_duration: timedelta | None = None
     """预估单个TransitionOn最大执行时间，用于调度器计算是否应提前停止任务"""
-    dead_line: time | datetime | None = None
+    dead_line: time | None = None
     """任务截至的时间点（超过当天该时间点将强制结束任务）"""
+    temp_dead_line: datetime | None = None
+    """每次任务执行时根据上述时间参数计算出来的临时DeadLine，结束后自动置空"""
 
     def __init__(
         self,
@@ -228,9 +218,9 @@ class BaseTask:
     def _execute(self):
         if not self.dead_line:
             if self.task_max_duration:
-                self.dead_line = datetime.now(tz=ZoneInfo("Asia/Shanghai")) + self.task_max_duration
+                self.temp_dead_line = datetime.now(tz=ZoneInfo("Asia/Shanghai")) + self.task_max_duration
         else:
-            self.dead_line = datetime.now(tz=ZoneInfo("Asia/Shanghai")).replace(
+            self.temp_dead_line = datetime.now(tz=ZoneInfo("Asia/Shanghai")).replace(
                 hour=self.dead_line.hour,
                 minute=self.dead_line.minute,
                 second=self.dead_line.second,
@@ -238,7 +228,7 @@ class BaseTask:
             )
         self.operationer.next_scene = self.source_scene
         while True:
-            if self.dead_line and datetime.now(tz=ZoneInfo("Asia/Shanghai")) > self.dead_line:
+            if self.temp_dead_line and datetime.now(tz=ZoneInfo("Asia/Shanghai")) > self.temp_dead_line:
                 self.logger.warning("任务达到最大执行时长，强制结束")
                 self.update_next_execute_time()
                 raise TimeOut(f"任务超时")

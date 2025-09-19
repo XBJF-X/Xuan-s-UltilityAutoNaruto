@@ -7,7 +7,7 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 class RenWuJiHuiSuo(BaseTask):
     source_scene = "任务集会所"
-    task_max_duration = timedelta(minutes=3)
+    task_max_duration = timedelta(minutes=5)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -697,6 +697,7 @@ class Scheduler(QObject):
         lineedit = self.task_common_control_ref_map[task.task_name]["LineEdit"]
         lineedit.setText(task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
         self.task_queue.update_task_status(task.task_name, 2)
+        task.temp_dead_line = None
         self.task_widget_list.refresh_task_widget(task.task_name)
         self.logger.info(f"[{task.task_name}]-[{task.task_id}] 移出执行队列，进入等待队列")
         if task.is_activated and self.running:
