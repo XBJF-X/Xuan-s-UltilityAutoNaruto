@@ -30,7 +30,7 @@ class TaskWidget(QFrame):
         self.setStyleSheet(
             """
                 QWidget {
-                    border: 2px solid #0f322f;
+                    border: 2px solid #779977;
                     border-radius: 5px;
                     background-color: #f0f0f0;
                 }
