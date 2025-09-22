@@ -313,8 +313,6 @@ class TransitionManager:
         @self.register("任务集会所-一键领取", "任务集会所")
         @self.register("便捷扫荡-扫荡结束", "精英副本-便捷扫荡")
         @self.register("福利站-100活跃奖励-确认", "福利站-活跃奖励-获得奖励")
-        @self.register("格斗称号", "个人信息")
-        @self.register("格斗称号", "决斗场-首页")
         @self.register("招募结果", "高级招募")
         @self.register("招募结果", "普通招募")
         @self.register("副本内-暂停-退出战斗确认", "秘境探险-匹配")
@@ -562,8 +560,11 @@ class TransitionManager:
 
         @self.register("忍道称号", "个人信息")
         @self.register("忍道称号", "决斗场-首页")
+        @self.register("格斗称号", "个人信息")
+        @self.register("格斗称号", "决斗场-首页")
         def _(operationer: Operationer, *args, **kwargs):
-            operationer.click_and_wait("下一步")
+            if not operationer.click_and_wait("下一步"):
+                operationer.click_and_wait("确定")
 
         @self.register("新赛季初始段位", "决斗场-首页")
         def _(operationer: Operationer, *args, **kwargs):
