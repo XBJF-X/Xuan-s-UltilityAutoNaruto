@@ -128,7 +128,11 @@ class BenFuYaoSaiZhan(BaseTask):
 
         match flag:
             case 0:
+                # 先获取原始的next_execute_time
                 next_execute_time = self.next_execute_time
+                # 新增：检查并跳过间隔4周的周期，与case 1逻辑保持一致
+                while is_in_skip_period(next_execute_time, base_date, 4):
+                    next_execute_time += timedelta(weeks=1)
 
             case 1:
                 next_time = get_next_saturday_8pm(current_time, china_tz)
@@ -137,7 +141,15 @@ class BenFuYaoSaiZhan(BaseTask):
                 next_execute_time = next_time
 
             case 2:
-                next_execute_time = get_next_saturday_8pm(current_time, china_tz)
+                days_to_saturday = current_time.weekday() - 5  # 例：周日(6)→1，周六(5)→0，周五(4)→-1
+                next_execute_time = current_time - timedelta(days=days_to_saturday)
+                # 固定时间为20:00:00，保持时区
+                next_time = next_execute_time.replace(
+                    hour=20, minute=0, second=0, microsecond=0, tzinfo=china_tz
+                )
+                while is_in_skip_period(next_time, base_date, 4):
+                    next_time += timedelta(weeks=1)
+                next_execute_time = next_time
 
             case 3:
                 if delta is None:

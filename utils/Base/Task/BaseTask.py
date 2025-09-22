@@ -54,6 +54,15 @@ def handle_transition_exceptions(func):
         try:
             result = func(self, *args, **kwargs)
             return result
+        except StepFailedError as e:
+            self.logger.error(e)
+        except EndEarly as e:
+            self.logger.warning(e)
+            return True
+        except Stop as e:
+            self.logger.warning("线程被要求停止")
+        except TimeOut as e:
+            self.logger.error(f"任务超时：{e}")
         except Exception as e:
             self.logger.error(f"未知错误：{e}")
             return True
@@ -139,8 +148,8 @@ class BaseTask:
         for cls in reversed(self.__class__.mro()):
             if hasattr(cls, "transition_func"):
                 self.transition_func.update(cls.transition_func)
-        for scene, func in self.transition_func.items():
-            self.logger.debug(f"注册场景处理函数: {scene} -> {func.__qualname__}")
+        # for scene, func in self.transition_func.items():
+        #     self.logger.debug(f"注册场景处理函数: {scene} -> {func.__qualname__}")
 
         self.transition_manager = transition_manager
         self.operationer = operationer

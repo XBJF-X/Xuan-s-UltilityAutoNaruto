@@ -35,10 +35,9 @@ class XiaoDuiTuXi(BaseTask):
                 "今日收益次数已达上限",
                 auto_raise=False
         ):
-            if not self._select_four_rewards():
-                return True
+            self._select_four_rewards()
             self.logger.info("出战")
-            self.operationer.click_and_wait("出战")
+            self.operationer.click_and_wait("出战",wait_time=3)
             return False
         self.update_next_execute_time()
         self.logger.info("小队突袭次数已用尽")

@@ -127,7 +127,7 @@ class Xuan(QMainWindow):
         os.environ['PATH'] = os.pathsep.join([get_real_path('bin/adb'), os.environ.get('PATH', '')])
         cv2.ocl.setUseOpenCL(True)
         self.setWindowIcon(QIcon(resource_path("src/ASDS.ico")))
-        self.resize(1600, 800)
+        self.resize(1400, 600)
         app.aboutToQuit.connect(self._on_about_to_quit)
         # 设置窗口标志
         self.setWindowFlags(
