@@ -674,7 +674,7 @@ class TaskGraphView(QGraphicsView):
     def handle_node_clicked(self, task_id):
         """处理节点单击事件"""
         # 如果点击的是当前已高亮的节点，则取消高亮
-        if self.highlighted_node and self.highlighted_node.task_id == task_id:
+        if self.highlighted_node and self.highlighted_node.base_priority == task_id:
             self.clear_highlights()
             return
 

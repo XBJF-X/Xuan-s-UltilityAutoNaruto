@@ -94,7 +94,6 @@ def handle_task_exceptions(func):
     return wrapper
 
 
-# 辅助函数：统一处理回调
 def _handle_callback(self):
     try:
         self.logger.debug("回调函数执行")
@@ -139,9 +138,7 @@ class BaseTask:
         self._execution_thread = None
         self.task_name = task_name
         self.logger = parent_logger.getChild(self.task_name)
-        self.task_id = config.get_task_base_config(self.task_name, "优先级")
-        self.base_priority = 0  # 静态默认优先级
-        self.temp_priority = None  # 临时优先级（None表示未启用）
+        self.base_priority = config.get_task_base_config(self.task_name, "优先级")
 
         self.update_next_execute_time(0)
         self.transition_func = {}
@@ -156,38 +153,41 @@ class BaseTask:
         self.activate_another_task_signal = activate_another_task_signal
         self.callback = callback
 
-    @property
-    def next_execute_time(self):
-        china_tz = ZoneInfo("Asia/Shanghai")
-        next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
-        if next_exec_ts == 0:
-            # 若初始值为0，设置为当前UTC时间（或其他合理时间）
-            return datetime.now(china_tz)
-        else:
-            # 从时间戳转换为datetime对象
-            return datetime.fromtimestamp(next_exec_ts, tz=china_tz)
 
     @property
     def is_activated(self):
         return self.config.get_task_base_config(self.task_name, "是否启用")
 
+    @property
+    def temp_priority(self):
+        return self.config.get_task_base_config(self.task_name, "临时提权")
+
     def __lt__(self, other):
         """
-        优先级高的任务排在前面（值越大越优先）
-        优先级相同时，再按task_id和创建时间排序
+        任务比较规则：
+        1. temp_priority=True的任务优先级更高（值更大）
+        2. temp_priority相同的情况下，base_priority大的优先级更高
+        3. 如果base_priority也相同，create_time小的优先级更高
+
+        注意：由于堆是最小堆，我们需要让优先级高的任务"更小"
         """
-        # # 优先比较当前有效优先级（逆序：高优先级在前）
-        # if self.current_priority != other.current_priority:
-        #     return self.current_priority > other.current_priority  # 注意这里是>，因为堆是最小堆
-        # 优先级相同则比较task_id
-        if self.task_id != other.task_id:
-            return self.task_id < other.task_id
-        # 最后比较创建时间
+        # 1. 比较临时提权状态
+        if self.temp_priority != other.temp_priority:
+            # 有临时提权的任务优先级更高，在最小堆中应该排在前面（值更小）
+            return self.temp_priority > other.temp_priority
+
+        # 2. 比较基础优先级
+        if self.base_priority != other.base_priority:
+            # base_priority大的优先级更高，在最小堆中应该排在前面（值更小）
+            return self.base_priority > other.base_priority
+
+        # 3. 比较创建时间
+        # create_time小的优先级更高，在最小堆中应该排在前面（值更小）
         return self.create_time < other.create_time
 
     def __repr__(self):
         info_text = (f"任务名称: {self.task_name},"
-                     f"任务ID:{self.task_id},"
+                     f"任务ID:{self.base_priority},"
                      f"是否启用:{self.is_activated},"
                      f"任务状态:{self.current_status},"
                      f"下次执行时间:{self.next_execute_time}"
@@ -326,15 +326,16 @@ class BaseTask:
         """返回当前有效优先级（临时优先级优先于基础优先级）"""
         return self.temp_priority if self.temp_priority is not None else self.base_priority
 
-    def set_temp_priority(self, priority):
-        """设置临时优先级（用于动态提高优先级）"""
-        self.temp_priority = priority
-        self.logger.debug(f"任务[{self.task_name}]临时优先级设为{priority}")
-
-    def reset_priority(self):
-        """重置临时优先级（恢复基础优先级）"""
-        self.temp_priority = None
-        self.logger.debug(f"任务[{self.task_name}]优先级已重置为基础值{self.base_priority}")
+    @property
+    def next_execute_time(self):
+        china_tz = ZoneInfo("Asia/Shanghai")
+        next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
+        if next_exec_ts == 0:
+            # 若初始值为0，设置为当前UTC时间（或其他合理时间）
+            return datetime.now(china_tz)
+        else:
+            # 从时间戳转换为datetime对象
+            return datetime.fromtimestamp(next_exec_ts, tz=china_tz)
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         """

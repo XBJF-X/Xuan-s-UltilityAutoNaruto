@@ -7,6 +7,7 @@ from .GengDuoWanFa import GengDuoWanFa
 from .GouMaiTiLi import GouMaiTiLi
 from .HaoYouTiLi import HaoYouTiLi
 from .HuoYueDuJiangLi import HuoYueDuJiangLi
+from .JiFenSaiJiangLi import JiFenSaiJiangLi
 from .JinBiZhaoCai import JinBiZhaoCai
 from .KuaFuYaoSaiZhan import KuaFuYaoSaiZhan
 from .MaoXianFuBen import MaoXianFuBen
@@ -57,6 +58,7 @@ TASK_TYPE_MAP = {
     '情报站': QingBaoZhan,
     '冒险副本': MaoXianFuBen,
     '活跃度奖励': HuoYueDuJiangLi,
+    '积分赛奖励': JiFenSaiJiangLi,
     '清空邮件': QingKongYouJian,
 
     '修行之路': XiuXingZhiLu,
