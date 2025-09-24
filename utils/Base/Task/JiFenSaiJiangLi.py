@@ -10,6 +10,7 @@ class JiFenSaiJiangLi(BaseTask):
 
     @TransitionOn()
     def _(self):
+        self.operationer.click_and_wait("X")
         self.update_next_execute_time()
         return True
 
@@ -19,7 +20,7 @@ class JiFenSaiJiangLi(BaseTask):
         next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
         if next_exec_ts == 0:
             # 若初始值为0，设置为当前UTC时间（或其他合理时间）
-            return datetime.now(china_tz).replace(hour=21, minute=0, second=20, microsecond=0)
+            return datetime.now(china_tz).replace(hour=5, minute=0, second=20, microsecond=0)
         else:
             # 从时间戳转换为datetime对象
             return datetime.fromtimestamp(next_exec_ts, tz=china_tz)
@@ -49,7 +50,7 @@ class JiFenSaiJiangLi(BaseTask):
             case 1:  # 正常执行完毕，更新为下次执行的时间
                 next_day = current_time + timedelta(days=1)
                 next_execute_time = datetime(
-                    next_day.year, next_day.month, next_day.day, 21, 0, 20,
+                    next_day.year, next_day.month, next_day.day, 5, 0, 20,
                     tzinfo=china_tz
                 )
 

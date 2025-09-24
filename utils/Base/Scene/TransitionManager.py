@@ -235,6 +235,7 @@ class TransitionManager:
         @self.register("无差别-继续出战", "火影格斗大赛-无差别")
         @self.register("无差别-成就奖励", "火影格斗大赛-无差别")
         @self.register("丰饶之间-暂停", "丰饶之间-内部")
+        @self.register("追击晓组织-奖励", "追击晓组织")
         def _(operationer: Operationer, *args, **kwargs):
             """通用返回函数，点击[X]"""
             operationer.click_and_wait("X")
@@ -310,7 +311,8 @@ class TransitionManager:
         @self.register("离开队伍-确认", "小队突袭")
         @self.register("离开队伍-确认", "秘境探险-首页")
         @self.register("组织祈福-今日次数已达上限", "组织祈福")
-        @self.register("任务集会所-一键领取", "任务集会所")
+        @self.register("任务奖励-一键领取", "任务集会所")
+        @self.register("任务奖励-一键领取", "追击晓组织-奖励")
         @self.register("便捷扫荡-扫荡结束", "精英副本-便捷扫荡")
         @self.register("福利站-100活跃奖励-确认", "福利站-活跃奖励-获得奖励")
         @self.register("招募结果", "高级招募")
@@ -329,12 +331,12 @@ class TransitionManager:
         @self.register("你的对手离开了游戏", "地之战场")
         @self.register("你的对手离开了游戏", "火影格斗大赛-无差别")
         @self.register("对手已经掉线了", "火影格斗大赛-无差别")
-        @self.register("天地战场-战场战斗已经结束", "天地战场")
-        @self.register("天地战场-战场战斗已经结束", "火影格斗大赛-无差别")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("确定")
 
         @self.register("天地战场-确认退出", "天地战场")
+        @self.register("天地战场-战场战斗已经结束", "天之战场")
+        @self.register("天地战场-战场战斗已经结束", "地之战场")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("确认")
 
@@ -372,8 +374,8 @@ class TransitionManager:
                 [
                     {
                         "swipe": {
-                            "start_coordinate": [1339, 464],
-                            "end_coordinate": [260, 464],
+                            "start_coordinate": [1000, 464],
+                            "end_coordinate": [350, 464],
                             "duration": 0.5
                         }
                     }

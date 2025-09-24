@@ -71,7 +71,7 @@ class TaskWidget(QFrame):
         self.setStyleSheet(f"""
             /* 自身（QFrame）的样式：动态边框色 + 原有基础样式 */
             TaskWidget {{
-                border: 2px solid {border_color};  /* 动态边框色 */
+                border: 3px solid {border_color};  /* 动态边框色 */
                 border-radius: 5px;               /* 保留原有圆角 */
                 background-color: #f0f0f0;        /* 保留原有背景色 */
             }}

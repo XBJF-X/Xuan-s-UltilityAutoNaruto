@@ -368,9 +368,9 @@ class Ui_Service(object):
 "    background-color: rgb(222, 222, 222);\n"
 "}")
         self.verticalLayout = QVBoxLayout(self.widget_5)
-        self.verticalLayout.setSpacing(4)
+        self.verticalLayout.setSpacing(2)
         self.verticalLayout.setObjectName(u"verticalLayout")
-        self.verticalLayout.setContentsMargins(9, 9, 9, 9)
+        self.verticalLayout.setContentsMargins(9, 3, 9, 9)
         self.label_2 = QLabel(self.widget_5)
         self.label_2.setObjectName(u"label_2")
         self.label_2.setStyleSheet(u"\n"
@@ -471,7 +471,7 @@ class Ui_Service(object):
         self.scrollArea.setWidgetResizable(True)
         self.scroll_tasks_area_content = QWidget()
         self.scroll_tasks_area_content.setObjectName(u"scroll_tasks_area_content")
-        self.scroll_tasks_area_content.setGeometry(QRect(0, 0, 232, 599))
+        self.scroll_tasks_area_content.setGeometry(QRect(0, 0, 232, 609))
         self.scrollArea.setWidget(self.scroll_tasks_area_content)
 
         self.verticalLayout.addWidget(self.scrollArea)
@@ -621,7 +621,7 @@ class Ui_Service(object):
         self.scrollArea_8.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_5 = QWidget()
         self.scrollAreaWidgetContents_5.setObjectName(u"scrollAreaWidgetContents_5")
-        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, -101, 877, 1144))
+        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, -81, 877, 1144))
         self.verticalLayout_25 = QVBoxLayout(self.scrollAreaWidgetContents_5)
         self.verticalLayout_25.setSpacing(20)
         self.verticalLayout_25.setObjectName(u"verticalLayout_25")
@@ -1859,7 +1859,7 @@ class Ui_Service(object):
         self.screen_mode.currentIndexChanged.connect(self.screen_mode_settings_stackedWidget.setCurrentIndex)
 
         self.overview_panel_button.setDefault(False)
-        self.stackedWidget.setCurrentIndex(1)
+        self.stackedWidget.setCurrentIndex(0)
         self.screen_mode_settings_stackedWidget.setCurrentIndex(2)
 
 

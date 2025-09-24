@@ -835,13 +835,13 @@ QWidget QLabel {
                   </property>
                   <layout class="QVBoxLayout" name="verticalLayout">
                    <property name="spacing">
-                    <number>4</number>
+                    <number>2</number>
                    </property>
                    <property name="leftMargin">
                     <number>9</number>
                    </property>
                    <property name="topMargin">
-                    <number>9</number>
+                    <number>3</number>
                    </property>
                    <property name="rightMargin">
                     <number>9</number>
@@ -1132,7 +1132,7 @@ QScrollArea &gt; QWidget &gt; QWidget {
                         <x>0</x>
                         <y>0</y>
                         <width>232</width>
-                        <height>599</height>
+                        <height>609</height>
                        </rect>
                       </property>
                      </widget>

@@ -71,7 +71,7 @@ class RenWuJiHuiSuo(BaseTask):
             self.logger.info(f"已接取 {self.task_sum} 个任务")
         return False
 
-    @TransitionOn("任务集会所-一键领取")
+    @TransitionOn("任务奖励-一键领取")
     def _(self):
         self.operationer.click_and_wait("确定")
         return False
