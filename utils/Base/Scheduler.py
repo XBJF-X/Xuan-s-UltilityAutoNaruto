@@ -246,24 +246,14 @@ class TaskWidgetList(Generic[B, T]):
                 self.logger.debug(f"任务 {task_name} 不在队列中")
                 return False
 
-            self.logger.debug(f"刷新任务 {task_name} 控件，状态: {task.current_status}")
-
             widget = self.find_widget(task_name)
             if not widget:
-                self.logger.debug(f"为 {task_name} 创建新控件")
                 widget = self.add_widget(task)
                 if not widget:
                     return False
-            else:
-                self.logger.debug(f"找到 {task_name} 现有控件")
 
             # 更新显示
             widget.update_display()
-
-            # 强制UI更新
-            widget.update()
-            if widget.parent():
-                widget.parent().update()
 
             # 重新调整位置（状态可能已变更）
             current_index = self._find_widget_index(widget)
@@ -272,8 +262,6 @@ class TaskWidgetList(Generic[B, T]):
 
             new_index = self._find_insert_index(self.tasks_layout, task)
             self.tasks_layout.insertWidget(new_index, widget)
-
-            self.logger.debug(f"成功刷新 {task_name} 控件")
             return True
 
         except Exception as e:
@@ -388,7 +376,7 @@ class TaskWidgetList(Generic[B, T]):
             return -1 if task1.current_status < task2.current_status else 1
         # 先比较有无临时提权
         if task1.temp_priority != task2.temp_priority:
-            return -1 if task1.temp_priority < task2.temp_priority else 1
+            return -1 if task1.temp_priority > task2.temp_priority else 1
         # 比较执行时间
         if task1.next_execute_time != task2.next_execute_time:
             return -1 if task1.next_execute_time < task2.next_execute_time else 1
@@ -678,8 +666,7 @@ class Scheduler(QObject):
         task.temp_dead_line = None
         self.task_widget_list.refresh_task_widget(task.task_name)
         self.logger.info(f"[{task.task_name}]-[{task.base_priority}] 移出执行队列，进入等待队列")
-        if task.is_activated and self.running:
-            task.create_time = datetime.now(ZoneInfo("Asia/Shanghai"))
+        task.create_time = datetime.now(ZoneInfo("Asia/Shanghai"))
 
     def save_screen(self, name):
         """保存截图到文件"""
