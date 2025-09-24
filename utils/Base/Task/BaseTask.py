@@ -166,7 +166,7 @@ class BaseTask:
         """
         任务比较规则：
         1. temp_priority=True的任务优先级更高（值更大）
-        2. temp_priority相同的情况下，base_priority大的优先级更高
+        2. temp_priority相同的情况下，base_priority小的优先级更高
         3. 如果base_priority也相同，create_time小的优先级更高
 
         注意：由于堆是最小堆，我们需要让优先级高的任务"更小"
@@ -179,7 +179,7 @@ class BaseTask:
         # 2. 比较基础优先级
         if self.base_priority != other.base_priority:
             # base_priority大的优先级更高，在最小堆中应该排在前面（值更小）
-            return self.base_priority > other.base_priority
+            return self.base_priority < other.base_priority
 
         # 3. 比较创建时间
         # create_time小的优先级更高，在最小堆中应该排在前面（值更小）
