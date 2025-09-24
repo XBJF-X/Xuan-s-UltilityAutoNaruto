@@ -20,7 +20,6 @@ class GouMaiTiLi(BaseTask):
             return False
         self.operationer.click_and_wait("X")
         self.config.set_task_exe_prog("购买体力", "已购买体力次数", 0)
-        # self.activate_another_task_signal.emit("装备合成")
         self.update_next_execute_time()
         return True
 

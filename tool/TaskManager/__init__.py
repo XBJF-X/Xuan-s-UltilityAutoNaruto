@@ -43,7 +43,7 @@ class TaskNode(QGraphicsRectItem):
 
         # 创建矩形节点（基于文本大小）
         super().__init__(0, 0, width, height, parent)
-        self.task_id = task_id
+        self.base_priority = task_id
         self.is_highlighted = False  # 高亮状态
         self.normal_color = QColor(70, 130, 180)  # 正常颜色
         self.highlight_color = QColor(57, 197, 187)  # 高亮颜色（金色）
@@ -103,12 +103,12 @@ class TaskNode(QGraphicsRectItem):
     def mousePressEvent(self, event):
         """处理单击事件"""
         if event.button() == Qt.MouseButton.LeftButton:
-            self.signals.clicked.emit(self.task_id)  # 通过信号容器发射单击信号
+            self.signals.clicked.emit(self.base_priority)  # 通过信号容器发射单击信号
         super().mousePressEvent(event)
 
     def mouseDoubleClickEvent(self, event):
         """处理双击事件"""
-        self.signals.double_clicked.emit(self.task_id)  # 通过信号容器发射信号
+        self.signals.double_clicked.emit(self.base_priority)  # 通过信号容器发射信号
         super().mouseDoubleClickEvent(event)
 
     def contextMenuEvent(self, event):
@@ -116,7 +116,7 @@ class TaskNode(QGraphicsRectItem):
         menu = QMenu()
 
         # 显示当前优先级（禁用状态，仅用于显示）
-        current_priority = self.parent_tasks[self.task_id]["优先级"]
+        current_priority = self.parent_tasks[self.base_priority]["优先级"]
         current_priority_action = QAction(f"当前优先级: {current_priority}", menu)
         current_priority_action.setEnabled(False)
         menu.addAction(current_priority_action)
@@ -126,7 +126,7 @@ class TaskNode(QGraphicsRectItem):
 
         # 添加"复制任务名称"菜单项
         copy_action = QAction("复制任务名称", menu)
-        copy_action.triggered.connect(lambda: QApplication.clipboard().setText(self.task_id))
+        copy_action.triggered.connect(lambda: QApplication.clipboard().setText(self.base_priority))
         menu.addAction(copy_action)
 
         # 添加分隔线
@@ -141,7 +141,7 @@ class TaskNode(QGraphicsRectItem):
         for priority in range(-10, max_priority + 4):  # 范围从-10到最大优先级+3
             action = QAction(f"优先级 {priority}", priority_menu)
             action.triggered.connect(
-                lambda checked, p=priority: self.signals.request_priority_change.emit(self.task_id, p)
+                lambda checked, p=priority: self.signals.request_priority_change.emit(self.base_priority, p)
             )
             priority_menu.addAction(action)
 
@@ -283,8 +283,8 @@ class TaskGraphView(QGraphicsView):
         self.scene = QGraphicsScene()
         self.setScene(self.scene)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
-        self.tasks: Dict[
-        str:Any] = json.load(open(get_real_path("src/TaskConfig.json"), 'r', encoding='utf-8'))
+        config = json.load(open(get_real_path("tool/TaskManager/DefaultConfig.json"), 'r', encoding='utf-8'))
+        self.tasks: Dict[str:Any] = config["任务"]
         self.nodes = {}  # 任务ID到节点对象的映射
         self.edges = {}  # (源ID, 目标ID)到边对象的映射
         self.highlighted_node = None  # 当前高亮的节点
@@ -458,7 +458,6 @@ class TaskGraphView(QGraphicsView):
             # 重新初始化视图以更新布局
             self.init()
 
-
     def add_edge(self, source_id, target_id):
         """添加任务跳转关系"""
         if source_id not in self.nodes or target_id not in self.nodes:
@@ -612,7 +611,6 @@ class TaskGraphView(QGraphicsView):
 
             # 重新初始化视图
             self.init()
-
 
     def showEvent(self, event):
         """显示时适应视图"""

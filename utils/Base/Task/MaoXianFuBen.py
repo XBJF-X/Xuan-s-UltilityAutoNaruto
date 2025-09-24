@@ -54,7 +54,7 @@ class MaoXianFuBen(BaseTask):
     @TransitionOn("体力不足")
     def _(self):
         self.operationer.click_and_wait("X")
-        self._activate_another_task("装备合成")
+        self._activate_another_task("消耗体力")
         self.update_next_execute_time()
         return True
 

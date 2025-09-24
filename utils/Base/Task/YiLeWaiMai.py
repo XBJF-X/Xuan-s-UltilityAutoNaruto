@@ -23,7 +23,7 @@ class YiLeWaiMai(BaseTask):
             self.logger.debug(f"已领取了 {takeout_sum} 份外卖")
             continue
         if takeout_sum:
-            self._activate_another_task("装备合成")
+            self._activate_another_task("消耗体力")
         self.operationer.click_and_wait("X")
         self.update_next_execute_time()
         return True
