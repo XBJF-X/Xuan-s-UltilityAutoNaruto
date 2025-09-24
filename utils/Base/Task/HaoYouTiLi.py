@@ -37,7 +37,7 @@ class HaoYouTiLi(BaseTask):
             return False
         self.update_next_execute_time()
         self.operationer.click_and_wait("X")
-        self.activate_another_task_signal.emit("装备合成")
+        # self.activate_another_task_signal.emit("装备合成")
         return True
 
     @TransitionOn("领取好友体力成功")
