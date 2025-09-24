@@ -173,11 +173,11 @@ class Service(QWidget):
         self.config.set_config('调试模式', int(flag))
 
     def _on_screen_mode_change(self, index):
-        # self.UI.screen_mode_settings_stackedWidget.setCurrentIndex(index)
         self.config.set_config("截图模式", index)
 
     def _on_control_mode_change(self, index):
         self.config.set_config("控制模式", index)
+
 
     def _on_key_map_configuration_button_clicked(self):
         if self.scheduler.device is not None:

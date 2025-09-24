@@ -273,14 +273,19 @@ class BaseTask:
             self.logger.debug(f"场景{scene_name}绑定的函数：{func.__qualname__}")
             result = self.transition_func[scene_name](self)
             return result
-
+        # 如果设置了next_scene，优先跳转
+        if self.operationer.next_scene:
+            if self.operationer.next_scene == scene_name:
+                self.operationer.next_scene = None
+            else:
+                return self.transition_manager.transition(self.operationer)
         if scene.name not in self.transition_func:
-            # 如果设置了next_scene，优先跳转
-            if self.operationer.next_scene:
-                if self.operationer.next_scene == scene_name:
-                    self.operationer.next_scene = None
-                else:
-                    return self.transition_manager.transition(self.operationer)
+            # # 如果设置了next_scene，优先跳转
+            # if self.operationer.next_scene:
+            #     if self.operationer.next_scene == scene_name:
+            #         self.operationer.next_scene = None
+            #     else:
+            #         return self.transition_manager.transition(self.operationer)
             scene_name = "未注册场景"
 
         # # 正常执行注册函数

@@ -267,6 +267,7 @@ class Ui_Service(object):
         self.verticalLayout_3.setContentsMargins(7, 0, 7, 0)
         self.widget_4 = QWidget(self.widget_2)
         self.widget_4.setObjectName(u"widget_4")
+        self.widget_4.setMaximumSize(QSize(16777215, 55))
         palette2 = QPalette()
         brush2 = QBrush(QColor(15, 50, 47, 255))
         brush2.setStyle(Qt.BrushStyle.SolidPattern)
@@ -468,256 +469,18 @@ class Ui_Service(object):
         self.scrollArea.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.scrollArea.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scrollArea.setWidgetResizable(True)
-        self.scroll_area_running_content = QWidget()
-        self.scroll_area_running_content.setObjectName(u"scroll_area_running_content")
-        self.scroll_area_running_content.setGeometry(QRect(0, 0, 232, 63))
-        self.scrollArea.setWidget(self.scroll_area_running_content)
+        self.scroll_tasks_area_content = QWidget()
+        self.scroll_tasks_area_content.setObjectName(u"scroll_tasks_area_content")
+        self.scroll_tasks_area_content.setGeometry(QRect(0, 0, 232, 599))
+        self.scrollArea.setWidget(self.scroll_tasks_area_content)
 
         self.verticalLayout.addWidget(self.scrollArea)
 
 
         self.verticalLayout_3.addWidget(self.widget_5)
 
-        self.widget_6 = QWidget(self.widget_2)
-        self.widget_6.setObjectName(u"widget_6")
-        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
-        sizePolicy2.setHorizontalStretch(0)
-        sizePolicy2.setVerticalStretch(0)
-        sizePolicy2.setHeightForWidth(self.widget_6.sizePolicy().hasHeightForWidth())
-        self.widget_6.setSizePolicy(sizePolicy2)
-        self.widget_6.setStyleSheet(u"#widget_6 {  /* \u4ec5\u5339\u914d objectName \u4e3a myWidget \u7684\u63a7\u4ef6 */\n"
-"    background-color: rgb(222, 222, 222);\n"
-"border-radius: 10px;\n"
-"}\n"
-"QWidget QLabel {\n"
-"    background-color: rgb(222, 222, 222);\n"
-"}")
-        self.verticalLayout_6 = QVBoxLayout(self.widget_6)
-        self.verticalLayout_6.setSpacing(4)
-        self.verticalLayout_6.setObjectName(u"verticalLayout_6")
-        self.verticalLayout_6.setContentsMargins(9, 9, 9, 9)
-        self.label_3 = QLabel(self.widget_6)
-        self.label_3.setObjectName(u"label_3")
-        self.label_3.setStyleSheet(u"margin-top:3px;\n"
-"margin-bottom:0px;")
-
-        self.verticalLayout_6.addWidget(self.label_3)
-
-        self.line_2 = QFrame(self.widget_6)
-        self.line_2.setObjectName(u"line_2")
-        palette4 = QPalette()
-        palette4.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.WindowText, brush5)
-        palette4.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Button, brush)
-        palette4.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Text, brush2)
-        palette4.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.ButtonText, brush2)
-        palette4.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush)
-        palette4.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush)
-#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
-        palette4.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.PlaceholderText, brush4)
-#endif
-        palette4.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.WindowText, brush5)
-        palette4.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Button, brush)
-        palette4.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Text, brush2)
-        palette4.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.ButtonText, brush2)
-        palette4.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush)
-        palette4.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush)
-#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
-        palette4.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.PlaceholderText, brush4)
-#endif
-        palette4.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText, brush6)
-        palette4.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Button, brush)
-        palette4.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text, brush2)
-        palette4.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText, brush2)
-        palette4.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush)
-        palette4.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush)
-#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
-        palette4.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.PlaceholderText, brush4)
-#endif
-        self.line_2.setPalette(palette4)
-        self.line_2.setLineWidth(2)
-        self.line_2.setFrameShape(QFrame.Shape.VLine)
-        self.line_2.setFrameShadow(QFrame.Shadow.Sunken)
-
-        self.verticalLayout_6.addWidget(self.line_2)
-
-        self.scrollArea_2 = QScrollArea(self.widget_6)
-        self.scrollArea_2.setObjectName(u"scrollArea_2")
-        self.scrollArea_2.setStyleSheet(u"QScrollArea {\n"
-"    /* \u4e3b\u8fb9\u6846\uff1a\u7070\u8272\u5b9e\u7ebf\uff0c2px\u5bbd\uff0c\u5706\u89d25px */\n"
-"    border: 2px solid rgb(209, 209, 209);\n"
-"    border-radius: 5px;\n"
-"    /* \u5185\u8fb9\u8ddd\uff0c\u907f\u514d\u5185\u5bb9\u7d27\u8d34\u8fb9\u6846 */\n"
-"    padding-right: 3px;\n"
-"    /* \u80cc\u666f\u8272 */\n"
-"    background-color: #e7e7e7;\n"
-"}\n"
-"\n"
-"/* \u6eda\u52a8\u533a\u57df\u7684\u5185\u5bb9\u533a\u57df\uff08QScrollArea\u7684\u89c6\u53e3\uff09 */\n"
-"QScrollArea > QWidget > QWidget {\n"
-"    /* \u5185\u5bb9\u533a\u57df\u80cc\u666f\u8272 */\n"
-"    background-color: #e2e2e2;\n"
-"}\n"
-"        /* \u5782\u76f4\u6eda\u52a8\u6761\u6574\u4f53 */\n"
-"        QScrollBar:vertical {\n"
-"            background-color: #e2e2e2;\n"
-"            width: 6px;\n"
-"            margin: 0px;\n"
-"            border-radius: 4px;\n"
-"        }\n"
-"        QScrollBar::handle:vertical {\n"
-"            background-color: #8b8b8b;\n"
-"            border-radius: 3px;\n"
-"            margin: 3 0px 6 0px;"
-                        "\n"
-"            min-height: 30px;\n"
-"        }\n"
-"        QScrollBar::handle:vertical:hover,\n"
-"        QScrollBar::handle:vertical:pressed {\n"
-"            background-color: #3c3f41;\n"
-"            border-radius: 3px;\n"
-"            margin: 0 0px 0 0px;\n"
-"        }\n"
-"        QScrollBar::sub-line:vertical {\n"
-"            border: none;\n"
-"            height: 0px;\n"
-"        }\n"
-"        QScrollBar::add-line:vertical {\n"
-"            border: none;\n"
-"            height: 0px;\n"
-"        }")
-        self.scrollArea_2.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.scrollArea_2.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.scrollArea_2.setWidgetResizable(True)
-        self.scroll_area_ready_content = QWidget()
-        self.scroll_area_ready_content.setObjectName(u"scroll_area_ready_content")
-        self.scroll_area_ready_content.setGeometry(QRect(0, 0, 232, 128))
-        self.scrollArea_2.setWidget(self.scroll_area_ready_content)
-
-        self.verticalLayout_6.addWidget(self.scrollArea_2)
-
-
-        self.verticalLayout_3.addWidget(self.widget_6)
-
-        self.widget_7 = QWidget(self.widget_2)
-        self.widget_7.setObjectName(u"widget_7")
-        self.widget_7.setStyleSheet(u"#widget_7 {  /* \u4ec5\u5339\u914d objectName \u4e3a myWidget \u7684\u63a7\u4ef6 */\n"
-"    background-color: rgb(222, 222, 222);\n"
-"border-radius: 10px;\n"
-"}\n"
-"QWidget QLabel {\n"
-"    background-color: rgb(222, 222, 222);\n"
-"}")
-        self.verticalLayout_7 = QVBoxLayout(self.widget_7)
-        self.verticalLayout_7.setSpacing(4)
-        self.verticalLayout_7.setObjectName(u"verticalLayout_7")
-        self.verticalLayout_7.setContentsMargins(9, 9, 9, 9)
-        self.label_4 = QLabel(self.widget_7)
-        self.label_4.setObjectName(u"label_4")
-        self.label_4.setStyleSheet(u"\n"
-"margin-top:3px;\n"
-"margin-bottom:0px;")
-
-        self.verticalLayout_7.addWidget(self.label_4)
-
-        self.line_3 = QFrame(self.widget_7)
-        self.line_3.setObjectName(u"line_3")
-        palette5 = QPalette()
-        palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.WindowText, brush5)
-        palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Button, brush)
-        palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Text, brush2)
-        palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.ButtonText, brush2)
-        palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, brush)
-        palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, brush)
-#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
-        palette5.setBrush(QPalette.ColorGroup.Active, QPalette.ColorRole.PlaceholderText, brush4)
-#endif
-        palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.WindowText, brush5)
-        palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Button, brush)
-        palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Text, brush2)
-        palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.ButtonText, brush2)
-        palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, brush)
-        palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, brush)
-#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
-        palette5.setBrush(QPalette.ColorGroup.Inactive, QPalette.ColorRole.PlaceholderText, brush4)
-#endif
-        palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.WindowText, brush6)
-        palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Button, brush)
-        palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text, brush2)
-        palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText, brush2)
-        palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Base, brush)
-        palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Window, brush)
-#if QT_VERSION >= QT_VERSION_CHECK(5, 12, 0)
-        palette5.setBrush(QPalette.ColorGroup.Disabled, QPalette.ColorRole.PlaceholderText, brush4)
-#endif
-        self.line_3.setPalette(palette5)
-        self.line_3.setLineWidth(2)
-        self.line_3.setFrameShape(QFrame.Shape.VLine)
-        self.line_3.setFrameShadow(QFrame.Shadow.Sunken)
-
-        self.verticalLayout_7.addWidget(self.line_3)
-
-        self.scrollArea_3 = QScrollArea(self.widget_7)
-        self.scrollArea_3.setObjectName(u"scrollArea_3")
-        self.scrollArea_3.setStyleSheet(u"QScrollArea {\n"
-"    /* \u4e3b\u8fb9\u6846\uff1a\u7070\u8272\u5b9e\u7ebf\uff0c2px\u5bbd\uff0c\u5706\u89d25px */\n"
-"    border: 2px solid rgb(209, 209, 209);\n"
-"    border-radius: 5px;\n"
-"    /* \u5185\u8fb9\u8ddd\uff0c\u907f\u514d\u5185\u5bb9\u7d27\u8d34\u8fb9\u6846 */\n"
-"    padding-right: 3px;\n"
-"    /* \u80cc\u666f\u8272 */\n"
-"    background-color: #e7e7e7;\n"
-"}\n"
-"\n"
-"/* \u6eda\u52a8\u533a\u57df\u7684\u5185\u5bb9\u533a\u57df\uff08QScrollArea\u7684\u89c6\u53e3\uff09 */\n"
-"QScrollArea > QWidget > QWidget {\n"
-"    /* \u5185\u5bb9\u533a\u57df\u80cc\u666f\u8272 */\n"
-"    background-color: #e2e2e2;\n"
-"}\n"
-"        /* \u5782\u76f4\u6eda\u52a8\u6761\u6574\u4f53 */\n"
-"        QScrollBar:vertical {\n"
-"            background-color: #e2e2e2;\n"
-"            width: 6px;\n"
-"            margin: 0px;\n"
-"            border-radius: 4px;\n"
-"        }\n"
-"        QScrollBar::handle:vertical {\n"
-"            background-color: #8b8b8b;\n"
-"            border-radius: 3px;\n"
-"            margin: 3 0px 6 0px;"
-                        "\n"
-"            min-height: 30px;\n"
-"        }\n"
-"        QScrollBar::handle:vertical:hover,\n"
-"        QScrollBar::handle:vertical:pressed {\n"
-"            background-color: #3c3f41;\n"
-"            border-radius: 3px;\n"
-"            margin: 0 0px 0 0px;\n"
-"        }\n"
-"        QScrollBar::sub-line:vertical {\n"
-"            border: none;\n"
-"            height: 0px;\n"
-"        }\n"
-"        QScrollBar::add-line:vertical {\n"
-"            border: none;\n"
-"            height: 0px;\n"
-"        }")
-        self.scrollArea_3.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.scrollArea_3.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        self.scrollArea_3.setWidgetResizable(True)
-        self.scroll_area_wait_content = QWidget()
-        self.scroll_area_wait_content.setObjectName(u"scroll_area_wait_content")
-        self.scroll_area_wait_content.setGeometry(QRect(0, 0, 232, 255))
-        self.scrollArea_3.setWidget(self.scroll_area_wait_content)
-
-        self.verticalLayout_7.addWidget(self.scrollArea_3)
-
-
-        self.verticalLayout_3.addWidget(self.widget_7)
-
         self.verticalLayout_3.setStretch(0, 1)
         self.verticalLayout_3.setStretch(1, 1)
-        self.verticalLayout_3.setStretch(2, 3)
-        self.verticalLayout_3.setStretch(3, 5)
 
         self.horizontalLayout_2.addWidget(self.widget_2)
 
@@ -858,7 +621,7 @@ class Ui_Service(object):
         self.scrollArea_8.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_5 = QWidget()
         self.scrollAreaWidgetContents_5.setObjectName(u"scrollAreaWidgetContents_5")
-        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 586, 1144))
+        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, -101, 877, 1144))
         self.verticalLayout_25 = QVBoxLayout(self.scrollAreaWidgetContents_5)
         self.verticalLayout_25.setSpacing(20)
         self.verticalLayout_25.setObjectName(u"verticalLayout_25")
@@ -1043,11 +806,11 @@ class Ui_Service(object):
         self.verticalLayout_13.setObjectName(u"verticalLayout_13")
         self.serial_list_button = QPushButton(self.widget_20)
         self.serial_list_button.setObjectName(u"serial_list_button")
-        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        sizePolicy3.setHorizontalStretch(0)
-        sizePolicy3.setVerticalStretch(0)
-        sizePolicy3.setHeightForWidth(self.serial_list_button.sizePolicy().hasHeightForWidth())
-        self.serial_list_button.setSizePolicy(sizePolicy3)
+        sizePolicy2 = QSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        sizePolicy2.setHorizontalStretch(0)
+        sizePolicy2.setVerticalStretch(0)
+        sizePolicy2.setHeightForWidth(self.serial_list_button.sizePolicy().hasHeightForWidth())
+        self.serial_list_button.setSizePolicy(sizePolicy2)
         self.serial_list_button.setMinimumSize(QSize(100, 34))
 
         self.verticalLayout_13.addWidget(self.serial_list_button, 0, Qt.AlignmentFlag.AlignHCenter)
@@ -1127,8 +890,11 @@ class Ui_Service(object):
 
         self.widget_23 = QWidget(self.scrollAreaWidgetContents_5)
         self.widget_23.setObjectName(u"widget_23")
-        sizePolicy2.setHeightForWidth(self.widget_23.sizePolicy().hasHeightForWidth())
-        self.widget_23.setSizePolicy(sizePolicy2)
+        sizePolicy3 = QSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
+        sizePolicy3.setHorizontalStretch(0)
+        sizePolicy3.setVerticalStretch(0)
+        sizePolicy3.setHeightForWidth(self.widget_23.sizePolicy().hasHeightForWidth())
+        self.widget_23.setSizePolicy(sizePolicy3)
         self.widget_23.setStyleSheet(u"QWidget {\n"
 "                background-color: #dfdfdf;  /* \u80cc\u666f\u989c\u8272 */\n"
 "				border-radius:10px;\n"
@@ -2075,7 +1841,6 @@ class Ui_Service(object):
 
         self.horizontalLayout_12.addWidget(self.scrollArea_8)
 
-        self.horizontalLayout_12.setStretch(0, 5)
 
         self.horizontalLayout_5.addWidget(self.widget_19)
 
@@ -2091,9 +1856,10 @@ class Ui_Service(object):
 
 
         self.retranslateUi(Service)
+        self.screen_mode.currentIndexChanged.connect(self.screen_mode_settings_stackedWidget.setCurrentIndex)
 
         self.overview_panel_button.setDefault(False)
-        self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(1)
         self.screen_mode_settings_stackedWidget.setCurrentIndex(2)
 
 
@@ -2105,9 +1871,7 @@ class Ui_Service(object):
         self.overview_panel_button.setText(QCoreApplication.translate("Service", u"\u603b\u89c8\u9762\u677f", None))
         self.label.setText(QCoreApplication.translate("Service", u"\u8c03\u5ea6\u5668", None))
         self.start_schedule_button.setText(QCoreApplication.translate("Service", u"\u542f\u52a8", None))
-        self.label_2.setText(QCoreApplication.translate("Service", u"\u8fd0\u884c\u961f\u5217", None))
-        self.label_3.setText(QCoreApplication.translate("Service", u"\u5c31\u7eea\u961f\u5217", None))
-        self.label_4.setText(QCoreApplication.translate("Service", u"\u7b49\u5f85\u961f\u5217", None))
+        self.label_2.setText(QCoreApplication.translate("Service", u"\u4efb\u52a1\u961f\u5217", None))
         self.log_text_label.setText(QCoreApplication.translate("Service", u"\u65e5\u5fd7", None))
         self.bool_debug.setText(QCoreApplication.translate("Service", u"\u8c03\u8bd5\u6a21\u5f0f", None))
         self.bool_save_img.setText(QCoreApplication.translate("Service", u"\u4fdd\u5b58\u56fe\u50cf", None))

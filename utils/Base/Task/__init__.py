@@ -32,7 +32,7 @@ from .WuChaBieYuXuanSai import WuChaBieYuXuanSai
 from .XiaoDuiTuXi import XiaoDuiTuXi
 from .XiuXingZhiLu import XiuXingZhiLu
 from .YiLeWaiMai import YiLeWaiMai
-from .ZhuangBeiHeCheng import ZhuangBeiHeCheng
+from .XiaoHaoTiLi import XiaoHaoTiLi
 from .ZhuiJiXiaoZuZhi import ZhuiJiXiaoZuZhi
 from .ZuZhiQiFu import ZuZhiQiFu
 from .ZuZhiZhengBa import ZuZhiZhengBa
@@ -76,7 +76,7 @@ TASK_TYPE_MAP = {
     '组织争霸': ZuZhiZhengBa,
     "赛季胜场": SaiJiShengChang,
 
-    '装备合成': ZhuangBeiHeCheng,
+    '消耗体力': XiaoHaoTiLi,
     '高级忍者招募': GaoJiRenZheZhaoMu,
 
     '无差别预选赛': WuChaBieYuXuanSai,
