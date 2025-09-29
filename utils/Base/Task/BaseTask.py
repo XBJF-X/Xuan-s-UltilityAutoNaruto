@@ -300,7 +300,12 @@ class BaseTask:
             else:
                 # 如果找不到路径，回退到原来的处理方式
                 scene_name = "未注册场景"
-
+        # 如果设置了next_scene，优先跳转
+        if self.operationer.next_scene:
+            if self.operationer.next_scene == scene_name:
+                self.operationer.next_scene = None
+            else:
+                return self.transition_manager.transition(self.operationer)
         # # 正常执行注册函数
         # self.logger.debug(f"寻找注册函数: {scene_name}")
         func = self.transition_func[scene_name]
