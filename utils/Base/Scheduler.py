@@ -61,7 +61,7 @@ class TaskWidget(QFrame):
             status_color_map = {
                 0: "#779977",  # 状态0：原有默认色（深绿灰）
                 1: "#FFFF00",  # 状态1：黄色
-                2: "#999999"   # 状态2：灰色
+                2: "#999999"  # 状态2：灰色
             }
             # 若 current_status 不在 0/1/2 范围内，默认用原有色
             border_color = status_color_map.get(self.task.current_status, "#779977")
@@ -97,7 +97,8 @@ class TaskWidget(QFrame):
 
         # -------------------------- 4. 保留原有显示逻辑 --------------------------
         # 更新任务名称
-        self.name_label.setText(f"[{self.task.base_priority}]{self.task.task_name}")
+        priority_str = f"[{self.task.base_priority}]"
+        self.name_label.setText(f"{priority_str.ljust(5)}{self.task.task_name}")
 
         # 更新下次执行时间（原有逻辑不变）
         current_date = datetime.now(ZoneInfo("Asia/Shanghai")).date()
@@ -148,27 +149,22 @@ class PriorityQueue(Generic[B]):
         """获取任务而不删除它"""
         return self.task_dic.get(task_name)
 
-    def execute_at_once(self, task_name: str):
-        """立刻运行任务"""
-        if task_name not in self.task_dic:
-            return False, None
-        task = self.task_dic[task_name]
-        # 更新任务属性
-        flag, net = task.update_next_execute_time(2)
-        if not flag:  # 新增：更新失败直接返回
-            return False, net
-        # 从堆中移除并重新插入
-        try:
-            self.heap.remove(task)
-            heapq.heapify(self.heap)  # 重新堆化
-            heapq.heappush(self.heap, task)  # 重新插入
-            return True, net
-        except ValueError:
-            return False, None
+    def reheapify(self):
+        """重新构建整个堆"""
+        tasks = self.heap.copy()
+        self.heap = []
+        for task in tasks:
+            heapq.heappush(self.heap, task)
 
-    def get_tasks_by_status(self, status: int) -> List[B]:
-        """获取指定状态的所有任务"""
-        return [task for task in self.heap if task.current_status == status]
+    def refresh_task(self, task_name: str) -> bool:
+        """刷新指定任务的位置"""
+        if task_name not in self.task_dic:
+            return False
+        task = self.task_dic[task_name]
+        self.heap.remove(task)
+        heapq.heapify(self.heap)
+        heapq.heappush(self.heap, task)
+        return True
 
     def update_task_status(self, task_name: str, new_status: int) -> bool:
         """更新任务状态"""
@@ -181,6 +177,10 @@ class PriorityQueue(Generic[B]):
         heapq.heapify(self.heap)
         heapq.heappush(self.heap, task)
         return True
+
+    def get_tasks_by_status(self, status: int) -> List[B]:
+        """获取指定状态的所有任务"""
+        return [task for task in self.heap if task.current_status == status]
 
 
 class TaskWidgetList(Generic[B, T]):
@@ -241,6 +241,7 @@ class TaskWidgetList(Generic[B, T]):
     def refresh_task_widget(self, task_name: str) -> bool:
         """刷新单个任务控件"""
         try:
+            self.task_queue.refresh_task(task_name)
             task = self.task_queue.get_task(task_name)
             if not task:
                 self.logger.debug(f"任务 {task_name} 不在队列中")
@@ -377,6 +378,7 @@ class TaskWidgetList(Generic[B, T]):
         # 先比较有无临时提权
         if task1.temp_priority != task2.temp_priority:
             return -1 if task1.temp_priority > task2.temp_priority else 1
+
         # 比较执行时间
         if task1.next_execute_time != task2.next_execute_time:
             return -1 if task1.next_execute_time < task2.next_execute_time else 1
@@ -384,7 +386,6 @@ class TaskWidgetList(Generic[B, T]):
         # 比较任务ID
         if task1.base_priority != task2.base_priority:
             return -1 if task1.base_priority < task2.base_priority else 1
-
         # 比较创建时间
         if task1.create_time != task2.create_time:
             return -1 if task1.create_time < task2.create_time else 1
@@ -570,26 +571,32 @@ class Scheduler(QObject):
         lineedit_widget = self.task_common_control_ref_map[task_name]["LineEdit"]
         if lineedit_widget.text() != "":
             return
-
-        if not self.running:
+        task = self.task_queue.get_task(task_name)
+        if not task:
+            self.logger.error(f"任务 {task_name} 不在队列中")
             return
-        self.activate_another_task_signal.emit(task_name)
+        lineedit_widget.setEnabled(False)
+        task.update_next_execute_time(2)
+        self.task_widget_list.refresh_task_widget(task_name)
+        lineedit_widget.setText(task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
+        lineedit_widget.setEnabled(True)
+        self.logger.info(f"任务 {task_name} 等待立即执行")
 
     def activate_another_task_implement(self, task_name):
         """任务调用其他任务立刻执行"""
         lineedit_widget = self.task_common_control_ref_map[task_name]["LineEdit"]
-        if not self.running:
-            return
         lineedit_widget.setEnabled(False)
         self.config.set_task_base_config(task_name, "临时提权", True)
-        flag, net = self.task_queue.execute_at_once(task_name)
-        self.task_widget_list.refresh_task_widget(task_name)
-        lineedit_widget.setText(net.strftime("%Y-%m-%d %H:%M:%S"))
-        lineedit_widget.setEnabled(True)
-        if not flag:
-            self.logger.error(f"任务 {task_name} 放入等待队列等待立即执行失败")
+        task = self.task_queue.get_task(task_name)
+        if not task:
+            self.logger.error(f"任务 {task_name} 不在队列中")
             return
-        self.logger.info(f"任务 {task_name} 已放入等待队列等待立即执行")
+        lineedit_widget.setEnabled(False)
+        task.update_next_execute_time(2)
+        self.task_widget_list.refresh_task_widget(task_name)
+        lineedit_widget.setText(task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
+        lineedit_widget.setEnabled(True)
+        self.logger.info(f"任务 {task_name} 等待立即执行")
 
     def init_scroll_area_layouts(self):
         """初始化任务滚动区域的布局"""

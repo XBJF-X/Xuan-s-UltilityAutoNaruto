@@ -13,7 +13,7 @@ class GouMaiTiLi(BaseTask):
     def _(self):
         times = self.config.get_task_exe_prog("购买体力", "已购买体力次数")
         if times < self.config.get_task_exe_param("购买体力", "购买体力次数"):
-            self.operationer.click_and_wait("购买", wait_time=1)
+            self.operationer.click_and_wait("购买", wait_time=1.5)
             times += 1
             self.config.set_task_exe_prog("购买体力", "已购买体力次数", times)
             self.logger.info(f"已购买体力 {times} 次")

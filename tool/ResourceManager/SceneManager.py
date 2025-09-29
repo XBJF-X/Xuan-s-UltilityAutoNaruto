@@ -22,6 +22,7 @@ class SceneManager(QMainWindow):
         self.resource_manager = ResourceDBManager(db_path)
         self.scene_graph_view = SceneGraphView(self.resource_manager, self.UI.centralwidget)
         self.UI.horizontalLayout.addWidget(self.scene_graph_view)
+
         self.UI.refresh.triggered.connect(self._handle_refresh)
         self.UI.new_node.triggered.connect(self._handle_new_node)
         self.UI.save.triggered.connect(self._handle_save)

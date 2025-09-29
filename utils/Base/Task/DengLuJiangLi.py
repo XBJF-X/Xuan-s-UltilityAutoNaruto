@@ -8,7 +8,8 @@ class DengLuJiangLi(BaseTask):
     task_max_duration = timedelta(minutes=5)
 
     def run(self):
-        self.operationer.restart()
+        if self.operationer.device.current_app()!=self.operationer.device.package_name:
+            self.operationer.restart()
         super().run()
 
     @TransitionOn("登录界面")

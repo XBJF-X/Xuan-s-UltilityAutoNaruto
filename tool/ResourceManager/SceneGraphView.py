@@ -1,5 +1,6 @@
 import logging
 import math
+from importlib import reload
 from pathlib import Path
 
 from PySide6.QtCore import Qt, QPointF, Signal, QObject, QLineF
@@ -13,7 +14,7 @@ from tool.ResourceManager.ResourceDBManager import ResourceDBManager
 from tool.ResourceManager.SceneEditor import SceneEditor
 from utils.Base.Recognizer import Recognizer
 from utils.Base.Scene.SceneGraph import SceneGraph
-from utils.Base.Scene.TransitionManager import TransitionManager
+import utils.Base.Scene.TransitionManager
 
 
 class SceneNodeSignals(QObject):
@@ -169,11 +170,12 @@ class SceneEdge(QGraphicsPathItem):
 
         # 颜色定义
         self.normal_color = QColor(105, 105, 105)  # 正常颜色-灰色
-        self.warning_color = QColor(255, 140, 0)   # 警告颜色-橙色
-        self.error_color = QColor(220, 20, 60)     # 错误颜色-红色
+        self.warning_color = QColor(255, 140, 0)  # 警告颜色-橙色
+        self.error_color = QColor(220, 20, 60)  # 错误颜色-红色
 
         # 只检查当前边的方向是否实现
-        source_to_target = (source_node.scene_id, target_node.scene_id) in transition_manager.transition_map
+        source_to_target = (source_node.scene_id,
+        target_node.scene_id) in transition_manager.transition_map
 
         # 根据实现状态设置颜色
         if source_to_target:
@@ -293,7 +295,7 @@ class SceneGraphView(QGraphicsView):
         super().__init__(parent)
         self.logger = logging.getLogger("场景可视化视图")
         self.resource_manager = resource_manager
-        self.transition_manager = TransitionManager(None)
+        self.transition_manager = utils.Base.Scene.TransitionManager.TransitionManager(None)
         self.recognizer = Recognizer(SceneGraph(self.resource_manager))
         self.scene = QGraphicsScene()
         self.setScene(self.scene)
@@ -321,6 +323,10 @@ class SceneGraphView(QGraphicsView):
     def init(self):
         self.clear()
         self.highlighted_node = None  # 当前高亮的节点
+        reload(utils.Base.Scene.TransitionManager)
+        self.transition_manager = utils.Base.Scene.TransitionManager.TransitionManager(None)
+        self.recognizer.scene_graph = SceneGraph(self.resource_manager)
+
         for scene in self.resource_manager.get_all_scenes():
             self.add_node(scene.name)
         for edge in self.resource_manager.get_all_scene_edges():

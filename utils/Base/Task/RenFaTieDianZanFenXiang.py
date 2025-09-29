@@ -24,37 +24,34 @@ class RenFaTieDianZanFenXiang(BaseTask):
         self.update_next_execute_time()
         return True
 
-    def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
-        # 明确指定中国时区（带时区的当前时间）
-        china_tz = ZoneInfo("Asia/Shanghai")
-        current_time = datetime.now(china_tz)
+    def _handle_initialization(self, current_time: datetime) -> datetime:
+        def get_this_monday_5am(current_time, tz):
+            days_ahead = (0 - current_time.weekday()) % 7
+            next_monday = current_time + timedelta(days=days_ahead)
+            return next_monday.replace(hour=5, minute=0, second=0, microsecond=0, tzinfo=tz)
 
-        match flag:
+        china_tz = current_time.tzinfo
+        # 读取配置中的时间
+        next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
+        next_execute_time = get_this_monday_5am(current_time, china_tz)
 
-            case 0:  # 创建任务时使用，需要读取config中的时间，按照空/已存在分别处理
-                next_execute_time = self.next_execute_time
+        if next_exec_ts == 0:
+            return next_execute_time
+        else:
+            # 转换为带时区的datetime
+            stored_time = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+            if stored_time+timedelta(weeks=1) < current_time:
+                return next_execute_time
+            else:
+                return stored_time
 
-            case 1:  # 正常执行完毕，更新为下次执行的时间
-                days_ahead = (7 - current_time.weekday()) % 7 or 7
-                next_monday = current_time + timedelta(days=days_ahead)
-                next_execute_time = datetime(
-                    next_monday.year, next_monday.month, next_monday.day, 5, 0,
-                    tzinfo=china_tz
-                )
+    def _handle_execution_completed(self, current_time: datetime) -> datetime:
+        def get_this_monday_5am(current_time, tz):
+            days_ahead = (0 - current_time.weekday()) % 7
+            next_monday = current_time + timedelta(days=days_ahead)
+            return next_monday.replace(hour=5, minute=0, second=0, microsecond=0, tzinfo=tz)
 
-            case 2:  # 立刻执行，通常把时间重置到能保证第二天之前即可，不同的任务分别处理
-                next_execute_time = datetime.now(ZoneInfo("Asia/Shanghai"))
+        china_tz = current_time.tzinfo
 
-            case 3:  # 把执行时间推迟delta时间，要求 delta!=None
-                if delta is None:
-                    self.logger.warning(f"update_next_execute_time传入的delta为空")
-                    return False, None
-                next_execute_time = current_time + delta
-
-            case _:
-                self.logger.warning(f"请检查update_next_execute_time传入的参数：flag={flag},delta={delta}")
-                return False, None
-
-        self.logger.info(f"下次执行时间为：{next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
-        self.config.set_task_base_config(self.task_name, "下次执行时间", int(next_execute_time.timestamp()))
-        return True, next_execute_time
+        next_execute_time = get_this_monday_5am(current_time, china_tz)+timedelta(weeks=1)
+        return next_execute_time

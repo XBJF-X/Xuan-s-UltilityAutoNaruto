@@ -44,3 +44,8 @@ class PuTongRenZheZhaoMu(BaseTask):
             continue
         self.update_next_execute_time()
         return True
+
+    @TransitionOn("招募忍者已拥有")
+    def _(self):
+        self.operationer.click_and_wait("确定")
+        return False

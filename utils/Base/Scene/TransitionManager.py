@@ -57,7 +57,7 @@ class TransitionManager:
         # 优先执行直接跳转函数
         if not (source_id, target_id) in self.transition_map:
             # 无直接跳转时，BFS寻找路径并依次跳转
-            path = self._bfs_shortest_path(source_id, target_id)
+            path = self.bfs_shortest_path(source_id, target_id)
             if not path:
                 raise ValueError(f"无从 {source_id} 到 {target_id} 的跳转路径")
             kwargs["source_id"] = path[0]
@@ -86,7 +86,7 @@ class TransitionManager:
         self.transition_map[key](operationer=operationer, *args, **kwargs)
         return True
 
-    def _bfs_shortest_path(self, start_id: str, end_id: str) -> List[str]:
+    def bfs_shortest_path(self, start_id: str, end_id: str) -> List[str]:
         """BFS寻找最短路径（基于已注册的跳转关系，不依赖scenes）"""
         # 1. 从transition_map中构建邻接表：{source_id: [target_ids...]}
         adjacency = {}
@@ -213,6 +213,8 @@ class TransitionManager:
         @self.register("决斗场-结算", "火影格斗大赛-无差别")
         @self.register("决斗任务-追回", "忍术对战-决斗任务")
         @self.register("积分赛-选择对手", "积分赛")
+        @self.register("积分赛-段位奖励", "积分赛")
+        @self.register("积分赛-排名奖励", "积分赛")
         @self.register("更多玩法-任务", "更多玩法")
         @self.register("更多玩法-任务", "绝迹战场")
         @self.register("更多玩法-任务", "大蛇丸试炼")
@@ -236,6 +238,7 @@ class TransitionManager:
         @self.register("无差别-成就奖励", "火影格斗大赛-无差别")
         @self.register("丰饶之间-暂停", "丰饶之间-内部")
         @self.register("追击晓组织-奖励", "追击晓组织")
+        @self.register("叛忍来袭-更换忍者", "叛忍来袭")
         def _(operationer: Operationer, *args, **kwargs):
             """通用返回函数，点击[X]"""
             operationer.click_and_wait("X")
@@ -331,6 +334,7 @@ class TransitionManager:
         @self.register("你的对手离开了游戏", "地之战场")
         @self.register("你的对手离开了游戏", "火影格斗大赛-无差别")
         @self.register("对手已经掉线了", "火影格斗大赛-无差别")
+        @self.register("招募忍者已拥有", "招募结果")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("确定")
 
@@ -387,6 +391,7 @@ class TransitionManager:
         @self.register("决斗场-战斗中", "决斗场-单局结算")
         @self.register("决斗场-单局结算", "决斗场-结算")
         @self.register("大蛇丸试炼-副本内", "更多玩法-结算")
+        @self.register("绝迹战场-副本内", "更多玩法-结算")
         @self.register("更多玩法-匹配成功", "绝迹战场")
         @self.register("更多玩法-匹配成功", "大蛇丸试炼")
         @self.register("无差别-禁用秘卷选择", "无差别-等待对方选择")
@@ -519,10 +524,13 @@ class TransitionManager:
             operationer.click_and_wait("村口")
 
         @self.register("情报站-村口", "情报站-首页")
-        @self.register("忍者站", "情报站-首页")
         @self.register("情报站-卷轴", "情报站-首页")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("首页", wait_time=3)
+
+        @self.register("忍者站", "情报站-首页")
+        def _(operationer: Operationer, *args, **kwargs):
+            operationer.click_and_wait("推荐", wait_time=3)
 
         @self.register("福利站", "情报站-首页")
         def _(operationer: Operationer, *args, **kwargs):
@@ -548,6 +556,7 @@ class TransitionManager:
 
         @self.register("副本结算-点击任意位置关闭界面", "丰饶之间")
         @self.register("副本结算-点击任意位置关闭界面", "小队突袭")
+        @self.register("副本结算-点击任意位置关闭界面", "叛忍来袭-内部")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("点击任意位置关闭界面")
 

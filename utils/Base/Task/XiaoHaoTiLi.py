@@ -98,8 +98,16 @@ class XiaoHaoTiLi(BaseTask):
         )
         match flag:
             case 1:
+                if not self.config.get_task_exe_prog(self.task_name, "任务1执行结束", False):
+                    if not self.config.get_task_exe_param(self.task_name, "体力消耗方式", 0):
+                        self.operationer.next_scene = "精英副本-便捷扫荡"
+                    else:
+                        self.operationer.next_scene = "装备"
+                    self.config.set_task_exe_prog(self.task_name, "任务1执行结束", True)
+                    return False
                 self.update_next_execute_time()
-                raise EndEarly("勾选的副本都已经扫荡完毕，提前退出执行")
+                self.config.set_task_exe_prog(self.task_name, "任务1执行结束", False)
+                return True
             case 2:
                 self.logger.warning("未勾选需要扫荡的副本，即将全选")
                 self.operationer.click_and_wait("一键全选-未选中")
@@ -117,6 +125,7 @@ class XiaoHaoTiLi(BaseTask):
             self.config.set_task_exe_prog(self.task_name, "任务1执行结束", True)
             return False
         self.update_next_execute_time()
+        self.config.set_task_exe_prog(self.task_name, "任务1执行结束", False)
         return True
 
     @TransitionOn("便捷扫荡-继续扫荡")
@@ -128,68 +137,38 @@ class XiaoHaoTiLi(BaseTask):
     @TransitionOn("体力不足")
     def _(self):
         self.operationer.click_and_wait("X")
-        if not self.config.get_task_exe_prog(self.task_name, "任务1执行结束", False):
-            if not self.config.get_task_exe_param(self.task_name, "体力消耗方式", 0):
-                self.operationer.next_scene = "精英副本-便捷扫荡"
-            else:
-                self.operationer.next_scene = "装备"
-            self.config.set_task_exe_prog(self.task_name, "任务1执行结束", True)
-            return False
+        self.config.set_task_exe_prog(self.task_name, "任务1执行结束", False)
         self.update_next_execute_time()
         return True
 
-    def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
-        # 明确指定中国时区（带时区的当前时间）
-        china_tz = ZoneInfo("Asia/Shanghai")
-        current_time = datetime.now(china_tz)
+    def _handle_execution_completed(self, current_time: datetime) -> datetime:
+        """处理任务执行完成后的时间更新（case1）"""
+        china_tz = current_time.tzinfo
+        today = date.today()
 
-        match flag:
+        # 创建今天5点和16点的datetime对象
+        today_5am = datetime.combine(today, time(5, 0), tzinfo=china_tz)
+        today_16pm = datetime.combine(today, time(16, 0), tzinfo=china_tz)
 
-            case 0:  # 创建任务时使用，需要读取config中的时间，按照空/已存在分别处理
-                next_execute_time = self.next_execute_time
+        # 情况1：当前时间小于今天5点
+        if current_time < today_5am:
+            # 新建时间时指定时区（与current_time一致）
+            next_execute_time = datetime(
+                current_time.year, current_time.month, current_time.day, 5, 0,
+                tzinfo=china_tz  # 关键：添加时区信息
+            )
 
-            case 1:  # 正常执行完毕，更新为下次执行的时间
-                today = date.today()
+        # 情况2：当前时间在今天5点到16点之间
+        elif today_5am <= current_time < today_16pm:
+            to_16pm = today_16pm - current_time
+            next_execute_time = current_time + min(to_16pm, timedelta(hours=3))
 
-                # 创建今天5点和16点的datetime对象
-                today_5am = datetime.combine(today, time(5, 0), tzinfo=china_tz)
-                today_16pm = datetime.combine(today, time(16, 0), tzinfo=china_tz)
-
-                # 情况1：当前时间小于今天5点
-                if current_time < today_5am:
-                    # 新建时间时指定时区（与current_time一致）
-                    next_execute_time = datetime(
-                        current_time.year, current_time.month, current_time.day, 5, 0,
-                        tzinfo=china_tz  # 关键：添加时区信息
-                    )
-
-                # 情况2：当前时间在今天5点到16点之间
-                elif today_5am <= current_time < today_16pm:
-                    to_16pm = today_16pm - current_time
-                    next_execute_time = current_time + min(to_16pm, timedelta(hours=3))
-
-                # 情况3：当前时间过了今天16点
-                else:  # now >= today_16pm
-                    next_day = current_time + timedelta(days=1)
-                    # 新建时间时指定时区（与current_time一致）
-                    next_execute_time = datetime(
-                        next_day.year, next_day.month, next_day.day, 5, 0,
-                        tzinfo=china_tz  # 关键：添加时区信息
-                    )
-
-            case 2:  # 立刻执行，通常把时间重置到能保证第二天之前即可，不同的任务分别处理
-                next_execute_time = datetime.now(china_tz)
-
-            case 3:  # 把执行时间推迟delta时间，要求 delta!=None
-                if delta is None:
-                    self.logger.warning(f"update_next_execute_time传入的delta为空")
-                    return False, None
-                next_execute_time = current_time + delta
-
-            case _:
-                self.logger.warning(f"请检查update_next_execute_time传入的参数：flag={flag},delta={delta}")
-                return False, None
-
-        self.logger.info(f"下次执行时间为：{next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
-        self.config.set_task_base_config(self.task_name, "下次执行时间", int(next_execute_time.timestamp()))
-        return True, next_execute_time
+        # 情况3：当前时间过了今天16点
+        else:  # now >= today_16pm
+            next_day = current_time + timedelta(days=1)
+            # 新建时间时指定时区（与current_time一致）
+            next_execute_time = datetime(
+                next_day.year, next_day.month, next_day.day, 5, 0,
+                tzinfo=china_tz  # 关键：添加时区信息
+            )
+        return next_execute_time

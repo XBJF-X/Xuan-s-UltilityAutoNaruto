@@ -113,7 +113,7 @@ class BaseTask:
     """任务最长执行时间（无DDL的情况下生效）"""
     task_once_transition_on_max_duration: timedelta | None = None
     """预估单个TransitionOn最大执行时间，用于调度器计算是否应提前停止任务"""
-    dead_line: time | None = None
+    dead_line: datetime | time | None = None
     """任务截至的时间点（超过当天该时间点将强制结束任务）"""
     temp_dead_line: datetime | None = None
     """每次任务执行时根据上述时间参数计算出来的临时DeadLine，结束后自动置空"""
@@ -152,7 +152,6 @@ class BaseTask:
         self.operationer = operationer
         self.activate_another_task_signal = activate_another_task_signal
         self.callback = callback
-
 
     @property
     def is_activated(self):
@@ -273,20 +272,34 @@ class BaseTask:
             self.logger.debug(f"场景{scene_name}绑定的函数：{func.__qualname__}")
             result = self.transition_func[scene_name](self)
             return result
-        # 如果设置了next_scene，优先跳转
-        if self.operationer.next_scene:
-            if self.operationer.next_scene == scene_name:
-                self.operationer.next_scene = None
-            else:
-                return self.transition_manager.transition(self.operationer)
+
         if scene.name not in self.transition_func:
-            # # 如果设置了next_scene，优先跳转
-            # if self.operationer.next_scene:
-            #     if self.operationer.next_scene == scene_name:
-            #         self.operationer.next_scene = None
-            #     else:
-            #         return self.transition_manager.transition(self.operationer)
-            scene_name = "未注册场景"
+            # 如果设置了next_scene，优先跳转
+            if self.operationer.next_scene:
+                if self.operationer.next_scene == scene_name:
+                    self.operationer.next_scene = None
+                else:
+                    return self.transition_manager.transition(self.operationer)
+
+            # 自动寻找从当前场景到任意已注册场景的路径
+            registered_scenes = list(self.transition_func.keys())
+            shortest_path = None
+
+            # 寻找最短路径
+            for target_scene in registered_scenes:
+                path = self.transition_manager.bfs_shortest_path(scene_name, target_scene)
+                if path and (shortest_path is None or len(path) < len(shortest_path)):
+                    shortest_path = path
+
+            if shortest_path and len(shortest_path) >= 2:
+                # 执行第一段路径跳转
+                next_scene_in_path = shortest_path[1]
+                self.logger.info(f"自动跳转: 从 {scene_name} 到 {next_scene_in_path} (路径: {' -> '.join(shortest_path)})")
+                self.operationer.next_scene = next_scene_in_path
+                return self.transition_manager.transition(self.operationer)
+            else:
+                # 如果找不到路径，回退到原来的处理方式
+                scene_name = "未注册场景"
 
         # # 正常执行注册函数
         # self.logger.debug(f"寻找注册函数: {scene_name}")
@@ -336,7 +349,7 @@ class BaseTask:
         china_tz = ZoneInfo("Asia/Shanghai")
         next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
         if next_exec_ts == 0:
-            # 若初始值为0，设置为当前UTC时间（或其他合理时间）
+            # 若初始值为0，设置为当前中国时区时间
             return datetime.now(china_tz)
         else:
             # 从时间戳转换为datetime对象
@@ -344,45 +357,96 @@ class BaseTask:
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         """
-        用于更新本任务的下次执行时间，默认为更新到第二天五点（也就是火影服务器任务刷新的时间）
+        用于更新本任务的下次执行时间
 
         Args:
             flag: 更新下次执行时间的模式
-                0：创建任务时使用，需要读取config中的时间，按照空/已存在分别处理
-                1：正常执行完毕，更新为下次执行的时间
-                2：立刻执行，通常把时间重置到能保证第二天之前即可，不同的任务分别处理
+                0：创建任务时初始化时间
+                1：正常执行完毕，更新为下次执行时间
                 3：把执行时间推迟delta时间，要求 delta!=None
-            delta: 延迟的时长
+            delta: 延迟的时长（仅flag=3时有效）
         Returns:
-
+            tuple: (是否成功, 下次执行时间datetime对象)
         """
-        # 明确指定中国时区（带时区的当前时间）
         china_tz = ZoneInfo("Asia/Shanghai")
         current_time = datetime.now(china_tz)
-        next_execute_time = current_time
-        match flag:
-            case 0:  # 创建任务时使用，需要读取config中的时间，按照空/已存在分别处理
-                next_execute_time = self.next_execute_time
 
-            case 1:  # 正常执行完毕，更新为下次执行的时间
-                next_day = current_time + timedelta(days=1)
-                next_execute_time = datetime(
-                    next_day.year, next_day.month, next_day.day, 5, 0,
-                    tzinfo=china_tz
-                )
-
-            case 2:  # 立刻执行，通常把时间重置到能保证第二天之前即可，不同的任务分别处理
-                next_execute_time = current_time
-
-            case 3:  # 把执行时间推迟delta时间，要求 delta!=None
-                if delta is None:
-                    self.logger.warning(f"update_next_execute_time传入的delta为空")
+        try:
+            match flag:
+                case 0:
+                    next_execute_time = self._handle_initialization(current_time)
+                case 1:
+                    next_execute_time = self._handle_execution_completed(current_time)
+                case 2:
+                    next_execute_time = current_time
+                case 3:
+                    next_execute_time = self._handle_delay(current_time, delta)
+                case _:
+                    self.logger.warning(f"不支持的更新模式: {flag}")
                     return False, None
-                next_execute_time = current_time + delta
 
-        self.logger.info(f"下次执行时间为：{next_execute_time.strftime("%Y-%m-%d %H:%M:%S")}")
-        self.config.set_task_base_config(self.task_name, "下次执行时间", int(next_execute_time.timestamp()))
-        return True, next_execute_time
+            if next_execute_time is None:
+                return False, None
+
+            self.logger.info(f"下次执行时间为：{next_execute_time.strftime('%Y-%m-%d %H:%M:%S')}")
+            self.config.set_task_base_config(
+                self.task_name,
+                "下次执行时间",
+                int(next_execute_time.timestamp())
+            )
+            return True, next_execute_time
+
+        except Exception as e:
+            self.logger.error(f"更新下次执行时间失败: {str(e)}")
+            return False, None
+
+    def _handle_initialization(self, current_time: datetime) -> datetime:
+        """处理任务初始化时的时间设置（case0）"""
+        china_tz = current_time.tzinfo
+        # 读取配置中的时间
+        next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
+
+        next_execute_time = datetime(
+            current_time.year,
+            current_time.month,
+            current_time.day,
+            5, 0, 20,
+            tzinfo=china_tz
+        )
+
+        if next_exec_ts == 0:
+            return next_execute_time
+        else:
+            # 转换为带时区的datetime
+            stored_time = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+            if stored_time + timedelta(days=1) < current_time:
+                return next_execute_time
+            else:
+                return stored_time
+
+    def _handle_execution_completed(self, current_time: datetime) -> datetime:
+        """处理任务执行完成后的时间更新（case1）"""
+        china_tz = current_time.tzinfo
+        next_day = current_time + timedelta(days=1)
+        return datetime(
+            next_day.year,
+            next_day.month,
+            next_day.day,
+            5, 0, 20,
+            tzinfo=china_tz
+        )
+
+    def _handle_delay(self, current_time: datetime, delta: timedelta) -> datetime:
+        """处理时间延迟更新（case3）"""
+        if delta is None:
+            self.logger.warning("延迟更新时间时delta不能为空")
+            return None
+        return current_time + delta
+
+    def reset_prog_parmas(self) -> bool:
+        """重置任务执行进度参数"""
+        self.logger.debug("重置任务执行进度")
+        return True
 
     @TransitionOn("二级密码")
     def _(self):

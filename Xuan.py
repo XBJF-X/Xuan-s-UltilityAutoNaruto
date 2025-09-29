@@ -104,28 +104,6 @@ class Xuan(QMainWindow):
 
     def init_environment(self):
         """初始化环境设置"""
-        if sys.platform == 'win32':
-            os.environ["PYTHONUTF8"] = "on"
-            os.environ["PYTHONLEGACYWINDOWSFSENCODING"] = "1"
-            os.environ["QT_LOGGING_RULES"] = "qt.qpa.fonts.warning=false"
-            # 仅在DPI感知成功设置时执行
-            try:
-                # 使用兼容性更好的旧版API
-                ctypes.windll.user32.SetProcessDPIAware()
-            except Exception as e:
-                print(f"设置DPI感知失败: {e}")
-
-        # 移除冲突的环境变量
-        os.environ.pop("QT_AUTO_SCREEN_SCALE_FACTOR", None)
-        os.environ.pop("QT_SCALE_FACTOR", None)
-        os.environ.pop("QT_SCREEN_SCALE_FACTORS", None)
-        os.environ.pop("QT_ENABLE_HIGHDPI_SCALING", None)
-        os.environ.pop("QT_DEVICE_PIXEL_RATIO", None)
-        os.environ.pop("QT_DPI_OVERRIDE", None)
-        os.environ.pop("QT_FONT_DPI", None)
-        # 临时把adb目录添加进环境目录
-        os.environ['PATH'] = os.pathsep.join([get_real_path('bin/adb'), os.environ.get('PATH', '')])
-        cv2.ocl.setUseOpenCL(True)
         self.setWindowIcon(QIcon(resource_path("src/ASDS.ico")))
         self.resize(1400, 600)
         app.aboutToQuit.connect(self._on_about_to_quit)
@@ -134,7 +112,6 @@ class Xuan(QMainWindow):
             Qt.WindowType.FramelessWindowHint
         )
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
-        self.setWindowIcon(QIcon(resource_path("src/ASDS.ico")))
         # self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
 
     def alloc_ui_ref_map(self):
@@ -370,24 +347,37 @@ class Xuan(QMainWindow):
         painter.fillPath(path, QBrush(background_color))
 
 
-if __name__ == "__main__":
-    # 1. 首先设置DPI感知 - 使用兼容性更好的旧版API
-    if sys.platform == 'win32':
+def configure_dpi_awareness():
+    """配置DPI感知"""
+    if sys.platform == "win32":
+        os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1"
+        os.environ["QT_SCALE_FACTOR_ROUNDING_POLICY"] = "PassThrough"
+
         try:
-            # 使用兼容性更好的旧版API
-            ctypes.windll.user32.SetProcessDPIAware()
-        except Exception as e:
-            print(f"设置DPI感知失败: {e}")
+            awareness = ctypes.c_int(1)  # PROCESS_SYSTEM_DPI_AWARE
+            ctypes.windll.shcore.SetProcessDpiAwareness(awareness)
+        except Exception:
+            try:
+                ctypes.windll.user32.SetProcessDPIAware()
+            except Exception as e:
+                print(f"Failed to set DPI awareness: {e}")
 
-    # 2. 创建应用实例前设置高DPI策略
-    os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1"
+        # Remove conflicting environment variables
+        os.environ.pop("QT_AUTO_SCREEN_SCALE_FACTOR", None)
+        os.environ.pop("QT_SCALE_FACTOR", None)
+        os.environ.pop("QT_SCREEN_SCALE_FACTORS", None)
+        os.environ.pop("QT_DEVICE_PIXEL_RATIO", None)
+        os.environ.pop("QT_DPI_OVERRIDE", None)
+        os.environ.pop("QT_FONT_DPI", None)
 
-    # 3. 创建应用实例
+    cv2.ocl.setUseOpenCL(True)
+    # 临时把adb目录添加进环境目录
+    os.environ['PATH'] = os.pathsep.join([get_real_path('bin/adb'), os.environ.get('PATH', '')])
+
+
+if __name__ == "__main__":
+    configure_dpi_awareness()
     app = QApplication(sys.argv)
-
-    # 4. 设置高DPI缩放策略（可选）
-    # 在PySide6 6.4+版本中，这步可能不需要
-    # app.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
 
     daily_quests_helper = Xuan()
     daily_quests_helper.show()
