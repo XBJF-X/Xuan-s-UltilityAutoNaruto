@@ -42,10 +42,11 @@ class TianDiZhanChang(BaseTask):
             self.operationer.click_and_wait("组织鼓舞")
             self.guwu_done = True
             return False
-        # if self.operationer.click_and_wait("空闲柱子", max_time=20, auto_raise=False):
-        #     self.pillar_took = True
-        #     return False
-        QThread.sleep(20)
+        if not self.pillar_took:
+            if self.operationer.click_and_wait("空闲柱子", max_time=20, auto_raise=False):
+                self.pillar_took = True
+        else:
+            QThread.sleep(20)
         self.operationer.click_and_wait("战场奖励")
         return False
 
@@ -60,10 +61,11 @@ class TianDiZhanChang(BaseTask):
             self.operationer.click_and_wait("组织鼓舞")
             self.guwu_done = True
             return False
-        # if self.operationer.click_and_wait("空闲柱子", max_time=20, auto_raise=False):
-        #     self.pillar_took = True
-        #     return False
-        QThread.sleep(20)
+        if not self.pillar_took:
+            if self.operationer.click_and_wait("空闲柱子", max_time=20, auto_raise=False):
+                self.pillar_took = True
+        else:
+            QThread.sleep(20)
         self.operationer.click_and_wait("战场奖励")
         return False
 
@@ -127,6 +129,7 @@ class TianDiZhanChang(BaseTask):
     @TransitionOn("决斗场-战斗中")
     def _(self):
         self.operationer.clicker.start()
+        self.pillar_took = False
         QThread.msleep(500)
         return False
 

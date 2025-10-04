@@ -52,7 +52,7 @@ class QingBaoZhan(BaseTask):
                     [
                         {
                             "swipe": {
-                                "start_coordinate": [760, 870],
+                                "start_coordinate": [760, 780],
                                 "end_coordinate": [760, 80],
                                 "duration": 1
                             }
@@ -99,11 +99,8 @@ class QingBaoZhan(BaseTask):
         if not self.config.get_task_exe_prog(self.task_name, "情报站签到", False):
             self.logger.info("福利站签到")
             # 点击一键签到
-            if not self.operationer.click_and_wait(
-                    "一键签到",
-                    auto_raise=False
-            ):
-                self.config.set_task_exe_prog(self.task_name, "情报站签到", True)
+            self.operationer.click_and_wait("一键签到",auto_raise=False,wait_time=3)
+            self.config.set_task_exe_prog(self.task_name, "情报站签到", True)
             return False
 
         elif not self.config.get_task_exe_prog(self.task_name, "浏览金币助手", False):

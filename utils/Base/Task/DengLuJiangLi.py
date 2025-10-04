@@ -8,7 +8,8 @@ class DengLuJiangLi(BaseTask):
     task_max_duration = timedelta(minutes=5)
 
     def run(self):
-        if self.operationer.device.current_app()!=self.operationer.device.package_name:
+        if self.operationer.device.current_app() != self.operationer.device.package_name:
+
             self.operationer.restart()
         super().run()
 
@@ -22,4 +23,3 @@ class DengLuJiangLi(BaseTask):
         self.operationer.click_and_wait("领取")
         self.update_next_execute_time()
         return True
-

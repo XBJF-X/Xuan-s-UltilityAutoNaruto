@@ -1,6 +1,8 @@
 from datetime import timedelta, datetime
 from zoneinfo import ZoneInfo
 
+from PySide6.QtCore import QThread
+
 from utils.Base.Exceptions import EndEarly, StepFailedError
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
@@ -43,5 +45,6 @@ class GouMaiTiLi(BaseTask):
         times = self.config.get_task_exe_prog("购买体力", "已购买体力次数")
         times -= 1
         self.config.set_task_exe_prog("购买体力", "已购买体力次数", times)
+        QThread.msleep(2000)
         return False
 
