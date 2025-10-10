@@ -6,17 +6,20 @@ from io import BytesIO
 from pathlib import Path
 
 import requests
+from PySide6.QtCore import QObject, Signal
 from PySide6.QtWidgets import QMessageBox
 
 from StaticFunctions import get_real_path
 
 
-class Updater:
+class Updater(QObject):
+    update_finished=Signal(str, str)  # 第一个参数是标题，第二个参数是消息内容
     repo_owner = "XBJF-X"
     repo_name = "Xuan-s-UltilityAutoNaruto"
     branch_name = "master"
 
     def __init__(self, parent_logger):
+        super().__init__()  # 调用父类初始化
         self.logger = parent_logger.getChild(self.__class__.__name__)
         self.master_url = f"https://api.github.com/repos/{self.repo_owner}/{self.repo_name}/branches/{self.branch_name}"
         self.zip_url = f"https://github.com/{self.repo_owner}/{self.repo_name}/archive/refs/heads/{self.branch_name}.zip"
@@ -87,15 +90,19 @@ class Updater:
                         with zf.open(file) as source, open(target_path, 'wb') as dest:
                             dest.write(source.read())
                 self.logger.info(f"解压完成，已提取一级文件夹下的所有文件到当前目录")
-                QMessageBox.information(None, "新版本更新完毕，请重启程序", f"更新内容：{new_version["commit"]['commit']['message']}")
+
+                # 更新完成，发出信号，注意这里传递两个参数：标题和消息
+                commit_message = new_version["commit"]['commit']['message']
+                self.update_finished.emit("更新完成", f"新版本更新完毕，请重启程序\n更新内容：{commit_message}")
 
             with open("version.json", "w", encoding="utf-8") as f:
                 json.dump(new_version, f, indent=4, ensure_ascii=False)
             self.logger.info("更新完成，下次启动Xuan生效")
 
-
         except Exception as e:
             self.logger.error(f"更新出错：{e}")
+            # 如果更新出错，也可以发射一个信号来显示错误信息
+            self.update_finished.emit("更新出错", f"更新过程中出现错误：{e}")
         finally:
             self.update_thread = None
 

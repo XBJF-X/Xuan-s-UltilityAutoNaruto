@@ -11,7 +11,7 @@ from typing import List
 import cv2
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QPainter, QBrush, QColor, QPainterPath
-from PySide6.QtWidgets import QMainWindow, QApplication, QPushButton, QDialog, QButtonGroup
+from PySide6.QtWidgets import QMainWindow, QApplication, QPushButton, QDialog, QButtonGroup, QMessageBox
 
 from StaticFunctions import resource_path, get_real_path
 from tool.ResourceManager.ResourceDBManager import ResourceDBManager
@@ -197,6 +197,8 @@ class Xuan(QMainWindow):
     def bind_signals(self):
         self.UI.go_to_github_btn.clicked.connect(self._on_go_to_github_btn_clicked)
         self.UI.update_btn.clicked.connect(self._on_update_btn_clicked)
+        self.updater.update_finished.connect(self.on_update_finished)
+
         self.UI.exit_btn.clicked.connect(QApplication.quit)
         self.UI.min_btn.clicked.connect(self.showMinimized)
         self.UI.add_config_btn.clicked.connect(self._on_add_config_btn_clicked)
@@ -204,6 +206,9 @@ class Xuan(QMainWindow):
     @staticmethod
     def _on_go_to_github_btn_clicked():
         webbrowser.open("https://github.com/XBJF-X/Xuan-s-UltilityAutoNaruto")
+
+    def on_update_finished(self, title, message):
+        QMessageBox.information(self, title, message)
 
     def _on_update_btn_clicked(self):
         flag, new_version = self.updater.check_update()
