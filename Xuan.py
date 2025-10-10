@@ -68,8 +68,8 @@ class Xuan(QMainWindow):
         self.services: List[Service] = []
         self.alloc_ui_ref_map()
         self.logger.info("初始化UI响应函数...")
-        self.bind_signals()
         self.updater = Updater(parent_logger=self.logger)
+        self.bind_signals()
         self.logger.info("初始化完成...")
         self._on_update_btn_clicked()
 
