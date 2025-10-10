@@ -71,6 +71,7 @@ class Xuan(QMainWindow):
         self.bind_signals()
         self.updater = Updater(parent_logger=self.logger)
         self.logger.info("初始化完成...")
+        self._on_update_btn_clicked()
 
     @staticmethod
     def setup_main_logger():

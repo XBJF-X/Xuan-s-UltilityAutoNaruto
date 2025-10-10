@@ -6,6 +6,7 @@ from io import BytesIO
 from pathlib import Path
 
 import requests
+from PySide6.QtWidgets import QMessageBox
 
 from StaticFunctions import get_real_path
 
@@ -86,10 +87,12 @@ class Updater:
                         with zf.open(file) as source, open(target_path, 'wb') as dest:
                             dest.write(source.read())
                 self.logger.info(f"解压完成，已提取一级文件夹下的所有文件到当前目录")
+                QMessageBox.information(None, "新版本更新完毕，请重启程序", f"更新内容：{new_version["commit"]['commit']['message']}")
 
             with open("version.json", "w", encoding="utf-8") as f:
                 json.dump(new_version, f, indent=4, ensure_ascii=False)
             self.logger.info("更新完成，下次启动Xuan生效")
+
 
         except Exception as e:
             self.logger.error(f"更新出错：{e}")
