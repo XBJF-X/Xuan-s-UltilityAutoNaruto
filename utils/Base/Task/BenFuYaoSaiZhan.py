@@ -39,7 +39,7 @@ class BenFuYaoSaiZhan(BaseTask):
 
     @TransitionOn("要塞内部")
     def _(self):
-        if datetime.now(tz=ZoneInfo("Asia/Shanghai")) < self.dead_line:
+        if datetime.now(tz=ZoneInfo("Asia/Shanghai")) < self.temp_dead_line:
             self.operationer.long_press(self.joystick[0] + 60, self.joystick[1], 3)
             return False
         self.logger.info(f"本服要塞战结束，共战斗 {self.fight_sum} 次")
@@ -98,7 +98,7 @@ class BenFuYaoSaiZhan(BaseTask):
         def get_this_saturday_8pm(current_time, tz):
             days_ahead = (5 - current_time.weekday()) % 7
             next_time = current_time + timedelta(days=days_ahead)
-            return next_time.replace(hour=20, minute=0, second=0, microsecond=0, tzinfo=tz)
+            return next_time.replace(hour=20, minute=0, second=15, microsecond=0, tzinfo=tz)
 
         china_tz = current_time.tzinfo
         # 读取配置中的时间
@@ -129,13 +129,14 @@ class BenFuYaoSaiZhan(BaseTask):
         def get_this_saturday_8pm(current_time, tz):
             days_ahead = (5 - current_time.weekday()) % 7
             next_time = current_time + timedelta(days=days_ahead)
-            return next_time.replace(hour=20, minute=0, second=0, microsecond=0, tzinfo=tz)
+            return next_time.replace(hour=20, minute=0, second=15, microsecond=0, tzinfo=tz)
 
         china_tz = current_time.tzinfo
 
-        # 本周周六下午8点的时间对象
-        next_execute_time = get_this_saturday_8pm(current_time, china_tz)
+        # 下周周六下午8点的时间对象
+        next_execute_time = get_this_saturday_8pm(current_time, china_tz)+timedelta(weeks=1)
 
         while is_in_skip_period(next_execute_time, 5):
             next_execute_time += timedelta(weeks=1)
+
         return next_execute_time

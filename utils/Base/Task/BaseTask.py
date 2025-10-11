@@ -239,16 +239,14 @@ class BaseTask:
             if self.temp_dead_line and datetime.now(tz=ZoneInfo("Asia/Shanghai")) > self.temp_dead_line:
                 self.logger.warning("任务达到最大执行时长，强制结束")
                 self.update_next_execute_time()
-                raise TimeOut(f"任务超时")
+                return
             if self._should_stop():
-                raise Stop("任务被停止")
+                self.logger.warning("任务被停止")
+                return
 
             result = self.transition()
-            # self.logger.debug(f"Exe接收的Result：{result}")
             if result is not None:
-                # self.logger.debug("结果非None")
                 if result:
-                    # self.logger.debug("任务执行完毕")
                     return
 
     @handle_transition_exceptions

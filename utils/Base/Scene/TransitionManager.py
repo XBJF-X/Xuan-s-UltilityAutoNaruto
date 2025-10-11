@@ -335,6 +335,7 @@ class TransitionManager:
         @self.register("你的对手离开了游戏", "火影格斗大赛-无差别")
         @self.register("对手已经掉线了", "火影格斗大赛-无差别")
         @self.register("招募忍者已拥有", "招募结果")
+        @self.register("要塞内部-退出确认", "要塞战略图")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("确定")
 
