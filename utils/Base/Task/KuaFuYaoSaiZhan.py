@@ -57,7 +57,7 @@ class KuaFuYaoSaiZhan(BaseTask):
         china_tz = current_time.tzinfo
 
         # 本周周六下午8点的时间对象
-        next_execute_time = get_this_saturday_8pm(current_time, china_tz)
+        next_execute_time = get_this_saturday_8pm(current_time, china_tz)+timedelta(weeks=1)
 
         while not is_in_skip_period(next_execute_time, 5):
             next_execute_time += timedelta(weeks=1)

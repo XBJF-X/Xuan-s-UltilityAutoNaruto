@@ -76,14 +76,20 @@ class TianDiZhanChang(BaseTask):
 
     @TransitionOn("天地战场-配置阵容")
     def _(self):
+
         self.operationer.click_and_wait("忍者页")
-        self.operationer.click_and_wait("默认点位-1", stable_max_time=0.5)
+        if not self.operationer.detect_element("默认点位-1-选中"):
+            self.operationer.click_and_wait("默认点位-1", stable_max_time=0.5)
+
         self.operationer.click_and_wait("通灵兽页", stable_max_time=0.5)
-        self.operationer.click_and_wait("默认点位-1", stable_max_time=0.5)
-        self.operationer.click_and_wait("默认点位-2", stable_max_time=0.5)
-        self.operationer.click_and_wait("默认点位-3", stable_max_time=0.5)
+        for i in range(1, 4):
+            if not self.operationer.detect_element(f"默认点位-{i}-选中"):
+                self.operationer.click_and_wait(f"默认点位-{i}", stable_max_time=0.5)
+
         self.operationer.click_and_wait("秘卷页", stable_max_time=0.5)
-        self.operationer.click_and_wait("默认点位-1", stable_max_time=0.5)
+        if not self.operationer.detect_element("默认点位-1-选中"):
+            self.operationer.click_and_wait("默认点位-1", stable_max_time=0.5)
+
         self.operationer.click_and_wait("确认", stable_max_time=0.5)
         return False
 
@@ -175,7 +181,8 @@ class TianDiZhanChang(BaseTask):
 
         china_tz = current_time.tzinfo
 
-        # 本周周六下午8点的时间对象
-        next_execute_time = get_this_wednesday_9pm(current_time, china_tz)
+        # 下周周六下午8点的时间对象
+        next_execute_time = get_this_wednesday_9pm(current_time, china_tz) + timedelta(weeks=1)
 
         return next_execute_time
+
