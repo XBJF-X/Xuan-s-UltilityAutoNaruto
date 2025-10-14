@@ -10,13 +10,16 @@ from typing import List
 
 import cv2
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QIcon, QPainter, QBrush, QColor, QPainterPath
-from PySide6.QtWidgets import QMainWindow, QApplication, QPushButton, QDialog, QButtonGroup, QMessageBox
+from PySide6.QtGui import QIcon, QPainter, QBrush, QColor, QPainterPath, QAction
+from PySide6.QtWidgets import QMainWindow, QApplication, QPushButton, QDialog, QButtonGroup, QMessageBox, \
+    QMenu
 
 from StaticFunctions import resource_path, get_real_path
 from tool.ResourceManager.ResourceDBManager import ResourceDBManager
 from utils.AddConfig import AddConfig
 from utils.Base.Scene.SceneGraph import SceneGraph
+from utils.Base.Setting import Setting
+from utils.ui.SettingDialog import SettingDialog
 from utils.Base.Updater import Updater
 from utils.Servicer import Service
 from utils.ui.Xuan_ui import Ui_Xuan
@@ -61,6 +64,7 @@ class Xuan(QMainWindow):
         self.logger = self.setup_main_logger()
         self.logger.info("初始化配置...")
         self.config_path = Path(get_real_path("config"))
+        self.setting = Setting(self.logger, Path(get_real_path("setting.ini")))
         self.scene_graph = SceneGraph(ResourceDBManager())
         self.logger.info("初始化环境...")
         self.mouse_position = None
@@ -71,7 +75,9 @@ class Xuan(QMainWindow):
         self.updater = Updater(parent_logger=self.logger)
         self.bind_signals()
         self.logger.info("初始化完成...")
-        self._on_update_btn_clicked()
+        if self.setting.getboolean("Update", "auto_update"):
+            self.logger.info("自动更新")
+            self._on_update_btn_clicked()
 
     @staticmethod
     def setup_main_logger():
@@ -194,18 +200,47 @@ class Xuan(QMainWindow):
         # 确保首页为总览面板
         self.UI.ServiceStackedWidget.setCurrentIndex(0)
 
-    def bind_signals(self):
-        self.UI.go_to_github_btn.clicked.connect(self._on_go_to_github_btn_clicked)
-        self.UI.update_btn.clicked.connect(self._on_update_btn_clicked)
-        self.updater.update_finished.connect(self.on_update_finished)
+    def _create_menu(self):
+        # 创建下拉菜单
+        menu = QMenu(self)
 
-        self.UI.exit_btn.clicked.connect(QApplication.quit)
+        # 添加菜单选项
+        update_action = QAction("更新", self)
+        update_action.triggered.connect(self._on_update_btn_clicked)
+
+        github_action = QAction("Github", self)
+        github_action.triggered.connect(self._on_go_to_github_btn_clicked)
+
+        settings_action = QAction("设置", self)
+        settings_action.triggered.connect(self._on_setting_btn_clicked)
+
+        exit_action = QAction("退出", self)
+        exit_action.triggered.connect(QApplication.quit)
+
+        # 将选项添加到菜单
+        menu.addAction(update_action)
+        menu.addSeparator()  # 添加分隔线
+        menu.addAction(github_action)
+        menu.addAction(settings_action)
+        menu.addSeparator()  # 添加分隔线
+        menu.addAction(exit_action)
+
+        return menu
+
+    def bind_signals(self):
+        self.updater.update_finished.connect(self.on_update_finished)
+        self.UI.menu_btn.setMenu(self._create_menu())
+
         self.UI.min_btn.clicked.connect(self.showMinimized)
         self.UI.add_config_btn.clicked.connect(self._on_add_config_btn_clicked)
 
     @staticmethod
     def _on_go_to_github_btn_clicked():
         webbrowser.open("https://github.com/XBJF-X/Xuan-s-UltilityAutoNaruto")
+
+    def _on_setting_btn_clicked(self):
+        dialog = SettingDialog(self, self.logger, self.setting)
+        dialog.exec()
 
     def on_update_finished(self, title, message):
         QMessageBox.information(self, title, message)

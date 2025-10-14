@@ -8,11 +8,16 @@
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
 
-from PySide6.QtCore import (QCoreApplication, QMetaObject, QSize, Qt)
-from PySide6.QtGui import (QFont)
-from PySide6.QtWidgets import (QFrame, QHBoxLayout, QLabel,
-                               QPushButton, QSizePolicy, QSpacerItem,
-                               QStackedWidget, QVBoxLayout, QWidget)
+from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
+    QMetaObject, QObject, QPoint, QRect,
+    QSize, QTime, QUrl, Qt)
+from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
+    QFont, QFontDatabase, QGradient, QIcon,
+    QImage, QKeySequence, QLinearGradient, QPainter,
+    QPalette, QPixmap, QRadialGradient, QTransform)
+from PySide6.QtWidgets import (QApplication, QFrame, QHBoxLayout, QLabel,
+    QMainWindow, QPushButton, QSizePolicy, QSpacerItem,
+    QStackedWidget, QVBoxLayout, QWidget)
 
 class Ui_Xuan(object):
     def setupUi(self, Xuan):
@@ -92,101 +97,44 @@ class Ui_Xuan(object):
 
         self.horizontalLayout_81.addItem(self.horizontalSpacer)
 
-        self.go_to_github_btn = QPushButton(self.widget_91)
-        self.go_to_github_btn.setObjectName(u"go_to_github_btn")
-        self.go_to_github_btn.setMinimumSize(QSize(90, 35))
-        self.go_to_github_btn.setStyleSheet(u"QPushButton{\n"
-"border: 2px solid #b5b5b5;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
-"background-color: rgb(255, 255, 255);\n"
-"border-radius:10px;\n"
-"outline:none;\n"
-"color:#0f322f;\n"
-"padding-top:2px;\n"
-"padding-bottom:2px;\n"
-"}\n"
-"QPushButton::hover {\n"
-"border: 2px solid #39C5BB;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
-"background-color: rgb(255, 255, 255);\n"
-"border-radius:10px;\n"
-"outline:none;\n"
-"padding-top:2px;\n"
-"color:#39C5BB;\n"
-"padding-bottom:2px;\n"
-"}")
-
-        self.horizontalLayout_81.addWidget(self.go_to_github_btn)
-
-        self.update_btn = QPushButton(self.widget_91)
-        self.update_btn.setObjectName(u"update_btn")
-        self.update_btn.setMinimumSize(QSize(110, 35))
-        self.update_btn.setStyleSheet(u"QPushButton{\n"
-"border: 2px solid #b5b5b5;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
-"background-color: rgb(255, 255, 255);\n"
-"border-radius:10px;\n"
-"outline:none;\n"
-"color:#0f322f;\n"
-"padding-top:2px;\n"
-"padding-bottom:2px;\n"
-"}\n"
-"QPushButton::hover {\n"
-"border: 2px solid #39C5BB;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
-"background-color: rgb(255, 255, 255);\n"
-"border-radius:10px;\n"
-"outline:none;\n"
-"padding-top:2px;\n"
-"color:#39C5BB;\n"
-"padding-bottom:2px;\n"
-"}")
-
-        self.horizontalLayout_81.addWidget(self.update_btn)
-
         self.min_btn = QPushButton(self.widget_91)
         self.min_btn.setObjectName(u"min_btn")
-        self.min_btn.setMinimumSize(QSize(85, 35))
+        self.min_btn.setMinimumSize(QSize(40, 35))
         self.min_btn.setStyleSheet(u"QPushButton{\n"
-"border: 2px solid #b5b5b5;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
-"background-color: rgb(255, 255, 255);\n"
-"border-radius:10px;\n"
+"font-size:40px;\n"
+"border: none;\n"
 "outline:none;\n"
 "color:#0f322f;\n"
 "padding-top:2px;\n"
 "padding-bottom:2px;\n"
 "}\n"
 "QPushButton::hover {\n"
-"border: 2px solid #39C5BB;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
-"background-color: rgb(255, 255, 255);\n"
-"border-radius:10px;\n"
-"outline:none;\n"
-"padding-top:2px;\n"
 "color:#39C5BB;\n"
-"padding-bottom:2px;\n"
 "}")
 
         self.horizontalLayout_81.addWidget(self.min_btn)
 
-        self.exit_btn = QPushButton(self.widget_91)
-        self.exit_btn.setObjectName(u"exit_btn")
-        self.exit_btn.setMinimumSize(QSize(70, 35))
-        self.exit_btn.setStyleSheet(u"QPushButton{\n"
-"border: 2px solid #b5b5b5;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
-"background-color: rgb(255, 255, 255);\n"
-"border-radius:10px;\n"
+        self.menu_btn = QPushButton(self.widget_91)
+        self.menu_btn.setObjectName(u"menu_btn")
+        self.menu_btn.setMinimumSize(QSize(40, 35))
+        self.menu_btn.setStyleSheet(u"QPushButton::menu-indicator {\n"
+"        image: none; \n"
+"        width: 0px; \n"
+"        height: 0px; \n"
+"    }\n"
+"QPushButton{\n"
+"font-size:40px;\n"
+"border: none;\n"
 "outline:none;\n"
 "color:#0f322f;\n"
 "padding-top:2px;\n"
 "padding-bottom:2px;\n"
 "}\n"
 "QPushButton::hover {\n"
-"border: 2px solid #39C5BB;  /* 2px\u5bbd\u7684\u6df1\u7070\u8272\u5b9e\u7ebf\u8fb9\u6846 */\n"
-"background-color: rgb(255, 255, 255);\n"
-"border-radius:10px;\n"
-"outline:none;\n"
-"padding-top:2px;\n"
 "color:#39C5BB;\n"
-"padding-bottom:2px;\n"
 "}")
 
-        self.horizontalLayout_81.addWidget(self.exit_btn)
+        self.horizontalLayout_81.addWidget(self.menu_btn)
 
 
         self.horizontalLayout_56.addWidget(self.widget_91)
@@ -308,16 +256,17 @@ class Ui_Xuan(object):
 
         self.retranslateUi(Xuan)
 
+        self.ServiceStackedWidget.setCurrentIndex(1)
+
+
         QMetaObject.connectSlotsByName(Xuan)
     # setupUi
 
     def retranslateUi(self, Xuan):
         Xuan.setWindowTitle(QCoreApplication.translate("Xuan", u"XUAN\uff08Xuan's UtilityAutoNaruto\uff09", None))
         self.label_6.setText(QCoreApplication.translate("Xuan", u"   Xuan\u2018s Utility Auto Naruto   ", None))
-        self.go_to_github_btn.setText(QCoreApplication.translate("Xuan", u"Github", None))
-        self.update_btn.setText(QCoreApplication.translate("Xuan", u"\u68c0\u67e5\u66f4\u65b0", None))
-        self.min_btn.setText(QCoreApplication.translate("Xuan", u"\u6700\u5c0f\u5316", None))
-        self.exit_btn.setText(QCoreApplication.translate("Xuan", u"\u9000\u51fa", None))
+        self.min_btn.setText(QCoreApplication.translate("Xuan", u"\u2014", None))
+        self.menu_btn.setText(QCoreApplication.translate("Xuan", u"\u2261", None))
         self.add_config_btn.setText(QCoreApplication.translate("Xuan", u"+", None))
     # retranslateUi
 

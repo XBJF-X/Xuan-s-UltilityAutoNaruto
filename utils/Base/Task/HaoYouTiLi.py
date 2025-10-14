@@ -43,4 +43,8 @@ class HaoYouTiLi(BaseTask):
     def _(self):
         self.operationer.click_and_wait("确认")
         self.logger.info("好友体力领取成功")
-        return True
+        if self.flag_2:
+            self.update_next_execute_time()
+            self.operationer.click_and_wait("X")
+            return True
+        return False

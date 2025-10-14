@@ -144,134 +144,59 @@ padding:5px;
            </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="go_to_github_btn">
-            <property name="minimumSize">
-             <size>
-              <width>90</width>
-              <height>35</height>
-             </size>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton{
-border: 2px solid #b5b5b5;  /* 2px宽的深灰色实线边框 */
-background-color: rgb(255, 255, 255);
-border-radius:10px;
-outline:none;
-color:#0f322f;
-padding-top:2px;
-padding-bottom:2px;
-}
-QPushButton::hover {
-border: 2px solid #39C5BB;  /* 2px宽的深灰色实线边框 */
-background-color: rgb(255, 255, 255);
-border-radius:10px;
-outline:none;
-padding-top:2px;
-color:#39C5BB;
-padding-bottom:2px;
-}</string>
-            </property>
-            <property name="text">
-             <string>Github</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="update_btn">
-            <property name="minimumSize">
-             <size>
-              <width>110</width>
-              <height>35</height>
-             </size>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton{
-border: 2px solid #b5b5b5;  /* 2px宽的深灰色实线边框 */
-background-color: rgb(255, 255, 255);
-border-radius:10px;
-outline:none;
-color:#0f322f;
-padding-top:2px;
-padding-bottom:2px;
-}
-QPushButton::hover {
-border: 2px solid #39C5BB;  /* 2px宽的深灰色实线边框 */
-background-color: rgb(255, 255, 255);
-border-radius:10px;
-outline:none;
-padding-top:2px;
-color:#39C5BB;
-padding-bottom:2px;
-}</string>
-            </property>
-            <property name="text">
-             <string>检查更新</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QPushButton" name="min_btn">
             <property name="minimumSize">
              <size>
-              <width>85</width>
+              <width>40</width>
               <height>35</height>
              </size>
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton{
-border: 2px solid #b5b5b5;  /* 2px宽的深灰色实线边框 */
-background-color: rgb(255, 255, 255);
-border-radius:10px;
+font-size:40px;
+border: none;
 outline:none;
 color:#0f322f;
 padding-top:2px;
 padding-bottom:2px;
 }
 QPushButton::hover {
-border: 2px solid #39C5BB;  /* 2px宽的深灰色实线边框 */
-background-color: rgb(255, 255, 255);
-border-radius:10px;
-outline:none;
-padding-top:2px;
 color:#39C5BB;
-padding-bottom:2px;
 }</string>
             </property>
             <property name="text">
-             <string>最小化</string>
+             <string>—</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="exit_btn">
+           <widget class="QPushButton" name="menu_btn">
             <property name="minimumSize">
              <size>
-              <width>70</width>
+              <width>40</width>
               <height>35</height>
              </size>
             </property>
             <property name="styleSheet">
-             <string notr="true">QPushButton{
-border: 2px solid #b5b5b5;  /* 2px宽的深灰色实线边框 */
-background-color: rgb(255, 255, 255);
-border-radius:10px;
+             <string notr="true">QPushButton::menu-indicator {
+        image: none; 
+        width: 0px; 
+        height: 0px; 
+    }
+QPushButton{
+font-size:40px;
+border: none;
 outline:none;
 color:#0f322f;
 padding-top:2px;
 padding-bottom:2px;
 }
 QPushButton::hover {
-border: 2px solid #39C5BB;  /* 2px宽的深灰色实线边框 */
-background-color: rgb(255, 255, 255);
-border-radius:10px;
-outline:none;
-padding-top:2px;
 color:#39C5BB;
-padding-bottom:2px;
 }</string>
             </property>
             <property name="text">
-             <string>退出</string>
+             <string>≡</string>
             </property>
            </widget>
           </item>
@@ -415,6 +340,9 @@ color:#39C5BB;
        </item>
        <item>
         <widget class="QStackedWidget" name="ServiceStackedWidget">
+         <property name="currentIndex">
+          <number>1</number>
+         </property>
          <widget class="QWidget" name="page"/>
          <widget class="QWidget" name="page_2"/>
         </widget>

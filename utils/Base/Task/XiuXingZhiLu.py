@@ -57,8 +57,7 @@ class XiuXingZhiLu(BaseTask):
 
     def _handle_initialization(self, current_time: datetime) -> datetime:
         def get_this_monday_5am(current_time, tz):
-            days_ahead = (0 - current_time.weekday()) % 7
-            next_monday = current_time + timedelta(days=days_ahead)
+            next_monday = current_time - timedelta(days=current_time.weekday())
             return next_monday.replace(hour=5, minute=0, second=0, microsecond=0, tzinfo=tz)
 
         china_tz = current_time.tzinfo
@@ -78,8 +77,7 @@ class XiuXingZhiLu(BaseTask):
 
     def _handle_execution_completed(self, current_time: datetime) -> datetime:
         def get_this_monday_5am(current_time, tz):
-            days_ahead = (0 - current_time.weekday()) % 7
-            next_monday = current_time + timedelta(days=days_ahead)
+            next_monday = current_time - timedelta(days=current_time.weekday())
             return next_monday.replace(hour=5, minute=0, second=0, microsecond=0, tzinfo=tz)
 
         china_tz = current_time.tzinfo

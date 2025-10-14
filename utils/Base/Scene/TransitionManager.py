@@ -301,7 +301,11 @@ class TransitionManager:
                 times=2
             )
             for _ in range(3):
-                if operationer.click_and_wait(kwargs.get("target_id"), auto_raise=False):
+                if operationer.click_and_wait(
+                    kwargs.get("target_id"),
+                    auto_raise=False,
+                    wait_time=2
+                ):
                     break
                 operationer.swipe_and_wait(
                     (1345, 340),
