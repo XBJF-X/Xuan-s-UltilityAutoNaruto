@@ -75,7 +75,7 @@ class Xuan(QMainWindow):
         self.updater = Updater(parent_logger=self.logger)
         self.bind_signals()
         self.logger.info("初始化完成...")
-        if self.setting.getboolean("Update", "auto_update"):
+        if self.setting.getboolean("Update", "自动更新"):
             self.logger.info("自动更新")
             self._on_update_btn_clicked()
 
