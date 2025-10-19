@@ -605,7 +605,8 @@ class Scheduler(QObject):
         self.tasks_layout.setSpacing(5)
 
     def _handle_screen_save(self, task_name):
-        threading.Thread(target=self.save_screen, args=(task_name,)).start()
+        if self.UI.bool_save_img.isChecked():
+            threading.Thread(target=self.save_screen, args=(task_name,)).start()
 
     def scan(self):
         """改进的扫描方法，避免快速重入"""
@@ -619,8 +620,7 @@ class Scheduler(QObject):
         self._scanning = True
         try:
             start = time.perf_counter()
-            if self.UI.bool_save_img.isChecked():
-                self.screen_save_signal.emit("扫描")
+            self.screen_save_signal.emit("扫描")
 
             moved_tasks = []
 
