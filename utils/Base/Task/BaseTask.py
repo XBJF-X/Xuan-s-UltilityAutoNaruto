@@ -238,6 +238,7 @@ class BaseTask:
         while True:
             if self.temp_dead_line and datetime.now(tz=ZoneInfo("Asia/Shanghai")) > self.temp_dead_line:
                 self.logger.warning("任务达到最大执行时长，强制结束")
+                self.operationer.clicker.stop()
                 self.update_next_execute_time()
                 return
             if self._should_stop():
