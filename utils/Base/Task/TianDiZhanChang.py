@@ -97,17 +97,14 @@ class TianDiZhanChang(BaseTask):
     def _(self):
         while self.operationer.click_and_wait("领取", auto_raise=False):
             continue
-        if not self.operationer.detect_element("未达成"):
-            self.operationer.click_and_wait("X")
-            self.update_next_execute_time()
-            return True
         self.operationer.click_and_wait("X")
         return False
 
     @TransitionOn("天地战场-战场战斗已经结束")
     def _(self):
         self.operationer.click_and_wait("确认")
-        return False
+        self.update_next_execute_time()
+        return True
 
     @TransitionOn("天地战场-确认退出")
     def _(self):

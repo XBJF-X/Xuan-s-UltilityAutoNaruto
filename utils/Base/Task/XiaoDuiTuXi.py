@@ -69,6 +69,8 @@ class XiaoDuiTuXi(BaseTask):
 
     @TransitionOn("副本内")
     def _(self):
+        if not self.operationer.detect_element("自动战斗中"):
+            self.operationer.click_and_wait("自动战斗")
         QThread.msleep(1000)
         return False
 
