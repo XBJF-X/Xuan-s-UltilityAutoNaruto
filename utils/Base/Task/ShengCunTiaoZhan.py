@@ -43,7 +43,7 @@ class ShengCunTiaoZhan(BaseTask):
                 ):
                     if self.operationer.detect_element(
                             "生存挑战今天已经不能再重置了",
-                            max_time=0.5
+                            max_time=1
                     ):
                         self.update_next_execute_time()
                         raise EndEarly("已经不能再重置了，结束执行")

@@ -162,6 +162,8 @@ class TransitionManager:
         @self.register("火影格斗大赛-秋季赛", "主场景")
         @self.register("火影格斗大赛-无差别", "主场景")
         @self.register("聊天频道", "主场景")
+        @self.register("情报站-动态详情", "主场景")
+        @self.register("情报站-文章详情", "主场景")
         @self.register("个人信息-分享", "个人信息")
         @self.register("精英副本-便捷扫荡", "冒险-精英副本")
         @self.register("忍术对战", "决斗场-首页")
@@ -538,6 +540,8 @@ class TransitionManager:
             operationer.click_and_wait("推荐", wait_time=3)
 
         @self.register("福利站", "情报站-首页")
+        @self.register("情报站-文章详情", "情报站-村口")
+        @self.register("情报站-动态详情", "情报站-首页")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("后退", wait_time=3)
 
