@@ -241,6 +241,8 @@ class TransitionManager:
         @self.register("丰饶之间-暂停", "丰饶之间-内部")
         @self.register("追击晓组织-奖励", "追击晓组织")
         @self.register("叛忍来袭-更换忍者", "叛忍来袭")
+        @self.register("生存挑战-重置", "生存挑战")
+        @self.register("生存挑战-购买扫荡券", "生存挑战")
         def _(operationer: Operationer, *args, **kwargs):
             """通用返回函数，点击[X]"""
             operationer.click_and_wait("X")

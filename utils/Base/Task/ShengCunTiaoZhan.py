@@ -57,10 +57,11 @@ class ShengCunTiaoZhan(BaseTask):
         if not self.operationer.search_and_detect(
                 [
                     self.operationer.get_element("已通过所有关卡"),
-                    # "可出战的忍者不足",
+                    self.operationer.get_element("没有可以出战的忍者"),
                 ],
                 [],
-                search_max_time=60
+                search_max_time=60,
+                once_max_time=0.3
         ):
             raise StepFailedError("检测[生存挑战-已通过所有关卡]超时")
         self.logger.info("系统自动扫荡结束")
@@ -92,3 +93,10 @@ class ShengCunTiaoZhan(BaseTask):
     def _(self):
         self.operationer.click_and_wait("确定")
         return False
+
+    @TransitionOn("生存挑战-购买扫荡券")
+    def _(self):
+        self.operationer.click_and_wait("X")
+        self.logger.warning("扫荡券不足，将停止扫荡退出游戏等待下次执行，请自行解决扫荡券不足任务")
+        self.update_next_execute_time()
+        return True
