@@ -228,7 +228,7 @@ class Xuan(QMainWindow):
         return menu
 
     def bind_signals(self):
-        self.updater.update_finished.connect(self.on_update_finished)
+        self.updater.update_message.connect(self.update_message)
         self.UI.menu_btn.setMenu(self._create_menu())
 
         self.UI.min_btn.clicked.connect(self.showMinimized)
@@ -242,7 +242,7 @@ class Xuan(QMainWindow):
         dialog = SettingDialog(self, self.logger, self.setting)
         dialog.exec()
 
-    def on_update_finished(self, title, message):
+    def update_message(self, title, message):
         QMessageBox.information(self, title, message)
 
     def _on_update_btn_clicked(self):

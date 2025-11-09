@@ -13,7 +13,7 @@ from StaticFunctions import get_real_path
 
 
 class Updater(QObject):
-    update_finished=Signal(str, str)  # 第一个参数是标题，第二个参数是消息内容
+    update_message = Signal(str, str)  # 第一个参数是标题，第二个参数是消息内容
     repo_owner = "XBJF-X"
     repo_name = "Xuan-s-UltilityAutoNaruto"
     branch_name = "master"
@@ -44,11 +44,14 @@ class Updater(QObject):
                     self.logger.info(f"最新提交 Date：{new_commit['commit']["committer"]["date"]}")
                     self.logger.info(f"最新提交 Message：{new_commit['commit']['message']}")
                     return True, new_version
+                self.update_message.emit("", "当前已是最新版本")
                 self.logger.info("当前已是最新版本")
             else:
+                self.update_message.emit("检查更新失败", f"HTTP状态码：{response.status_code}")
                 self.logger.error(f"检查更新失败，HTTP状态码：{response.status_code}")
             return False, {}
         except Exception as e:
+            self.update_message.emit("检查更新出错", f"{e}")
             self.logger.error(f"检查更新出错：{e}")
             return False, {}
 
@@ -93,7 +96,7 @@ class Updater(QObject):
 
                 # 更新完成，发出信号，注意这里传递两个参数：标题和消息
                 commit_message = new_version["commit"]['commit']['message']
-                self.update_finished.emit("更新完成", f"新版本更新完毕，请重启程序\n更新内容：{commit_message}")
+                self.update_message.emit("更新完成", f"新版本更新完毕，请重启程序\n更新内容：{commit_message}")
 
             with open("version.json", "w", encoding="utf-8") as f:
                 json.dump(new_version, f, indent=4, ensure_ascii=False)
@@ -102,15 +105,17 @@ class Updater(QObject):
         except Exception as e:
             self.logger.error(f"更新出错：{e}")
             # 如果更新出错，也可以发射一个信号来显示错误信息
-            self.update_finished.emit("更新出错", f"更新过程中出现错误：{e}")
+            self.update_message.emit("更新出错", f"更新过程中出现错误：{e}")
         finally:
             self.update_thread = None
 
     def update(self, new_version):
         if self.update_thread:
+            self.update_message.emit("重复更新", f"已经存在一个更新线程了")
             self.logger.warning("已经存在一个更新线程了")
             return
         self.update_thread = threading.Thread(
             target=self.update_implement, args=(new_version,), daemon=True)
         self.update_thread.start()
+        self.update_message.emit("", "更新线程已启动")
         self.logger.info("更新线程已启动")
