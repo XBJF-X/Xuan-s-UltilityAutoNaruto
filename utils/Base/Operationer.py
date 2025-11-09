@@ -334,6 +334,7 @@ class Operationer:
         times: int = kwargs.get("times", 1)
         self.screen_save_signal.emit(self.task_name)
         for _ in range(times):
+            self.logger.debug(f"[SWIPE] {start_coordinate}->{end_coordinate}")
             self.device.swipe(
                 start_coordinate,
                 end_coordinate,
@@ -345,7 +346,6 @@ class Operationer:
                 self.wait_until_stable()
         self.screen_save_signal.emit(self.task_name)
         return True
-
 
     def search_and_click(self, element_list, search_actions, **kwargs, ):
         """

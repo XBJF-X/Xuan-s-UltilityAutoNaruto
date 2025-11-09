@@ -7,6 +7,8 @@ from utils.Base.Enums import KEY_INDEX
 from utils.Base.Exceptions import EndEarly, StepFailedError
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn, handle_task_exceptions
 
+choose_dic = ["天之战场", "地之战场"]
+
 
 class TianDiZhanChang(BaseTask):
     source_scene = "天地战场"
@@ -16,6 +18,7 @@ class TianDiZhanChang(BaseTask):
         super().__init__(*args, **kwargs)
         self.guwu_done = False
         self.pillar_took = False
+        self.choose = self.config.get_task_exe_param(self.task_name, "选择战场", 0)
         self.operationer.clicker.update_coordinates([
             self.config.get_config("键位")[KEY_INDEX.BasicAttack],
             self.config.get_config("键位")[KEY_INDEX.FirstSkill],
@@ -28,7 +31,7 @@ class TianDiZhanChang(BaseTask):
 
     @TransitionOn()
     def _(self):
-        self.operationer.click_and_wait("地之战场")
+        self.operationer.click_and_wait(choose_dic[self.choose])
         return False
 
     @TransitionOn("天之战场")
@@ -74,12 +77,18 @@ class TianDiZhanChang(BaseTask):
         self.operationer.click_and_wait("确认")
         return False
 
+    @TransitionOn("天地战场-确定进入")
+    def _(self):
+        self.operationer.click_and_wait("确认")
+        return False
+
     @TransitionOn("天地战场-配置阵容")
     def _(self):
-
+        defeated_ninja_num = max(self.config.get_task_exe_prog(self.task_name, "已战败角色数", 0), 2) + 1
         self.operationer.click_and_wait("忍者页")
-        if not self.operationer.detect_element("默认点位-1-选中"):
-            self.operationer.click_and_wait("默认点位-1", stable_max_time=0.5)
+        if not self.operationer.detect_element(f"默认点位-{defeated_ninja_num}-选中"):
+            self.operationer.click_and_wait(f"默认点位-{defeated_ninja_num}", stable_max_time=0.5)
+            self.config.set_task_exe_prog(self.task_name, "已战败角色数", defeated_ninja_num)
 
         self.operationer.click_and_wait("通灵兽页", stable_max_time=0.5)
         for i in range(1, 4):
@@ -183,3 +192,6 @@ class TianDiZhanChang(BaseTask):
 
         return next_execute_time
 
+    def reset_prog_parmas(self) -> bool:
+        self.config.set_task_exe_prog(self.task_name, "已战败角色数", 0)
+        return True

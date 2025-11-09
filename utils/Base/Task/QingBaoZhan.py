@@ -81,56 +81,6 @@ class QingBaoZhan(BaseTask):
         else:
             self.operationer.click_and_wait("首页")
         return False
-        #
-        # if not self.config.get_task_exe_prog(self.task_name, "浏览村口", False):
-        #     self.logger.info("开始点赞帖子")
-        #     love_sum = 0
-        #     retry_time = 0
-        #     while love_sum < 3:
-        #         retry_time += 1
-        #         flag = self.operationer.search_and_detect(
-        #             [
-        #                 self.operationer.get_element("点赞-未点"),
-        #                 self.operationer.get_element("点赞-已点")
-        #             ],
-        #             [
-        #                 {
-        #                     "swipe": {
-        #                         "start_coordinate": [760, 870],
-        #                         "end_coordinate": [760, 80],
-        #                         "duration": 1
-        #                     }
-        #                 }
-        #             ],
-        #             wait_time=0,
-        #             bool_debug=True
-        #         )
-        #         if flag == 1:
-        #             self.logger.debug("发现未被点赞帖子")
-        #             self.operationer.click_and_wait("点赞-未点")
-        #             love_sum += 1
-        #             self.logger.info(f"已点赞❤帖子 {love_sum} 个")
-        #
-        #         elif flag == 2:
-        #             self.logger.debug("发现已被点赞帖子")
-        #             self.operationer.click_and_wait("点赞-已点")
-        #             self.operationer.click_and_wait("点赞-未点")
-        #             love_sum += 1
-        #             self.logger.info(f"已点赞❤帖子 {love_sum} 个")
-        #
-        #         if retry_time > 30:
-        #             self.logger.warning("点赞帖子三次失败，可能导致活跃度不足100")
-        #             break
-        #         if love_sum < 3:
-        #             self.operationer.swipe_and_wait(
-        #                 (760, 870),
-        #                 (760, 80),
-        #                 wait_time=0,
-        #                 duration=0.7
-        #             )
-        #     self.config.set_task_exe_prog(self.task_name, "浏览村口", True)
-        # self.operationer.click_and_wait("首页")
-        # return False
 
     @TransitionOn("忍者站")
     def _(self):
@@ -172,6 +122,7 @@ class QingBaoZhan(BaseTask):
                 self.operationer.press_key("back", wait_time=7)
             self.config.set_task_exe_prog(self.task_name, "浏览金币助手", True)
             return False
+
         elif not self.config.get_task_exe_prog(self.task_name, "领取情报站活跃度", False):
             self.logger.info("领取活跃度奖励")
             # 点击所有的领取按钮
@@ -183,25 +134,20 @@ class QingBaoZhan(BaseTask):
                 continue
             self.config.set_task_exe_prog(self.task_name, "领取情报站活跃度", True)
             return False
-        elif (not self.activity_reward_40_done and
-              not self.config.get_task_exe_prog(self.task_name, "40活跃度奖励已领取", False)):
+
+        elif not self.config.get_task_exe_prog(self.task_name, "40活跃度奖励已领取", False):
             self.handle_activity_reward(40)
             return False
-        elif (not self.activity_reward_60_done
-              and not self.config.get_task_exe_prog(self.task_name, "60活跃度奖励已领取", False)):
+        elif not self.config.get_task_exe_prog(self.task_name, "60活跃度奖励已领取", False):
             self.handle_activity_reward(60)
             return False
-        elif (not self.activity_reward_100_done
-              and not self.config.get_task_exe_prog(self.task_name, "100活跃度奖励已领取", False)):
+        elif not self.config.get_task_exe_prog(self.task_name, "100活跃度奖励已领取", False):
             self.handle_activity_reward(100)
             return False
         self.operationer.click_and_wait("X")
-        if self.reset_prog_parmas():
-            self.update_next_execute_time()
-            return True
-        else:
-            self.update_next_execute_time(3, timedelta(hours=3))
-            return False
+        self.reset_prog_parmas()
+        self.update_next_execute_time()
+        return True
 
     @TransitionOn("福利站-每日签到")
     def _(self):
@@ -255,27 +201,25 @@ class QingBaoZhan(BaseTask):
             self.config.set_task_exe_prog(self.task_name, f"{num}活跃度奖励已领取", True)
         else:
             self.logger.warning(f"{num}活跃度奖励领取失败，活跃度未达到要求")
-        setattr(self, f"activity_reward_{num}_done", True)
 
-    def reset_prog_parmas(self) -> bool:
+    def reset_prog_parmas(self) -> None:
         flag = all([
             self.config.get_task_exe_prog(self.task_name, f"40活跃度奖励已领取", False),
             self.config.get_task_exe_prog(self.task_name, f"60活跃度奖励已领取", False),
             self.config.get_task_exe_prog(self.task_name, f"100活跃度奖励已领取", False)
         ])
-        if flag:
-            self.logger.debug("所有活跃度奖励已领取")
-            self.config.set_task_exe_prog(self.task_name, f"浏览卷轴", False),
-            self.config.set_task_exe_prog(self.task_name, f"浏览村口", False),
-            self.config.set_task_exe_prog(self.task_name, f"点赞帖子", 0),
-            self.config.set_task_exe_prog(self.task_name, f"浏览忍者站", False),
-            self.config.set_task_exe_prog(self.task_name, f"情报站签到", False),
-            self.config.set_task_exe_prog(self.task_name, f"浏览金币助手", False),
-            self.config.set_task_exe_prog(self.task_name, f"领取情报站活跃度", False),
-            self.config.set_task_exe_prog(self.task_name, f"40活跃度奖励已领取", False),
-            self.config.set_task_exe_prog(self.task_name, f"60活跃度奖励已领取", False),
-            self.config.set_task_exe_prog(self.task_name, f"100活跃度奖励已领取", False)
-            return True
-        else:
-            self.logger.debug("存在未领取活跃度奖励")
-            return False
+
+        self.logger.debug("所有活跃度奖励已领取" if flag else "所有活跃度奖励已领取")
+
+        self.config.set_task_exe_prog(self.task_name, f"浏览卷轴", False)
+        self.config.set_task_exe_prog(self.task_name, f"浏览村口", False)
+        self.config.set_task_exe_prog(self.task_name, f"点赞帖子", 0)
+        self.config.set_task_exe_prog(self.task_name, f"浏览忍者站", False)
+        self.config.set_task_exe_prog(self.task_name, f"情报站签到", False)
+        self.config.set_task_exe_prog(self.task_name, f"浏览金币助手", False)
+        self.config.set_task_exe_prog(self.task_name, f"领取情报站活跃度", False)
+        self.config.set_task_exe_prog(self.task_name, f"40活跃度奖励已领取", False)
+        self.config.set_task_exe_prog(self.task_name, f"60活跃度奖励已领取", False)
+        self.config.set_task_exe_prog(self.task_name, f"100活跃度奖励已领取", False)
+
+

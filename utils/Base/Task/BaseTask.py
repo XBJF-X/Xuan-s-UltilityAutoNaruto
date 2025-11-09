@@ -248,6 +248,8 @@ class BaseTask:
             result = self.transition()
             if result is not None:
                 if result:
+                    self.logger.debug("重置任务执行进度")
+                    self.reset_prog_parmas()
                     return
 
     @handle_transition_exceptions
@@ -449,7 +451,6 @@ class BaseTask:
 
     def reset_prog_parmas(self) -> bool:
         """重置任务执行进度参数"""
-        self.logger.debug("重置任务执行进度")
         return True
 
     @TransitionOn("二级密码")
