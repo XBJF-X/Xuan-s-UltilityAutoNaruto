@@ -192,6 +192,6 @@ class TianDiZhanChang(BaseTask):
 
         return next_execute_time
 
-    def reset_prog_parmas(self) -> bool:
+    def reset_task_exe_proc(self) -> bool:
         self.config.set_task_exe_prog(self.task_name, "已战败角色数", 0)
         return True

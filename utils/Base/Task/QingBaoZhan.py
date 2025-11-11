@@ -145,7 +145,7 @@ class QingBaoZhan(BaseTask):
             self.handle_activity_reward(100)
             return False
         self.operationer.click_and_wait("X")
-        self.reset_prog_parmas()
+        self.reset_task_exe_proc()
         self.update_next_execute_time()
         return True
 
@@ -202,7 +202,7 @@ class QingBaoZhan(BaseTask):
         else:
             self.logger.warning(f"{num}活跃度奖励领取失败，活跃度未达到要求")
 
-    def reset_prog_parmas(self) -> None:
+    def reset_task_exe_proc(self) -> None:
         flag = all([
             self.config.get_task_exe_prog(self.task_name, f"40活跃度奖励已领取", False),
             self.config.get_task_exe_prog(self.task_name, f"60活跃度奖励已领取", False),

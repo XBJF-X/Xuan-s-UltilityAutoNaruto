@@ -249,7 +249,7 @@ class BaseTask:
             if result is not None:
                 if result:
                     self.logger.debug("重置任务执行进度")
-                    self.reset_prog_parmas()
+                    self.reset_task_exe_proc()
                     return
 
     @handle_transition_exceptions
@@ -449,7 +449,7 @@ class BaseTask:
             return None
         return current_time + delta
 
-    def reset_prog_parmas(self) -> bool:
+    def reset_task_exe_proc(self) -> bool:
         """重置任务执行进度参数"""
         return True
 

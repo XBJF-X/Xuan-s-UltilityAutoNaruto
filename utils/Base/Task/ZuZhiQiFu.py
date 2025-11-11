@@ -65,7 +65,7 @@ class ZuZhiQiFu(BaseTask):
         self.operationer.click_and_wait("确定")
         return False
 
-    def reset_prog_parmas(self) -> bool:
+    def reset_task_exe_proc(self) -> bool:
         self.config.set_task_exe_prog(self.task_name, "祈福", False)
         self.config.set_task_exe_prog(self.task_name, "昨日奖励领取", False)
         return True
