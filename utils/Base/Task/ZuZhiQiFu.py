@@ -32,7 +32,7 @@ class ZuZhiQiFu(BaseTask):
                     auto_raise=False
             ):
                 self.logger.warning("昨日奖励已领取或昨日祈福人数不足15")
-            self.config.set_task_exe_prog(self.task_name, "昨日奖励领取", True)
+                self.config.set_task_exe_prog(self.task_name, "昨日奖励领取", True)
             return False
         self.update_next_execute_time()
         return True
