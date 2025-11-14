@@ -11,11 +11,12 @@ class ShengCunTiaoZhan(BaseTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.flag_1 = False
+        self.check_need_reset = False
+        self.reseted = False
 
     @TransitionOn()
     def _(self):
-        if not self.flag_1:
+        if not self.check_need_reset:
             self.logger.info("开始扫荡")
             # 点击开始扫荡图标
             self.operationer.click_and_wait(
@@ -28,7 +29,7 @@ class ShengCunTiaoZhan(BaseTask):
                     self.operationer.get_element("已通过所有关卡")
                 ],
                 [],
-                search_max_time=1,
+                search_max_time=1.5,
                 once_max_time=0.3
             )
             if flag:
@@ -46,25 +47,29 @@ class ShengCunTiaoZhan(BaseTask):
                             max_time=1
                     ):
                         self.update_next_execute_time()
-                        raise EndEarly("已经不能再重置了，结束执行")
-                    else:
-                        return False
-            else:
-                self.flag_1 = True
-                return False
+                        self.logger.warning("已经不能再重置了，结束执行")
+                        return True
+                    self.reseted = True
 
-        # 等待生存挑战-已通过所有关卡出现
-        if not self.operationer.search_and_detect(
-                [
-                    self.operationer.get_element("已通过所有关卡"),
-                    self.operationer.get_element("没有可以出战的忍者"),
-                ],
-                [],
-                search_max_time=60,
-                once_max_time=0.3
-        ):
-            raise StepFailedError("检测[生存挑战-已通过所有关卡]超时")
-        self.logger.info("系统自动扫荡结束")
+            self.check_need_reset = True
+            return False
+
+        if self.reseted:
+            # 等待生存挑战-已通过所有关卡出现
+            if not self.operationer.search_and_detect(
+                    [
+                        self.operationer.get_element("已通过所有关卡"),
+                        self.operationer.get_element("没有可以出战的忍者"),
+                    ],
+                    [],
+                    search_max_time=60,
+                    once_max_time=0.3
+            ):
+                raise StepFailedError("检测[生存挑战-已通过所有关卡]超时")
+            self.logger.info("系统自动扫荡结束")
+            self.reseted = False
+            return False
+
         self.operationer.click_and_wait("X")
         self.update_next_execute_time()
         return True
