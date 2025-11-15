@@ -280,7 +280,6 @@ class BaseTask:
                 if self.operationer.next_scene == scene_name:
                     self.operationer.next_scene = None
                 else:
-                    self.operationer.clicker.stop()
                     return self.transition_manager.transition(self.operationer)
 
             # 自动寻找从当前场景到任意已注册场景的路径
@@ -307,7 +306,6 @@ class BaseTask:
             if self.operationer.next_scene == scene_name:
                 self.operationer.next_scene = None
             else:
-                self.operationer.clicker.stop()
                 return self.transition_manager.transition(self.operationer)
         # # 正常执行注册函数
         # self.logger.debug(f"寻找注册函数: {scene_name}")

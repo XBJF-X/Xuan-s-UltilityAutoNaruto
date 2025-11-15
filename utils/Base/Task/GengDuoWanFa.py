@@ -63,14 +63,14 @@ class GengDuoWanFa(BaseTask):
     def _(self):
         self.checked = False
         self.operationer.clicker.start()
-        self.operationer.next_scene = "更多玩法"
+        self.operationer.next_scene = None
         return False
 
     @TransitionOn("绝迹战场-副本内")
     def _(self):
         self.checked = False
         self.operationer.clicker.start()
-        self.operationer.next_scene = "更多玩法"
+        self.operationer.next_scene = None
         return False
 
     @TransitionOn("更多玩法-任务")
@@ -119,6 +119,12 @@ class GengDuoWanFa(BaseTask):
         self.operationer.click_and_wait("确定")
         return False
 
+    @TransitionOn("决斗场-首页")
+    def _(self):
+        self.operationer.clicker.stop()
+        self.operationer.click_and_wait("更多玩法")
+        return False
+
     @TransitionOn("未知场景")
     def _(self):
         self.operationer.clicker.stop()
@@ -127,6 +133,7 @@ class GengDuoWanFa(BaseTask):
     @TransitionOn("未注册场景")
     def _(self):
         self.operationer.clicker.stop()
+        self.operationer.next_scene = "更多玩法"
         return False
 
     def _handle_initialization(self, current_time: datetime) -> datetime:
