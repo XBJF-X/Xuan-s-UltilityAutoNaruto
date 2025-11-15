@@ -25,6 +25,7 @@ class GengDuoWanFa(BaseTask):
 
     @TransitionOn()
     def _(self):
+        self.operationer.clicker.stop()
         if not self.checked:
             self.operationer.click_and_wait("任务")
             return False
@@ -36,6 +37,7 @@ class GengDuoWanFa(BaseTask):
 
     @TransitionOn("绝迹战场")
     def _(self):
+        self.operationer.clicker.stop()
         if not self.checked:
             self.operationer.click_and_wait("返回")
             return False
@@ -47,6 +49,7 @@ class GengDuoWanFa(BaseTask):
 
     @TransitionOn("大蛇丸试炼")
     def _(self):
+        self.operationer.clicker.stop()
         if not self.checked:
             self.operationer.click_and_wait("返回")
             return False
