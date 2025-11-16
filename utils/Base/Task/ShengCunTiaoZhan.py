@@ -11,8 +11,8 @@ class ShengCunTiaoZhan(BaseTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.check_need_reset = False
-        self.reseted = False
+        self.check_need_reset = False  # 标志是否已检查需要重置
+        self.bool_start = False  # 标志是否已开始扫荡
 
     @TransitionOn()
     def _(self):
@@ -49,12 +49,12 @@ class ShengCunTiaoZhan(BaseTask):
                         self.update_next_execute_time()
                         self.logger.warning("已经不能再重置了，结束执行")
                         return True
-                    self.reseted = True
-
+            else:
+                self.bool_start = True
             self.check_need_reset = True
             return False
 
-        if self.reseted:
+        if self.bool_start:
             # 等待生存挑战-已通过所有关卡出现
             if not self.operationer.search_and_detect(
                     [
@@ -67,7 +67,8 @@ class ShengCunTiaoZhan(BaseTask):
             ):
                 raise StepFailedError("检测[生存挑战-已通过所有关卡]超时")
             self.logger.info("系统自动扫荡结束")
-            self.reseted = False
+            self.bool_start = False
+            self.check_need_reset = False
             return False
 
         self.operationer.click_and_wait("X")
@@ -87,6 +88,7 @@ class ShengCunTiaoZhan(BaseTask):
     @TransitionOn("生存挑战-扫荡确认")
     def _(self):
         self.operationer.click_and_wait("确定")
+        self.bool_start = True
         return False
 
     @TransitionOn("生存挑战-传送")

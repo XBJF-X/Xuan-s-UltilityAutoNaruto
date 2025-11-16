@@ -315,7 +315,7 @@ class TransitionManager:
                     (1345, 340),
                     (650, 340),
                     duration=0.7,
-                    wait_time=0.4
+                    wait_time=0.7
                 )
 
         @self.register("好友排名至X位", "主场景")
