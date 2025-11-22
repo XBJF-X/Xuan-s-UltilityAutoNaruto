@@ -7,7 +7,7 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 class ShengCunTiaoZhan(BaseTask):
     source_scene = "生存挑战"
-    task_max_duration = timedelta(minutes=3)
+    task_max_duration = timedelta(minutes=2)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -56,19 +56,18 @@ class ShengCunTiaoZhan(BaseTask):
 
         if self.bool_start:
             # 等待生存挑战-已通过所有关卡出现
-            if not self.operationer.search_and_detect(
+            if self.operationer.search_and_detect(
                     [
                         self.operationer.get_element("已通过所有关卡"),
                         self.operationer.get_element("没有可以出战的忍者"),
                     ],
                     [],
-                    search_max_time=60,
+                    search_max_time=0.6,
                     once_max_time=0.3
             ):
-                raise StepFailedError("检测[生存挑战-已通过所有关卡]超时")
-            self.logger.info("系统自动扫荡结束")
-            self.bool_start = False
-            self.check_need_reset = False
+                self.logger.info("系统自动扫荡结束")
+                self.bool_start = False
+                self.check_need_reset = False
             return False
 
         self.operationer.click_and_wait("X")
@@ -87,7 +86,7 @@ class ShengCunTiaoZhan(BaseTask):
 
     @TransitionOn("生存挑战-扫荡确认")
     def _(self):
-        self.operationer.click_and_wait("确定")
+        self.operationer.click_and_wait("确定", wait_time=2)
         self.bool_start = True
         return False
 
