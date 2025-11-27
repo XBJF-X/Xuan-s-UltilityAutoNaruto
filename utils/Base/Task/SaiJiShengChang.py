@@ -31,7 +31,7 @@ class SaiJiShengChang(MeiRiShengChang):
             while self.operationer.click_and_wait(
                     "领取",
                     auto_raise=False,
-                    max_time=0.3
+                    max_time=1
             ):
                 continue
             if not self.operationer.detect_element(
