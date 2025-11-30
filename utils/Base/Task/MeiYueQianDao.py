@@ -20,6 +20,7 @@ class MeiYueQianDao(BaseTask):
             raise EndEarly("签到失败，可能已签到")
         else:
             self.logger.info("每月签到成功")
+        self.operationer.click_and_wait("持之以恒")
         self.operationer.click_and_wait("X")
         self.update_next_execute_time()
         return True
