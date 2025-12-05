@@ -275,6 +275,8 @@ class TransitionManager:
         @self.register("决斗场-首页", "更多玩法")
         @self.register("试炼之地", "生存挑战")
         @self.register("试炼之地", "修行之路")
+        @self.register("招募", "普通招募")
+        @self.register("招募", "高级招募")
         @self.register("普通招募", "高级招募")
         @self.register("主场景", "情报站-首页")
         @self.register("高级招募", "普通招募")
