@@ -1,11 +1,7 @@
 from datetime import datetime, timedelta, time
 from zoneinfo import ZoneInfo
 
-from PySide6.QtCore import QThread
-
-from utils.Base.Enums import KEY_INDEX
-from utils.Base.Exceptions import StepFailedError
-from utils.Base.Task.BaseTask import BaseTask, TransitionOn, handle_task_exceptions
+from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
 class DongRiYanHuaJi(BaseTask):
@@ -29,6 +25,7 @@ class DongRiYanHuaJi(BaseTask):
             self.operationer.clicker.stop()
             self.operationer.click_and_wait("点燃烟火")
             self.operationer.click_and_wait("免费烟火")
+            self.bool_light_fireworks = True
             return False
         if datetime.now(tz=ZoneInfo("Asia/Shanghai")) < self.temp_dead_line:
             self.operationer.clicker.start()
@@ -40,7 +37,6 @@ class DongRiYanHuaJi(BaseTask):
     @TransitionOn("冬日烟花季-点燃免费爆竹")
     def _(self):
         self.operationer.click_and_wait("是")
-        self.bool_light_fireworks = True
         return False
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):

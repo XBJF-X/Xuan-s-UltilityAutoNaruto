@@ -46,6 +46,10 @@ class TianDiZhanChang(BaseTask):
             self.operationer.click_and_wait("组织鼓舞")
             self.guwu_done = True
             return False
+        if self.operationer.detect_element("战场已提前结束"):
+            self.logger.info("战场已提前结束，停止执行")
+            self.update_next_execute_time()
+            return True
         if not self.pillar_took:
             if self.operationer.click_and_wait("空闲柱子", max_time=20, auto_raise=False):
                 self.pillar_took = True
@@ -65,6 +69,10 @@ class TianDiZhanChang(BaseTask):
             self.operationer.click_and_wait("组织鼓舞")
             self.guwu_done = True
             return False
+        if self.operationer.detect_element("战场已提前结束"):
+            self.logger.info("战场已提前结束，停止执行")
+            self.update_next_execute_time()
+            return True
         if not self.pillar_took:
             if self.operationer.click_and_wait("空闲柱子", max_time=20, auto_raise=False):
                 self.pillar_took = True
