@@ -164,6 +164,8 @@ class TransitionManager:
         @self.register("聊天频道", "主场景")
         @self.register("情报站-动态详情", "主场景")
         @self.register("情报站-文章详情", "主场景")
+        @self.register("升级", "主场景")
+        @self.register("冬日烟花季", "主场景")
         @self.register("个人信息-分享", "个人信息")
         @self.register("精英副本-便捷扫荡", "冒险-精英副本")
         @self.register("忍术对战", "决斗场-首页")
@@ -243,10 +245,12 @@ class TransitionManager:
         @self.register("叛忍来袭-更换忍者", "叛忍来袭")
         @self.register("生存挑战-重置", "生存挑战")
         @self.register("生存挑战-购买扫荡券", "生存挑战")
+        @self.register("冬日烟花季-点燃免费爆竹", "冬日烟花季-主页")
         def _(operationer: Operationer, *args, **kwargs):
             """通用返回函数，点击[X]"""
             operationer.click_and_wait("X")
 
+        @self.register("冬日烟花季-主页", "主场景")
         @self.register("生存挑战", "试炼之地")
         @self.register("修行之路", "试炼之地")
         @self.register("秘境奖励", "秘境探险-匹配")
@@ -357,7 +361,9 @@ class TransitionManager:
 
         @self.register("活动", "一乐外卖")
         @self.register("活动", "每月签到")
+        @self.register("活动", "冬日烟花季")
         @self.register("一乐外卖", "每月签到")
+        @self.register("一乐外卖", "冬日烟花季")
         @self.register("每月签到", "一乐外卖")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.search_and_click(
@@ -607,3 +613,7 @@ class TransitionManager:
         @self.register("丰饶之间-暂停", "丰饶之间")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("退出战斗")
+
+        @self.register("冬日烟花季", "冬日烟花季-主页")
+        def _(operationer: Operationer, *args, **kwargs):
+            operationer.click_and_wait("立即前往")

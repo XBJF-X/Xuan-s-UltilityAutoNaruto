@@ -8,6 +8,7 @@ from utils.Base.Exceptions import StepFailedError
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
+# Todo：增加根据配置文件决定是否翻牌功能
 class MiJingTanXian(BaseTask):
     source_scene = "秘境探险-匹配"
     task_max_duration = timedelta(hours=2)
@@ -117,4 +118,3 @@ class MiJingTanXian(BaseTask):
         self.fighting = False
         self.operationer.clicker.stop()
         return False
-

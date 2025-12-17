@@ -10,6 +10,7 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn, handle_task_excepti
 choose_dic = ["天之战场", "地之战场"]
 
 
+# Todo：修复天地战场第二次上人时选人失误的问题
 class TianDiZhanChang(BaseTask):
     source_scene = "天地战场"
     dead_line = time(21, 30)
@@ -156,6 +157,49 @@ class TianDiZhanChang(BaseTask):
         QThread.msleep(1000)
         return False
 
+    def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
+        """
+        用于更新本任务的下次执行时间
+
+        Args:
+            flag: 更新下次执行时间的模式
+                0：创建任务时初始化时间
+                1：正常执行完毕，更新为下次执行时间
+                3：把执行时间推迟delta时间，要求 delta!=None
+            delta: 延迟的时长（仅flag=3时有效）
+        Returns:
+            tuple: (是否成功, 下次执行时间datetime对象)
+        """
+        china_tz = ZoneInfo("Asia/Shanghai")
+        current_time = datetime.now(china_tz)
+
+        try:
+            match flag:
+                case 0 | 2:
+                    next_execute_time = self._handle_initialization(current_time)
+                case 1:
+                    next_execute_time = self._handle_execution_completed(current_time)
+                case 3:
+                    next_execute_time = self._handle_delay(current_time, delta)
+                case _:
+                    self.logger.warning(f"不支持的更新模式: {flag}")
+                    return False, None
+
+            if next_execute_time is None:
+                return False, None
+
+            self.logger.info(f"下次执行时间为：{next_execute_time.strftime('%Y-%m-%d %H:%M:%S')}")
+            self.config.set_task_base_config(
+                self.task_name,
+                "下次执行时间",
+                int(next_execute_time.timestamp())
+            )
+            return True, next_execute_time
+
+        except Exception as e:
+            self.logger.error(f"更新下次执行时间失败: {str(e)}")
+            return False, None
+
     def _handle_initialization(self, current_time: datetime) -> datetime:
         def get_this_wednesday_9pm(current_time, tz):
             days_ahead = (2 - current_time.weekday()) % 7
@@ -163,21 +207,14 @@ class TianDiZhanChang(BaseTask):
             return next_time.replace(hour=21, minute=0, second=0, microsecond=0, tzinfo=tz)
 
         china_tz = current_time.tzinfo
-        # 读取配置中的时间
-        next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
 
-        # 本周周六下午8点的时间对象
+        # 本周周三下午9点的时间对象
         next_execute_time = get_this_wednesday_9pm(current_time, china_tz)
 
-        if next_exec_ts == 0:
-            return next_execute_time
-        else:
-            # 转换为带时区的datetime
-            stored_time = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
-            if stored_time + timedelta(minutes=30) < current_time:
-                return next_execute_time
-            else:
-                return stored_time
+        if current_time > next_execute_time + timedelta(minutes=30):
+            next_execute_time += timedelta(days=7)
+
+        return next_execute_time
 
     def _handle_execution_completed(self, current_time: datetime) -> datetime:
         def get_this_wednesday_9pm(current_time, tz):

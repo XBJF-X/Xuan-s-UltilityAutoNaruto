@@ -1,6 +1,7 @@
 from .BenFuYaoSaiZhan import BenFuYaoSaiZhan
 from .DengLuJiangLi import DengLuJiangLi
 from .DianFengDuiJue import DianFengDuiJue
+from .DongRiYanHuaJi import DongRiYanHuaJi
 from .FengRaoZhiJian import FengRaoZhiJian
 from .GaoJiRenZheZhaoMu import GaoJiRenZheZhaoMu
 from .GengDuoWanFa import GengDuoWanFa
@@ -80,6 +81,7 @@ TASK_TYPE_MAP = {
     '高级忍者招募': GaoJiRenZheZhaoMu,
 
     '无差别预选赛': WuChaBieYuXuanSai,
+    '冬日烟花季': DongRiYanHuaJi
 }
 
 TASK_NAME_CN2EN_MAP = {
@@ -120,6 +122,9 @@ TASK_NAME_CN2EN_MAP = {
     '组织争霸': "ZuZhiZhengBa",
     "赛季胜场": "SaiJiShengChang",
 
-    '装备合成': "ZhuangBeiHeCheng",
+    '消耗体力': "XiaoHaoTiLi",
     '高级忍者招募': "GaoJiRenZheZhaoMu",
+
+    '无差别预选赛': "WuChaBieYuXuanSai",
+    '冬日烟花季': "DongRiYanHuaJi"
 }

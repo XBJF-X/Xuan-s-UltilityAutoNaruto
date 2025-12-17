@@ -477,6 +477,11 @@ class BaseTask:
         self.operationer.click_and_wait("确定")
         return False
 
+    @TransitionOn("升级")
+    def _(self):
+        self.operationer.click_and_wait("X")
+        return False
+
     @TransitionOn("公告")
     def _(self):
         self.operationer.click_and_wait("X")

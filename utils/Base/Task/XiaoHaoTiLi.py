@@ -13,7 +13,7 @@ armor_coodinates = [
     "戒指"
 ]
 
-
+# Todo：增加刷修罗副本的功能
 class XiaoHaoTiLi(BaseTask):
     source_scene = "主场景"
     task_max_duration = timedelta(minutes=3)

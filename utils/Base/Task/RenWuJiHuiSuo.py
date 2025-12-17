@@ -5,6 +5,7 @@ from utils.Base.Exceptions import EndEarly, StepFailedError
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
+# Todo：优化接取算法，只接取高质量任务
 class RenWuJiHuiSuo(BaseTask):
     source_scene = "任务集会所"
     task_max_duration = timedelta(minutes=5)
@@ -60,8 +61,8 @@ class RenWuJiHuiSuo(BaseTask):
             wait_time=0
         )
         if self.operationer.detect_element(
-            "任务栏满了",
-            max_time=0.7
+                "任务栏满了",
+                max_time=0.7
         ):
             self.operationer.click_and_wait("X")
             self.update_next_execute_time(3, timedelta(hours=1))
@@ -80,4 +81,3 @@ class RenWuJiHuiSuo(BaseTask):
     def _(self):
         self.operationer.click_and_wait("X")
         return False
-
