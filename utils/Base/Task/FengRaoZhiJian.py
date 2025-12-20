@@ -47,7 +47,8 @@ class FengRaoZhiJian(BaseTask):
 
     @TransitionOn("丰饶之间-一键完成")
     def _(self):
-        if self.operationer.click_and_wait("超影免费", max_time=0.3, auto_raise=False):
+        if self.operationer.click_and_wait("超影免费", max_time=0.3) \
+                or self.operationer.click_and_wait("0金币", max_time=0.3):
             self.free_tryed = True
             return False
         self.free_tryed = True
@@ -77,4 +78,3 @@ class FengRaoZhiJian(BaseTask):
     def _(self):
         self.operationer.clicker.stop()
         return False
-
