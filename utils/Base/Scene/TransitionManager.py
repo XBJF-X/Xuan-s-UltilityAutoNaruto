@@ -460,7 +460,7 @@ class TransitionManager:
                 y=joystick[1],
                 duration=0.2
             )
-            QThread.msleep(1000)
+            QThread.msleep(2000)
             operationer.click_and_wait("秘境探险")
 
         @self.register("秘境探险-首页", "秘境探险-匹配")
