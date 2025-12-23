@@ -457,7 +457,7 @@ class TransitionManager:
             joystick = self.config.get_config("键位")[KEY_INDEX.JoyStick]
             operationer.long_press(
                 x=joystick[0] - 40,
-                y=joystick[1]+40,
+                y=joystick[1] + 40,
                 duration=0.3
             )
             QThread.msleep(2000)

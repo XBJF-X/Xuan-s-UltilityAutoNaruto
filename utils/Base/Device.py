@@ -49,5 +49,7 @@ class Device:
     def press_key(self, key):
         self.controller.press_key(key)
 
-    def long_press(self, x, y, duration):
+    def long_press(self, coordinate_x, coordinate_y, duration):
+        scale = self.screen_size[0] / self.resolution[0]
+        x, y = int(scale * coordinate_x), int(scale * coordinate_y)
         self.controller.long_press(x, y, duration)
