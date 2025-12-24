@@ -115,7 +115,7 @@
 ## *安装*
 ### 请保证自己的网络可以连接到Github！！！
 
-下载Release中的**最新**安装包，安装路径最好选在**非C盘位置**<br>
+下载[Release](https://github.com/XBJF-X/Xuan-s-UltilityAutoNaruto/releases)中的**最新**安装包，安装路径最好选在**非C盘位置**<br>
 程序会自动配置虚拟Python环境，下载所需要的依赖库<br>
 第一次会拉取本仓库的master分支，下载所有需要的资源<br>
 此后更新只需要点击主页中的**检查更新**即可，自动跟踪master分支的最新情况
