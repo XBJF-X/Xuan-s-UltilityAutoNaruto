@@ -62,10 +62,10 @@ class MeiRiShengChang(BaseTask):
         ):
             continue
         # 检测有无可追回宝箱
-        self.operationer.click_and_wait(
-            "宝箱-追回",
-            auto_raise=False
-        )
+        if self.operationer.click_and_wait("宝箱-追回"):
+            self.logger.info("存在可追回每日胜场宝箱")
+            self.checked = False
+            return False
         if not self.operationer.search_and_detect(
                 [
                     self.operationer.get_element("宝箱-未达成")

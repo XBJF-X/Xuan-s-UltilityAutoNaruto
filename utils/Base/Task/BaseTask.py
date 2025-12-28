@@ -487,6 +487,12 @@ class BaseTask:
         self.operationer.click_and_wait("X")
         return False
 
+    @TransitionOn("版本更新1")
+    def _(self):
+        self.operationer.click_and_wait("下次再说")
+        self.logger.warning("游戏出现版本更新，请重启游戏更新")
+        return False
+
     @TransitionOn("未知含X场景")
     def _(self):
         if self.operationer.search_and_click(

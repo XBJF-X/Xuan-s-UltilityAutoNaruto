@@ -43,6 +43,7 @@ class MiJingTanXian(BaseTask):
     def _(self):
         self.fighting = False
         self.operationer.clicker.stop()
+
         self.operationer.click_and_wait("返回")
         return False
 
