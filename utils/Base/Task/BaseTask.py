@@ -493,6 +493,12 @@ class BaseTask:
         self.logger.warning("游戏出现版本更新，请重启游戏更新")
         return False
 
+    @TransitionOn("决斗场-网络连接失败")
+    def _(self):
+        self.operationer.click_and_wait("确定")
+        self.logger.warning("决斗场网络连接失败，已退出战斗")
+        return False
+
     @TransitionOn("未知含X场景")
     def _(self):
         if self.operationer.search_and_click(
