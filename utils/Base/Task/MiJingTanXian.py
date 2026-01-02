@@ -22,6 +22,7 @@ class MiJingTanXian(BaseTask):
             self.config.get_config("键位")[KEY_INDEX.SecondSkill],
             self.config.get_config("键位")[KEY_INDEX.Substitution],
             self.config.get_config("键位")[KEY_INDEX.UltimateSkill]])
+        self.reset_task_exe_proc()
 
     @TransitionOn()
     def _(self):
@@ -43,6 +44,35 @@ class MiJingTanXian(BaseTask):
     def _(self):
         self.fighting = False
         self.operationer.clicker.stop()
+        self.logger.info("等待系统自动翻牌结束...")
+        QThread.msleep(4000)
+
+        while self.config.get_task_exe_prog(self.task_name, "忍具已翻牌次数", 0) < \
+                self.config.get_task_exe_param(self.task_name, "忍具翻牌次数", 0):
+            if self.operationer.detect_element("忍具金币翻牌"):
+                self.logger.warning("忍具翻牌券已用尽，自动停止忍具翻牌...")
+                break
+            if not self.operationer.click_and_wait("忍具翻牌"):
+                self.logger.warning("没有忍具牌可翻，自动停止忍具翻牌...")
+                break
+            temp_time = self.config.get_task_exe_prog(self.task_name, "忍具已翻牌次数", 0)
+            self.config.set_task_exe_prog(self.task_name, "忍具已翻牌次数", temp_time + 1)
+            QThread.msleep(1000)
+        self.logger.info("忍具翻牌已结束")
+
+        while self.config.get_task_exe_prog(self.task_name, "饰品已翻牌次数", 0) < \
+                self.config.get_task_exe_param(self.task_name, "饰品翻牌次数", 0):
+            if self.operationer.detect_element("饰品金币翻牌"):
+                self.logger.warning("饰品翻牌券已用尽，自动停止饰品翻牌...")
+                break
+            if not self.operationer.click_and_wait("饰品翻牌"):
+                self.logger.warning("没有饰品牌可翻，自动停止饰品翻牌...")
+                break
+            self.operationer.click_and_wait("饰品翻牌")
+            temp_time = self.config.get_task_exe_prog(self.task_name, "饰品已翻牌次数", 0)
+            self.config.set_task_exe_prog(self.task_name, "饰品已翻牌次数", temp_time + 1)
+            QThread.msleep(1000)
+        self.logger.info("饰品翻牌已结束")
 
         self.operationer.click_and_wait("返回")
         return False
@@ -119,3 +149,8 @@ class MiJingTanXian(BaseTask):
         self.fighting = False
         self.operationer.clicker.stop()
         return False
+
+    def reset_task_exe_proc(self) -> bool:
+        self.config.set_task_exe_prog(self.task_name, "忍具已翻牌次数", 0)
+        self.config.set_task_exe_prog(self.task_name, "饰品已翻牌次数", 0)
+        return True

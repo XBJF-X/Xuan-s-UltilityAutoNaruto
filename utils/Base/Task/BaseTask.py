@@ -2,6 +2,7 @@ import inspect
 import sys
 import threading
 from datetime import datetime, timedelta, time
+from logging import Logger
 from pathlib import Path
 from types import FrameType
 from typing import Dict, Callable
@@ -137,7 +138,7 @@ class BaseTask:
         self.config = config
         self._execution_thread = None
         self.task_name = task_name
-        self.logger = parent_logger.getChild(self.task_name)
+        self.logger: Logger = parent_logger.getChild(self.task_name)
         self.base_priority = config.get_task_base_config(self.task_name, "优先级")
 
         self.update_next_execute_time(0)
