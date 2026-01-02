@@ -7,6 +7,27 @@ from utils.Base.Enums import KEY_INDEX
 from utils.Base.Exceptions import StepFailedError
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn, handle_task_exceptions
 
+YS_list = [
+    "火之要塞",
+    "水之要塞",
+    "土之要塞",
+    "风之要塞",
+    "雷之要塞",
+    "汤之要塞",
+    "田之要塞",
+    "铁之要塞",
+    "熊之要塞",
+    "草之要塞",
+    "雨之要塞",
+    "海之要塞",
+    "川之要塞",
+    "泷之要塞",
+    "云之要塞",
+    "鸟之要塞",
+    "涡之要塞",
+    "霜之要塞"
+]
+
 
 class BenFuYaoSaiZhan(BaseTask):
     source_scene = "要塞战略图"
@@ -29,7 +50,20 @@ class BenFuYaoSaiZhan(BaseTask):
 
     @TransitionOn()
     def _(self):
-        self.operationer.click_and_wait("火之要塞")
+        target = YS_list[self.config.get_task_exe_param(self.task_name, "目标要塞", 0)]
+        move = None
+        match target:
+            case "田之要塞" | "铁之要塞" | "熊之要塞":
+                move = [(100, 100), (1400, 800)]
+            case "汤之要塞" | "涡之要塞" | "霜之要塞":
+                move = [(1400, 100), (100, 800)]
+            case "海之要塞" | "草之要塞" | "雨之要塞" | "川之要塞":
+                move = [(100, 800), (1400, 100)]
+            case "泷之要塞" | "云之要塞" | "鸟之要塞":
+                move = [(1400, 800), (100, 100)]
+        if move:
+            self.operationer.swipe_and_wait(move[0], move[1], duration=0.4)
+        self.operationer.click_and_wait(target)
         return False
 
     @TransitionOn("X之要塞")

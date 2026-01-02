@@ -93,14 +93,11 @@ class RatioDialog(QDialog):
             pix_x = (label_pos.x() - x_offset) * scale_y
             pix_y = label_pos.y() * scale_y
 
-        # 确保在图片范围内
-        pix_x = max(0.0, min(pix_x, pixmap_size.width()))
-        pix_y = max(0.0, min(pix_y, pixmap_size.height()))
-
         # 计算比例 (相对于图片尺寸)
+        # 现在允许负数比例值
         self.ratio_point = QPointF(
-            round(pix_x / pixmap_size.width(), 2),
-            round(pix_y / pixmap_size.height(), 2)
+            round(pix_x / pixmap_size.width(), 4),
+            round(pix_y / pixmap_size.height(), 4)
         )
 
         # 更新信息
@@ -112,7 +109,6 @@ class RatioDialog(QDialog):
     def get_ratio(self) -> QPointF:
         """获取选择的比例"""
         return self.ratio_point
-
 
 class NewElement(QDialog):
     def __init__(self, scene: Scene, resource_manager: ResourceDBManager, tree: QTreeView, img_path: Path | None = None):
