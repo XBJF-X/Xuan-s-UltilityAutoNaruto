@@ -6,6 +6,7 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
 # Todo：优化接取算法，只接取高质量任务
+# Todo：解决推荐小队无法推荐的情况，比如人物不足
 class RenWuJiHuiSuo(BaseTask):
     source_scene = "任务集会所"
     task_max_duration = timedelta(minutes=5)
@@ -34,6 +35,7 @@ class RenWuJiHuiSuo(BaseTask):
                 return False
             if self.operationer.click_and_wait("超影免费"):
                 self.logger.info("刷新任务列表")
+                return False
             else:
                 # 能接取的都接了，无法刷新，可以退出执行了
                 self.operationer.click_and_wait("X")

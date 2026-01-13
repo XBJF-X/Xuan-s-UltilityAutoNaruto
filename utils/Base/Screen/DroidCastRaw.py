@@ -31,7 +31,7 @@ class DroidCastRaw:
     class ForwardPort(Exception):
         pass
 
-    def __init__(self, config: Config,parent_logger):
+    def __init__(self, config: Config, parent_logger):
         self.logger = parent_logger.getChild(self.__class__.__name__)
         self.config = config
         self.serial = config.get_config("串口")  # 设备序列号
@@ -39,6 +39,7 @@ class DroidCastRaw:
         self.pc_port = 53516  # 电脑上的转发端口
         self.session = Session()
         self.service_thread = None
+        self.ready = False
 
     def init(self):
         signal.signal(signal.SIGINT, self._handler)
@@ -50,6 +51,7 @@ class DroidCastRaw:
             self._push_apk()
             self._start_droidcastraw_service()
             Timer(2, self._forward_port).start()
+            self.ready = True
         except self.DeviceConnect as e:
             self.logger.error(f"设备连接错误：{e}")
         except self.PushApk as e:
@@ -58,6 +60,7 @@ class DroidCastRaw:
             self.logger.error(f"端口转发错误: {e}")
         except Exception as e:
             self.logger.error(f"未知错误：{e}")
+            self.ready = False
 
     def _cleanup_ports(self):
         """连接前清理设备和电脑上的端口占用"""

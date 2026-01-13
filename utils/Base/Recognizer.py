@@ -1,7 +1,7 @@
 import logging
 import os
 import time
-from typing import Tuple, List, Union
+from typing import Tuple, List, Union, Set
 
 import cv2
 import numpy as np
@@ -21,15 +21,29 @@ class Recognizer:
         else:
             self.logger = parent_logger.getChild("识别器")
         self.scene_graph = scene_graph
+        self.popup_scenes = {
+            "购买体力",
+            "是否隐藏气泡",
+            "升级",
+            "二级密码",
+            "公告",
+            "登录奖励",
+            "版本更新2",
+            "版本更新1",
+            "响应超时",
+            "网络不畅通",
+            "安装包更新异常",
+            "重连提示"
+        }
         self.coincident_scenes = {
             "活动": ["每月签到", "一乐外卖"],
-            "主场景": ["主场景-装备", "购买体力", "二级密码","升级","版本更新1"],
-            "装备": ["装备-材料详情", "材料详情-扫荡", "扫荡-继续扫荡", "扫荡-已足够","升级"],
+            "主场景": ["主场景-装备"],
+            "装备": ["装备-材料详情", "材料详情-扫荡", "扫荡-继续扫荡", "扫荡-已足够"],
             "生存挑战": ["生存挑战-扫荡确认", "生存挑战-传送", "生存挑战-重置", "生存挑战-购买扫荡券"],
             "福利站": ["福利站-签到成功", "福利站-活跃奖励-获得奖励", "福利站-每日签到",
                 "福利站-40活跃奖励-抽取中", "福利站-100活跃奖励-确认"],
             "副本内": ["副本内-暂停", "副本内-暂停-退出战斗确认", "秘境奖励"],
-            "精英副本-便捷扫荡": ["体力不足", "便捷扫荡-继续扫荡", "便捷扫荡-扫荡结束","升级"],
+            "精英副本-便捷扫荡": ["体力不足", "便捷扫荡-继续扫荡", "便捷扫荡-扫荡结束"],
             "修行之路": ["修行之路-重置", "修行之路-扫荡", "修行之路-扫荡完成", "修行之路-正在扫荡"],
             "忍术对战-决斗任务": ["决斗任务-追回"],
             "忍术对战": ["决斗场-匹配中"],
@@ -37,7 +51,7 @@ class Recognizer:
             "追击晓组织-奖励": ["任务奖励-一键领取"],
             "决斗场-首页": ["上赛季获得段位", "新赛季初始段位"],
             "决斗场-战斗中": ["决斗场-结算", "决斗场-单局结算", "你的对手离开了游戏"],
-            "组织": ["叛忍来袭", "组织购买","升级"],
+            "组织": ["叛忍来袭", "组织购买"],
             "地之战场": ["天地战场-战场奖励", "天地战场-确认退出", "天地战场-战场战斗已经结束"],
             "天之战场": ["天地战场-战场奖励", "天地战场-确认退出", "天地战场-战场战斗已经结束"],
             "天地战场": ["天地战场-确定进入"],
@@ -49,8 +63,8 @@ class Recognizer:
             "小队突袭-组织助战": ["离开队伍-确认"],
             "装备-材料详情": ["扫荡-已足够", "扫荡-继续扫荡"],
             "积分赛": ["积分赛-排名奖励", "积分赛-段位奖励"],
-            "扫荡-继续扫荡": ["体力不足","升级"],
-            "材料详情-扫荡": ["体力不足", "扫荡-已足够","升级"],
+            "扫荡-继续扫荡": ["体力不足"],
+            "材料详情-扫荡": ["体力不足", "扫荡-已足够"],
             "商城": ["商城-商店"],
             "大蛇丸试炼-副本内": ["更多玩法-结算"],
             "绝迹战场-副本内": ["更多玩法-结算"],
@@ -58,48 +72,131 @@ class Recognizer:
             "火影格斗大赛-无差别": ["无差别-继续出战", "无差别-成就奖励"],
             "大蛇丸试炼": ["更多玩法-匹配成功", "更多玩法-匹配中"],
             "绝迹战场": ["更多玩法-匹配成功", "更多玩法-匹配中"],
-            "奖励": ["周活跃大礼","升级"],
+            "奖励": ["周活跃大礼"],
             "招募": ["普通招募", "高级招募"],
             "冬日烟花季-主页": ["冬日烟花季-点燃免费爆竹"],
         }
+        # 用于记录本次识别中已排除的弹窗
+        self._excluded_popups_in_current_recognition: Set[str] = set()
 
     def scene(self, scene_img, bool_debug=False) -> Union[str | Scene]:
         """
         对场景进行分类的函数
 
+        修改：优先识别弹窗场景，防止干扰其他场景识别
+
         Args:
             scene_img(np.ndarray): 需要识别的图像
             bool_debug(bool): 是否回报日志
+        """
+        # 重置本次识别的排除弹窗记录
+        self._excluded_popups_in_current_recognition.clear()
+
+        # 第一步：优先识别弹窗场景
+        popup_scene = self._detect_popup_first(scene_img, bool_debug)
+        if popup_scene:
+            if bool_debug:
+                self.logger.info(f"优先识别到弹窗场景: {popup_scene}")
+            return popup_scene
+
+        # 第二步：如果没有弹窗，进行正常场景识别（排除已识别的弹窗）
+        return self._detect_normal_scene(scene_img, bool_debug)
+
+    def _detect_popup_first(self, scene_img, bool_debug=False) -> Union[Scene, None]:
+        """
+        优先识别弹窗场景
+
+        Args:
+            scene_img: 场景图像
+            bool_debug: 是否调试模式
+
+        Returns:
+            如果识别到弹窗则返回Scene对象，否则返回None
+        """
+        for scene_id in self.popup_scenes:
+            scene = self.scene_graph.scenes.get(scene_id)
+            if not scene or not scene.elements:
+                self.logger.warning(f"{scene_id}不存在或其下无元素")
+                continue
+
+            if bool_debug:
+                self.logger.debug(f"检查弹窗场景: {scene.name}")
+
+            flag = self.scene_match(scene_img, scene, bool_debug)
+            if flag:
+                # 将识别到的弹窗加入排除列表
+                self._excluded_popups_in_current_recognition.add(scene_id)
+
+                # 检查弹窗场景是否有子场景（如确认对话框等）
+                final_scene = self._check_sub_scenes(scene_img, scene_id, bool_debug, is_popup=True)
+                return final_scene
+
+        return None
+
+    def _detect_normal_scene(self, scene_img, bool_debug=False) -> Union[str | Scene]:
+        """
+        识别正常场景（非弹窗）
+
+        Args:
+            scene_img: 场景图像
+            bool_debug: 是否调试模式
+
+        Returns:
+            识别到的场景
         """
         # 存储已检查过的场景，避免循环
         checked_scenes = set()
         current_scene = None
 
-        # 先找到初始匹配的场景
+        # 先找到初始匹配的场景（排除弹窗场景）
         for scene_id, scene in self.scene_graph.scenes.items():
+            # 跳过弹窗场景（已检查过）
+            if scene_id in self.popup_scenes:
+                continue
+
             if not scene.elements:
                 continue
+
             if bool_debug:
                 self.logger.debug(f"开始匹配场景: {scene.name}")
-            flag = self.scene_match(scene_img, scene, bool_debug)
 
+            flag = self.scene_match(scene_img, scene, bool_debug)
             if flag:
                 current_scene = scene_id
                 break
 
-        # 如果没有找到初始场景，返回未知
+        # 如果没有找到初始场景，检查特殊X标记
         if not current_scene:
-            for x in [
-                self.scene_graph.get_element("主场景", "X-普通"),
-                self.scene_graph.get_element("主场景", "X-广告-1"),
-                self.scene_graph.get_element("主场景", "X-广告-2")
-            ]:
-                matches = self.element_match(scene_img, x, bool_debug)
-                if matches:
-                    return "未知含X场景"
-            return "未知场景"
+            return self._check_unknown_with_x(scene_img, bool_debug)
 
         # 递归检查子场景，使用集合避免循环
+        final_scene = self._check_sub_scenes(scene_img, current_scene, bool_debug, is_popup=False)
+
+        # 如果是主场景，检查是否有X标记
+        if final_scene == "主场景" or (isinstance(final_scene, Scene) and final_scene.name == "主场景"):
+            unknown_with_x = self._check_unknown_with_x(scene_img, bool_debug)
+            if unknown_with_x == "未知含X场景":
+                return unknown_with_x
+
+        return final_scene
+
+    def _check_sub_scenes(self, scene_img, current_scene_id, bool_debug, is_popup=False) -> Union[
+        str | Scene]:
+        """
+        递归检查子场景
+
+        Args:
+            scene_img: 场景图像
+            current_scene_id: 当前场景ID
+            bool_debug: 是否调试模式
+            is_popup: 当前是否为弹窗场景
+
+        Returns:
+            最终场景
+        """
+        checked_scenes = set()
+        current_scene = current_scene_id
+
         while current_scene in self.coincident_scenes and current_scene not in checked_scenes:
             checked_scenes.add(current_scene)
             found_sub_scene = None
@@ -110,14 +207,24 @@ class Recognizer:
                 if sub_scene_name in checked_scenes:
                     continue
 
+                # 如果是弹窗场景且已排除，跳过
+                if sub_scene_name in self._excluded_popups_in_current_recognition:
+                    continue
+
                 sub_scene = self.scene_graph.scenes.get(sub_scene_name)
                 if not sub_scene:
                     continue
 
-                self.logger.debug(f"检查子场景: {sub_scene_name}")
+                if bool_debug:
+                    self.logger.debug(f"检查子场景: {sub_scene_name}")
+
                 flag = self.scene_match(scene_img, sub_scene, bool_debug)
 
                 if flag:
+                    # 如果是弹窗场景，标记为已排除
+                    if sub_scene_name in self.popup_scenes and not is_popup:
+                        self._excluded_popups_in_current_recognition.add(sub_scene_name)
+
                     found_sub_scene = sub_scene_name
                     break  # 找到第一个匹配的子场景就继续深入检查
 
@@ -127,17 +234,29 @@ class Recognizer:
             else:
                 break
 
-        if current_scene == "主场景":
-            for x in [
-                self.scene_graph.get_element("主场景", "X-普通"),
-                self.scene_graph.get_element("主场景", "X-广告-1"),
-                self.scene_graph.get_element("主场景", "X-广告-2")
-            ]:
+        return self.scene_graph.scenes.get(current_scene, current_scene)
+
+    def _check_unknown_with_x(self, scene_img, bool_debug=False) -> str:
+        """
+        检查未知含X场景
+
+        Args:
+            scene_img: 场景图像
+            bool_debug: 是否调试模式
+
+        Returns:
+            场景名称
+        """
+        for x in [
+            self.scene_graph.get_element("主场景", "X-普通"),
+            self.scene_graph.get_element("主场景", "X-广告-1"),
+            self.scene_graph.get_element("主场景", "X-广告-2")
+        ]:
+            if x:
                 matches = self.element_match(scene_img, x, bool_debug)
                 if matches:
                     return "未知含X场景"
-
-        return self.scene_graph.scenes.get(current_scene)
+        return "未知场景"
 
     def scene_match(self, scene_img, template, bool_debug=True):
         """
@@ -158,13 +277,29 @@ class Recognizer:
             if matches:
                 result.append(len(matches))
             else:
-                # if bool_debug:
-                #     self.logger.info(f"[SCENE][{template.name}] 匹配元素: {element.name} 失败，提前退出")
                 return False
         if result and max(result) > 0:
             if bool_debug:
                 self.logger.info(f"匹配成功: {template.name}")
             return True
+
+    def element_match(self, scene_img, template, bool_debug=True):
+        """
+        在场景图中匹配模板元素，忽略模板的透明像素（Alpha=0区域），支持多目标和去重
+
+        Args:
+            scene_img(np.ndarray): 场景图像（BGR格式的numpy数组，如截图）
+            template(Element): 模板图像
+            bool_debug(bool): 是否回报日志
+
+        Returns:
+            List[Tuple[int, int, int, int]]
+            目标位置列表，每个元素为(x1, y1, x2, y2)，表示匹配区域的左上角和右下角坐标
+        """
+        if template.match_type == MatchType.SIFT:
+            return self.sift_match(template, scene_img)
+        else:
+            return self.template_match(template, scene_img, bool_debug)
 
     def element_match(self, scene_img, template, bool_debug=True):
         """
@@ -439,6 +574,8 @@ if __name__ == "__main__":
     for img_file in image_files:
         # 提取场景名（不含扩展名）
         scene_name = os.path.splitext(img_file)[0]
+        if scene_name not in ["重连提示", "版本更新1"]:
+            continue
         img_path = os.path.join(image_dir, img_file)
 
         try:

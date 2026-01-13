@@ -545,39 +545,6 @@ class Operationer:
             return True
         return False
 
-    def pass_secondary_password(self):
-        """
-        过二级密码的通用函数,返回True表示检测到了二级密码的弹窗,反之没有
-        """
-        self.screen_save_signal.emit(self.task_name)
-        # 可能有二级密码，用户输入密码
-        if self.detect_scene(
-                "二级密码",
-                auto_raise=False
-        ):
-            self.logger.debug("出现二级密码窗口")
-            passward = self.config.get_config("二级密码")
-            if len(passward) != 6:
-                raise StepFailedError("请检查二级密码！")
-            self.screen_save_signal.emit(self.task_name)
-            # 输入操作
-            self.click_and_input(
-                self.get_element("输入框"),
-                passward
-            )
-            self.screen_save_signal.emit(self.task_name)
-            # 点击二级密码-确定
-            if not self.click_and_wait(
-                    self.get_element("确定"),
-                    auto_raise=False
-            ):
-                raise StepFailedError("二级密码验证失败")
-            self.screen_save_signal.emit(self.task_name)
-            self.logger.debug("验证二级密码结束")
-            return True
-        self.logger.debug("未出现二级密码窗口")
-        return False
-
     def press_key(self, key, wait_time=0):
         """
         模拟设备按键，输入key即为按键名称

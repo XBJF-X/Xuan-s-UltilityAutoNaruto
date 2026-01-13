@@ -16,6 +16,10 @@ class Device:
         self.screen_size = self.controller.control_instance.screen_size
         self.logger.debug("初始化完成...")
 
+    @property
+    def device_ready(self):
+        return self.controller.control_instance_ready and self.screener.screen_instance_ready
+
     def regularize_coordinate(self, coordinate_x, coordinate_y):
         scale = self.screen_size[0] / self.resolution[0]
         x, y = int(scale * coordinate_x), int(scale * coordinate_y)

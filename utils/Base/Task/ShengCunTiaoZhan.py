@@ -55,6 +55,7 @@ class ShengCunTiaoZhan(BaseTask):
             return False
 
         if self.bool_start:
+            self.operationer.click_and_wait("开始扫荡", wait_time=0)
             # 等待生存挑战-已通过所有关卡出现
             if self.operationer.search_and_detect(
                     [

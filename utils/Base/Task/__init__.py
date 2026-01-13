@@ -1,5 +1,4 @@
 from .BenFuYaoSaiZhan import BenFuYaoSaiZhan
-from .DengLuJiangLi import DengLuJiangLi
 from .DianFengDuiJue import DianFengDuiJue
 from .DongRiYanHuaJi import DongRiYanHuaJi
 from .FengRaoZhiJian import FengRaoZhiJian
@@ -39,7 +38,6 @@ from .ZuZhiQiFu import ZuZhiQiFu
 from .ZuZhiZhengBa import ZuZhiZhengBa
 
 TASK_TYPE_MAP = {
-    '登录奖励': DengLuJiangLi,
     "排行榜点赞": PaiHangBangDianZan,
     "每月签到": MeiYueQianDao,
     '购买体力': GouMaiTiLi,
@@ -85,7 +83,6 @@ TASK_TYPE_MAP = {
 }
 
 TASK_NAME_CN2EN_MAP = {
-    '登录奖励': "DengLuJiangLi",
     "排行榜点赞": "PaiHangBangDianZan",
     "每月签到": "MeiYueQianDao",
     '购买体力': "GouMaiTiLi",

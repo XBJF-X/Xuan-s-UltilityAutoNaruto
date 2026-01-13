@@ -107,16 +107,25 @@ CreateScreenShotInstanceFunc = ctypes.WINFUNCTYPE(
 class LD:
     """LD 模拟器控制器，实现截图功能"""
 
-    def __init__(self, config: Config,parent_logger):
+    def __init__(self, config: Config, parent_logger):
         self.logger = parent_logger.getChild(self.__class__.__name__)
         self.config = config
         self.dll_handle = None  # ldopengl64.dll 句柄
         self.screenshot_instance = None  # IScreenShotClass 实例
         self.emu_info = LDLIST2()  # 模拟器信息
+        self.ready = False
 
     def init(self):
-        self.set_ld_path()
-        self.connect_emu()
+        try:
+            self.set_ld_path()
+            if not self.connect_emu():
+                self.logger.error("[LD]实例化失败")
+                self.ready = False
+                return
+            self.ready = True
+        except Exception as e:
+            self.logger.error("[LD]实例化失败")
+            self.ready = False
 
     def __del__(self):
         """析构函数，释放资源"""

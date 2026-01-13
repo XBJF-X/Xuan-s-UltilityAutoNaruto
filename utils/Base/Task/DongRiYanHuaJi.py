@@ -7,7 +7,6 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 class DongRiYanHuaJi(BaseTask):
     source_scene = "冬日烟花季-主页"
     dead_line = time(22, 0)
-    task_max_duration = timedelta(minutes=180)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -73,11 +73,11 @@ class QingBaoZhan(BaseTask):
                 self.config.set_task_exe_prog(self.task_name, "点赞帖子", love_sum)
                 self.logger.info(f"已点赞❤帖子 {love_sum} 个")
             self.operationer.swipe_and_wait(
-                    (760, 870),
-                    (760, 80),
-                    wait_time=0,
-                    duration=0.7
-                )
+                (760, 870),
+                (760, 80),
+                wait_time=0,
+                duration=0.7
+            )
         else:
             self.operationer.click_and_wait("首页")
         return False
@@ -125,12 +125,17 @@ class QingBaoZhan(BaseTask):
 
         elif not self.config.get_task_exe_prog(self.task_name, "领取情报站活跃度", False):
             self.logger.info("领取活跃度奖励")
+            receive_times = 0
             # 点击所有的领取按钮
             while self.operationer.click_and_wait(
                     "活跃度任务-领取",
                     wait_time=3,
                     auto_raise=False
             ):
+                receive_times += 1
+                if receive_times > 20:
+                    self.logger.warning("情报站活跃度领取奖励失败，请手动领取")
+                    break
                 continue
             self.config.set_task_exe_prog(self.task_name, "领取情报站活跃度", True)
             return False
@@ -221,5 +226,3 @@ class QingBaoZhan(BaseTask):
         self.config.set_task_exe_prog(self.task_name, f"40活跃度奖励已领取", False)
         self.config.set_task_exe_prog(self.task_name, f"60活跃度奖励已领取", False)
         self.config.set_task_exe_prog(self.task_name, f"100活跃度奖励已领取", False)
-
-

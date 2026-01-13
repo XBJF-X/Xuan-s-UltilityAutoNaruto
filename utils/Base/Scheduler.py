@@ -493,7 +493,11 @@ class Scheduler(QObject):
         self.UI.start_schedule_button.setEnabled(False)
         self.running = True
         self.device = Device(self.config, parent_logger=self.logger)
-
+        if not self.device.device_ready:
+            self.logger.warning("调度器初始化Device出错，请检查[助手设置]中串口和截图模式")
+            self.UI.start_schedule_button.setEnabled(True)
+            self.UI.start_schedule_button.setText("启动")
+            return
         for task_name, task_info in self.config.tasks.items():
             self.logger.debug(f"[{task_name}]任务准备进入调度器")
             task_class = TASK_TYPE_MAP.get(task_name, None)

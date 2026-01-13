@@ -19,12 +19,20 @@ class Control:
         self.config = config
         self.control_mode = ControlMode(self.config.get_config('控制模式'))
         self.control_instance = None
-        self.control_instance_ready = False
         self.init_control_instance(initial)
 
     def __del__(self):
         if self.control_instance:
             self.control_instance.release()
+
+    @property
+    def control_instance_ready(self):
+        if self.control_mode == ControlMode.ADB:
+            return False
+        elif self.control_mode == ControlMode.U2:
+            return self.control_instance.u2_device is not None
+        else:
+            return False
 
     def init_control_instance(self, initial=False):
         self.logger.info(f"当前控制模式：[{self.control_mode.name}]")
@@ -41,7 +49,6 @@ class Control:
                 self.logger.info("U2控制实例初始化完毕")
             else:
                 pass
-            self.control_instance_ready = True
             self.config.set_config('控制模式', self.control_mode)
         except Exception as e:
             QMessageBox.warning(None, "", f"[{self.control_mode.name}]初始化控制实例出错，将启用[ADB]方案", QMessageBox.StandardButton.Ok)
@@ -49,7 +56,6 @@ class Control:
             try:
                 self.control_mode = ControlMode.U2
                 self.control_instance = U2(self.config, parent_logger=self.logger)
-                self.control_instance_ready = True
                 self.config.set_config('控制模式', self.control_mode)
             except Exception as e:
                 self.logger.error("初始化U2控制实例依旧出错")
@@ -61,7 +67,6 @@ class Control:
             self.logger.info(f"已经是[{new_mode.name}]模式了")
             return
         self.control_mode = new_mode
-        self.control_instance_ready = False
         self.release()
         # 再初始化新的实例
         self.init_control_instance()

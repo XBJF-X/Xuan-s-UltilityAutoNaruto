@@ -27,6 +27,7 @@ class WindowCapture:
     def __init__(self, config: Config,parent_logger):
         self.logger = parent_logger.getChild(self.__class__.__name__)
         self.config = config
+        self.ready=False
         self.hwnd = None
         self.left = None
         self.top = None
@@ -49,8 +50,11 @@ class WindowCapture:
 
         try:
             self._init_gdi_objects()
+            self.ready = True
         except Exception:  # 初始化失败时立即清理
             self.release()
+            self.logger.error("[WindowCapture]实例化失败")
+            self.ready = False
             raise
 
     def _init_gdi_objects(self):

@@ -23,7 +23,7 @@ class Ui_SceneManager(object):
     def setupUi(self, SceneManager):
         if not SceneManager.objectName():
             SceneManager.setObjectName(u"SceneManager")
-        SceneManager.resize(963, 600)
+        SceneManager.resize(1800, 1000)
         SceneManager.setStyleSheet(u"font-family:\"Consolas\",\"\u9ed1\u4f53\";\n"
 "font-size:11pt;\n"
 "\n"

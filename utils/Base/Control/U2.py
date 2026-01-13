@@ -19,6 +19,7 @@ class U2:
             self.u2_device = u2.connect(self.serial)
             self.screen_size = self.u2_device.window_size()  # (width, height)
         except Exception as e:
+            self.u2_device = None
             self.logger.error(e)
 
     def click(self, x, y, duration=130):

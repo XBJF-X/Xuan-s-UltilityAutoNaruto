@@ -109,15 +109,13 @@ class BaseTask:
     transition_return: str | None = ""
     """记录transition返回的位置，方便调试"""
     source_scene: str | None = None
-    """任务的初始场景"""
-    task_max_duration: timedelta | None = None
+    """任务的初始场景，需要先寻路到此处才能正式开始执行任务"""
+    task_max_duration: timedelta = None
     """任务最长执行时间（无DDL的情况下生效）"""
-    task_once_transition_on_max_duration: timedelta | None = None
-    """预估单个TransitionOn最大执行时间，用于调度器计算是否应提前停止任务"""
-    dead_line: datetime | time | None = None
-    """任务截至的时间点（超过当天该时间点将强制结束任务）"""
-    temp_dead_line: datetime | None = None
-    """每次任务执行时根据上述时间参数计算出来的临时DeadLine，结束后自动置空"""
+    dead_line: time | None = None
+    """任务当天截至的时间点（超过当天该时间点将强制结束任务）"""
+    stopped_duration: timedelta = timedelta(0)
+    """任务停止所需的制动时长"""
 
     def __init__(
         self,
@@ -154,14 +152,6 @@ class BaseTask:
         self.activate_another_task_signal = activate_another_task_signal
         self.callback = callback
 
-    @property
-    def is_activated(self):
-        return self.config.get_task_base_config(self.task_name, "是否启用")
-
-    @property
-    def temp_priority(self):
-        return self.config.get_task_base_config(self.task_name, "临时提权")
-
     def __lt__(self, other):
         """
         任务比较规则：
@@ -194,6 +184,43 @@ class BaseTask:
                      )
         return info_text
 
+    @property
+    def is_activated(self):
+        return self.config.get_task_base_config(self.task_name, "是否启用")
+
+    @property
+    def temp_priority(self):
+        return self.config.get_task_base_config(self.task_name, "临时提权")
+
+    @property
+    def running_deadline(self):
+        if not self.dead_line:
+            if self.task_max_duration:
+                return datetime.now(tz=ZoneInfo("Asia/Shanghai")) + self.task_max_duration
+        else:
+            return datetime.now(tz=ZoneInfo("Asia/Shanghai")).replace(
+                hour=self.dead_line.hour,
+                minute=self.dead_line.minute,
+                second=self.dead_line.second,
+                microsecond=self.dead_line.microsecond
+            )
+
+    @property
+    def current_priority(self):
+        """返回当前有效优先级（临时优先级优先于基础优先级）"""
+        return self.temp_priority if self.temp_priority is not None else self.base_priority
+
+    @property
+    def next_execute_time(self):
+        china_tz = ZoneInfo("Asia/Shanghai")
+        next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
+        if next_exec_ts == 0:
+            # 若初始值为0，设置为当前中国时区时间
+            return datetime.now(china_tz)
+        else:
+            # 从时间戳转换为datetime对象
+            return datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+
     def run(self):
         """
         启动新线程执行execute避免阻塞进程
@@ -225,25 +252,11 @@ class BaseTask:
 
     @handle_task_exceptions
     def _execute(self):
-        if not self.dead_line:
-            if self.task_max_duration:
-                self.temp_dead_line = datetime.now(tz=ZoneInfo("Asia/Shanghai")) + self.task_max_duration
-        else:
-            self.temp_dead_line = datetime.now(tz=ZoneInfo("Asia/Shanghai")).replace(
-                hour=self.dead_line.hour,
-                minute=self.dead_line.minute,
-                second=self.dead_line.second,
-                microsecond=self.dead_line.microsecond
-            )
         self.operationer.next_scene = self.source_scene
         while True:
-            if self.temp_dead_line and datetime.now(tz=ZoneInfo("Asia/Shanghai")) > self.temp_dead_line:
-                self.logger.warning("任务达到最大执行时长，强制结束")
-                self.operationer.clicker.stop()
-                self.update_next_execute_time()
-                return
             if self._should_stop():
-                self.logger.warning("任务被停止")
+                self.stop()
+                self.logger.warning("任务已被停止")
                 return
 
             result = self.transition()
@@ -267,22 +280,21 @@ class BaseTask:
             self.logger.debug(f"识别到场景: [Scene] {scene.name}")
             self.operationer.current_scene = scene
             scene_name = scene.name
+        # 如果设置了next_scene，优先跳转
+        if self.operationer.next_scene:
+            if self.operationer.next_scene == scene_name:
+                self.operationer.next_scene = None
+            else:
+                path = self.transition_manager.bfs_shortest_path(scene_name, self.operationer.next_scene)
+                if path and len(path) >= 2:
+                    return self.transition_manager.transition(self.operationer)
 
-        # 确保跳转的时候不是未知场景
-        if scene_name in ["未知含X场景", "未知场景"]:
+        if scene_name in self.transition_func:
             func = self.transition_func[scene_name]
             self.logger.debug(f"场景{scene_name}绑定的函数：{func.__qualname__}")
             result = self.transition_func[scene_name](self)
             return result
-
-        if scene.name not in self.transition_func:
-            # 如果设置了next_scene，优先跳转
-            if self.operationer.next_scene:
-                if self.operationer.next_scene == scene_name:
-                    self.operationer.next_scene = None
-                else:
-                    return self.transition_manager.transition(self.operationer)
-
+        else:
             # 自动寻找从当前场景到任意已注册场景的路径
             registered_scenes = list(self.transition_func.keys())
             shortest_path = None
@@ -302,12 +314,7 @@ class BaseTask:
             else:
                 # 如果找不到路径，回退到原来的处理方式
                 scene_name = "未注册场景"
-        # 如果设置了next_scene，优先跳转
-        if self.operationer.next_scene:
-            if self.operationer.next_scene == scene_name:
-                self.operationer.next_scene = None
-            else:
-                return self.transition_manager.transition(self.operationer)
+
         # # 正常执行注册函数
         # self.logger.debug(f"寻找注册函数: {scene_name}")
         func = self.transition_func[scene_name]
@@ -346,22 +353,6 @@ class BaseTask:
         self.logger.debug(f"{task_name}被激活，将立即执行")
         self.activate_another_task_signal.emit(task_name)
 
-    @property
-    def current_priority(self):
-        """返回当前有效优先级（临时优先级优先于基础优先级）"""
-        return self.temp_priority if self.temp_priority is not None else self.base_priority
-
-    @property
-    def next_execute_time(self):
-        china_tz = ZoneInfo("Asia/Shanghai")
-        next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
-        if next_exec_ts == 0:
-            # 若初始值为0，设置为当前中国时区时间
-            return datetime.now(china_tz)
-        else:
-            # 从时间戳转换为datetime对象
-            return datetime.fromtimestamp(next_exec_ts, tz=china_tz)
-
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         """
         用于更新本任务的下次执行时间
@@ -370,6 +361,7 @@ class BaseTask:
             flag: 更新下次执行时间的模式
                 0：创建任务时初始化时间
                 1：正常执行完毕，更新为下次执行时间
+                2：更新成当前时间，一般用于调试任务时调用
                 3：把执行时间推迟delta时间，要求 delta!=None
             delta: 延迟的时长（仅flag=3时有效）
         Returns:
@@ -443,7 +435,7 @@ class BaseTask:
             tzinfo=china_tz
         )
 
-    def _handle_delay(self, current_time: datetime, delta: timedelta) -> datetime:
+    def _handle_delay(self, current_time: datetime, delta: timedelta) -> datetime | None:
         """处理时间延迟更新（case3）"""
         if delta is None:
             self.logger.warning("延迟更新时间时delta不能为空")
@@ -451,9 +443,12 @@ class BaseTask:
         return current_time + delta
 
     def reset_task_exe_proc(self) -> bool:
-        """重置任务执行进度参数"""
+        """重置任务执行进度参数，需要的任务自行重载"""
         return True
 
+    ############################################################################################
+    #                        某些弹窗或独立场景（即不绑定某个任务的场景）的处理                      #
+    ############################################################################################
     @TransitionOn("二级密码")
     def _(self):
         self.logger.debug("出现二级密码窗口")
@@ -470,12 +465,7 @@ class BaseTask:
                 self.operationer.get_element("确定"),
                 auto_raise=False
         ):
-            raise StepFailedError("二级密码验证失败")
-        return False
-
-    @TransitionOn("好友排名至X位")
-    def _(self):
-        self.operationer.click_and_wait("确定")
+            self.logger.error("二级密码验证失败")
         return False
 
     @TransitionOn("升级")
@@ -488,10 +478,57 @@ class BaseTask:
         self.operationer.click_and_wait("X")
         return False
 
+    @TransitionOn("登录界面-开始游戏")
+    def _(self):
+        self.operationer.click_and_wait("开始游戏")
+        return False
+
+    @TransitionOn("登录奖励")
+    def _(self):
+        self.operationer.click_and_wait("领取")
+        return False
+
+    @TransitionOn("好友排名至X位")
+    def _(self):
+        self.operationer.click_and_wait("确定")
+        return False
+
+    @TransitionOn("重连提示")
+    def _(self):
+        self.operationer.click_and_wait("继续")
+        return False
+
+    @TransitionOn("响应超时")
+    def _(self):
+        self.operationer.click_and_wait("确定")
+        return False
+
+    @TransitionOn("安装包更新异常")
+    def _(self):
+        self.operationer.click_and_wait("重试")
+        return False
+
+    @TransitionOn("网络不畅通")
+    def _(self):
+        self.operationer.click_and_wait("确定")
+        return False
+
     @TransitionOn("版本更新1")
     def _(self):
-        self.operationer.click_and_wait("下次再说")
+        self.operationer.click_and_wait("重启游戏")
         self.logger.warning("游戏出现版本更新，请重启游戏更新")
+        return False
+
+    @TransitionOn("版本更新2")
+    def _(self):
+        self.operationer.click_and_wait("重启")
+        self.logger.warning("游戏出现版本更新，此更新必须重启")
+        return False
+
+    @TransitionOn("是否隐藏气泡")
+    def _(self):
+        self.operationer.click_and_wait("关闭所有气泡")
+        self.operationer.click_and_wait("确定")
         return False
 
     @TransitionOn("决斗场-网络连接失败")

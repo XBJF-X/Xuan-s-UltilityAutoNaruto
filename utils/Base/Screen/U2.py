@@ -6,19 +6,25 @@ from utils.Base.Config import Config
 
 class U2:
     def __init__(self, config: Config, parent_logger):
+        self.logger = parent_logger.getChild(self.__class__.__name__ + "_Screen")
         try:
-            self.logger = parent_logger.getChild(self.__class__.__name__ + "_Screen")
             self.config = config
             self.serial = config.get_config("串口")
             self.u2_device: u2.Device = None
             self.screen_size = None
+            self.ready = False
 
         except Exception as e:
-            print(e)
+            self.logger.error(e)
 
     def init(self):
-        self.u2_device = u2.connect(self.serial)
-        self.screen_size = self.u2_device.window_size()  # (width, height)
+        try:
+            self.u2_device = u2.connect(self.serial)
+            self.screen_size = self.u2_device.window_size()  # (width, height)
+            self.ready = True
+        except Exception as e:
+            self.logger.error("[U2]实例化失败")
+            self.ready = False
 
     def screencap(self):
         # 获取截图的二进制数据

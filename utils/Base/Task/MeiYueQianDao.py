@@ -13,7 +13,7 @@ class MeiYueQianDao(BaseTask):
     def _(self):
         self.logger.info("开始每月签到")
         remedy_times = 0
-        while not self.operationer.click_and_wait("已签到"):
+        while not (self.operationer.detect_element("已签到") or self.operationer.detect_element("可补签一次")):
             self.operationer.click_and_wait("签到")
             remedy_times += 1
             self.logger.info(f"每月签到{remedy_times}次")

@@ -26,6 +26,7 @@ class MuMu:
         self.current_inst_index = None
         self.inited = False
         self.package_name = "com.tencent.KiHan"  # 默认包名
+        self.ready = False
 
         # 函数指针
         self.connect_func = None
@@ -65,6 +66,7 @@ class MuMu:
 
         # 尝试加载 DLL
         self.inited = self.load_mumu_library() and self.connect_mumu() and self.init_screencap()
+        self.ready = True
         return self.inited
 
     def reload(self):

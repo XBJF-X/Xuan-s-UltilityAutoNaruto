@@ -32,7 +32,6 @@ YS_list = [
 class BenFuYaoSaiZhan(BaseTask):
     source_scene = "要塞战略图"
     dead_line = time(20, 30)
-    task_max_duration = timedelta(minutes=30)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

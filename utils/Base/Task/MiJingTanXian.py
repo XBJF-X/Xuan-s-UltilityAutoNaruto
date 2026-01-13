@@ -8,7 +8,6 @@ from utils.Base.Exceptions import StepFailedError
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
-# Todo：增加根据配置文件决定是否翻牌功能
 class MiJingTanXian(BaseTask):
     source_scene = "秘境探险-匹配"
     task_max_duration = timedelta(hours=2)
@@ -45,7 +44,7 @@ class MiJingTanXian(BaseTask):
         self.fighting = False
         self.operationer.clicker.stop()
         self.logger.info("等待系统自动翻牌结束...")
-        QThread.msleep(4000)
+        QThread.msleep(6000)
 
         while self.config.get_task_exe_prog(self.task_name, "忍具已翻牌次数", 0) < \
                 self.config.get_task_exe_param(self.task_name, "忍具翻牌次数", 0):

@@ -534,7 +534,7 @@ class SceneGraphView(QGraphicsView):
         if self.scene.items():
             self.fitInView(self.scene.itemsBoundingRect(), Qt.AspectRatioMode.KeepAspectRatio)
 
-    def auto_layout(self, iterations=30000):
+    def auto_layout(self, iterations=500):
         """
         使用networkx优化布局，替代手动实现的力导向算法
         参数:
@@ -562,10 +562,10 @@ class SceneGraphView(QGraphicsView):
         # 使用networkx的spring_layout布局算法
         pos = nx.spring_layout(
             G,
-            k=1000 / len(G.nodes) ** 0.5,  # 节点间距参数
+            k=100 / len(G.nodes) ** 0.9,  # 节点间距参数
             iterations=iterations,
             seed=42,  # 固定种子保证可重复布局
-            scale=1000 * len(G.nodes) ** 0.5  # 布局缩放比例
+            scale=1100 * len(G.nodes) ** 0.5  # 布局缩放比例
         )
 
         # 应用布局到节点

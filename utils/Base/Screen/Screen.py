@@ -22,12 +22,15 @@ class Screen:
         self.config = config
         self.screen_mode = ScreenMode(self.config.get_config('截图模式'))
         self.screen_instance = None
-        self.screen_instance_ready = False
         self.init_screen_instance(initial)
 
     def __del__(self):
         if self.screen_instance:
             self.screen_instance.release()
+
+    @property
+    def screen_instance_ready(self):
+        return self.screen_instance.ready
 
     def init_screen_instance(self, initial=False):
         self.logger.info(f"当前截图模式：[{self.screen_mode.name}]")
@@ -46,7 +49,6 @@ class Screen:
             if not initial:
                 QMessageBox.information(None, "", f"[{self.screen_mode.name}]截图实例初始化完毕", QMessageBox.StandardButton.Ok)
             self.logger.info(f"[{self.screen_mode.name}]截图实例初始化完毕")
-            self.screen_instance_ready = True
             self.config.set_config('截图模式', self.screen_mode)
         except Exception as e:
             QMessageBox.warning(None, "", f"[{self.screen_mode.name}]初始化截图实例出错", QMessageBox.StandardButton.Ok)
@@ -59,7 +61,6 @@ class Screen:
             self.logger.info(f"已经是[{new_mode.name}]模式了")
             return
         self.screen_mode = new_mode
-        self.screen_instance_ready = False
         self.release()
         # 再初始化新的实例
         self.init_screen_instance()

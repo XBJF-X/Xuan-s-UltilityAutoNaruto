@@ -27,10 +27,7 @@ class ZuZhiQiFu(BaseTask):
             return False
         elif not self.config.get_task_exe_prog(self.task_name, "昨日奖励领取", False):
             # 点击昨日奖励
-            if not self.operationer.click_and_wait(
-                    "昨日奖励",
-                    auto_raise=False
-            ):
+            if not self.operationer.click_and_wait("昨日奖励", max_time=3):
                 self.logger.warning("昨日奖励已领取或昨日祈福人数不足15")
                 self.config.set_task_exe_prog(self.task_name, "昨日奖励领取", True)
             return False
