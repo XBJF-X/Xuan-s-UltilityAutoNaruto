@@ -46,7 +46,10 @@ class MeiZhouShengChang(MeiRiShengChang):
             self.logger.debug("每周胜场已满")
             self.checked = True
             self.finished = True
-            self.operationer.click_and_wait("X")
+            for i in ["2", "5", "7", "10"]:
+                self.operationer.click_and_wait(f"胜场{i}场", click_times=3)
+            self.logger.info("每周胜场奖励已领取")
+            self.operationer.click_and_wait("X", click_times=2)
             self.update_next_execute_time()
             return True
         self.checked = True
@@ -69,7 +72,7 @@ class MeiZhouShengChang(MeiRiShengChang):
         else:
             # 转换为带时区的datetime
             stored_time = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
-            if stored_time+timedelta(weeks=1) < current_time:
+            if stored_time + timedelta(weeks=1) < current_time:
                 return next_execute_time
             else:
                 return stored_time
