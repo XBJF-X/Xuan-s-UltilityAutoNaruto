@@ -81,7 +81,7 @@ class Xuan(QMainWindow):
             self._on_update_btn_clicked()
         # 设置全局异常处理器
         self._original_excepthook = None
-        self.setup_global_exception_handler()
+        self.setup_comprehensive_exception_handler()
 
     @staticmethod
     def setup_main_logger():
@@ -356,78 +356,73 @@ class Xuan(QMainWindow):
             service.scheduler.stop()
         self.logger.debug("日常助手退出")
 
-    def setup_global_exception_handler(self):
-        """设置全局异常处理器"""
-        # 备份原始异常处理器
-        self._original_excepthook = sys.excepthook
+    @staticmethod
+    def setup_comprehensive_exception_handler():
+        """综合异常处理器"""
+        import faulthandler
+        import signal
+        import sys
+        import traceback
+        from datetime import datetime
+        from pathlib import Path
 
-        def qt_exception_hook(exc_type, exc_value, exc_traceback):
-            """Qt应用程序异常钩子"""
-            try:
-                # 记录异常信息
-                error_msg = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        # 1. 启用faulthandler
+        crash_log = Path(get_real_path("crash_dump.log"))
+        with open(crash_log, 'a') as f:
+            faulthandler.enable(file=f, all_threads=True)
 
-                # 记录到日志文件
-                log_file = Path(get_real_path("crash.log"))
-                with open(log_file, 'a', encoding='utf-8') as f:
-                    from datetime import datetime
-                    f.write(f"\n{'=' * 60}\n")
-                    f.write(f"崩溃时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
-                    f.write(f"异常类型: {exc_type.__name__}\n")
-                    f.write(f"异常信息: {str(exc_value)}\n")
-                    f.write(f"详细追踪:\n{error_msg}\n")
-                    f.write(f"{'=' * 60}\n")
+        # 2. 设置Python异常钩子
+        original_excepthook = sys.excepthook
 
-                # 在控制台输出
-                print(f"程序崩溃! 详细信息已保存到: {log_file}")
-                print(f"异常类型: {exc_type.__name__}")
-                print(f"异常信息: {exc_value}")
+        def python_exception_hook(exc_type, exc_value, exc_tb):
+            error_msg = ''.join(traceback.format_exception(exc_type, exc_value, exc_tb))
 
-                # 尝试写入最后的消息到日志系统
+            with open(crash_log, 'a', encoding='utf-8') as f:
+                f.write(f"\n{'=' * 80}\n")
+                f.write(f"Python异常时间: {datetime.now()}\n")
+                f.write(f"异常类型: {exc_type.__name__}\n")
+                f.write(f"异常信息: {str(exc_value)}\n")
+                f.write(f"详细追踪:\n{error_msg}\n")
+                f.write(f"{'=' * 80}\n")
+
+            # 调用原始处理器
+            original_excepthook(exc_type, exc_value, exc_tb)
+
+        sys.excepthook = python_exception_hook
+
+        # 3. 设置信号处理器
+        def handle_crash_signal(sig, frame):
+            # 获取所有线程堆栈
+            stacks = []
+            for thread_id, frame in sys._current_frames().items():
+                stack = traceback.extract_stack(frame)
+                stacks.append(f"\n线程 {thread_id}:\n")
+                stacks.append(''.join(traceback.format_list(stack)))
+
+            with open(crash_log, 'a', encoding='utf-8') as f:
+                f.write(f"\n{'=' * 80}\n")
+                f.write(f"信号崩溃时间: {datetime.now()}\n")
                 try:
-                    self.logger.critical(f"程序崩溃: {exc_type.__name__}: {exc_value}")
-                    self.logger.critical(f"异常追踪:\n{error_msg}")
+                    f.write(f"信号: {signal.Signals(sig).name}\n")
+                except:
+                    f.write(f"信号编号: {sig}\n")
+                f.write(f"堆栈信息:\n{''.join(stacks)}\n")
+                f.write(f"{'=' * 80}\n")
+
+            # 重新注册处理器
+            signal.signal(sig, handle_crash_signal)
+
+            # 强制退出
+            sys.exit(1)
+
+        # 注册所有可能的崩溃信号
+        for sig_name in ['SIGABRT', 'SIGSEGV', 'SIGFPE', 'SIGILL', 'SIGBUS', 'SIGTERM']:
+            if hasattr(signal, sig_name):
+                try:
+                    sig = getattr(signal, sig_name)
+                    signal.signal(sig, handle_crash_signal)
                 except:
                     pass
-
-            except Exception as e:
-                print(f"记录崩溃信息时出错: {e}")
-
-            # 调用原始异常处理器
-            if self._original_excepthook:
-                self._original_excepthook(exc_type, exc_value, exc_traceback)
-            else:
-                sys.__excepthook__(exc_type, exc_value, exc_traceback)
-
-        # 设置异常钩子
-        sys.excepthook = qt_exception_hook
-
-        # 处理Qt信号异常
-        import signal
-        if hasattr(signal, 'SIGABRT'):
-            signal.signal(signal.SIGABRT, lambda sig, frame: self.handle_signal(sig, frame))
-        if hasattr(signal, 'SIGSEGV'):
-            signal.signal(signal.SIGSEGV, lambda sig, frame: self.handle_signal(sig, frame))
-        if hasattr(signal, 'SIGFPE'):
-            signal.signal(signal.SIGFPE, lambda sig, frame: self.handle_signal(sig, frame))
-
-    def handle_signal(self, sig, frame):
-        """处理信号"""
-        try:
-            import traceback
-            stack = traceback.extract_stack(frame)
-            stack_str = ''.join(traceback.format_list(stack))
-
-            self.logger.critical(f"接收到信号: {sig}")
-            self.logger.critical(f"调用栈:\n{stack_str}")
-
-            # 记录到文件
-            with open(get_real_path("signal_crash.log"), 'a') as f:
-                f.write(f"信号: {sig}\n")
-                f.write(f"时间: {datetime.now()}\n")
-                f.write(f"堆栈:\n{stack_str}\n\n")
-        except:
-            pass
 
     def mousePressEvent(self, event):
         """鼠标按下事件"""
