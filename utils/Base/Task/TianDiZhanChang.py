@@ -96,8 +96,11 @@ class TianDiZhanChang(BaseTask):
         defeated_ninja_num = max(self.config.get_task_exe_prog(self.task_name, "已战败角色数", 0), 2) + 1
         self.operationer.click_and_wait("忍者页")
         if not self.operationer.detect_element(f"默认点位-{defeated_ninja_num}-选中"):
-            self.operationer.click_and_wait(f"默认点位-{defeated_ninja_num}", stable_max_time=0.5)
-            self.config.set_task_exe_prog(self.task_name, "已战败角色数", defeated_ninja_num)
+            if defeated_ninja_num >= 4:
+                self.config.set_task_exe_prog(self.task_name, "已战败角色数", 0)
+            else:
+                self.operationer.click_and_wait(f"默认点位-{defeated_ninja_num}", stable_max_time=0.5)
+                self.config.set_task_exe_prog(self.task_name, "已战败角色数", defeated_ninja_num)
 
         self.operationer.click_and_wait("通灵兽页", stable_max_time=0.5)
         for i in range(1, 4):
