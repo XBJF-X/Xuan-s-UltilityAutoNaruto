@@ -76,10 +76,10 @@ class GengDuoWanFa(BaseTask):
     @TransitionOn("更多玩法-任务")
     def _(self):
         self.operationer.clicker.stop()
-        if not self.operationer.detect_element("未达成", auto_raise=False):
+        if not self.operationer.detect_element("未达成", auto_raise=False) and not self.finished:
+            self.operationer.click_and_wait("2100")
             self.finished = True
-            self.update_next_execute_time()
-            return True
+            return False
         self.operationer.click_and_wait("X")
         self.checked = True
         return False
@@ -123,6 +123,13 @@ class GengDuoWanFa(BaseTask):
     def _(self):
         self.operationer.clicker.stop()
         self.operationer.click_and_wait("更多玩法")
+        return False
+
+    @TransitionOn("任务奖励-一键领取")
+    def _(self):
+        self.operationer.clicker.stop()
+        self.operationer.click_and_wait("确定")
+        self.finished = True
         return False
 
     @TransitionOn("未知场景")
