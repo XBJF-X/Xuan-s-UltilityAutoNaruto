@@ -679,6 +679,7 @@ class Scheduler(QObject):
         self.logger.info(f"[{task.task_name}]-[{task.base_priority}] 移出执行队列，进入等待队列")
         task.create_time = datetime.now(ZoneInfo("Asia/Shanghai"))
 
+
     def save_screen(self, name):
         """保存截图到文件"""
         try:

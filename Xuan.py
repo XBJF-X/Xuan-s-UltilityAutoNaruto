@@ -1,4 +1,5 @@
 import ctypes
+import faulthandler
 import json
 import logging
 import os
@@ -11,7 +12,8 @@ from pathlib import Path
 from typing import List
 
 import cv2
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QTimer
+from PySide6.QtCore import Qt, QtMsgType
 from PySide6.QtGui import QIcon, QPainter, QBrush, QColor, QPainterPath, QAction
 from PySide6.QtWidgets import QMainWindow, QApplication, QPushButton, QDialog, QButtonGroup, QMessageBox, \
     QMenu
@@ -19,13 +21,68 @@ from PySide6.QtWidgets import QMainWindow, QApplication, QPushButton, QDialog, Q
 from StaticFunctions import resource_path, get_real_path
 from tool.ResourceManager.ResourceDBManager import ResourceDBManager
 from utils.AddConfig import AddConfig
+from utils.Base.CrashReporter import CrashReporter
 from utils.Base.Scene.SceneGraph import SceneGraph
 from utils.Base.Setting import Setting
-from utils.ui.SettingDialog import SettingDialog
 from utils.Base.Updater import Updater
 from utils.Servicer import Service
+from utils.ui.SettingDialog import SettingDialog
 from utils.ui.Xuan_ui import Ui_Xuan
 
+
+# 最早的异常处理器（必须在导入任何其他模块之前）
+def early_exception_handler(exc_type, exc_value, exc_traceback):
+    """最早的异常处理器，在日志系统初始化前使用"""
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    # 创建基本日志目录
+    log_dir = get_real_path("log")
+    log_dir.mkdir(exist_ok=True)
+
+    # 直接写入文件，不依赖logging模块
+    error_msg = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    with open(log_dir / f"EARLY_CRASH_{timestamp}.log", "w", encoding="utf-8") as f:
+        f.write(f"Python崩溃时间: {datetime.now()}\n")
+        f.write(f"异常类型: {exc_type.__name__}\n")
+        f.write(f"异常信息: {str(exc_value)}\n")
+        f.write("=" * 80 + "\n")
+        f.write(error_msg)
+        f.write("\n" + "=" * 80 + "\n")
+        f.write(f"Python路径: {sys.path}\n")
+        f.write(f"当前工作目录: {os.getcwd()}\n")
+        f.write(f"命令行参数: {sys.argv}\n")
+        f.write(f"系统平台: {sys.platform}\n")
+
+    # 调用原始异常处理器
+    sys.__excepthook__(exc_type, exc_value, exc_traceback)
+
+
+# 设置最早的异常处理器
+sys.excepthook = early_exception_handler
+
+# 启用faulthandler（处理C层崩溃）
+faulthandler.enable()
+
+
+def qt_message_handler(mode, context, message):
+    """Qt日志处理器"""
+    log_dir = Path("log")
+    log_dir.mkdir(exist_ok=True)
+
+    if mode == QtMsgType.QtFatalMsg:
+        # Qt致命错误
+        with open(log_dir / "qt_crash.log", "a", encoding="utf-8") as f:
+            f.write(f"[{datetime.now()}] Qt致命错误: {message}\n")
+            f.write(f"文件: {context.file}, 行: {context.line}\n")
+            f.write(f"函数: {context.function}\n")
+    elif mode == QtMsgType.QtCriticalMsg:
+        # Qt关键错误
+        with open(log_dir / "qt_critical.log", "a", encoding="utf-8") as f:
+            f.write(f"[{datetime.now()}] Qt关键错误: {message}\n")
 # 使用样式表
 button_style = """
 QPushButton {
@@ -79,9 +136,6 @@ class Xuan(QMainWindow):
         if self.setting.getboolean("Update", "自动更新"):
             self.logger.info("自动更新")
             self._on_update_btn_clicked()
-        # 设置全局异常处理器
-        self._original_excepthook = None
-        self.setup_comprehensive_exception_handler()
 
     @staticmethod
     def setup_main_logger():
@@ -356,73 +410,6 @@ class Xuan(QMainWindow):
             service.scheduler.stop()
         self.logger.debug("日常助手退出")
 
-    @staticmethod
-    def setup_comprehensive_exception_handler():
-        """综合异常处理器"""
-        import faulthandler
-        import signal
-        import sys
-        import traceback
-        from datetime import datetime
-        from pathlib import Path
-
-        # 1. 启用faulthandler
-        crash_log = Path(get_real_path("crash_dump.log"))
-        with open(crash_log, 'a') as f:
-            faulthandler.enable(file=f, all_threads=True)
-
-        # 2. 设置Python异常钩子
-        original_excepthook = sys.excepthook
-
-        def python_exception_hook(exc_type, exc_value, exc_tb):
-            error_msg = ''.join(traceback.format_exception(exc_type, exc_value, exc_tb))
-
-            with open(crash_log, 'a', encoding='utf-8') as f:
-                f.write(f"\n{'=' * 80}\n")
-                f.write(f"Python异常时间: {datetime.now()}\n")
-                f.write(f"异常类型: {exc_type.__name__}\n")
-                f.write(f"异常信息: {str(exc_value)}\n")
-                f.write(f"详细追踪:\n{error_msg}\n")
-                f.write(f"{'=' * 80}\n")
-
-            # 调用原始处理器
-            original_excepthook(exc_type, exc_value, exc_tb)
-
-        sys.excepthook = python_exception_hook
-
-        # 3. 设置信号处理器
-        def handle_crash_signal(sig, frame):
-            # 获取所有线程堆栈
-            stacks = []
-            for thread_id, frame in sys._current_frames().items():
-                stack = traceback.extract_stack(frame)
-                stacks.append(f"\n线程 {thread_id}:\n")
-                stacks.append(''.join(traceback.format_list(stack)))
-
-            with open(crash_log, 'a', encoding='utf-8') as f:
-                f.write(f"\n{'=' * 80}\n")
-                f.write(f"信号崩溃时间: {datetime.now()}\n")
-                try:
-                    f.write(f"信号: {signal.Signals(sig).name}\n")
-                except:
-                    f.write(f"信号编号: {sig}\n")
-                f.write(f"堆栈信息:\n{''.join(stacks)}\n")
-                f.write(f"{'=' * 80}\n")
-
-            # 重新注册处理器
-            signal.signal(sig, handle_crash_signal)
-
-            # 强制退出
-            sys.exit(1)
-
-        # 注册所有可能的崩溃信号
-        for sig_name in ['SIGABRT', 'SIGSEGV', 'SIGFPE', 'SIGILL', 'SIGBUS', 'SIGTERM']:
-            if hasattr(signal, sig_name):
-                try:
-                    sig = getattr(signal, sig_name)
-                    signal.signal(sig, handle_crash_signal)
-                except:
-                    pass
 
     def mousePressEvent(self, event):
         """鼠标按下事件"""
@@ -489,9 +476,63 @@ def configure_dpi_awareness():
 
 
 if __name__ == "__main__":
+    # 确保当前工作目录正确
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    os.chdir(script_dir)
+
+    # 第一步：设置崩溃处理器（必须在所有代码之前）
+    crash_reporter = CrashReporter()
+
+    # 第二步：配置DPI
     configure_dpi_awareness()
+
+    # 第三步：创建应用
     app = QApplication(sys.argv)
 
-    daily_quests_helper = Xuan()
-    daily_quests_helper.show()
-    sys.exit(app.exec())
+    # 第四步：设置Qt消息处理器
+    from PySide6.QtCore import qInstallMessageHandler
+
+    qInstallMessageHandler(qt_message_handler)
+
+    # 第五步：简单的应用状态监控
+    app_start_time = datetime.now()
+
+
+    def check_app_state():
+        """检查应用状态"""
+        try:
+            # 检查应用是否还在运行
+            if not QApplication.instance():
+                log_dir = Path("log")
+                log_dir.mkdir(exist_ok=True)
+                with open(log_dir / "app_crash.log", "a", encoding="utf-8") as f:
+                    f.write(f"[{datetime.now()}] QApplication实例丢失\n")
+                    f.write(f"应用运行时间: {datetime.now() - app_start_time}\n")
+        except Exception as e:
+            # 记录检查过程中的异常
+            log_dir = Path("log")
+            log_dir.mkdir(exist_ok=True)
+            with open(log_dir / "monitor_error.log", "a", encoding="utf-8") as f:
+                f.write(f"[{datetime.now()}] 监控异常: {e}\n")
+
+
+    # 创建监控定时器
+    monitor_timer = QTimer()
+    monitor_timer.timeout.connect(check_app_state)
+    monitor_timer.start(5000)  # 每5秒检查一次
+
+    try:
+        daily_quests_helper = Xuan()
+        daily_quests_helper.show()
+        sys.exit(app.exec())
+    except Exception as e:
+        # 最后一道防线
+        if 'crash_reporter' in locals():
+            crash_reporter._write_crash_report("Main Loop Exception", str(e))
+        else:
+            # 如果crash_reporter还没初始化，直接写入文件
+            log_dir = Path("log")
+            log_dir.mkdir(exist_ok=True)
+            with open(log_dir / "final_crash.log", "a", encoding="utf-8") as f:
+                f.write(f"[{datetime.now()}] 主循环崩溃: {e}\n")
+        raise
