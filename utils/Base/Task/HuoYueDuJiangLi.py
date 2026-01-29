@@ -8,8 +8,19 @@ class HuoYueDuJiangLi(BaseTask):
     source_scene = "奖励"
     task_max_duration = timedelta(minutes=2)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.finished = False
+
     @TransitionOn()
     def _(self):
+        if self.finished:
+            if self.reset_task_exe_proc():
+                self.update_next_execute_time()
+            else:
+                self.update_next_execute_time(3, timedelta(hours=3))
+            return True
+
         if not self.config.get_task_exe_prog(self.task_name, f"10活跃度已领取", False):
             self._handle_daily_activity_reward(10)
             return False
@@ -23,19 +34,10 @@ class HuoYueDuJiangLi(BaseTask):
             self._handle_daily_activity_reward(100)
             return False
         elif not self.config.get_task_exe_prog(self.task_name, f"周活跃度已领取", False):
-            if self.operationer.click_and_wait(
-                    "周活跃礼-有红点",
-                    auto_raise=False
-            ):
-                self.logger.info("周活跃已满")
-                return False
-            else:
-                self.logger.warning("周活跃未满")
-        if self.reset_task_exe_proc():
-            self.update_next_execute_time()
-        else:
-            self.update_next_execute_time(3, timedelta(hours=3))
-        return True
+            self.operationer.click_and_wait("周活跃礼")
+            return False
+        self.finished = True
+        return False
 
     @TransitionOn("周活跃大礼")
     def _(self):
@@ -46,7 +48,7 @@ class HuoYueDuJiangLi(BaseTask):
             self.config.set_task_exe_prog(self.task_name, f"周活跃礼已领取", True)
             self.logger.info("周活跃奖励领取成功")
         self.operationer.click_and_wait("X")
-        self.week_reward = True
+        self.finished = True
         return False
 
     def _handle_daily_activity_reward(self, num):
@@ -65,6 +67,8 @@ class HuoYueDuJiangLi(BaseTask):
                     auto_raise=False
             ):
                 self.logger.info(f"[{num}活跃度宝箱] 活跃度不足")
+                self.finished = True
+                return
             else:
                 self.config.set_task_exe_prog(self.task_name, f"{num}活跃度已领取", True)
                 self.logger.info(f"[{num}活跃度宝箱] 领取成功")
@@ -73,6 +77,7 @@ class HuoYueDuJiangLi(BaseTask):
             self.logger.info(f"[{num}活跃度宝箱] 已领取")
 
     def reset_task_exe_proc(self) -> bool:
+        self.finished = False
         if (self.config.get_task_exe_prog(self.task_name, f"周活跃礼已领取", False) and
                 datetime.now(ZoneInfo("Asia/Shanghai")).weekday() == 6):
             # 每周日重置周活跃领取状态
