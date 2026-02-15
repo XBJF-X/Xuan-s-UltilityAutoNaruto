@@ -48,3 +48,8 @@ class HaoYouTiLi(BaseTask):
             self.operationer.click_and_wait("X")
             return True
         return False
+
+    def reset_task_exe_proc(self) -> bool:
+        self.flag_1 = False
+        self.flag_2 = False
+        return True

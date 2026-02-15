@@ -39,6 +39,7 @@ class XiaoHaoTiLi(BaseTask):
                 max_time=0.5
         ):
             self.logger.info("当前装备可进阶，已点击进阶")
+            return False
         if self.operationer.click_and_wait("可装备", auto_raise=False):
             self.operationer.click_and_wait("一键添加")
             self.logger.warning("存在[可装备]装备，已一键添加")
@@ -141,6 +142,12 @@ class XiaoHaoTiLi(BaseTask):
         self.config.set_task_exe_prog(self.task_name, "任务1执行结束", False)
         self.update_next_execute_time()
         return True
+
+    @TransitionOn("铜币不足")
+    def _(self):
+        self.operationer.click_and_wait("X")
+        self.config.set_task_exe_prog(self.task_name, "任务1执行结束", False)
+        return False
 
     def _handle_execution_completed(self, current_time: datetime) -> datetime:
         """处理任务执行完成后的时间更新（case1）"""

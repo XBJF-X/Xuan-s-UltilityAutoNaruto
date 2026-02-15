@@ -21,6 +21,7 @@ from PySide6.QtWidgets import QMainWindow, QApplication, QPushButton, QDialog, Q
 from StaticFunctions import resource_path, get_real_path
 from tool.ResourceManager.ResourceDBManager import ResourceDBManager
 from utils.AddConfig import AddConfig
+from utils.Base.AutoThemeApp import AutoThemeApp
 from utils.Base.CrashReporter import CrashReporter
 from utils.Base.Scene.SceneGraph import SceneGraph
 from utils.Base.Setting import Setting
@@ -83,6 +84,8 @@ def qt_message_handler(mode, context, message):
         # Qt关键错误
         with open(log_dir / "qt_critical.log", "a", encoding="utf-8") as f:
             f.write(f"[{datetime.now()}] Qt关键错误: {message}\n")
+
+
 # 使用样式表
 button_style = """
 QPushButton {
@@ -410,7 +413,6 @@ class Xuan(QMainWindow):
             service.scheduler.stop()
         self.logger.debug("日常助手退出")
 
-
     def mousePressEvent(self, event):
         """鼠标按下事件"""
         if event.button() == Qt.MouseButton.LeftButton:
@@ -486,9 +488,9 @@ if __name__ == "__main__":
     # 第二步：配置DPI
     configure_dpi_awareness()
 
-    # 第三步：创建应用
+    # # 第三步：创建应用
+    # app = AutoThemeApp(sys.argv)
     app = QApplication(sys.argv)
-
     # 第四步：设置Qt消息处理器
     from PySide6.QtCore import qInstallMessageHandler
 

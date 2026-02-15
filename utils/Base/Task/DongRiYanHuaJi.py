@@ -26,7 +26,7 @@ class DongRiYanHuaJi(BaseTask):
             self.operationer.click_and_wait("免费烟火")
             self.bool_light_fireworks = True
             return False
-        if datetime.now(tz=ZoneInfo("Asia/Shanghai")) < self.temp_dead_line:
+        if datetime.now(tz=ZoneInfo("Asia/Shanghai")) < self.running_deadline:
             self.operationer.clicker.start()
             return False
         self.operationer.clicker.stop()

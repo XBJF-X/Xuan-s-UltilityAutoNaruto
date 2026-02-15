@@ -244,6 +244,8 @@ class TransitionManager:
         @self.register("生存挑战-重置", "生存挑战")
         @self.register("生存挑战-购买扫荡券", "生存挑战")
         @self.register("冬日烟花季-点燃免费爆竹", "冬日烟花季-主页")
+        @self.register("铜币不足", "装备-材料详情")
+        @self.register("铜币不足", "装备")
         def _(operationer: Operationer, *args, **kwargs):
             """通用返回函数，点击[X]"""
             operationer.click_and_wait("X")
