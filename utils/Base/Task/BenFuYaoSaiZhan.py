@@ -67,11 +67,13 @@ class BenFuYaoSaiZhan(BaseTask):
 
     @TransitionOn("X之要塞")
     def _(self):
+        self.operationer.clicker.stop()
         self.operationer.click_and_wait("攻击")
         return False
 
     @TransitionOn("要塞内部")
     def _(self):
+        self.operationer.clicker.stop()
         if datetime.now(tz=ZoneInfo("Asia/Shanghai")) < self.running_deadline:
             self.operationer.long_press(self.joystick[0] + 60, self.joystick[1], 3)
             return False
@@ -81,6 +83,7 @@ class BenFuYaoSaiZhan(BaseTask):
 
     @TransitionOn("决斗场-匹配中")
     def _(self):
+        self.operationer.clicker.stop()
         QThread.msleep(1000)
         return False
 
