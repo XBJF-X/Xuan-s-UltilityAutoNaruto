@@ -12,9 +12,7 @@ class QingBaoZhan(BaseTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.activity_reward_40_done = False
-        self.activity_reward_60_done = False
-        self.activity_reward_100_done = False
+        self.reset_task_exe_proc()
 
     @TransitionOn()
     def _(self):
@@ -214,7 +212,7 @@ class QingBaoZhan(BaseTask):
             self.config.get_task_exe_prog(self.task_name, f"100活跃度奖励已领取", False)
         ])
 
-        self.logger.debug("所有活跃度奖励已领取" if flag else "所有活跃度奖励已领取")
+        self.logger.debug("所有活跃度奖励已领取" if flag else "存在未领取的活跃度奖励")
 
         self.config.set_task_exe_prog(self.task_name, f"浏览卷轴", False)
         self.config.set_task_exe_prog(self.task_name, f"浏览村口", False)
