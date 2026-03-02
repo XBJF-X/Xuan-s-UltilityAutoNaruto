@@ -15,7 +15,6 @@ class MeiRiShengChang(BaseTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.checked = False
-        self.finished = False
         self.operationer.clicker.update_coordinates([
             self.config.get_config("键位")[KEY_INDEX.BasicAttack],
             self.config.get_config("键位")[KEY_INDEX.FirstSkill],
@@ -33,15 +32,9 @@ class MeiRiShengChang(BaseTask):
             self.operationer.clicker.stop()
             self.operationer.click_and_wait("决斗任务")
             return False
-        if not self.finished:
-            self.operationer.click_and_wait("开战")
-            self.operationer.click_and_wait("开战")
-            self.operationer.clicker.start()
-            return False
-        self.operationer.click_and_wait("X")
-        self.logger.info("结束执行")
-        self.update_next_execute_time()
-        return True
+        self.operationer.click_and_wait("开战")
+        self.operationer.click_and_wait("开战")
+        return False
 
     @TransitionOn("决斗场-匹配中")
     def _(self):
@@ -64,12 +57,10 @@ class MeiRiShengChang(BaseTask):
         # 检测有无可追回宝箱
         if self.operationer.click_and_wait("宝箱-追回"):
             self.logger.info("存在可追回每日胜场宝箱")
-            self.checked = False
+            self.checked = True
             return False
         if not self.operationer.search_and_detect(
-                [
-                    self.operationer.get_element("宝箱-未达成")
-                ],
+                [self.operationer.get_element("宝箱-未达成")],
                 [
                     {'swipe':
                         {"start_coordinate": [1095, 618], "end_coordinate": [1095, 167],
@@ -78,11 +69,12 @@ class MeiRiShengChang(BaseTask):
                 max_attempts=1,
                 bool_debug=True
         ):
-            self.checked = True
-            self.finished = True
+            self.checked = False
             self.operationer.click_and_wait("X")
+            self.logger.info("结束执行")
             self.update_next_execute_time()
             return True
+        # 如果存在未追回，则标记已经检查过并返回匹配页进行下一场战斗
         self.checked = True
         self.operationer.click_and_wait("X")
         return False
@@ -133,4 +125,3 @@ class MeiRiShengChang(BaseTask):
         self.operationer.clicker.stop()
         QThread.msleep(1000)
         return False
-
