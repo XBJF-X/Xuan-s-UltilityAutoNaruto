@@ -108,7 +108,7 @@
 | [MiniTouch](https://github.com/openstf/minitouch) | 还在适配   |   未测   |
 
 # 快速上手
-
+### [视频教程](https://www.bilibili.com/video/BV1pmARzSEhK) 
 ### 如果电脑模拟器网络连接差/频繁加载中，则大部分功能都会异常（真入投的）
 
 
