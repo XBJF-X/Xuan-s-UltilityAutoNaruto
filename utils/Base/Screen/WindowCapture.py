@@ -16,7 +16,6 @@ user32.PrintWindow.restype = wintypes.BOOL
 
 
 class WindowCapture:
-
     width2height = {
         2560: 1440,
         1920: 1080,
@@ -24,10 +23,10 @@ class WindowCapture:
         1280: 720
     }
 
-    def __init__(self, config: Config,parent_logger):
+    def __init__(self, config: Config, parent_logger):
         self.logger = parent_logger.getChild(self.__class__.__name__)
         self.config = config
-        self.ready=False
+        self.ready = False
         self.hwnd = None
         self.left = None
         self.top = None
@@ -215,11 +214,10 @@ if __name__ == "__main__":
             # # 按q退出
             # if cv2.waitKey(1) & 0xFF == ord('q'):
             #     break
-        print(f"[平均耗时]：{(time.time() - init_time) * 1000/200:.1f}ms")
+        print(f"[平均耗时]：{(time.time() - init_time) * 1000 / 200:.1f}ms")
 
     except Exception as e:
         print(f"错误: {e}")
     finally:
         cv2.destroyAllWindows()
         capture.release()
-
