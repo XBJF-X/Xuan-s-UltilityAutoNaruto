@@ -56,7 +56,9 @@ class RenWuJiHuiSuo(BaseTask):
                 max_attempts=2
 
         ):
-            raise StepFailedError("安排任务忍者失败")
+            self.logger.error("任务分派忍者失败")
+            self.update_next_execute_time()
+            return True
         # 出战
         self.operationer.click_and_wait(
             "出发",

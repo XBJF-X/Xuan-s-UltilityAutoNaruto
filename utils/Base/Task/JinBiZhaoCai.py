@@ -41,7 +41,7 @@ class JinBiZhaoCai(BaseTask):
         self.logger.debug("出现二级密码窗口")
         passward = self.config.get_config("二级密码")
         if len(passward) != 6:
-            raise StepFailedError("请检查二级密码！")
+            raise StepFailedError("请检查二级密码是否留空或漏位！")
         # 输入操作
         self.operationer.click_and_input(
             self.operationer.get_element("输入框"),
