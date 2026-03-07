@@ -1,3 +1,4 @@
+import time
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
@@ -44,7 +45,7 @@ class MiJingTanXian(BaseTask):
         self.fighting = False
         self.operationer.clicker.stop()
         self.logger.info("等待系统自动翻牌结束...")
-        QThread.msleep(6000)
+        time.sleep(6)
 
         while self.config.get_task_exe_prog(self.task_name, "忍具已翻牌次数", 0) < \
                 self.config.get_task_exe_param(self.task_name, "忍具翻牌次数", 0):
@@ -56,7 +57,7 @@ class MiJingTanXian(BaseTask):
                 break
             temp_time = self.config.get_task_exe_prog(self.task_name, "忍具已翻牌次数", 0)
             self.config.set_task_exe_prog(self.task_name, "忍具已翻牌次数", temp_time + 1)
-            QThread.msleep(1000)
+            time.sleep(1)
         self.logger.info("忍具翻牌已结束")
 
         while self.config.get_task_exe_prog(self.task_name, "饰品已翻牌次数", 0) < \
@@ -70,7 +71,7 @@ class MiJingTanXian(BaseTask):
             self.operationer.click_and_wait("饰品翻牌")
             temp_time = self.config.get_task_exe_prog(self.task_name, "饰品已翻牌次数", 0)
             self.config.set_task_exe_prog(self.task_name, "饰品已翻牌次数", temp_time + 1)
-            QThread.msleep(1000)
+            time.sleep(1)
         self.logger.info("饰品翻牌已结束")
 
         self.operationer.click_and_wait("返回")
@@ -114,7 +115,7 @@ class MiJingTanXian(BaseTask):
             #     self.operationer.long_press(joystick_coordinate[0] + 60, joystick_coordinate[1], 1.5)
             #     self.fighting = True
             #     self.operationer.clicker.start()
-            if flag in [1, 3, 4, 5, 7]:
+            if flag in [1, 4, 5, 7]:
                 self.logger.info("检测到可连点过的秘境，开始战斗")
                 self.fighting = True
                 self.operationer.clicker.start()
