@@ -115,8 +115,10 @@ class MiJingTanXian(BaseTask):
             #     self.operationer.long_press(joystick_coordinate[0] + 60, joystick_coordinate[1], 1.5)
             #     self.fighting = True
             #     self.operationer.clicker.start()
-            if flag in [1, 4, 5, 7]:
+            if flag in [4, 5, 7]:
                 self.logger.info("检测到可连点过的秘境，开始战斗")
+                # joystick_coordinate = self.config.get_config("键位")[KEY_INDEX.JoyStick]
+                # self.operationer.long_press(joystick_coordinate[0] + 60, joystick_coordinate[1], 1.5)
                 self.fighting = True
                 self.operationer.clicker.start()
             else:

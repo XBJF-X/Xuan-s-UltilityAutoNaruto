@@ -260,10 +260,14 @@ class BaseTask:
                 self.stop()
                 self.logger.warning("任务已被停止")
                 return
-
-            result = self.transition()
-            if result is not None:
-                if result:
+            if datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai")) >= self.running_deadline:
+                self.logger.warning("任务已超时，将停止")
+                self.update_next_execute_time()
+                self.reset_task_exe_proc()
+                return
+            else:
+                result = self.transition()
+                if result is not None and result:
                     self.logger.debug("重置任务执行进度")
                     self.reset_task_exe_proc()
                     return
