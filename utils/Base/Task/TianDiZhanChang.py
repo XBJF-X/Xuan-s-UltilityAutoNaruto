@@ -1,6 +1,7 @@
-from datetime import datetime, timedelta, time
+import time
+from datetime import timedelta
 from zoneinfo import ZoneInfo
-
+import datetime
 from PySide6.QtCore import QThread
 
 from utils.Base.Enums import KEY_INDEX
@@ -13,7 +14,7 @@ choose_dic = ["天之战场", "地之战场"]
 # Todo：修复天地战场第二次上人时选人失误的问题
 class TianDiZhanChang(BaseTask):
     source_scene = "天地战场"
-    dead_line = time(21, 30)
+    dead_line = datetime.time(21, 30)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -37,7 +38,7 @@ class TianDiZhanChang(BaseTask):
 
     @TransitionOn("天之战场")
     def _(self):
-        current_time = datetime.now(tz=ZoneInfo("Asia/Shanghai"))
+        current_time = datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai"))
         if current_time > current_time.replace(hour=21, minute=30, second=0, microsecond=0):
             self.logger.info("天地战场时间已过，停止执行")
             self.update_next_execute_time()
@@ -60,7 +61,7 @@ class TianDiZhanChang(BaseTask):
 
     @TransitionOn("地之战场")
     def _(self):
-        current_time = datetime.now(tz=ZoneInfo("Asia/Shanghai"))
+        current_time = datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai"))
         if current_time > current_time.replace(hour=21, minute=30, second=0, microsecond=0):
             self.logger.info("天地战场时间已过，停止执行")
             self.update_next_execute_time()
@@ -154,7 +155,7 @@ class TianDiZhanChang(BaseTask):
     def _(self):
         self.operationer.clicker.start()
         self.pillar_took = False
-        QThread.msleep(500)
+        time.sleep(0.5)
         return False
 
     @TransitionOn("你的对手离开了游戏")
@@ -165,7 +166,7 @@ class TianDiZhanChang(BaseTask):
     @TransitionOn("未知场景")
     def _(self):
         self.operationer.clicker.stop()
-        QThread.msleep(1000)
+        time.sleep(1)
         return False
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
@@ -182,7 +183,7 @@ class TianDiZhanChang(BaseTask):
             tuple: (是否成功, 下次执行时间datetime对象)
         """
         china_tz = ZoneInfo("Asia/Shanghai")
-        current_time = datetime.now(china_tz)
+        current_time = datetime.datetime.now(china_tz)
 
         try:
             match flag:

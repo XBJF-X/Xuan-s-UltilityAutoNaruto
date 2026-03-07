@@ -1,12 +1,6 @@
-import logging
-import sys
-from datetime import datetime, timedelta
-from zoneinfo import ZoneInfo
+import time
+from datetime import timedelta
 
-from PySide6.QtCore import QThread
-
-from utils.Base.Config import Config
-from utils.Base.Exceptions import EndEarly, StepFailedError
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -71,7 +65,7 @@ class XiaoDuiTuXi(BaseTask):
     def _(self):
         if not self.operationer.detect_element("自动战斗中"):
             self.operationer.click_and_wait("自动战斗")
-        QThread.msleep(1000)
+        time.sleep(1)
         return False
 
     @TransitionOn("副本内-暂停")

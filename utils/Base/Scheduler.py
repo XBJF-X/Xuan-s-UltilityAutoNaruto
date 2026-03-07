@@ -610,7 +610,7 @@ class Scheduler(QObject):
 
     def _handle_screen_save(self, task_name):
         if self.UI.bool_save_img.isChecked():
-            threading.Thread(target=self.save_screen, args=(task_name,)).start()
+            threading.Thread(target=self.save_screen, args=(task_name,), daemon=True).start()
 
     def scan(self):
         """改进的扫描方法，避免快速重入"""
@@ -678,7 +678,6 @@ class Scheduler(QObject):
         self.task_widget_list.refresh_task_widget(task.task_name)
         self.logger.info(f"[{task.task_name}]-[{task.base_priority}] 移出执行队列，进入等待队列")
         task.create_time = datetime.now(ZoneInfo("Asia/Shanghai"))
-
 
     def save_screen(self, name):
         """保存截图到文件"""

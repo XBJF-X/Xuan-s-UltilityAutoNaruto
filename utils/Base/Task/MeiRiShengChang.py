@@ -1,3 +1,4 @@
+import time
 from datetime import timedelta, datetime
 from zoneinfo import ZoneInfo
 
@@ -39,7 +40,7 @@ class MeiRiShengChang(BaseTask):
     @TransitionOn("决斗场-匹配中")
     def _(self):
         self.operationer.clicker.stop()
-        QThread.msleep(1000)
+        time.sleep(1)
         return False
 
     @TransitionOn("忍术对战-决斗任务")
@@ -108,14 +109,14 @@ class MeiRiShengChang(BaseTask):
     def _(self):
         self.checked = False
         self.operationer.clicker.start()
-        QThread.msleep(1000)
+        time.sleep(1)
         return False
 
     @TransitionOn("决斗场-单局结算")
     def _(self):
         self.checked = False
         self.operationer.clicker.stop()
-        QThread.msleep(5000)
+        time.sleep(5)
         return False
 
     @TransitionOn("你的对手离开了游戏")
@@ -128,11 +129,11 @@ class MeiRiShengChang(BaseTask):
     @TransitionOn("未知场景")
     def _(self):
         self.operationer.clicker.stop()
-        QThread.msleep(1000)
+        time.sleep(1)
         return False
 
     @TransitionOn("未注册场景")
     def _(self):
         self.operationer.clicker.stop()
-        QThread.msleep(1000)
+        time.sleep(1)
         return False

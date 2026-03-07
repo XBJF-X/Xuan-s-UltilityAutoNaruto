@@ -1,10 +1,7 @@
-from datetime import timedelta, datetime
-from zoneinfo import ZoneInfo
-
-from PySide6.QtCore import QThread
+import time
+from datetime import timedelta
 
 from utils.Base.Enums import KEY_INDEX
-from utils.Base.Exceptions import EndEarly, StepFailedError
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -58,7 +55,7 @@ class FengRaoZhiJian(BaseTask):
     @TransitionOn("丰饶之间-内部")
     def _(self):
         self.operationer.clicker.start()
-        QThread.msleep(1000)
+        time.sleep(1)
         return False
 
     @TransitionOn("副本结算-点击任意位置关闭界面")

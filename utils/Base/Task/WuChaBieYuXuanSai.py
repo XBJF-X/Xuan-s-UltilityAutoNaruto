@@ -1,15 +1,13 @@
-from datetime import datetime, timedelta, time
-from zoneinfo import ZoneInfo
+import datetime
+import time
+from datetime import timedelta
 
-from PySide6.QtCore import QThread
-
-from utils.Base.Enums import KEY_INDEX
-from utils.Base.Task.BaseTask import BaseTask, TransitionOn, handle_task_exceptions
+from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
 class WuChaBieYuXuanSai(BaseTask):
     source_scene = "火影格斗大赛-无差别"
-    dead_line = time(22)
+    dead_line = datetime.time(22)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -56,13 +54,13 @@ class WuChaBieYuXuanSai(BaseTask):
 
     @TransitionOn("无差别-等待对方选择")
     def _(self):
-        QThread.msleep(1000)
+        time.sleep(1)
         return False
 
     @TransitionOn("无差别-禁用忍者选择")
     def _(self):
         if not self.operationer.detect_element("禁用", wait_time=0, auto_raise=False):
-            QThread.msleep(1000)
+            time.sleep(1)
             return False
         for i in range(1, 13):
             self.operationer.click_and_wait(f"忍者-{i}", wait_time=0.5)
@@ -73,7 +71,7 @@ class WuChaBieYuXuanSai(BaseTask):
     @TransitionOn("无差别-忍者选择")
     def _(self):
         if not self.operationer.detect_element("确定", wait_time=0, auto_raise=False):
-            QThread.msleep(1000)
+            time.sleep(1)
             return False
         for i in range(1, 13):
             self.operationer.click_and_wait(f"忍者-{i}", wait_time=0.5)
@@ -84,7 +82,7 @@ class WuChaBieYuXuanSai(BaseTask):
     @TransitionOn("无差别-禁用秘卷选择")
     def _(self):
         if not self.operationer.detect_element("禁用", wait_time=0, auto_raise=False):
-            QThread.msleep(1000)
+            time.sleep(1)
             return False
         for i in range(1, 10):
             self.operationer.click_and_wait(f"秘卷-{i}", wait_time=0.5)
@@ -95,7 +93,7 @@ class WuChaBieYuXuanSai(BaseTask):
     @TransitionOn("无差别-秘卷选择")
     def _(self):
         if not self.operationer.detect_element("确定", wait_time=0, auto_raise=False):
-            QThread.msleep(1000)
+            time.sleep(1)
             return False
         for i in range(1, 10):
             self.operationer.click_and_wait(f"秘卷-{i}", wait_time=0.5)
@@ -110,7 +108,7 @@ class WuChaBieYuXuanSai(BaseTask):
     @TransitionOn("决斗场-战斗中")
     def _(self):
         self.checked = False
-        QThread.msleep(500)
+        time.sleep(0.5)
         self.operationer.next_scene = "火影格斗大赛-无差别"
         return False
 
@@ -143,21 +141,21 @@ class WuChaBieYuXuanSai(BaseTask):
 
     @TransitionOn("未知场景")
     def _(self):
-        QThread.msleep(1000)
+        time.sleep(1)
         return False
 
     @TransitionOn("未注册场景")
     def _(self):
-        QThread.msleep(1000)
+        time.sleep(1)
         return False
 
-    def _handle_initialization(self, current_time: datetime) -> datetime:
+    def _handle_initialization(self, current_time: datetime.datetime) -> datetime.datetime:
         """处理任务初始化时的时间设置（case0）"""
         china_tz = current_time.tzinfo
         # 读取配置中的时间
         next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
 
-        next_execute_time = datetime(
+        next_execute_time = datetime.datetime(
             current_time.year,
             current_time.month,
             current_time.day,
@@ -169,17 +167,17 @@ class WuChaBieYuXuanSai(BaseTask):
             return next_execute_time
         else:
             # 转换为带时区的datetime
-            stored_time = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+            stored_time = datetime.datetime.fromtimestamp(next_exec_ts, tz=china_tz)
             if stored_time+timedelta(hours=4) < current_time:
                 return next_execute_time
             else:
                 return stored_time
 
-    def _handle_execution_completed(self, current_time: datetime) -> datetime:
+    def _handle_execution_completed(self, current_time: datetime.datetime) -> datetime.datetime:
         """处理任务执行完成后的时间更新（case1）"""
         china_tz = current_time.tzinfo
         next_day = current_time + timedelta(days=1)
-        return datetime(
+        return datetime.datetime(
             next_day.year,
             next_day.month,
             next_day.day,

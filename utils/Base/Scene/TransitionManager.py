@@ -1,4 +1,5 @@
 import logging
+import time
 from collections import deque
 from logging import Logger
 from typing import List, Callable, Dict
@@ -422,7 +423,7 @@ class TransitionManager:
         @self.register("无差别-等待对方选择", "火影格斗大赛-无差别")
         @self.register("丰饶之间-内部", "副本结算-点击任意位置关闭界面")
         def _(operationer: Operationer, *args, **kwargs):
-            QThread.msleep(1000)
+            time.sleep(1)
 
         @self.register("火影格斗大赛-秋季赛", "火影格斗大赛-无差别")
         def _(operationer: Operationer, *args, **kwargs):
@@ -460,7 +461,7 @@ class TransitionManager:
                 y=joystick[1] + 40,
                 duration=0.3
             )
-            QThread.msleep(2000)
+            time.sleep(2)
             operationer.click_and_wait("秘境探险")
 
         @self.register("秘境探险-首页", "秘境探险-匹配")

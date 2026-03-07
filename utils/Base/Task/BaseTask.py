@@ -1,14 +1,16 @@
+import datetime
+from datetime import timedelta
 import inspect
 import sys
 import threading
-from datetime import datetime, timedelta, time
+import time
 from logging import Logger
 from pathlib import Path
 from types import FrameType
 from typing import Dict, Callable
 from zoneinfo import ZoneInfo
 
-from PySide6.QtCore import Signal, QThread
+from PySide6.QtCore import Signal
 
 from StaticFunctions import get_real_path
 from utils.Base.Config import Config
@@ -112,7 +114,7 @@ class BaseTask:
     """任务的初始场景，需要先寻路到此处才能正式开始执行任务"""
     task_max_duration: timedelta = None
     """任务最长执行时间（无DDL的情况下生效）"""
-    dead_line: time | None = None
+    dead_line: datetime.time | None = None
     """任务当天截至的时间点（超过当天该时间点将强制结束任务）"""
     stopped_duration: timedelta = timedelta(0)
     """任务停止所需的制动时长"""
@@ -128,7 +130,7 @@ class BaseTask:
         parent_logger
     ):
         # 任务信息
-        self.create_time = datetime.now(ZoneInfo("Asia/Shanghai"))
+        self.create_time = datetime.datetime.now(ZoneInfo("Asia/Shanghai"))
         self.current_status = 2
         # 0 - 正在执行
         # 1 - 就绪状态，等待执行
@@ -196,9 +198,9 @@ class BaseTask:
     def running_deadline(self):
         if not self.dead_line:
             if self.task_max_duration:
-                return datetime.now(tz=ZoneInfo("Asia/Shanghai")) + self.task_max_duration
+                return datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai")) + self.task_max_duration
         else:
-            return datetime.now(tz=ZoneInfo("Asia/Shanghai")).replace(
+            return datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai")).replace(
                 hour=self.dead_line.hour,
                 minute=self.dead_line.minute,
                 second=self.dead_line.second,
@@ -216,10 +218,10 @@ class BaseTask:
         next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
         if next_exec_ts == 0:
             # 若初始值为0，设置为当前中国时区时间
-            return datetime.now(china_tz)
+            return datetime.datetime.now(china_tz)
         else:
             # 从时间戳转换为datetime对象
-            return datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+            return datetime.datetime.fromtimestamp(next_exec_ts, tz=china_tz)
 
     def run(self):
         """
@@ -368,7 +370,7 @@ class BaseTask:
             tuple: (是否成功, 下次执行时间datetime对象)
         """
         china_tz = ZoneInfo("Asia/Shanghai")
-        current_time = datetime.now(china_tz)
+        current_time = datetime.datetime.now(china_tz)
 
         try:
             match flag:
@@ -399,13 +401,13 @@ class BaseTask:
             self.logger.error(f"更新下次执行时间失败: {str(e)}")
             return False, None
 
-    def _handle_initialization(self, current_time: datetime) -> datetime:
+    def _handle_initialization(self, current_time: datetime.datetime) -> datetime.datetime:
         """处理任务初始化时的时间设置（case0）"""
         china_tz = current_time.tzinfo
         # 读取配置中的时间
         next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
 
-        next_execute_time = datetime(
+        next_execute_time = datetime.datetime(
             current_time.year,
             current_time.month,
             current_time.day,
@@ -417,17 +419,17 @@ class BaseTask:
             return next_execute_time
         else:
             # 转换为带时区的datetime
-            stored_time = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+            stored_time = datetime.datetime.fromtimestamp(next_exec_ts, tz=china_tz)
             if stored_time + timedelta(days=1) < current_time:
                 return next_execute_time
             else:
                 return stored_time
 
-    def _handle_execution_completed(self, current_time: datetime) -> datetime:
+    def _handle_execution_completed(self, current_time: datetime.datetime) -> datetime.datetime:
         """处理任务执行完成后的时间更新（case1）"""
         china_tz = current_time.tzinfo
         next_day = current_time + timedelta(days=1)
-        return datetime(
+        return datetime.datetime(
             next_day.year,
             next_day.month,
             next_day.day,
@@ -435,7 +437,7 @@ class BaseTask:
             tzinfo=china_tz
         )
 
-    def _handle_delay(self, current_time: datetime, delta: timedelta) -> datetime | None:
+    def _handle_delay(self, current_time: datetime.datetime, delta: timedelta) -> datetime.datetime | None:
         """处理时间延迟更新（case3）"""
         if delta is None:
             self.logger.warning("延迟更新时间时delta不能为空")
@@ -554,7 +556,7 @@ class BaseTask:
 
     @TransitionOn("未知场景")
     def _(self):
-        QThread.msleep(1000)
+        time.sleep(1)
         return False
 
     @TransitionOn("未注册场景")

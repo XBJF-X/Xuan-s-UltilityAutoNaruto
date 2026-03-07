@@ -1,7 +1,5 @@
-from datetime import datetime, timedelta
-from zoneinfo import ZoneInfo
-
-from PySide6.QtCore import QThread
+import time
+from datetime import timedelta
 
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
@@ -175,7 +173,7 @@ class QingBaoZhan(BaseTask):
 
     @TransitionOn("福利站-40活跃奖励-抽取中")
     def _(self):
-        QThread.msleep(1000)
+        time.sleep(1)
         return False
 
     @TransitionOn("情报站-文章详情")
