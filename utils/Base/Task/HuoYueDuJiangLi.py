@@ -60,18 +60,46 @@ class HuoYueDuJiangLi(BaseTask):
                 max_time=0.3,
                 auto_raise=False
         ):
-            if not self.operationer.click_and_wait(
+            if self.operationer.detect_element(
                     f"每日活跃度-{num}-待领取",
                     wait_time=1,
-                    max_time=1,
-                    auto_raise=False
+                    max_time=1
             ):
-                self.logger.info(f"[{num}活跃度宝箱] 活跃度不足")
-                self.finished = True
-                return
-            else:
+                try_times = 0
+                # 检测到可以领取，则一直领取直到已领取的状态
+                while not self.operationer.detect_element(
+                        f"每日活跃度-{num}-已领取",
+                        wait_time=0,
+                        max_time=0.3
+                ):
+                    self.operationer.click_and_wait(
+                        f"每日活跃度-{num}-待领取",
+                        wait_time=1,
+                        max_time=1
+                    )
+                    try_times += 1
+                    if try_times >= 3:
+                        self.logger.warning(f"{num}活跃度宝箱领取超过3次失败，将不再尝试")
+                        return
                 self.config.set_task_exe_prog(self.task_name, f"{num}活跃度已领取", True)
                 self.logger.info(f"[{num}活跃度宝箱] 领取成功")
+
+            else:
+                # 如果没有检测到可以领取，则返回且报警告
+                self.logger.info(f"[{num}活跃度宝箱] 活跃度不足")
+                self.finished = True
+            # if not self.operationer.click_and_wait(
+            #         f"每日活跃度-{num}-待领取",
+            #         wait_time=1,
+            #         max_time=1,
+            #         auto_raise=False
+            # ):
+            #     self.logger.info(f"[{num}活跃度宝箱] 活跃度不足")
+            #     self.finished = True
+            #     return
+            # else:
+            #     self.config.set_task_exe_prog(self.task_name, f"{num}活跃度已领取", True)
+            #     self.logger.info(f"[{num}活跃度宝箱] 领取成功")
         else:
             self.config.set_task_exe_prog(self.task_name, f"{num}活跃度已领取", True)
             self.logger.info(f"[{num}活跃度宝箱] 已领取")
