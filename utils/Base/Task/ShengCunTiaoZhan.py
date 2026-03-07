@@ -11,12 +11,30 @@ class ShengCunTiaoZhan(BaseTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.check_need_reset = False  # 标志是否已检查需要重置
+        self.check_need_reset = False  # 标志是否需要检查重置
+        self.reseted = False  # 标志是否已经重置过
         self.bool_start = False  # 标志是否已开始扫荡
 
     @TransitionOn()
     def _(self):
-        if not self.check_need_reset:
+        if not self.bool_start:
+            if self.check_need_reset and not self.reseted:
+                if self.operationer.click_and_wait(
+                        "重置",
+                        wait_time=0,
+                        auto_raise=False
+                ):
+                    if self.operationer.detect_element(
+                            "生存挑战今天已经不能再重置了",
+                            max_time=1
+                    ):
+                        self.logger.warning("已经不能再重置了，结束执行")
+                        self.update_next_execute_time()
+                        return True
+                    else:
+                        self.reseted = True
+                        self.check_need_reset = False
+
             self.logger.info("开始扫荡")
             # 点击开始扫荡图标
             self.operationer.click_and_wait(
@@ -37,25 +55,11 @@ class ShengCunTiaoZhan(BaseTask):
                     self.logger.warning("没有可出战的忍者，将进行重置")
                 elif flag == 2:
                     self.logger.warning("已通过所有关卡，将进行重置")
-                if self.operationer.click_and_wait(
-                        "重置",
-                        wait_time=0,
-                        auto_raise=False
-                ):
-                    if self.operationer.detect_element(
-                            "生存挑战今天已经不能再重置了",
-                            max_time=1
-                    ):
-                        self.update_next_execute_time()
-                        self.logger.warning("已经不能再重置了，结束执行")
-                        return True
+                self.check_need_reset = True
             else:
-                self.bool_start = True
-            self.check_need_reset = True
-            return False
+                self.logger.debug("将开始扫荡")
 
         if self.bool_start:
-            self.operationer.click_and_wait("开始扫荡", wait_time=0)
             # 等待生存挑战-已通过所有关卡出现
             if self.operationer.search_and_detect(
                     [
@@ -68,12 +72,9 @@ class ShengCunTiaoZhan(BaseTask):
             ):
                 self.logger.info("系统自动扫荡结束")
                 self.bool_start = False
-                self.check_need_reset = False
-            return False
+                self.check_need_reset = True
 
-        self.operationer.click_and_wait("X")
-        self.update_next_execute_time()
-        return True
+        return False
 
     @TransitionOn("生存挑战-出战名单")
     def _(self):
@@ -104,6 +105,6 @@ class ShengCunTiaoZhan(BaseTask):
     @TransitionOn("生存挑战-购买扫荡券")
     def _(self):
         self.operationer.click_and_wait("X")
-        self.logger.warning("扫荡券不足，将停止扫荡退出游戏等待下次执行，请自行解决扫荡券不足任务")
+        self.logger.warning("扫荡券不足，将停止扫荡，等待第二天执行，请自行解决扫荡券不足任务")
         self.update_next_execute_time()
         return True
