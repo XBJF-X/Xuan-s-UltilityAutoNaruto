@@ -501,12 +501,14 @@ class BaseTask:
 
     @TransitionOn("重连提示")
     def _(self):
+        self.logger.warning("即将尝试网络重连...")
         self.operationer.click_and_wait("继续")
         return False
 
     @TransitionOn("响应超时")
     def _(self):
         self.operationer.click_and_wait("确定")
+        self.logger.warning("响应超时！")
         return False
 
     @TransitionOn("安装包更新异常")
@@ -514,9 +516,16 @@ class BaseTask:
         self.operationer.click_and_wait("重试")
         return False
 
+    @TransitionOn("对方数据异常")
+    def _(self):
+        self.operationer.click_and_wait("确定")
+        self.logger.warning("对方数据异常，即将退出战斗")
+        return False
+
     @TransitionOn("网络不畅通")
     def _(self):
         self.operationer.click_and_wait("确定")
+        self.logger.warning("网络不通畅！")
         return False
 
     @TransitionOn("版本更新1")
