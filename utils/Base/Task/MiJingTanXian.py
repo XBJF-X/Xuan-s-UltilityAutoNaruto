@@ -75,6 +75,7 @@ class MiJingTanXian(BaseTask):
         self.logger.info("饰品翻牌已结束")
 
         self.operationer.click_and_wait("返回")
+        self.reset_task_exe_proc()
         return False
 
     @TransitionOn("恭喜你获得")
