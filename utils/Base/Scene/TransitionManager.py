@@ -165,6 +165,7 @@ class TransitionManager:
         @self.register("情报站-动态详情", "主场景")
         @self.register("情报站-文章详情", "主场景")
         @self.register("冬日烟花季", "主场景")
+        @self.register("战区赛事", "主场景")
         @self.register("个人信息-分享", "个人信息")
         @self.register("精英副本-便捷扫荡", "冒险-精英副本")
         @self.register("忍术对战", "决斗场-首页")
@@ -311,17 +312,19 @@ class TransitionManager:
                 wait_time=0,
                 times=2
             )
-            for _ in range(3):
+            for i in range(4):
                 if operationer.click_and_wait(
-                    kwargs.get("target_id"),
-                    auto_raise=False,
-                    wait_time=2
+                        kwargs.get("target_id"),
+                        auto_raise=False,
+                        wait_time=2
                 ):
+                    break
+                if i == 3:
                     break
                 operationer.swipe_and_wait(
                     (1345, 340),
                     (650, 340),
-                    duration=0.7,
+                    duration=0.5,
                     wait_time=0.5
                 )
 
@@ -563,7 +566,6 @@ class TransitionManager:
         @self.register("登录界面", "主场景")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("开始游戏")
-
 
         @self.register("决斗场-匹配中", "忍术对战")
         @self.register("决斗场-匹配中", "要塞内部")
