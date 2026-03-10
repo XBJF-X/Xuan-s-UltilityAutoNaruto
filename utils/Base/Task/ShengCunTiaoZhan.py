@@ -12,13 +12,12 @@ class ShengCunTiaoZhan(BaseTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.check_need_reset = False  # 标志是否需要检查重置
-        self.reseted = False  # 标志是否已经重置过
         self.bool_start = False  # 标志是否已开始扫荡
 
     @TransitionOn()
     def _(self):
         if not self.bool_start:
-            if self.check_need_reset and not self.reseted:
+            if self.check_need_reset:
                 if self.operationer.click_and_wait(
                         "重置",
                         wait_time=0,
@@ -32,7 +31,6 @@ class ShengCunTiaoZhan(BaseTask):
                         self.update_next_execute_time()
                         return True
                     else:
-                        self.reseted = True
                         self.check_need_reset = False
 
             self.logger.info("开始扫荡")
@@ -59,7 +57,7 @@ class ShengCunTiaoZhan(BaseTask):
             else:
                 self.logger.debug("将开始扫荡")
 
-        if self.bool_start:
+        else:
             # 等待生存挑战-已通过所有关卡出现
             if self.operationer.search_and_detect(
                     [
@@ -107,4 +105,9 @@ class ShengCunTiaoZhan(BaseTask):
         self.operationer.click_and_wait("X")
         self.logger.warning("扫荡券不足，将停止扫荡，等待第二天执行，请自行解决扫荡券不足任务")
         self.update_next_execute_time()
+        return True
+
+    def reset_task_exe_proc(self) -> bool:
+        self.check_need_reset = False
+        self.bool_start = False
         return True
