@@ -58,6 +58,7 @@ class ShengCunTiaoZhan(BaseTask):
                 self.logger.debug("将开始扫荡")
 
         else:
+            self.operationer.click_and_wait("出战", wait_time=0)
             # 等待生存挑战-已通过所有关卡出现
             if self.operationer.search_and_detect(
                     [
@@ -65,8 +66,8 @@ class ShengCunTiaoZhan(BaseTask):
                         self.operationer.get_element("没有可以出战的忍者"),
                     ],
                     [],
-                    search_max_time=0.6,
-                    once_max_time=0.3
+                    search_max_time=3,
+                    once_max_time=0.4
             ):
                 self.logger.info("系统自动扫荡结束")
                 self.bool_start = False
