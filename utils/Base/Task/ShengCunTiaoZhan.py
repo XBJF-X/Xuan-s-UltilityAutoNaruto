@@ -58,7 +58,7 @@ class ShengCunTiaoZhan(BaseTask):
                 self.logger.debug("将开始扫荡")
 
         else:
-            self.operationer.click_and_wait("出战", wait_time=0)
+            self.operationer.click_and_wait("开战", wait_time=0)
             # 等待生存挑战-已通过所有关卡出现
             if self.operationer.search_and_detect(
                     [
