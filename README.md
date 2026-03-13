@@ -177,8 +177,9 @@
 #### Q4：使用[MuMu/雷电]截图方案的情况下模拟器路径该怎么填写
 >MuMu模拟器，填写最顶层的安装目录即可  
 如`D:\Program Files (x86)\MuMuPlayer-12.0`  
-**不需要**填写子目录如`D:\Program Files (x86)\MuMuPlayer-12.0\nx_device\12.0`  
-> 或`D:\Program Files (x86)\MuMuPlayer-12.0\nx_main`，交给程序自动处理即可  
+**不需要**填写子目录，交给程序自动处理即可  ！！！类似下面的：  
+> `D:\Program Files (x86)\MuMuPlayer-12.0\nx_device\12.0`  
+> `D:\Program Files (x86)\MuMuPlayer-12.0\nx_main`  
 雷电模拟器填写类似`D:/Program Files (x86)/leidian/LDPlayer9`的路径即可
 
 #### Q5：配置键位时程序卡死崩溃
@@ -237,8 +238,8 @@
 
 #### Q10：出现bug如何反馈？
 >出现bug后，第一时间开启程序右上角保存图像，记录下完整的bug出现过程  
-之后在"安装目录/image/扫描"或"安装目录/image/出bug的任务名"下找到对应的截图  
-再将"安装目录/log/配置名/日期/Xuan.log"日志连带截图一起压缩打包  
+之后在`安装目录/image/扫描`或`安装目录/image/出bug的任务名`下找到对应的截图  
+再将`安装目录/log/配置名/日期/Xuan.log`日志连带截图一起压缩打包  
 发送到反馈群(**Q1064405535**)/开发者邮箱(**3034160006@qq.com**)中  
 
 #### Q11：怎么接收更新和bug修复？能不能自动更新？
