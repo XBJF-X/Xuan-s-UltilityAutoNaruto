@@ -86,6 +86,9 @@ class QingBaoZhan(BaseTask):
 
     @TransitionOn("福利站")
     def _(self):
+        if not self.operationer.detect_element("活跃度"):
+            self.operationer.click_and_wait("后退")
+            return False
         if not self.config.get_task_exe_prog(self.task_name, "情报站签到", False):
             self.logger.info("福利站签到")
             # 点击一键签到
