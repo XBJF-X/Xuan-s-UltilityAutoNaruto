@@ -48,7 +48,7 @@ class QingBaoZhan(BaseTask):
                         "swipe": {
                             "start_coordinate": [760, 870],
                             "end_coordinate": [760, 80],
-                            "duration": 1
+                            "duration": 0.5
                         }
                     }
                 ],
@@ -72,7 +72,7 @@ class QingBaoZhan(BaseTask):
                 (760, 870),
                 (760, 80),
                 wait_time=0,
-                duration=0.7
+                duration=0.5
             )
         else:
             self.operationer.click_and_wait("首页")
@@ -106,7 +106,7 @@ class QingBaoZhan(BaseTask):
                             "swipe": {
                                 "start_coordinate": [600, 850],
                                 "end_coordinate": [600, 290],
-                                "duration": 1
+                                "duration": 0.5
                             }
                         }
                     ],
@@ -114,8 +114,8 @@ class QingBaoZhan(BaseTask):
                     wait_time=5
             ):
                 self.logger.warning("进入金币助手失败")
-                self.operationer.swipe_and_wait((600, 290), (600, 850), duration=0.7)
-                self.operationer.swipe_and_wait((600, 290), (600, 850), duration=0.7)
+                self.operationer.swipe_and_wait((600, 290), (600, 850), duration=0.5)
+                self.operationer.swipe_and_wait((600, 290), (600, 850), duration=0.5)
             else:
                 self.logger.info("返回福利站")
                 self.operationer.press_key("back", wait_time=7)

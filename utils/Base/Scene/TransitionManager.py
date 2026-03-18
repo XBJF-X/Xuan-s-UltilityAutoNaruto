@@ -379,7 +379,7 @@ class TransitionManager:
                         "swipe": {
                             "start_coordinate": [107, 846],
                             "end_coordinate": [107, 213],
-                            "duration": 1
+                            "duration": 0.5
                         }
                     }
                 ],

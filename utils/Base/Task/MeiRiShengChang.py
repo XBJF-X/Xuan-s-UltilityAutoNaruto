@@ -62,7 +62,7 @@ class MeiRiShengChang(BaseTask):
                 [
                     {'swipe':
                         {"start_coordinate": [1095, 618], "end_coordinate": [1095, 167],
-                            "duration": 0.7}}
+                            "duration": 0.5}}
                 ],
                 max_attempts=1,
                 bool_debug=True
@@ -70,7 +70,7 @@ class MeiRiShengChang(BaseTask):
             self.operationer.swipe_and_wait(
                 (1095, 167),
                 (1095, 618),
-                duration=0.7)
+                duration=0.5)
             # 检测有无可追回宝箱
             if self.operationer.click_and_wait("宝箱-追回"):
                 self.logger.info("存在可追回每日胜场宝箱")
