@@ -349,43 +349,32 @@ class TransitionManager:
         @self.register("忍界指引", "组织争霸赛")
         def _(operationer: Operationer, *args, **kwargs):
             """主场景跳转分场景函数，滑动屏幕找到[传入的目标ID]并点击"""
-            for i in range(10):
-                if operationer.click_and_wait(
-                    kwargs.get("target_id"),
-                    max_attempts=1,
-                    auto_raise=False,
-                    wait_time=1
-                ):
-                    operationer.click_and_wait(
-                        "即刻前往",
-                        wait_time=3
-                    )
-                    return
-                operationer.swipe_and_wait(
-                    (202, 250),
-                    (202, 730),
-                    duration=0.4,
-                    wait_time=0.8,
-                )
-            for i in range(9):
-                if operationer.click_and_wait(
-                    kwargs.get("target_id"),
-                    max_attempts=1,
-                    auto_raise=False,
-                    wait_time=1
-                ):
-                    operationer.click_and_wait(
-                        "即刻前往",
-                        wait_time=2
-                    )
-                    return
-                if i == 8:
-                    return
-                operationer.swipe_and_wait(
-                    (202, 730),
-                    (202, 180),
-                    duration=0.4,
-                    wait_time=0.8
+            operationer.swipe_and_wait(
+                (202, 150),
+                (202, 750),
+                duration=0.1,
+                wait_time=0,
+                times=9
+            )
+            if operationer.search_and_click(
+                    [
+                        kwargs.get("target_id")
+                    ],
+                    [
+                        {
+                            "swipe": {
+                                "start_coordinate": (202, 750),
+                                "end_coordinate": (202, 150),
+                                "duration": 0.5
+                            }
+                        }
+                    ],
+                    max_attempts=9,
+                    once_max_attempts=3,
+            ):
+                operationer.click_and_wait(
+                    "即刻前往",
+                    wait_time=3
                 )
 
         @self.register("好友排名至X位", "主场景")
@@ -416,6 +405,7 @@ class TransitionManager:
         @self.register("要塞内部-退出确认", "要塞战略图")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("确定")
+
         @self.register("天地战场-确认退出", "天地战场")
         @self.register("天地战场-战场战斗已经结束", "天之战场")
         @self.register("天地战场-战场战斗已经结束", "地之战场")
