@@ -32,6 +32,7 @@ class ShengCunTiaoZhan(BaseTask):
                         return True
                     else:
                         self.check_need_reset = False
+                    return False
 
             self.logger.info("开始扫荡")
             # 点击开始扫荡图标
