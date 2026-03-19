@@ -374,7 +374,7 @@ class Operationer:
 
         # wait_until_stable的参数
         stable_threshold = kwargs.get("stable_threshold", 0.2)  # 默认1%的像素变化
-        stable_duration = kwargs.get("stable_duration", 1)  # 默认需要稳定1秒
+        stable_duration = kwargs.get("stable_duration", 0.8)  # 默认需要稳定1秒
         stable_check_interval = kwargs.get("stable_check_interval", 0.1)  # 默认每0.1s检查一次
         stable_max_time = kwargs.get("stable_max_time", 10.0)  # 默认最多等待10秒
         stable_bool_debug = kwargs.get("stable_bool_debug", False)  # 默认不输出调试信息
