@@ -70,5 +70,5 @@ class Clicker:
                 self.executor.submit(self._click_worker, x, y)
 
             # 控制循环频率（减少CPU占用，同时保证响应速度）
-            if not self._stop_event.wait(0.06):
+            if not self._stop_event.wait(0.12):
                 continue
