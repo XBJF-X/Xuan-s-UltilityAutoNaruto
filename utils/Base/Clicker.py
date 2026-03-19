@@ -1,74 +1,78 @@
-import logging
 import threading
-from logging import Logger
+import uiautomator2 as u2
 from typing import List, Tuple
-from concurrent.futures import ThreadPoolExecutor
+import logging
 
 
 class Clicker:
-    def __init__(self, operationer, max_workers=7, parent_logger: Logger | str = ""):
-        if isinstance(parent_logger, str):
-            self.logger = logging.getLogger("连点器")
-        else:
-            self.logger = parent_logger.getChild("连点器")
+    def __init__(self, operationer, parent_logger=None):
+        self.logger = parent_logger.getChild("连点器") if parent_logger else logging.getLogger("连点器")
         self.operationer = operationer
-        self.coordinates: List[Tuple[int, int]] = []
+        self.device_serial = self.operationer.config.get_config("串口")
         self._stop_event = threading.Event()
-        self.max_workers = max_workers
-        self.executor = ThreadPoolExecutor(max_workers=self.max_workers)
-        self._thread = None  # 初始化时不启动线程，等待start()调用
+        self._threads: List[threading.Thread] = []
+        self._threads_lock = threading.Lock()  # 保护线程列表
+        self._coordinates: List[Tuple[int, int]] = []
+        self._coord_lock = threading.Lock()  # 保护坐标列表
 
     def start(self):
-        """Start the clicker (reinitialize executor if necessary)."""
-        self.logger.debug("启动连点器")
-        if self.executor._shutdown:
-            self.executor = ThreadPoolExecutor(max_workers=self.max_workers)  # Reinitialize the executor
-        if self._thread is not None and self._thread.is_alive():
-            return  # Already running, do nothing
-        self._stop_event.clear()  # Reset the stop signal
-        self._thread = threading.Thread(target=self._click_loop, daemon=True)  # Create the thread
-        self._thread.start()  # Start the thread
+        """启动所有坐标的独立点击线程（如果已有线程在运行，则忽略）"""
+        with self._threads_lock:
+            # 检查是否有任何线程还活着
+            if any(t.is_alive() for t in self._threads):
+                self.logger.debug("点击线程已启动，忽略重复启动请求")
+                return
+
+            # 停止并清理可能已经结束但未移除的线程
+            self._threads.clear()
+
+            # 获取当前坐标快照
+            with self._coord_lock:
+                coords = self._coordinates.copy()
+
+            # 为每个坐标创建独立线程
+            for x, y in coords:
+                thread = threading.Thread(target=self._click_worker, args=(x, y), daemon=True)
+                thread.start()
+                self._threads.append(thread)
+            self.logger.debug(f"已启动 {len(coords)} 个点击线程")
 
     def stop(self):
-        """停止连点器（终止任务循环，取消未完成任务）"""
-        self.logger.debug("停止连点器")
-        self._stop_event.set()  # 触发停止信号
-        # 等待任务循环线程终止
-        if self._thread is not None and self._thread.is_alive():
-            self._thread.join(timeout=0.1)
-            if self._thread.is_alive():
-                self.logger.warning("任务循环线程未能正常终止")
-        # 取消未完成的任务
-        self.executor.shutdown(wait=False)
-        self._thread = None
+        """停止所有点击线程"""
+        self.logger.debug("正在停止所有点击线程...")
+        self._stop_event.set()
+
+        with self._threads_lock:
+            for thread in self._threads:
+                thread.join(timeout=1)
+                if thread.is_alive():
+                    self.logger.warning("某个点击线程未及时退出")
+            self._threads.clear()
+        self._stop_event.clear()
+        self.logger.debug("所有点击线程已停止")
 
     def update_coordinates(self, coordinates: List[Tuple[int, int]]):
-        """更新点击坐标（线程安全）"""
-        self.logger.debug(f"更新点击坐标列表: {coordinates}")
-        with threading.Lock():  # 加锁保护共享资源
-            self.coordinates = coordinates.copy()
+        """更新坐标列表（会重新启动线程）"""
+        with self._coord_lock:
+            self._coordinates = coordinates.copy()
 
     def _click_worker(self, x, y):
-        """单次点击任务（执行前检查停止信号）"""
-        if self._stop_event.is_set():
+        """单个坐标的循环点击线程（实现不变）"""
+        # 独立连接设备
+        try:
+            device = u2.connect(self.device_serial)
+        except Exception as e:
+            self.logger.error(f"无法连接设备 {self.device_serial}: {e}")
             return
-        # self.logger.debug("点击坐标: ({}, {})".format(x, y))
-        self.operationer.device.click(x, y)
 
-    def _click_loop(self):
-        """点击循环（仅在运行状态下执行，退出后线程终止）"""
-        while not self._stop_event.is_set():
-            # 线程安全地读取坐标（避免迭代时被修改）
-            with threading.Lock():
-                coordinates = self.coordinates.copy()  # 复制一份用于迭代
-
-            self.logger.debug(f"点击循环执行")
-
-            for x, y in coordinates:
-                if self._stop_event.is_set():
-                    break  # 收到停止信号，终止本轮任务提交
-                self.executor.submit(self._click_worker, x, y)
-
-            # 控制循环频率（减少CPU占用，同时保证响应速度）
-            if not self._stop_event.wait(0.12):
-                continue
+        self.logger.debug(f"坐标 ({x},{y}) 的点击线程启动")
+        try:
+            while not self._stop_event.is_set():
+                try:
+                    device.click(x, y)
+                except Exception as e:
+                    self.logger.error(f"点击 ({x},{y}) 失败: {e}")
+                    # 可根据需要短暂休眠，避免疯狂报错
+                    # time.sleep(0.1)
+        finally:
+            self.logger.debug(f"坐标 ({x},{y}) 的点击线程结束")
