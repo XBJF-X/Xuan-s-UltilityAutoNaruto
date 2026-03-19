@@ -301,10 +301,10 @@ class TransitionManager:
         # @self.register("主场景", "任务集会所")
         # @self.register("主场景", "试炼之地")
         # @self.register("主场景", "小队突袭")
-        # @self.register("主场景", "决斗场-首页")
         # @self.register("主场景", "主场景-组织")
         # @self.register("主场景", "积分赛")
         # @self.register("主场景", "忍者大赛")
+        @self.register("主场景", "决斗场-首页")
         @self.register("主场景", "战区赛事")
         def _(operationer: Operationer, *args, **kwargs):
             """主场景跳转分场景函数，滑动屏幕找到[传入的目标ID]并点击"""
@@ -681,4 +681,4 @@ class TransitionManager:
 
 if __name__ == "__main__":
     TM = TransitionManager(None)
-    print(TM.bfs_shortest_path("主场景", "丰饶之间"))
+    print(TM.bfs_shortest_path("主场景", "更多玩法"))
