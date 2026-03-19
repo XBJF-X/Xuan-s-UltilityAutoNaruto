@@ -192,9 +192,10 @@ class Operationer:
             - stable_bool_debug：wait_until_stable参数
         """
         if isinstance(element, str):
+            element_name = element
             element = self.get_element(element)
             if element is None:
-                raise StepFailedError(f"元素 [{element}] 未定义")
+                raise StepFailedError(f"元素 [{element_name}] 未定义")
         interval: float = kwargs.get("interval", 0.08)
         auto_raise: bool = kwargs.get("auto_raise", False)
         wait_time: float | None = kwargs.get("wait_time", None)

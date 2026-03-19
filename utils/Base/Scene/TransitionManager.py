@@ -166,6 +166,7 @@ class TransitionManager:
         @self.register("情报站-文章详情", "主场景")
         @self.register("冬日烟花季", "主场景")
         @self.register("战区赛事", "主场景")
+        @self.register("忍界指引", "主场景")
         @self.register("个人信息-分享", "个人信息")
         @self.register("精英副本-便捷扫荡", "冒险-精英副本")
         @self.register("忍术对战", "决斗场-首页")
@@ -248,6 +249,7 @@ class TransitionManager:
         @self.register("冬日烟花季-点燃免费爆竹", "冬日烟花季-主页")
         @self.register("铜币不足", "装备-材料详情")
         @self.register("铜币不足", "装备")
+        @self.register("组织购买", "组织")
         def _(operationer: Operationer, *args, **kwargs):
             """通用返回函数，点击[X]"""
             operationer.click_and_wait("X")
@@ -288,21 +290,22 @@ class TransitionManager:
         @self.register("高级招募", "普通招募")
         @self.register("主场景", "高级招募")
         @self.register("主场景", "主场景-装备")
+        @self.register("主场景", "忍界指引")
         def _(operationer: Operationer, *args, **kwargs):
             """通用跳转函数，点击[传入的目标ID]"""
             operationer.click_and_wait(kwargs.get("target_id"))
 
-        @self.register("主场景", "丰饶之间")
-        @self.register("主场景", "忍者挑战")
-        @self.register("主场景", "排行榜")
-        @self.register("主场景", "任务集会所")
-        @self.register("主场景", "试炼之地")
-        @self.register("主场景", "小队突袭")
+        # @self.register("主场景", "丰饶之间")
+        # @self.register("主场景", "忍者挑战")
+        # @self.register("主场景", "排行榜")
+        # @self.register("主场景", "任务集会所")
+        # @self.register("主场景", "试炼之地")
+        # @self.register("主场景", "小队突袭")
+        # @self.register("主场景", "决斗场-首页")
+        # @self.register("主场景", "主场景-组织")
+        # @self.register("主场景", "积分赛")
+        # @self.register("主场景", "忍者大赛")
         @self.register("主场景", "战区赛事")
-        @self.register("主场景", "决斗场-首页")
-        @self.register("主场景", "主场景-组织")
-        @self.register("主场景", "积分赛")
-        @self.register("主场景", "忍者大赛")
         def _(operationer: Operationer, *args, **kwargs):
             """主场景跳转分场景函数，滑动屏幕找到[传入的目标ID]并点击"""
             operationer.swipe_and_wait(
@@ -326,6 +329,63 @@ class TransitionManager:
                     (650, 340),
                     duration=0.5,
                     wait_time=0.5
+                )
+
+        @self.register("忍界指引", "装备")
+        @self.register("忍界指引", "丰饶之间")
+        @self.register("忍界指引", "任务集会所")
+        @self.register("忍界指引", "修罗副本")
+        @self.register("忍界指引", "冒险-精英副本")
+        @self.register("忍界指引", "修行之路")
+        @self.register("忍界指引", "小队突袭")
+        @self.register("忍界指引", "忍术对战")
+        @self.register("忍界指引", "忍者大赛")
+        @self.register("忍界指引", "忍者招募")
+        @self.register("忍界指引", "排行榜")
+        @self.register("忍界指引", "生存挑战")
+        @self.register("忍界指引", "秘境探险-首页")
+        @self.register("忍界指引", "积分赛")
+        @self.register("忍界指引", "主场景-组织")
+        @self.register("忍界指引", "组织争霸赛")
+        def _(operationer: Operationer, *args, **kwargs):
+            """主场景跳转分场景函数，滑动屏幕找到[传入的目标ID]并点击"""
+            for i in range(10):
+                if operationer.click_and_wait(
+                    kwargs.get("target_id"),
+                    max_attempts=1,
+                    auto_raise=False,
+                    wait_time=1
+                ):
+                    operationer.click_and_wait(
+                        "即刻前往",
+                        wait_time=3
+                    )
+                    return
+                operationer.swipe_and_wait(
+                    (202, 250),
+                    (202, 730),
+                    duration=0.4,
+                    wait_time=0.8,
+                )
+            for i in range(9):
+                if operationer.click_and_wait(
+                    kwargs.get("target_id"),
+                    max_attempts=1,
+                    auto_raise=False,
+                    wait_time=1
+                ):
+                    operationer.click_and_wait(
+                        "即刻前往",
+                        wait_time=2
+                    )
+                    return
+                if i == 8:
+                    return
+                operationer.swipe_and_wait(
+                    (202, 730),
+                    (202, 180),
+                    duration=0.4,
+                    wait_time=0.8
                 )
 
         @self.register("好友排名至X位", "主场景")
@@ -356,7 +416,6 @@ class TransitionManager:
         @self.register("要塞内部-退出确认", "要塞战略图")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("确定")
-
         @self.register("天地战场-确认退出", "天地战场")
         @self.register("天地战场-战场战斗已经结束", "天之战场")
         @self.register("天地战场-战场战斗已经结束", "地之战场")
@@ -389,6 +448,7 @@ class TransitionManager:
         @self.register("主场景-组织", "组织祈福")
         @self.register("主场景-组织", "叛忍来袭")
         @self.register("主场景-组织", "天地战场")
+        @self.register("主场景-组织", "组织购买")
         @self.register("主场景-组织", "追击晓组织")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("玩法")
@@ -617,3 +677,8 @@ class TransitionManager:
         @self.register("冬日烟花季", "冬日烟花季-主页")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("立即前往")
+
+
+if __name__ == "__main__":
+    TM = TransitionManager(None)
+    print(TM.bfs_shortest_path("主场景", "丰饶之间"))

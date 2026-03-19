@@ -1,5 +1,6 @@
 import copy
 import json
+import logging
 import os
 from pathlib import Path
 from typing import Dict, Any
@@ -9,7 +10,10 @@ from StaticFunctions import get_real_path
 
 class Config:
     def __init__(self, parent_logger, config_path):
-        self.logger = parent_logger.getChild(self.__class__.__name__)
+        if isinstance(parent_logger, str):
+            self.logger = logging.getLogger(self.__class__.__name__)
+        else:
+            self.logger = parent_logger.getChild(self.__class__.__name__)
         self.config_path: Path = config_path
         self.default_config_path = get_real_path("src/DefaultConfig.json")
         self.setting_dics: Dict[str, Any] = {}
