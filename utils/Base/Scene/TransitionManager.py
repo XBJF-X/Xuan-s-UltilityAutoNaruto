@@ -277,6 +277,10 @@ class TransitionManager:
         @self.register("主场景", "好友")
         @self.register("主场景", "购买体力")
         @self.register("主场景", "商城")
+        @self.register("主场景", "高级招募")
+        @self.register("主场景", "主场景-装备")
+        @self.register("主场景", "忍界指引")
+        @self.register("主场景", "情报站-首页")
         @self.register("主场景-装备", "装备")
         @self.register("决斗场-首页", "忍术对战")
         @self.register("决斗场-首页", "赛季任务")
@@ -286,11 +290,8 @@ class TransitionManager:
         @self.register("招募", "普通招募")
         @self.register("招募", "高级招募")
         @self.register("普通招募", "高级招募")
-        @self.register("主场景", "情报站-首页")
         @self.register("高级招募", "普通招募")
-        @self.register("主场景", "高级招募")
-        @self.register("主场景", "主场景-装备")
-        @self.register("主场景", "忍界指引")
+        @self.register("重返木叶", "忍界指引")
         def _(operationer: Operationer, *args, **kwargs):
             """通用跳转函数，点击[传入的目标ID]"""
             operationer.click_and_wait(kwargs.get("target_id"))
@@ -315,21 +316,22 @@ class TransitionManager:
                 wait_time=0,
                 times=2
             )
-            for i in range(4):
-                if operationer.click_and_wait(
-                        kwargs.get("target_id"),
-                        auto_raise=False,
-                        wait_time=2
-                ):
-                    break
-                if i == 3:
-                    break
-                operationer.swipe_and_wait(
-                    (1345, 340),
-                    (650, 340),
-                    duration=0.5,
-                    wait_time=0.5
-                )
+
+            operationer.search_and_click(
+                [
+                    kwargs.get("target_id")
+                ],
+                [
+                    {
+                        "swipe": {
+                            "start_coordinate": [1345, 340],
+                            "end_coordinate": [650, 340],
+                            "duration": 0.3
+                        }
+                    }
+                ],
+                max_attempts=4
+            )
 
         @self.register("忍界指引", "装备")
         @self.register("忍界指引", "丰饶之间")
