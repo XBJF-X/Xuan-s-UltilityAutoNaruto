@@ -167,6 +167,7 @@ class TransitionManager:
         @self.register("冬日烟花季", "主场景")
         @self.register("战区赛事", "主场景")
         @self.register("忍界指引", "主场景")
+        @self.register("重返木叶", "主场景")
         @self.register("个人信息-分享", "个人信息")
         @self.register("精英副本-便捷扫荡", "冒险-精英副本")
         @self.register("忍术对战", "决斗场-首页")
@@ -356,7 +357,7 @@ class TransitionManager:
                 (202, 750),
                 duration=0.1,
                 wait_time=0,
-                times=9
+                times=10
             )
             if operationer.search_and_click(
                     [
@@ -365,13 +366,13 @@ class TransitionManager:
                     [
                         {
                             "swipe": {
-                                "start_coordinate": (202, 750),
+                                "start_coordinate": (202, 763),
                                 "end_coordinate": (202, 150),
                                 "duration": 0.5
                             }
                         }
                     ],
-                    max_attempts=9,
+                    max_attempts=10,
                     once_max_attempts=3,
             ):
                 operationer.click_and_wait(
