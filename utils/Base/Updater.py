@@ -27,21 +27,33 @@ class Updater(QObject):
         self.update_thread = None
 
     def check_update(self):
+        current_version = None
+        # 尝试读取本地版本文件，若不存在则视为需要更新
         try:
             with open(str(self.version_file_path), 'r', encoding='utf-8') as f:
                 current_version = json.load(f)
             self.logger.info(f"当前版本 SHA：{current_version['commit']['sha']}")
+        except FileNotFoundError:
+            self.logger.info("version.json 不存在，视为需要更新")
+        except Exception as e:
+            self.update_message.emit("检查更新出错", f"读取本地版本文件出错：{e}")
+            self.logger.error(f"读取本地版本文件出错：{e}")
+            return False, {}
 
+        # 获取远程版本信息
+        try:
             response = requests.get(self.master_url, verify=False)
             self.logger.debug(f"Response Status Code：{response.status_code}")
             if response.status_code == 200:
                 new_version = json.loads(response.content.decode("utf-8"))
                 new_commit = new_version["commit"]
-                if current_version["commit"]["sha"] != new_version["commit"]["sha"]:
+                # 若本地版本不存在或 SHA 不同，则提示更新
+                if current_version is None or current_version["commit"]["sha"] != new_version["commit"][
+                    "sha"]:
                     self.logger.info("检测到新版本！")
                     self.logger.info(f"最新提交 SHA：{new_commit['sha']}")
-                    self.logger.info(f"最新提交 Committer：{new_commit['commit']["committer"]["name"]}")
-                    self.logger.info(f"最新提交 Date：{new_commit['commit']["committer"]["date"]}")
+                    self.logger.info(f"最新提交 Committer：{new_commit['commit']['committer']['name']}")
+                    self.logger.info(f"最新提交 Date：{new_commit['commit']['committer']['date']}")
                     self.logger.info(f"最新提交 Message：{new_commit['commit']['message']}")
                     return True, new_version
                 self.update_message.emit("", "当前已是最新版本")
