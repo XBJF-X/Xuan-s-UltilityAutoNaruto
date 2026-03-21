@@ -546,10 +546,16 @@ class BaseTask:
         self.operationer.click_and_wait("确定")
         return False
 
-    @TransitionOn("决斗场-网络连接失败")
+    @TransitionOn("网络连接失败")
     def _(self):
         self.operationer.click_and_wait("确定")
         self.logger.warning("决斗场网络连接失败，已退出战斗")
+        return False
+
+    @TransitionOn("网络异常重连失败")
+    def _(self):
+        self.operationer.click_and_wait("确定")
+        self.logger.warning("网络异常重连失败，已退出战斗")
         return False
 
     @TransitionOn("未知含X场景")
