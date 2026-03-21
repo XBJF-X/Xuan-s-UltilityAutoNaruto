@@ -45,6 +45,7 @@ class BenFuYaoSaiZhan(BaseTask):
             self.config.get_config("键位")[KEY_INDEX.Substitution]
         ])
 
+
     @TransitionOn()
     def _(self):
         target = YS_list[self.config.get_task_exe_param(self.task_name, "目标要塞", 0)]
@@ -63,6 +64,7 @@ class BenFuYaoSaiZhan(BaseTask):
         self.operationer.click_and_wait(target)
         return False
 
+# =========================本服要塞战部分==========================
     @TransitionOn("X之要塞")
     def _(self):
         self.operationer.clicker.stop()
@@ -150,6 +152,15 @@ class BenFuYaoSaiZhan(BaseTask):
         return next_execute_time
 
     def _handle_execution_completed(self, current_time: datetime) -> datetime:
+        china_tz = current_time.tzinfo
+        next_day = current_time + datetime.timedelta(weeks=1)
+        return datetime.datetime(
+            next_day.year,
+            next_day.month,
+            next_day.day,
+            20, 30, 20,
+            tzinfo=china_tz
+        )
         def is_in_skip_period(target_time, interval_weeks):
             base_date = datetime.datetime(2025, 9, 20, tzinfo=china_tz)
             delta_weeks = (target_time - base_date).days // 7

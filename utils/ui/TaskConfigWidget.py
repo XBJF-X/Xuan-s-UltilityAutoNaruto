@@ -361,7 +361,10 @@ class TaskConfigWidget(QWidget):
                 self.param_widget.addItems(enum_list)
                 if enum_list:
                     self.param_widget.setCurrentIndex(0)
-
+            elif param_type == "BOOL":
+                self.param_widget = QCheckBox(self.param_card)
+                self.param_widget.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
+                self.param_widget.setChecked(param_detail.get("当前值", False))
             else:
                 self.param_widget = QLabel(self.param_card)
                 self.param_widget.setText(f"不支持的参数类型：{param_type}")

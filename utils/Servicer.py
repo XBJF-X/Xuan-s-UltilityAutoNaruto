@@ -118,6 +118,12 @@ class Service(QWidget):
                                 self.config.set_task_exe_param(tn, pn, value))
                             param_widget.setCurrentIndex(
                                 self.config.get_task_exe_param(task_name, param_name))
+                        case "BOOL":
+                            param_widget.checkStateChanged.connect(
+                                lambda value, tn=task_name, pn=param_name:
+                                self.config.set_task_exe_param(tn, pn, value == Qt.CheckState.Checked))
+                            param_widget.setChecked(
+                                self.config.get_task_exe_param(task_name, param_name))
 
             self.task_index_dic[task_name] = start_index
             start_index += 1
