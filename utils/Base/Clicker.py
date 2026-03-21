@@ -32,7 +32,8 @@ class Clicker:
 
             # 为每个坐标创建独立线程
             for x, y in coords:
-                thread = threading.Thread(target=self._click_worker, args=(x, y), daemon=True)
+                x_fixed, y_fixed = self.operationer.device.regularize_coordinate(x, y)
+                thread = threading.Thread(target=self._click_worker, args=(x_fixed, y_fixed), daemon=True)
                 thread.start()
                 self._threads.append(thread)
             self.logger.debug(f"已启动 {len(coords)} 个点击线程")
