@@ -186,6 +186,9 @@ class Recognizer:
             "冬日烟花季-主页": [
                 "冬日烟花季-点燃免费爆竹"
             ],
+            "重返木叶": [
+                "重返木叶-忍界指引"
+            ],
         }
         # 用于记录本次识别中已排除的弹窗
         self._excluded_popups_in_current_recognition: Set[str] = set()

@@ -168,6 +168,7 @@ class TransitionManager:
         @self.register("战区赛事", "主场景")
         @self.register("忍界指引", "主场景")
         @self.register("重返木叶", "主场景")
+        @self.register("重返木叶-忍界指引", "主场景")
         @self.register("个人信息-分享", "个人信息")
         @self.register("精英副本-便捷扫荡", "冒险-精英副本")
         @self.register("忍术对战", "决斗场-首页")
@@ -292,7 +293,7 @@ class TransitionManager:
         @self.register("招募", "高级招募")
         @self.register("普通招募", "高级招募")
         @self.register("高级招募", "普通招募")
-        @self.register("重返木叶", "忍界指引")
+        @self.register("重返木叶", "重返木叶-忍界指引")
         def _(operationer: Operationer, *args, **kwargs):
             """通用跳转函数，点击[传入的目标ID]"""
             operationer.click_and_wait(kwargs.get("target_id"))
@@ -368,6 +369,52 @@ class TransitionManager:
                             "swipe": {
                                 "start_coordinate": (202, 763),
                                 "end_coordinate": (202, 150),
+                                "duration": 0.5
+                            }
+                        }
+                    ],
+                    max_attempts=10,
+                    once_max_attempts=3,
+            ):
+                operationer.click_and_wait(
+                    "即刻前往",
+                    wait_time=3
+                )
+
+        @self.register("重返木叶-忍界指引", "装备")
+        @self.register("重返木叶-忍界指引", "丰饶之间")
+        @self.register("重返木叶-忍界指引", "任务集会所")
+        @self.register("重返木叶-忍界指引", "修罗副本")
+        @self.register("重返木叶-忍界指引", "冒险-精英副本")
+        @self.register("重返木叶-忍界指引", "修行之路")
+        @self.register("重返木叶-忍界指引", "小队突袭")
+        @self.register("重返木叶-忍界指引", "忍术对战")
+        @self.register("重返木叶-忍界指引", "忍者大赛")
+        @self.register("重返木叶-忍界指引", "忍者招募")
+        @self.register("重返木叶-忍界指引", "排行榜")
+        @self.register("重返木叶-忍界指引", "生存挑战")
+        @self.register("重返木叶-忍界指引", "秘境探险-首页")
+        @self.register("重返木叶-忍界指引", "积分赛")
+        @self.register("重返木叶-忍界指引", "主场景-组织")
+        @self.register("重返木叶-忍界指引", "组织争霸赛")
+        def _(operationer: Operationer, *args, **kwargs):
+            """主场景跳转分场景函数，滑动屏幕找到[传入的目标ID]并点击"""
+            operationer.swipe_and_wait(
+                (414, 214),
+                (414, 736),
+                duration=0.1,
+                wait_time=0,
+                times=10
+            )
+            if operationer.search_and_click(
+                    [
+                        kwargs.get("target_id")
+                    ],
+                    [
+                        {
+                            "swipe": {
+                                "start_coordinate": (414, 736),
+                                "end_coordinate": (414, 214),
                                 "duration": 0.5
                             }
                         }
