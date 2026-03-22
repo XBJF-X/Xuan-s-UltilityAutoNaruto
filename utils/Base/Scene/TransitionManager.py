@@ -374,11 +374,11 @@ class TransitionManager:
                         }
                     ],
                     max_attempts=10,
-                    once_max_attempts=3,
+                    wait_time=2
             ):
                 operationer.click_and_wait(
                     "即刻前往",
-                    wait_time=3
+                    wait_time=2
                 )
 
         @self.register("重返木叶-忍界指引", "装备")

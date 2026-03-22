@@ -412,7 +412,7 @@ class Operationer:
                         stable_duration=stable_duration,
                         stable_check_interval=stable_check_interval,
                         stable_max_time=stable_max_time,
-                        stable_bool_debug=stable_bool_debug
+                        stable_bool_debug=True
                 ):
                     self.screen_save_signal.emit(self.task_name)
                     return index + 1
@@ -581,7 +581,7 @@ class Operationer:
     def back_to_naruto(self):
         front_app = self.device.current_app()
         while front_app["package"] != self.device.package_name:
-            self.press_key("back", wait_time=3)
+            self.device.controller.app_start(self.device.package_name)
             front_app = self.device.current_app()
 
     def screen_cap(self):

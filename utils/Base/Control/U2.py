@@ -76,7 +76,8 @@ class U2:
 
         with self._lock:
             try:
-                self.u2_device.app_start(package_name)
+                if self.u2_device.app_current()["package"] != package_name:
+                    self.u2_device.app_start(package_name)
             except Exception as e:
                 self.logger.error(f"启动应用 {package_name} 失败: {e}")
                 self._reconnect()
