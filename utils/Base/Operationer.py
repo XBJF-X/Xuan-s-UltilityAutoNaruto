@@ -377,7 +377,7 @@ class Operationer:
         stable_duration = kwargs.get("stable_duration", 0.8)  # 默认需要稳定1秒
         stable_check_interval = kwargs.get("stable_check_interval", 0.1)  # 默认每0.1s检查一次
         stable_max_time = kwargs.get("stable_max_time", 10.0)  # 默认最多等待10秒
-        stable_bool_debug = kwargs.get("stable_bool_debug", False)  # 默认不输出调试信息
+        stable_bool_debug = kwargs.get("stable_bool_debug", True)  # 默认不输出调试信息
 
         self.logger.debug(f"元素点击搜索内容：")
         for element_id in element_list:
@@ -412,7 +412,7 @@ class Operationer:
                         stable_duration=stable_duration,
                         stable_check_interval=stable_check_interval,
                         stable_max_time=stable_max_time,
-                        stable_bool_debug=True
+                        stable_bool_debug=stable_bool_debug
                 ):
                     self.screen_save_signal.emit(self.task_name)
                     return index + 1

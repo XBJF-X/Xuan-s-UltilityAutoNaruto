@@ -136,9 +136,6 @@ class Xuan(QMainWindow):
         self.updater = Updater(parent_logger=self.logger)
         self.bind_signals()
         self.logger.info("初始化完成...")
-        if self.setting.getboolean("Update", "自动更新"):
-            self.logger.info("自动更新")
-            self._on_update_btn_clicked()
 
     @staticmethod
     def setup_main_logger():
@@ -526,6 +523,9 @@ if __name__ == "__main__":
     try:
         daily_quests_helper = Xuan()
         daily_quests_helper.show()
+        if daily_quests_helper.setting.getboolean("Update", "自动更新"):
+            daily_quests_helper.logger.info("自动更新")
+            daily_quests_helper._on_update_btn_clicked()
         sys.exit(app.exec())
     except Exception as e:
         # 最后一道防线

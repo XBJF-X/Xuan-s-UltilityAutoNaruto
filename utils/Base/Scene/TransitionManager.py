@@ -721,4 +721,4 @@ class TransitionManager:
 
 if __name__ == "__main__":
     TM = TransitionManager(None)
-    print(TM.bfs_shortest_path("主场景", "更多玩法"))
+    print(TM.bfs_shortest_path("重返木叶", "忍术对战"))

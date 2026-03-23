@@ -301,27 +301,37 @@ class BaseTask:
             result = self.transition_func[scene_name](self)
             return result
         else:
-            # 自动寻找从当前场景到任意已注册场景的路径
-            registered_scenes = list(self.transition_func.keys())
-            shortest_path = None
-
-            # 寻找最短路径
-            for target_scene in registered_scenes:
-                path = self.transition_manager.bfs_shortest_path(scene_name, target_scene)
-                if path and (shortest_path is None or len(path) < len(shortest_path)):
-                    shortest_path = path
-
+            # # 自动寻找从当前场景到任意已注册场景的路径
+            # registered_scenes = list(self.transition_func.keys())
+            # shortest_path = None
+            #
+            # # 寻找最短路径
+            # for target_scene in registered_scenes:
+            #     path = self.transition_manager.bfs_shortest_path(scene_name, target_scene)
+            #     if path and (shortest_path is None or len(path) < len(shortest_path)):
+            #         shortest_path = path
+            #
+            # if shortest_path and len(shortest_path) >= 2:
+            #     # 执行第一段路径跳转
+            #     next_scene_in_path = shortest_path[1]
+            #     self.logger.info(f"自动跳转: 从 {scene_name} 到 {next_scene_in_path} (路径: {' -> '.join(shortest_path)})")
+            #     self.operationer.next_scene = next_scene_in_path
+            #     return self.transition_manager.transition(self.operationer)
+            # else:
+            #     # 如果找不到路径，回退到原来的处理方式
+            #     scene_name = "未注册场景"
+            shortest_path = self.transition_manager.bfs_shortest_path(scene_name, self.source_scene)
             if shortest_path and len(shortest_path) >= 2:
                 # 执行第一段路径跳转
                 next_scene_in_path = shortest_path[1]
-                self.logger.info(f"自动跳转: 从 {scene_name} 到 {next_scene_in_path} (路径: {' -> '.join(shortest_path)})")
+                self.logger.info(f"自动跳转回场景状态中: 从 {scene_name} 到 {next_scene_in_path} (路径: {' -> '.join(shortest_path)})")
                 self.operationer.next_scene = next_scene_in_path
                 return self.transition_manager.transition(self.operationer)
             else:
                 # 如果找不到路径，回退到原来的处理方式
                 scene_name = "未注册场景"
 
-        # # 正常执行注册函数
+        # 正常执行注册函数
         # self.logger.debug(f"寻找注册函数: {scene_name}")
         func = self.transition_func[scene_name]
         self.logger.debug(f"场景{scene_name}绑定的函数：{func.__qualname__}")

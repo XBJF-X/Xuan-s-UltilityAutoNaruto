@@ -26,6 +26,10 @@ class GengDuoWanFa(BaseTask):
     @TransitionOn()
     def _(self):
         self.operationer.clicker.stop()
+        if self.operationer.detect_element("集结团队战"):
+            self.logger.warning("本周更多玩法为集结团队战，将推迟任务执行至下周")
+            self.update_next_execute_time()
+            return True
         if not self.checked:
             self.operationer.click_and_wait("任务")
             return False

@@ -7,7 +7,6 @@ from pathlib import Path
 
 import requests
 from PySide6.QtCore import QObject, Signal
-from PySide6.QtWidgets import QMessageBox
 
 from StaticFunctions import get_real_path
 
