@@ -488,6 +488,7 @@ if __name__ == "__main__":
     # # 第三步：创建应用
     # app = AutoThemeApp(sys.argv)
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon(resource_path("src/ASDS.ico")))
     # 第四步：设置Qt消息处理器
     from PySide6.QtCore import qInstallMessageHandler
 

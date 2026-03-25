@@ -11,10 +11,13 @@ class U2:
     使用uiautomator2进行控制的控制方案
     """
 
-    def __init__(self, config: Config, parent_logger):
+    def __init__(self, config: Config, parent_logger, serial=None):
         self.logger = parent_logger.getChild(self.__class__.__name__ + "_Control")
         self.config = config
-        self.serial = config.get_config("串口")
+        if serial:
+            self.serial = serial
+        else:
+            self.serial = config.get_config("串口")
         self.screen_size = None
         self.u2_device: u2.Device | None = None
         self._lock = threading.Lock()  # 新增：设备操作锁，避免多线程竞争
@@ -161,3 +164,9 @@ class U2:
         except Exception as e:
             self.u2_device = None
             self.logger.error(f"重连设备失败: {e}")
+
+
+if __name__ == "__main__":
+    instance = U2(None,None,"emulator-5554")
+    for _ in range(10):
+        instance.swipe([202, 763],[202, 150],duration=0.5)
