@@ -1,3 +1,4 @@
+import logging
 import threading
 import time
 
@@ -12,7 +13,7 @@ class U2:
     """
 
     def __init__(self, config: Config, parent_logger, serial=None):
-        self.logger = parent_logger.getChild(self.__class__.__name__ + "_Control")
+        self.logger = parent_logger.getChild(self.__class__.__name__ + "_Control") if parent_logger else logging.getLogger(self.__class__.__name__ + "_Control")
         self.config = config
         if serial:
             self.serial = serial
@@ -45,7 +46,7 @@ class U2:
                 self.logger.error(f"点击失败 ({x},{y}): {e}")
                 self._reconnect()  # 连接异常时重连
 
-    def swipe(self, start_coordinate, end_coordinate, duration=0.5):
+    def swipe(self, start_coordinate, end_coordinate, duration=0.5, wait_time=0.2):
         if not self.u2_device:
             self.logger.error("设备未连接，无法执行滑动")
             return
@@ -56,6 +57,7 @@ class U2:
                     end_coordinate[0], end_coordinate[1],
                     duration
                 )
+                time.sleep(wait_time)
             except Exception as e:
                 self.logger.error(f"滑动失败: {e}")
                 self._reconnect()
@@ -167,6 +169,8 @@ class U2:
 
 
 if __name__ == "__main__":
-    instance = U2(None,None,"emulator-5554")
+    instance = U2(None, None, "emulator-5554")
     for _ in range(10):
-        instance.swipe([202, 763],[202, 150],duration=0.5)
+        instance.swipe( [202, 150],[202, 763], duration=0.1)
+    for _ in range(10):
+        instance.swipe([202, 763], [202, 150], duration=0.6)
