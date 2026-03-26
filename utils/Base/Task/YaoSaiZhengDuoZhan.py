@@ -27,7 +27,7 @@ YS_list = [
 ]
 
 
-class BenFuYaoSaiZhan(BaseTask):
+class YaoSaiZhengDuoZhan(BaseTask):
     source_scene = "要塞战略图"
     dead_line = datetime.time(20, 30)
 
@@ -44,7 +44,6 @@ class BenFuYaoSaiZhan(BaseTask):
             self.config.get_config("键位")[KEY_INDEX.Summon],
             self.config.get_config("键位")[KEY_INDEX.Substitution]
         ])
-
 
     @TransitionOn()
     def _(self):
@@ -64,7 +63,7 @@ class BenFuYaoSaiZhan(BaseTask):
         self.operationer.click_and_wait(target)
         return False
 
-# =========================本服要塞战部分==========================
+    # =========================本服要塞战部分==========================
     @TransitionOn("X之要塞")
     def _(self):
         self.operationer.clicker.stop()
@@ -161,6 +160,7 @@ class BenFuYaoSaiZhan(BaseTask):
             20, 30, 20,
             tzinfo=china_tz
         )
+
         def is_in_skip_period(target_time, interval_weeks):
             base_date = datetime.datetime(2025, 9, 20, tzinfo=china_tz)
             delta_weeks = (target_time - base_date).days // 7
@@ -178,5 +178,6 @@ class BenFuYaoSaiZhan(BaseTask):
 
         while is_in_skip_period(next_execute_time, 5):
             next_execute_time += datetime.timedelta(weeks=1)
-
+        if self.config.get_task_exe_param(self.task_name, "执行结束后是否有叛忍", True):
+            self._activate_another_task("叛忍来袭")
         return next_execute_time

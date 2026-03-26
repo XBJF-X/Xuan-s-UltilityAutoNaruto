@@ -15,6 +15,7 @@ from PySide6.QtWidgets import QWidget, QLabel, QBoxLayout, QVBoxLayout, QFrame
 from StaticFunctions import get_real_path, cv_save
 from utils.Base.Config import Config
 from utils.Base.Device import Device
+from utils.Base.Enums import TaskType
 from utils.Base.Operationer import Operationer
 from utils.Base.Scene.SceneGraph import SceneGraph
 from utils.Base.Scene.TransitionManager import TransitionManager
@@ -580,7 +581,7 @@ class Scheduler(QObject):
             self.logger.error(f"任务 {task_name} 不在队列中")
             return
         lineedit_widget.setEnabled(False)
-        task.update_next_execute_time(2)
+        task.update_next_execute_time(1)
         self.task_widget_list.refresh_task_widget(task_name)
         lineedit_widget.setText(task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
         lineedit_widget.setEnabled(True)
@@ -590,6 +591,7 @@ class Scheduler(QObject):
         """任务调用其他任务立刻执行"""
         lineedit_widget = self.task_common_control_ref_map[task_name]["LineEdit"]
         lineedit_widget.setEnabled(False)
+        self.config.set_task_base_config(task_name, "是否启用", True)
         self.config.set_task_base_config(task_name, "临时提权", True)
         task = self.task_queue.get_task(task_name)
         if not task:
@@ -674,6 +676,9 @@ class Scheduler(QObject):
         self.task_queue.update_task_status(task.task_name, 2)
         if task.temp_priority:
             self.config.set_task_base_config(task.task_name, "临时提权", False)
+        if task.task_type == TaskType.TEMP:
+            task.config.set_task_base_config(task.task_name, "是否启用", False)
+
         task.temp_dead_line = None
         self.task_widget_list.refresh_task_widget(task.task_name)
         self.logger.info(f"[{task.task_name}]-[{task.base_priority}] 移出执行队列，进入等待队列")

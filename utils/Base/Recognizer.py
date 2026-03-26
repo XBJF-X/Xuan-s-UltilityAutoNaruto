@@ -688,7 +688,7 @@ if __name__ == "__main__":
     for img_file in image_files:
         # 提取场景名（不含扩展名）
         scene_name = os.path.splitext(img_file)[0]
-        if scene_name not in ["重连提示", "版本更新1"]:
+        if scene_name not in ["叛忍来袭-战斗中"]:
             continue
         img_path = os.path.join(image_dir, img_file)
 

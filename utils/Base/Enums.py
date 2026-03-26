@@ -1,13 +1,14 @@
 import enum
 
 
-class TaskCycleType(enum.IntEnum):
-    """任务周期类型枚举"""
+class TaskType(enum.IntEnum):
+    """任务类型枚举"""
     DAILY = 0
     WEEKLY = 1
     MONTHLY = 2
     PERIODIC = 3
     AVTIVITY = 4
+    TEMP = 5
 
 
 class ScreenMode(enum.IntEnum):

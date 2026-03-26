@@ -1,4 +1,4 @@
-from .BenFuYaoSaiZhan import BenFuYaoSaiZhan
+from .YaoSaiZhengDuoZhan import YaoSaiZhengDuoZhan
 from .DianFengDuiJue import DianFengDuiJue
 from .DongRiYanHuaJi import DongRiYanHuaJi
 from .FengRaoZhiJian import FengRaoZhiJian
@@ -9,7 +9,6 @@ from .HaoYouTiLi import HaoYouTiLi
 from .HuoYueDuJiangLi import HuoYueDuJiangLi
 from .JiFenSaiJiangLi import JiFenSaiJiangLi
 from .JinBiZhaoCai import JinBiZhaoCai
-from .KuaFuYaoSaiZhan import KuaFuYaoSaiZhan
 from .MaoXianFuBen import MaoXianFuBen
 from .MeiRiFenXiang import MeiRiFenXiang
 from .MeiRiShengChang import MeiRiShengChang
@@ -65,12 +64,11 @@ TASK_TYPE_MAP = {
     "忍法帖点赞分享": RenFaTieDianZanFenXiang,
     '更多玩法': GengDuoWanFa,
     '团本': TuanBen,
-    '本服要塞战': BenFuYaoSaiZhan,
+    '要塞争夺战': YaoSaiZhengDuoZhan,
     '叛忍来袭': PanRenLaiXi,
     '天地战场': TianDiZhanChang,
     '追击晓组织': ZhuiJiXiaoZuZhi,
 
-    '跨服要塞战': KuaFuYaoSaiZhan,
     '巅峰对决': DianFengDuiJue,
     '组织争霸': ZuZhiZhengBa,
     "赛季胜场": SaiJiShengChang,
@@ -109,12 +107,11 @@ TASK_NAME_CN2EN_MAP = {
     "忍法帖点赞分享": "RenFaTieDianZanFenXiang",
     '更多玩法': "GengDuoWanFa",
     '团本': "TuanBen",
-    '本服要塞战': "BenFuYaoSaiZhan",
+    '要塞争夺战': "YaoSaiZhengDuoZhan",
     '叛忍来袭': "PanRenLaiXi",
     '天地战场': "TianDiZhanChang",
     '追击晓组织': "ZhuiJiXiaoZuZhi",
 
-    '跨服要塞战': "KuaFuYaoSaiZhan",
     '巅峰对决': "DianFengDuiJue",
     '组织争霸': "ZuZhiZhengBa",
     "赛季胜场": "SaiJiShengChang",
