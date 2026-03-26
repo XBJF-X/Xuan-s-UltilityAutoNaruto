@@ -87,7 +87,8 @@ class Service(QWidget):
                 child.setData(QColor("#779977"), Qt.ItemDataRole.ForegroundRole)
             else:
                 child.setData(QColor("#000000"), Qt.ItemDataRole.ForegroundRole)
-            roots[task["类型"]].appendRow(child)
+            task_type = 1 if task["类型"] == 5 else task["类型"]
+            roots[task_type].appendRow(child)
             temp_task_widget = TaskConfigWidget(task_name, task, self)
             self.UI.stackedWidget.addWidget(temp_task_widget)
             # 保存任务配置控件引用
@@ -96,6 +97,8 @@ class Service(QWidget):
             temp_widget.setChecked(self.config.get_task_base_config(task_name, "是否启用"))
             temp_widget.toggled.connect(
                 lambda state, tn=task_name: self._on_task_activation_toggled(state, tn))
+            if task["类型"] == 5:
+                temp_widget.setEnabled(False)
             temp_widget = temp_task_widget.task_widget_dic["下次执行时间"]
             self.task_common_control_ref_map[task_name]["LineEdit"] = temp_widget
             temp_widget.setText(
@@ -117,6 +120,12 @@ class Service(QWidget):
                                 lambda value, tn=task_name, pn=param_name:
                                 self.config.set_task_exe_param(tn, pn, value))
                             param_widget.setCurrentIndex(
+                                self.config.get_task_exe_param(task_name, param_name))
+                        case "BOOL":
+                            param_widget.checkStateChanged.connect(
+                                lambda value, tn=task_name, pn=param_name:
+                                self.config.set_task_exe_param(tn, pn, value == Qt.CheckState.Checked))
+                            param_widget.setChecked(
                                 self.config.get_task_exe_param(task_name, param_name))
 
             self.task_index_dic[task_name] = start_index
@@ -177,7 +186,6 @@ class Service(QWidget):
 
     def _on_control_mode_change(self, index):
         self.config.set_config("控制模式", index)
-
 
     def _on_key_map_configuration_button_clicked(self):
         if self.scheduler.device is not None:

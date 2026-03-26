@@ -238,7 +238,8 @@ class TianDiZhanChang(BaseTask):
 
         # 下周周六下午8点的时间对象
         next_execute_time = get_this_wednesday_9pm(current_time, china_tz) + timedelta(weeks=1)
-
+        if self.config.get_task_exe_param(self.task_name, "执行结束后是否有叛忍", True):
+            self._activate_another_task("叛忍来袭")
         return next_execute_time
 
     def reset_task_exe_proc(self) -> bool:

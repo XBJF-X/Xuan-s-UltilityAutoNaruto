@@ -14,6 +14,7 @@ from PySide6.QtCore import Signal
 
 from StaticFunctions import get_real_path
 from utils.Base.Config import Config
+from utils.Base.Enums import TaskType
 from utils.Base.Exceptions import StepFailedError, TimeOut, Stop, EndEarly
 from utils.Base.Operationer import Operationer
 from utils.Base.Scene.TransitionManager import TransitionManager
@@ -140,6 +141,7 @@ class BaseTask:
         self.task_name = task_name
         self.logger: Logger = parent_logger.getChild(self.task_name)
         self.base_priority = config.get_task_base_config(self.task_name, "优先级")
+        self.task_type = TaskType(config.get_task_base_config(self.task_name, "类型"))
 
         self.update_next_execute_time(0)
         self.transition_func = {}
@@ -198,7 +200,7 @@ class BaseTask:
     def running_deadline(self):
         if not self.dead_line:
             if self.task_max_duration:
-                return datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai")) + self.task_max_duration
+                return self.create_time + self.task_max_duration
         else:
             return datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai")).replace(
                 hour=self.dead_line.hour,
@@ -230,6 +232,7 @@ class BaseTask:
         # 重置停止标志
         self.operationer.stop_event.clear()  # 重置停止标志
         # 保存线程对象以便后续停止
+        self.create_time = datetime.datetime.now(ZoneInfo("Asia/Shanghai"))
         self._execution_thread = threading.Thread(target=self._execute, daemon=True)
         self._execution_thread.start()
 
