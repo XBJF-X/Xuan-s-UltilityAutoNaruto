@@ -74,6 +74,11 @@ class Recognizer:
                 "副本内-暂停-退出战斗确认",
                 "秘境奖励"
             ],
+            "冒险-精英副本": [
+                "精英副本-便捷扫荡",
+                "便捷扫荡-扫荡结束",
+                "便捷扫荡-继续扫荡",
+            ],
             "精英副本-便捷扫荡": [
                 "体力不足",
                 "便捷扫荡-继续扫荡",
@@ -105,6 +110,12 @@ class Recognizer:
             ],
             "组织": [
                 "叛忍来袭",
+                "叛忍来袭-战斗结束",
+                "叛忍来袭-是否开启",
+                "叛忍来袭-更换忍者",
+                "叛忍来袭-未开始",
+                "叛忍来袭-进行中",
+                "叛忍来袭-选择难度",
                 "组织购买"
             ],
             "地之战场": [
@@ -690,8 +701,9 @@ if __name__ == "__main__":
     for img_file in image_files:
         # 提取场景名（不含扩展名）
         scene_name = os.path.splitext(img_file)[0]
-        if scene_name not in ["重连提示", "版本更新1"]:
-            continue
+
+        # if scene_name not in ["网络不畅通"]:
+        #     continue
         img_path = os.path.join(image_dir, img_file)
 
         try:
