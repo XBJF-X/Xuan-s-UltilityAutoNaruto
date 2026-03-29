@@ -11,7 +11,7 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 class MiJingTanXian(BaseTask):
     source_scene = "秘境探险-匹配"
-    task_max_duration = timedelta(hours=2)
+    task_max_duration = timedelta(hours=4)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

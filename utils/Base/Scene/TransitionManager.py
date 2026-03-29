@@ -245,13 +245,25 @@ class TransitionManager:
         @self.register("无差别-成就奖励", "火影格斗大赛-无差别")
         @self.register("丰饶之间-暂停", "丰饶之间-内部")
         @self.register("追击晓组织-奖励", "追击晓组织")
-        @self.register("叛忍来袭-更换忍者", "叛忍来袭")
         @self.register("生存挑战-重置", "生存挑战")
         @self.register("生存挑战-购买扫荡券", "生存挑战")
         @self.register("冬日烟花季-点燃免费爆竹", "冬日烟花季-主页")
         @self.register("铜币不足", "装备-材料详情")
         @self.register("铜币不足", "装备")
         @self.register("组织购买", "组织")
+        @self.register("叛忍来袭-更换忍者", "组织")
+        @self.register("叛忍来袭-内部", "组织")
+        @self.register("叛忍来袭-即将开始", "组织")
+        @self.register("叛忍来袭-未开始", "组织")
+        @self.register("叛忍来袭-选择难度", "组织")
+        @self.register("叛忍来袭-今日叛忍已结束", "组织")
+        @self.register("叛忍来袭-是否开启", "组织")
+        @self.register("叛忍来袭-结束", "组织")
+        @self.register("叛忍来袭-进行中", "组织")
+        @self.register("叛忍来袭-已获得2次奖励", "组织")
+        @self.register("叛忍来袭-是否开启-双倍", "组织")
+        @self.register("叛忍来袭-战斗中", "叛忍来袭-内部")
+        @self.register("叛忍来袭-单局结算", "叛忍来袭-内部")
         def _(operationer: Operationer, *args, **kwargs):
             """通用返回函数，点击[X]"""
             operationer.click_and_wait("X")
@@ -357,28 +369,26 @@ class TransitionManager:
                 (202, 150),
                 (202, 750),
                 duration=0.1,
-                wait_time=0,
-                times=10
+                times=7
             )
 
-            for i in range(10):
+            for i in range(8):
                 if operationer.click_and_wait(
                         kwargs.get("target_id")
                 ):
                     operationer.click_and_wait(
                         "即刻前往",
-                        wait_time=2
+                        wait_time=3
                     )
                     return
-                if i == 9:
+                if i == 7:
                     break
                 operationer.swipe_and_wait(
                     (202, 763),
                     (202, 150),
-                    duration=0.5,
-                    wait_time=0.4
+                    duration=0.8
                 )
-                operationer.click_and_wait("空白", wait_time=0)
+                operationer.click_and_wait("空白", wait_time=0.1)
             #
             # if operationer.search_and_click(
             #         [
@@ -422,28 +432,26 @@ class TransitionManager:
             operationer.swipe_and_wait(
                 (414, 214),
                 (414, 736),
-                duration=0.1,
-                wait_time=0,
-                times=10
+                duration=0.2,
+                times=7
             )
-            for i in range(10):
+            for i in range(8):
                 if operationer.click_and_wait(
                         kwargs.get("target_id")
                 ):
                     operationer.click_and_wait(
                         "即刻前往",
-                        wait_time=2
+                        wait_time=3
                     )
                     return
-                if i == 9:
+                if i == 7:
                     break
                 operationer.swipe_and_wait(
                     (414, 736),
                     (414, 214),
-                    duration=0.5,
-                    wait_time=0.4
+                    duration=0.8,
                 )
-                operationer.click_and_wait("空白", wait_time=0)
+                operationer.click_and_wait("空白", wait_time=0.1)
             # if operationer.search_and_click(
             #         [
             #             kwargs.get("target_id")
@@ -507,6 +515,13 @@ class TransitionManager:
         @self.register("一乐外卖", "冬日烟花季")
         @self.register("每月签到", "一乐外卖")
         def _(operationer: Operationer, *args, **kwargs):
+            operationer.swipe_and_wait(
+                (107, 213),
+                (107, 846),
+                duration=0.2,
+                wait_time=0.3,
+                times=4
+            )
             operationer.search_and_click(
                 [
                     kwargs.get("target_id")

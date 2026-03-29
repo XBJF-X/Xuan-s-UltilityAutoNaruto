@@ -581,7 +581,7 @@ class Scheduler(QObject):
             self.logger.error(f"任务 {task_name} 不在队列中")
             return
         lineedit_widget.setEnabled(False)
-        task.update_next_execute_time(1)
+        task.update_next_execute_time(2)
         self.task_widget_list.refresh_task_widget(task_name)
         lineedit_widget.setText(task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
         lineedit_widget.setEnabled(True)
@@ -676,13 +676,11 @@ class Scheduler(QObject):
         self.task_queue.update_task_status(task.task_name, 2)
         if task.temp_priority:
             self.config.set_task_base_config(task.task_name, "临时提权", False)
-        if task.task_type == TaskType.TEMP:
-            task.config.set_task_base_config(task.task_name, "是否启用", False)
 
         task.temp_dead_line = None
         self.task_widget_list.refresh_task_widget(task.task_name)
         self.logger.info(f"[{task.task_name}]-[{task.base_priority}] 移出执行队列，进入等待队列")
-        task.create_time = datetime.now(ZoneInfo("Asia/Shanghai"))
+        task.last_run_time = datetime.now(ZoneInfo("Asia/Shanghai"))
 
     def save_screen(self, name):
         """保存截图到文件"""

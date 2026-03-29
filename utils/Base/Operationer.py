@@ -87,6 +87,8 @@ class Operationer:
             self.screen_save_signal.emit(self.task_name)
         if max_attempts is not None:
             for i in range(max_attempts):
+                if self._should_stop():
+                    raise Stop
                 time_1 = time.perf_counter()
                 coordinates = self.recognizer.element_match(self.device.screen_cap(), element, bool_debug)
                 if len(coordinates) != 0:
@@ -145,6 +147,8 @@ class Operationer:
             self.screen_save_signal.emit(self.task_name)
         if max_attempts is not None:
             for i in range(max_attempts):
+                if self._should_stop():
+                    raise Stop
                 time_1 = time.perf_counter()
                 flag = self.recognizer.scene_match(self.device.screen_cap(), scene, bool_debug)
                 if flag:
@@ -215,6 +219,8 @@ class Operationer:
         self.screen_save_signal.emit(self.task_name)
         if max_attempts:
             for i in range(max_attempts):
+                if self._should_stop():
+                    raise Stop
                 time_1 = time.perf_counter()
                 if element.type == ElementType.COORDINATE:
                     self.logger.debug(f"[{element.name}] Click"
@@ -335,6 +341,8 @@ class Operationer:
         times: int = kwargs.get("times", 1)
         self.screen_save_signal.emit(self.task_name)
         for _ in range(times):
+            if self._should_stop():
+                raise Stop
             self.logger.debug(f"[SWIPE] {start_coordinate}->{end_coordinate}")
             self.device.swipe(
                 start_coordinate,

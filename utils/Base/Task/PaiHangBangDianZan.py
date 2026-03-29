@@ -6,7 +6,7 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 class PaiHangBangDianZan(BaseTask):
     source_scene = "排行榜"
-    task_max_duration = timedelta(minutes=2)
+    task_max_duration = timedelta(minutes=3)
 
     @TransitionOn()
     def _(self):

@@ -8,12 +8,13 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 # Todo：自动叛忍任务
 class PanRenLaiXi(BaseTask):
     source_scene = "主场景-组织"
-    task_max_duration = timedelta(minutes=30)
+    task_max_duration = timedelta(minutes=40)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.auto = False
         self.check = False
+        self.decrease_difficulty = True
 
     @TransitionOn()
     def _(self):
@@ -44,6 +45,12 @@ class PanRenLaiXi(BaseTask):
         time.sleep(3)
         return False
 
+    @TransitionOn("叛忍来袭-即将开始")
+    def _(self):
+        time.sleep(3)
+        self.logger.info("叛忍来袭即将开始")
+        return False
+
     @TransitionOn("叛忍来袭-进行中")
     def _(self):
         self.operationer.click_and_wait("前往参战")
@@ -54,21 +61,30 @@ class PanRenLaiXi(BaseTask):
     def _(self):
         difficulty = ["普通模式", "困难模式"][
             self.config.get_task_exe_param(self.task_name, "开启叛忍难度", 0)]
-        self.operationer.click_and_wait(difficulty)
+
+        while not self.operationer.detect_element(f"{difficulty}-选中"):
+            self.operationer.click_and_wait(difficulty)
         self.logger.info(f"叛忍难度选择为{difficulty}")
+
         if self.config.get_task_exe_param(self.task_name, "是否开启二倍奖励", True):
             if self.operationer.click_and_wait("开启双倍奖励-未选中"):
                 self.logger.info("已自动勾选开启二倍奖励")
             else:
                 self.logger.info("二倍奖励已开启，无需勾选")
 
-        self.operationer.click_and_wait("确定")
+        self.operationer.click_and_wait("确定", wait_time=3)
         return False
 
     @TransitionOn("叛忍来袭-是否开启")
     def _(self):
         self.operationer.click_and_wait("确定")
-        self.logger.info("确认开启叛忍来袭")
+        self.logger.info("确认开启 叛忍来袭")
+        return False
+
+    @TransitionOn("叛忍来袭-是否开启-双倍")
+    def _(self):
+        self.operationer.click_and_wait("确定")
+        self.logger.info("确认开启 叛忍来袭[双倍奖励]")
         return False
 
     @TransitionOn("叛忍来袭-更换忍者")
@@ -87,7 +103,7 @@ class PanRenLaiXi(BaseTask):
                 self.logger.info(f"叛忍挑战忍者选为{ninjas[flag]}")
         else:
             self.logger.info("已有默认选中忍者，将使用")
-        self.operationer.click_and_wait("确定")
+        self.operationer.click_and_wait("确定", stable_duration=3)
         return False
 
     @TransitionOn("叛忍来袭-内部")
@@ -95,17 +111,18 @@ class PanRenLaiXi(BaseTask):
         difficulty = ["低级叛忍", "中级叛忍", "高级叛忍"][
             self.config.get_task_exe_param(self.task_name, "挑战叛忍类型")]
         if not self.check:
-            if self.operationer.detect_element("自动参战-50金币"):
-                self.logger.info("无法自动参战，将手动挑战")
-            else:
+            if self.operationer.detect_element("自动参战-0金币"):
                 self.operationer.click_and_wait("自动参战")
                 self.logger.info("自动参战已开启")
                 self.auto = True
+            else:
+                self.logger.info("无法自动参战，将手动挑战")
+            self.check = True
         if not self.auto:
             while not self.operationer.click_and_wait(difficulty):
                 self.logger.info(f"未发现 {difficulty}，将移动寻找")
-                x, y = self.config.get_config("键位")[KEY_INDEX.BasicAttack]
-                self.operationer.device.long_press(x, y, duration=0.3)
+                x, y = self.config.get_config("键位")[KEY_INDEX.JoyStick]
+                self.operationer.device.long_press(x + 50, y, duration=0.3)
         else:
             self.logger.info("正在自动参战叛忍...")
             time.sleep(15)
@@ -116,10 +133,53 @@ class PanRenLaiXi(BaseTask):
         if not self.operationer.detect_element("自动战斗中"):
             self.logger.info("启动自动战斗")
             self.operationer.click_and_wait("标志")
+        time.sleep(1)
+        self.decrease_difficulty = True
+        return False
+
+    @TransitionOn("叛忍来袭-单局结算")
+    def _(self):
+        self.operationer.click_and_wait("X")
+        return False
+
+    @TransitionOn("叛忍来袭-结束")
+    def _(self):
+        self.operationer.click_and_wait("确定")
+        self.logger.info("叛忍来袭已结束")
+        self.update_next_execute_time()
+        return True
+
+    @TransitionOn("叛忍来袭-今日叛忍已结束")
+    def _(self):
+        self.logger.info("今日叛忍来袭已结束")
+        self.update_next_execute_time()
+        return True
+
+    @TransitionOn("叛忍来袭-确认挑战")
+    def _(self):
+        self.operationer.click_and_wait("确定")
+        return False
+
+    @TransitionOn("叛忍来袭-已获得2次奖励")
+    def _(self):
+        self.operationer.click_and_wait("确定")
+        return False
+
+    @TransitionOn("决斗场-匹配中")
+    def _(self):
+        if self.decrease_difficulty:
+            difficulty_level = self.config.get_task_exe_param(self.task_name, "挑战叛忍类型")
+            difficulty = ["低级叛忍", "中级叛忍", "高级叛忍"][difficulty_level]
+            self.logger.warning(f"挑战[{difficulty}]失败，将自动降低难度")
+            difficulty_level = max(0, difficulty_level - 1)
+            self.config.set_task_exe_param(self.task_name, "挑战叛忍类型", difficulty_level)
+            self.logger.warning(f"设置挑战叛忍类型为：{["低级叛忍", "中级叛忍", "高级叛忍"][difficulty_level]}")
+            self.decrease_difficulty = False
         time.sleep(2)
         return False
 
     def reset_task_exe_proc(self) -> bool:
         self.check = False
         self.auto = False
+        self.decrease_difficulty = True
         return True

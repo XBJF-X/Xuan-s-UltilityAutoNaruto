@@ -17,7 +17,7 @@ class RatioDialog(QDialog):
     def __init__(self, image: Path | Element, parent=None):
         super().__init__(parent)
         self.setWindowTitle("设置比例")
-        self.setMinimumSize(400, 400)
+        self.setMinimumSize(1000, 1200)
         self.ratio_point = QPointF()
         # 主布局
         layout = QVBoxLayout(self)
@@ -63,46 +63,48 @@ class RatioDialog(QDialog):
         self.image_label.mousePressEvent = self.on_image_clicked
 
     def on_image_clicked(self, event: QMouseEvent):
-        """处理图片点击事件"""
-        # 获取点击位置相对于QLabel的位置
+        """处理图片点击事件 - 支持图片外坐标"""
         label_pos = event.position()
 
-        # 获取图片在QLabel中的实际位置和大小
         pixmap = self.image_label.pixmap()
         if pixmap is None:
             return
 
-        # 计算缩放比例
+        # 获取显示图片的实际大小
+        display_size = pixmap.size()
         label_size = self.image_label.size()
-        pixmap_size = pixmap.size()
 
-        scale_x = pixmap_size.width() / label_size.width()
-        scale_y = pixmap_size.height() / label_size.height()
+        # 计算图片显示区域的偏移量（居中对齐）
+        x_offset = (label_size.width() - display_size.width()) / 2
+        y_offset = (label_size.height() - display_size.height()) / 2
 
-        # 计算点击位置在原始图片中的位置
-        if scale_x > scale_y:
-            # 宽度方向填满
-            scaled_height = pixmap_size.height() / scale_x
-            y_offset = (label_size.height() - scaled_height) / 2
-            pix_x = label_pos.x() * scale_x
-            pix_y = (label_pos.y() - y_offset) * scale_x
-        else:
-            # 高度方向填满
-            scaled_width = pixmap_size.width() / scale_y
-            x_offset = (label_size.width() - scaled_width) / 2
-            pix_x = (label_pos.x() - x_offset) * scale_y
-            pix_y = label_pos.y() * scale_y
+        # 计算点击位置相对于图片显示区域左上角的坐标（允许负值）
+        img_x = label_pos.x() - x_offset
+        img_y = label_pos.y() - y_offset
 
-        # 计算比例 (相对于图片尺寸)
-        # 现在允许负数比例值
+        # 计算归一化坐标（原点在图片左上角，允许超出 [0,1] 范围）
+        # 直接使用 img_x / display_size.width()，允许负值和大于1的值
         self.ratio_point = QPointF(
-            round(pix_x / pixmap_size.width(), 4),
-            round(pix_y / pixmap_size.height(), 4)
+            round(img_x / display_size.width(), 4),
+            round(img_y / display_size.height(), 4)
         )
+
+        # 判断点击位置状态
+        in_horizontal = 0 <= self.ratio_point.x() <= 1
+        in_vertical = 0 <= self.ratio_point.y() <= 1
+
+        if in_horizontal and in_vertical:
+            status = "✅ 图片内部"
+        elif in_horizontal or in_vertical:
+            status = "⚠️ 图片边缘外部"
+        else:
+            status = "❌ 图片角部外部"
 
         # 更新信息
         self.info_label.setText(
             f"已选择: ({self.ratio_point.x():.4f}, {self.ratio_point.y():.4f})\n"
+            f"状态: {status}\n"
+            f"点击位置在图片{'内' if in_horizontal and in_vertical else '外'}\n"
             "点击确定保存比例"
         )
 

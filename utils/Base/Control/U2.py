@@ -47,11 +47,55 @@ class U2:
                 self._reconnect()  # 连接异常时重连
 
     def swipe(self, start_coordinate, end_coordinate, duration=0.5, wait_time=0.2):
+        def direction_judge():
+            if abs(start_coordinate[0] - end_coordinate[0]) >= abs(
+                    start_coordinate[1] - end_coordinate[1]):
+                if start_coordinate[0] - end_coordinate[0] > 0:
+                    return "left"
+                else:
+                    return "right"
+            else:
+                if start_coordinate[1] - end_coordinate[1] > 0:
+                    return "up"
+                else:
+                    return "down"
+
+        def get_bounding_box():
+            """
+            计算包含起点和终点的最小矩形框。
+
+            Returns:
+                tuple: (left, top, right, bottom) 矩形边界坐标
+            """
+            x1, y1 = start_coordinate
+            x2, y2 = end_coordinate
+            left = min(x1, x2)
+            top = min(y1, y2)
+            right = max(x1, x2)
+            bottom = max(y1, y2)
+
+            padding = 0
+            return left - padding, top - padding, right + padding, bottom + padding
+
+        direction = direction_judge()
+
+        def get_scale():
+            if direction in ["up", "down"]:
+                return abs(start_coordinate[1] - end_coordinate[1]) / 900
+            else:
+                return abs(start_coordinate[0] - end_coordinate[0]) / 1600
+
         if not self.u2_device:
             self.logger.error("设备未连接，无法执行滑动")
             return
         with self._lock:
             try:
+                # self.u2_device.swipe_ext(
+                #     direction,
+                #     box=get_bounding_box(),
+                #     scale=1.0,
+                #     duration=duration
+                # )
                 self.u2_device.swipe(
                     start_coordinate[0], start_coordinate[1],
                     end_coordinate[0], end_coordinate[1],
@@ -170,7 +214,7 @@ class U2:
 
 if __name__ == "__main__":
     instance = U2(None, None, "emulator-5554")
-    for _ in range(10):
-        instance.swipe( [202, 150],[202, 763], duration=0.1)
-    for _ in range(10):
-        instance.swipe([202, 763], [202, 150], duration=0.6)
+    for _ in range(8):
+        instance.swipe([202, 150], [202, 763], duration=0.1)
+    for _ in range(8):
+        instance.swipe([202, 763], [202, 150], duration=0.8)

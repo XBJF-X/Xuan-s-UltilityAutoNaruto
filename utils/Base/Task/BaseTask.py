@@ -113,7 +113,7 @@ class BaseTask:
     """记录transition返回的位置，方便调试"""
     source_scene: str | None = None
     """任务的初始场景，需要先寻路到此处才能正式开始执行任务"""
-    task_max_duration: timedelta = None
+    task_max_duration: timedelta = timedelta(minutes=10)
     """任务最长执行时间（无DDL的情况下生效）"""
     dead_line: datetime.time | None = None
     """任务当天截至的时间点（超过当天该时间点将强制结束任务）"""
@@ -132,6 +132,7 @@ class BaseTask:
     ):
         # 任务信息
         self.create_time = datetime.datetime.now(ZoneInfo("Asia/Shanghai"))
+        self.last_run_time = datetime.datetime.now(ZoneInfo("Asia/Shanghai"))
         self.current_status = 2
         # 0 - 正在执行
         # 1 - 就绪状态，等待执行
@@ -200,7 +201,7 @@ class BaseTask:
     def running_deadline(self):
         if not self.dead_line:
             if self.task_max_duration:
-                return self.create_time + self.task_max_duration
+                return self.last_run_time + self.task_max_duration
         else:
             return datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai")).replace(
                 hour=self.dead_line.hour,
@@ -208,6 +209,7 @@ class BaseTask:
                 second=self.dead_line.second,
                 microsecond=self.dead_line.microsecond
             )
+        return None
 
     @property
     def current_priority(self):
@@ -232,7 +234,7 @@ class BaseTask:
         # 重置停止标志
         self.operationer.stop_event.clear()  # 重置停止标志
         # 保存线程对象以便后续停止
-        self.create_time = datetime.datetime.now(ZoneInfo("Asia/Shanghai"))
+        self.last_run_time = datetime.datetime.now(ZoneInfo("Asia/Shanghai"))
         self._execution_thread = threading.Thread(target=self._execute, daemon=True)
         self._execution_thread.start()
 
@@ -263,14 +265,16 @@ class BaseTask:
                 self.stop()
                 self.logger.warning("任务已被停止")
                 return
-            if datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai")) >= self.running_deadline:
+            if self.running_deadline and datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai")) >= self.running_deadline:
                 self.logger.warning("任务已超时，将停止")
+                self.stop()
                 self.update_next_execute_time()
                 self.reset_task_exe_proc()
                 return
             else:
                 result = self.transition()
                 if result is not None and result:
+                    self.stop()
                     self.logger.debug("重置任务执行进度")
                     self.reset_task_exe_proc()
                     return
@@ -323,12 +327,12 @@ class BaseTask:
             # else:
             #     # 如果找不到路径，回退到原来的处理方式
             #     scene_name = "未注册场景"
+            self.operationer.next_scene = self.source_scene
             shortest_path = self.transition_manager.bfs_shortest_path(scene_name, self.source_scene)
             if shortest_path and len(shortest_path) >= 2:
                 # 执行第一段路径跳转
                 next_scene_in_path = shortest_path[1]
                 self.logger.info(f"自动跳转回场景状态中: 从 {scene_name} 到 {next_scene_in_path} (路径: {' -> '.join(shortest_path)})")
-                self.operationer.next_scene = next_scene_in_path
                 return self.transition_manager.transition(self.operationer)
             else:
                 # 如果找不到路径，回退到原来的处理方式
@@ -395,6 +399,8 @@ class BaseTask:
                     next_execute_time = self._handle_initialization(current_time)
                 case 1:
                     next_execute_time = self._handle_execution_completed(current_time)
+                    if self.task_type == TaskType.TEMP:
+                        self.config.set_task_base_config(self.task_name, "是否启用", False)
                 case 2:
                     next_execute_time = current_time
                 case 3:

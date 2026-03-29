@@ -73,7 +73,5 @@ class Clicker:
                     device.click(x, y)
                 except Exception as e:
                     self.logger.error(f"点击 ({x},{y}) 失败: {e}")
-                    # 可根据需要短暂休眠，避免疯狂报错
-                    # time.sleep(0.1)
         finally:
             self.logger.debug(f"坐标 ({x},{y}) 的点击线程结束")

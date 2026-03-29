@@ -6,7 +6,7 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 class HuoYueDuJiangLi(BaseTask):
     source_scene = "奖励"
-    task_max_duration = timedelta(minutes=2)
+    task_max_duration = timedelta(minutes=3)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

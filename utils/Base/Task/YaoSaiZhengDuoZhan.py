@@ -28,7 +28,7 @@ YS_list = [
 
 
 class YaoSaiZhengDuoZhan(BaseTask):
-    source_scene = "要塞战略图"
+    source_scene = "主场景-组织"
     dead_line = datetime.time(20, 30)
 
     def __init__(self, *args, **kwargs):
@@ -47,7 +47,29 @@ class YaoSaiZhengDuoZhan(BaseTask):
 
     @TransitionOn()
     def _(self):
-        target = YS_list[self.config.get_task_exe_param(self.task_name, "目标要塞", 0)]
+        self.operationer.click_and_wait("玩法")
+        self.operationer.search_and_click(
+            [
+                f"要塞争夺战-前往"
+            ],
+            [
+                {
+                    "swipe": {
+                        "start_coordinate": [1000, 464],
+                        "end_coordinate": [350, 464],
+                        "duration": 0.5
+                    }
+                }
+            ],
+            max_attempts=3,
+            wait_time=5
+        )
+        return False
+
+    # =========================本服要塞战部分==========================
+    @TransitionOn("要塞战略图")
+    def _(self):
+        target = YS_list[self.config.get_task_exe_param(self.task_name, "[本服要塞战]目标要塞", 0)]
         move = None
         match target:
             case "田之要塞" | "铁之要塞" | "熊之要塞":
@@ -63,7 +85,6 @@ class YaoSaiZhengDuoZhan(BaseTask):
         self.operationer.click_and_wait(target)
         return False
 
-    # =========================本服要塞战部分==========================
     @TransitionOn("X之要塞")
     def _(self):
         self.operationer.clicker.stop()
@@ -73,7 +94,7 @@ class YaoSaiZhengDuoZhan(BaseTask):
     @TransitionOn("要塞内部")
     def _(self):
         self.operationer.clicker.stop()
-        if datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai")) < self.running_deadline:
+        if self.running_deadline and datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai")) < self.running_deadline:
             self.operationer.long_press(self.joystick[0] + 60, self.joystick[1], 3)
             return False
         self.logger.info(f"本服要塞战结束，共战斗 {self.fight_sum} 次")
@@ -151,15 +172,16 @@ class YaoSaiZhengDuoZhan(BaseTask):
         return next_execute_time
 
     def _handle_execution_completed(self, current_time: datetime) -> datetime:
-        china_tz = current_time.tzinfo
-        next_day = current_time + datetime.timedelta(weeks=1)
-        return datetime.datetime(
-            next_day.year,
-            next_day.month,
-            next_day.day,
-            20, 30, 20,
-            tzinfo=china_tz
-        )
+
+        # china_tz = current_time.tzinfo
+        # next_day = current_time + datetime.timedelta(weeks=1)
+        # return datetime.datetime(
+        #     next_day.year,
+        #     next_day.month,
+        #     next_day.day,
+        #     20, 30, 20,
+        #     tzinfo=china_tz
+        # )
 
         def is_in_skip_period(target_time, interval_weeks):
             base_date = datetime.datetime(2025, 9, 20, tzinfo=china_tz)
