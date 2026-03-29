@@ -9,13 +9,12 @@ from typing import Dict, TypeVar, Generic, List, Optional
 from zoneinfo import ZoneInfo
 
 from PySide6 import QtWidgets
-from PySide6.QtCore import QThread, Signal, QMutex, QWaitCondition, Qt, QObject, Slot, QTimer
-from PySide6.QtWidgets import QWidget, QLabel, QBoxLayout, QVBoxLayout, QFrame
+from PySide6.QtCore import QThread, Signal, QMutex, QWaitCondition, Qt, QObject, Slot
+from PySide6.QtWidgets import QLabel, QBoxLayout, QVBoxLayout, QFrame
 
 from StaticFunctions import get_real_path, cv_save
 from utils.Base.Config import Config
 from utils.Base.Device import Device
-from utils.Base.Enums import TaskType
 from utils.Base.Operationer import Operationer
 from utils.Base.Scene.SceneGraph import SceneGraph
 from utils.Base.Scene.TransitionManager import TransitionManager
@@ -546,12 +545,12 @@ class Scheduler(QObject):
         self.task_widget_list.clear_all_widgets()
         if self.device:
             # 释放设备资源
-            if self.device.controller:
-                self.device.controller.release()
-                self.device.controller = None
-            if self.device.screener:
-                self.device.screener.release()
-                self.device.screener = None
+            if self.device.control_manager:
+                self.device.control_manager.release()
+                self.device.control_manager = None
+            if self.device.screen_manager:
+                self.device.screen_manager.release()
+                self.device.screen_manager = None
                 self.device = None
 
         self.UI.start_schedule_button.setEnabled(True)

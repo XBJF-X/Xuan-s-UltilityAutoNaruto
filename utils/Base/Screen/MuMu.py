@@ -1,4 +1,5 @@
 import ctypes
+import logging
 import os
 from ctypes import wintypes, c_char_p, c_ubyte
 
@@ -6,18 +7,18 @@ import cv2
 import numpy as np
 
 from utils.Base.Config import Config
+from utils.Base.Screen import Screen
 
 
-class MuMu:
+class MuMu(Screen):
     """
     MuMu特化截图，调用MuMu内置的库函数实现截图，特点：
     1.速度快（约7-10ms）
     2.不受模拟器窗口大小位置和可视性的限制，最小化或调整窗口大小或窗口边界超出范围依旧生效
     """
 
-    def __init__(self, config: Config, parent_logger):
-        self.logger = parent_logger.getChild(self.__class__.__name__)
-        self.config = config
+    def __init__(self, config: Config, parent_logger=None):
+        super().__init__(config, parent_logger)
         self.mumu_handle = 0
         self.display_width = 0
         self.display_height = 0
@@ -26,7 +27,7 @@ class MuMu:
         self.current_inst_index = None
         self.inited = False
         self.package_name = "com.tencent.KiHan"  # 默认包名
-        self.ready = False
+        self._ready = False
 
         # 函数指针
         self.connect_func = None
@@ -65,75 +66,18 @@ class MuMu:
         self.package_name = self.config.get_config('MuMu操作应用包名')
 
         # 尝试加载 DLL
-        self.inited = self.load_mumu_library() and self.connect_mumu() and self.init_screencap()
-        self.ready = True
+        self.inited = self._load_mumu_library() and self._connect_mumu() and self._init_screencap()
+        self._ready = True
         return self.inited
 
-    def reload(self):
+    def _reload(self):
         """重新加载库和连接"""
-        self.inited = self.load_mumu_library() and self.connect_mumu() and self.init_screencap()
+        self.inited = self._load_mumu_library() and self._connect_mumu() and self._init_screencap()
         self.logger.debug(f"重新加载库和连接模拟器: {self.inited}")
         return self.inited
 
-    def release(self):
-        """释放资源并断开连接"""
-        self.inited = False
-        self.disconnect_mumu()
 
-    def screencap(self):
-        """获取屏幕截图"""
-        if not self.capture_display_func:
-            self.logger.warning("capture_display_func 函数指针为空")
-            return None
-
-        display_id = self.get_display_id()
-
-        ret = self.capture_display_func(
-            self.mumu_handle,
-            display_id,
-            len(self.display_buffer),
-            ctypes.byref(ctypes.c_int(self.display_width)),
-            ctypes.byref(ctypes.c_int(self.display_height)),
-            self.display_buffer
-        )
-
-        if ret:
-            # 尝试重新加载
-            if not self.reload():
-                self.logger.warning(f"获取屏幕截图失败，Reload失败. ret={ret}, handle={self.mumu_handle}, "
-                                    f"display_id={display_id}, buffer_size={len(self.display_buffer)}, "
-                                    f"width={self.display_width}, height={self.display_height}")
-                return None
-
-            # 重新尝试
-            # 如果返回0说明正常截图
-            ret = self.capture_display_func(
-                self.mumu_handle,
-                display_id,
-                len(self.display_buffer),
-                ctypes.byref(ctypes.c_int(self.display_width)),
-                ctypes.byref(ctypes.c_int(self.display_height)),
-                self.display_buffer
-            )
-
-            if ret:
-                self.logger.warning(f"Reload之后截图失败. ret={ret}, handle={self.mumu_handle}, "
-                                    f"display_id={display_id}, buffer_size={len(self.display_buffer)}, "
-                                    f"width={self.display_width}, height={self.display_height}")
-                return None
-
-        # 转换为 OpenCV 图像
-        raw = np.frombuffer(self.display_buffer, dtype=np.uint8).reshape(self.display_height, self.display_width, 4)
-        bgr = cv2.cvtColor(raw, cv2.COLOR_RGBA2BGR)
-        if bgr.shape[:2] < (900, 1600):
-            bgr = cv2.resize(bgr, (1600, 900), interpolation=cv2.INTER_CUBIC)
-        elif bgr.shape[:2] > (900, 1600):
-            bgr = cv2.resize(bgr, (1600, 900), interpolation=cv2.INTER_AREA)
-        dst = cv2.flip(bgr, 0)  # 垂直翻转
-
-        return dst
-
-    def load_mumu_library(self):
+    def _load_mumu_library(self):
         """加载 MuMu 模拟器的 DLL 库"""
         # 尝试不同的 DLL 路径
         new_lib_path = os.path.join(self.current_mumu_path, "nx_device/12.0/shell/sdk/external_renderer_ipc.dll")
@@ -236,7 +180,7 @@ class MuMu:
 
         return True
 
-    def connect_mumu(self):
+    def _connect_mumu(self):
         """连接到 MuMu 模拟器实例"""
         if not self.connect_func:
             self.logger.warning("connect_func 函数指针为空")
@@ -251,13 +195,13 @@ class MuMu:
         self.logger.info(f"连接到MuMu模拟器成功: 安装路径={self.current_mumu_path}, 实例化序号={self.current_inst_index}")
         return True
 
-    def init_screencap(self):
+    def _init_screencap(self):
         """初始化屏幕捕获功能"""
         if not self.capture_display_func:
             self.logger.warning("capture_display_func 函数指针为空")
             return False
 
-        display_id = self.get_display_id()
+        display_id = self._get_display_id()
         self.logger.debug(f"获取 Display id: {display_id}")
 
         # 先获取屏幕尺寸
@@ -280,7 +224,7 @@ class MuMu:
         self.logger.debug(f"Display 初始化: width={self.display_width}, height={self.display_height}, buffer_size={buffer_size}")
         return True
 
-    def get_display_id(self):
+    def _get_display_id(self):
         if not self.get_display_id_func:
             self.logger.warning("get_display_id_func_ 函数指针为空，MuMu模拟器版本过低，请升级")
             return 0
@@ -291,7 +235,7 @@ class MuMu:
             return 0
         return display_id
 
-    def disconnect_mumu(self):
+    def _disconnect_mumu(self):
         """断开与模拟器的连接"""
         self.logger.debug(f"断开MuMu模拟器连接: Handle={self.mumu_handle}")
 
@@ -299,6 +243,63 @@ class MuMu:
             self.disconnect_func(self.mumu_handle)
             self.mumu_handle = 0
 
+    def release(self):
+        """释放资源并断开连接"""
+        self.inited = False
+        self._disconnect_mumu()
+
+    def screencap(self):
+        """获取屏幕截图"""
+        if not self.capture_display_func:
+            self.logger.warning("capture_display_func 函数指针为空")
+            return None
+
+        display_id = self._get_display_id()
+
+        ret = self.capture_display_func(
+            self.mumu_handle,
+            display_id,
+            len(self.display_buffer),
+            ctypes.byref(ctypes.c_int(self.display_width)),
+            ctypes.byref(ctypes.c_int(self.display_height)),
+            self.display_buffer
+        )
+
+        if ret:
+            # 尝试重新加载
+            if not self._reload():
+                self.logger.warning(f"获取屏幕截图失败，Reload失败. ret={ret}, handle={self.mumu_handle}, "
+                                    f"display_id={display_id}, buffer_size={len(self.display_buffer)}, "
+                                    f"width={self.display_width}, height={self.display_height}")
+                return None
+
+            # 重新尝试
+            # 如果返回0说明正常截图
+            ret = self.capture_display_func(
+                self.mumu_handle,
+                display_id,
+                len(self.display_buffer),
+                ctypes.byref(ctypes.c_int(self.display_width)),
+                ctypes.byref(ctypes.c_int(self.display_height)),
+                self.display_buffer
+            )
+
+            if ret:
+                self.logger.warning(f"Reload之后截图失败. ret={ret}, handle={self.mumu_handle}, "
+                                    f"display_id={display_id}, buffer_size={len(self.display_buffer)}, "
+                                    f"width={self.display_width}, height={self.display_height}")
+                return None
+
+        # 转换为 OpenCV 图像
+        raw = np.frombuffer(self.display_buffer, dtype=np.uint8).reshape(self.display_height, self.display_width, 4)
+        bgr = cv2.cvtColor(raw, cv2.COLOR_RGBA2BGR)
+        if bgr.shape[:2] < (900, 1600):
+            bgr = cv2.resize(bgr, (1600, 900), interpolation=cv2.INTER_CUBIC)
+        elif bgr.shape[:2] > (900, 1600):
+            bgr = cv2.resize(bgr, (1600, 900), interpolation=cv2.INTER_AREA)
+        dst = cv2.flip(bgr, 0)  # 垂直翻转
+
+        return dst
 
 if __name__ == "__main__":
     # 创建实例并初始化

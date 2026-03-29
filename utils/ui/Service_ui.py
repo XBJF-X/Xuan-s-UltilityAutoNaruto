@@ -471,7 +471,7 @@ class Ui_Service(object):
         self.scrollArea.setWidgetResizable(True)
         self.scroll_tasks_area_content = QWidget()
         self.scroll_tasks_area_content.setObjectName(u"scroll_tasks_area_content")
-        self.scroll_tasks_area_content.setGeometry(QRect(0, 0, 232, 609))
+        self.scroll_tasks_area_content.setGeometry(QRect(0, 0, 84, 20))
         self.scrollArea.setWidget(self.scroll_tasks_area_content)
 
         self.verticalLayout.addWidget(self.scrollArea)
@@ -621,7 +621,7 @@ class Ui_Service(object):
         self.scrollArea_8.setAlignment(Qt.AlignmentFlag.AlignLeading|Qt.AlignmentFlag.AlignLeft|Qt.AlignmentFlag.AlignVCenter)
         self.scrollAreaWidgetContents_5 = QWidget()
         self.scrollAreaWidgetContents_5.setObjectName(u"scrollAreaWidgetContents_5")
-        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, -81, 877, 1144))
+        self.scrollAreaWidgetContents_5.setGeometry(QRect(0, 0, 877, 1139))
         self.verticalLayout_25 = QVBoxLayout(self.scrollAreaWidgetContents_5)
         self.verticalLayout_25.setSpacing(20)
         self.verticalLayout_25.setObjectName(u"verticalLayout_25")
@@ -859,7 +859,7 @@ class Ui_Service(object):
         self.control_mode.addItem("")
         self.control_mode.addItem("")
         self.control_mode.setObjectName(u"control_mode")
-        self.control_mode.setMaximumSize(QSize(120, 16777215))
+        self.control_mode.setMaximumSize(QSize(150, 16777215))
 
         self.gridLayout_5.addWidget(self.control_mode, 1, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
 
@@ -1859,7 +1859,8 @@ class Ui_Service(object):
         self.screen_mode.currentIndexChanged.connect(self.screen_mode_settings_stackedWidget.setCurrentIndex)
 
         self.overview_panel_button.setDefault(False)
-        self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(1)
+        self.control_mode.setCurrentIndex(0)
         self.screen_mode_settings_stackedWidget.setCurrentIndex(2)
 
 
@@ -1880,13 +1881,14 @@ class Ui_Service(object):
         self.serial.setText("")
         self.serial.setPlaceholderText(QCoreApplication.translate("Service", u"127.0.0.1:5555", None))
 #if QT_CONFIG(tooltip)
-        self.label_19.setToolTip(QCoreApplication.translate("Service", u"ADB\uff1a\u901a\u7528\u65b9\u6848\uff0c\u6027\u80fd\u4e0d\u9ad8\n"
-"U2\uff1auiautomator2", None))
+        self.label_19.setToolTip(QCoreApplication.translate("Service", u"ADB\uff1a\u5b89\u5353\u539f\u751f\u63a7\u5236\u65b9\u6848\uff0c\u6027\u80fd\u4e0d\u9ad8\n"
+"U2\uff1a\u6027\u80fd\u9002\u4e2d\n"
+"MiniTouch\uff1a\u9ad8\u6027\u80fd\uff0c\u63a8\u8350", None))
 #endif // QT_CONFIG(tooltip)
         self.label_19.setText(QCoreApplication.translate("Service", u"\u63a7\u5236\u6a21\u5f0f\u9009\u62e9", None))
         self.label_20.setText(QCoreApplication.translate("Service", u"\u51b3\u5b9a\u4f7f\u7528\u54ea\u79cd\u65b9\u6848\u63a7\u5236\u6a21\u62df\u5668\n"
 "\u9f20\u6807\u60ac\u505c\u67e5\u770b\u8be6\u7ec6\u4ecb\u7ecd", None))
-        self.control_mode.setItemText(0, QCoreApplication.translate("Service", u"ADB", None))
+        self.control_mode.setItemText(0, QCoreApplication.translate("Service", u"MiniTouch", None))
         self.control_mode.setItemText(1, QCoreApplication.translate("Service", u"U2", None))
 
 #if QT_CONFIG(tooltip)

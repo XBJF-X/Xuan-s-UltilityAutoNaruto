@@ -5,7 +5,6 @@ from utils.Base.Enums import KEY_INDEX
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
-# Todo：自动叛忍任务
 class PanRenLaiXi(BaseTask):
     source_scene = "主场景-组织"
     task_max_duration = timedelta(minutes=40)

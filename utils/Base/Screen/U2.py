@@ -2,17 +2,18 @@ import cv2
 import uiautomator2 as u2
 
 from utils.Base.Config import Config
+from utils.Base.Screen import Screen
 
 
-class U2:
+class U2(Screen):
     def __init__(self, config: Config, parent_logger):
+        super().__init__(config, parent_logger)
         self.logger = parent_logger.getChild(self.__class__.__name__ + "_Screen")
         try:
-            self.config = config
             self.serial = config.get_config("串口")
             self.u2_device: u2.Device = None
             self.screen_size = None
-            self.ready = False
+            self._ready = False
 
         except Exception as e:
             self.logger.error(e)
@@ -21,10 +22,10 @@ class U2:
         try:
             self.u2_device = u2.connect(self.serial)
             self.screen_size = self.u2_device.window_size()  # (width, height)
-            self.ready = True
+            self._ready = True
         except Exception as e:
             self.logger.error("[U2]实例化失败")
-            self.ready = False
+            self._ready = False
 
     def screencap(self):
         # 获取截图的二进制数据

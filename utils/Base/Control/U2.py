@@ -1,34 +1,41 @@
 import logging
 import threading
 import time
+from typing import Tuple
 
 import uiautomator2 as u2
 
 from utils.Base.Config import Config
+from utils.Base.Control import Control
 
 
-class U2:
+class U2(Control):
     """
     使用uiautomator2进行控制的控制方案
     """
 
     def __init__(self, config: Config, parent_logger, serial=None):
-        self.logger = parent_logger.getChild(self.__class__.__name__ + "_Control") if parent_logger else logging.getLogger(self.__class__.__name__ + "_Control")
-        self.config = config
+        super().__init__(config, parent_logger)
         if serial:
             self.serial = serial
         else:
             self.serial = config.get_config("串口")
-        self.screen_size = None
         self.u2_device: u2.Device | None = None
         self._lock = threading.Lock()  # 新增：设备操作锁，避免多线程竞争
         try:
             self.u2_device = u2.connect(self.serial)
-            self.screen_size = self.u2_device.window_size()  # (width, height)
-            self.logger.info(f"成功连接设备 {self.serial}，屏幕尺寸 {self.screen_size}")
+            self.screen_size = self.get_screen_size()
+            self.logger.info(f"成功连接设备 {self.serial}，屏幕尺寸 {self.get_screen_size}")
         except Exception as e:
             self.u2_device = None
             self.logger.error(f"连接设备失败: {e}")
+
+    @property
+    def ready(self):
+        return self.u2_device is not None
+
+    def get_screen_size(self) -> Tuple[int, int]:
+        return self.u2_device.window_size()  # (width, height)
 
     def click(self, x: int, y: int, duration: float = 0.03):
         if not self.u2_device:
@@ -36,6 +43,7 @@ class U2:
             return
         with self._lock:  # 加锁：同一时间仅一个线程操作设备
             try:
+                self.logger.debug(f"执行点击: ({x}, {y})")
                 self.u2_device.touch.down(x, y)
                 # self.logger.debug(f"[PressDown] ({x},{y})")
                 time.sleep(duration)
@@ -46,7 +54,7 @@ class U2:
                 self.logger.error(f"点击失败 ({x},{y}): {e}")
                 self._reconnect()  # 连接异常时重连
 
-    def swipe(self, start_coordinate, end_coordinate, duration=0.5, wait_time=0.2):
+    def swipe(self, start_coordinate, end_coordinate, duration=0.5):
         def direction_judge():
             if abs(start_coordinate[0] - end_coordinate[0]) >= abs(
                     start_coordinate[1] - end_coordinate[1]):
@@ -101,7 +109,6 @@ class U2:
                     end_coordinate[0], end_coordinate[1],
                     duration
                 )
-                time.sleep(wait_time)
             except Exception as e:
                 self.logger.error(f"滑动失败: {e}")
                 self._reconnect()
@@ -205,7 +212,7 @@ class U2:
         try:
             self.logger.info("尝试重连设备...")
             self.u2_device = u2.connect(self.serial)
-            self.screen_size = self.u2_device.window_size()
+            self.get_screen_size = self.u2_device.window_size()
             self.logger.info("重连设备成功")
         except Exception as e:
             self.u2_device = None

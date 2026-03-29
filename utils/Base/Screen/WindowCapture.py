@@ -8,14 +8,14 @@ import win32gui
 import win32ui
 
 from utils.Base.Config import Config
+from utils.Base.Screen import Screen
 
-# 提前加载user32库并定义PrintWindow函数（减少每次调用的开销）
 user32 = ctypes.WinDLL("user32", use_last_error=True)
 user32.PrintWindow.argtypes = [wintypes.HWND, wintypes.HDC, wintypes.UINT]
 user32.PrintWindow.restype = wintypes.BOOL
 
 
-class WindowCapture:
+class WindowCapture(Screen):
     width2height = {
         2560: 1440,
         1920: 1080,
@@ -24,9 +24,8 @@ class WindowCapture:
     }
 
     def __init__(self, config: Config, parent_logger):
-        self.logger = parent_logger.getChild(self.__class__.__name__)
-        self.config = config
-        self.ready = False
+        super().__init__(config, parent_logger)
+        self._ready = False
         self.hwnd = None
         self.left = None
         self.top = None
@@ -40,20 +39,34 @@ class WindowCapture:
         self.hwnd_dc = None
         self.bmp_handle = None
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.release()
+
+    def __del__(self):
+        try:  # 防止析构时抛出异常导致崩溃
+            if any([self.save_dc, self.mfc_dc, self.hwnd_dc, self.bmp_handle]):
+                self.logger.warning("资源未显式释放! 正在自动清理")
+                self.release()
+        except Exception:  # 确保析构不会崩溃
+            self.logger.error("析构出错")
+
     def init(self):
-        self.callback_all_windows()
-        self.hwnd = self.find_hwnd()
+        self._callback_all_windows()
+        self.hwnd = self._find_hwnd()
 
         if not self.hwnd:
             raise Exception("未找到目标窗口，请检查窗口是否打开，未被最小化")
 
         try:
             self._init_gdi_objects()
-            self.ready = True
+            self._ready = True
         except Exception:  # 初始化失败时立即清理
             self.release()
             self.logger.error("[WindowCapture]实例化失败")
-            self.ready = False
+            self._ready = False
             raise
 
     def _init_gdi_objects(self):
@@ -81,6 +94,52 @@ class WindowCapture:
 
         # 预分配numpy数组缓冲区（避免每次创建新数组）
         self.img_buffer = np.empty((self.height, self.width, 4), dtype=np.uint8)
+
+    def _find_hwnd(self):
+        """
+        查找窗口句柄
+        :return: hwnd对象
+        """
+        for window_title in self.config.get_config("窗口标题"):
+            hwnd = win32gui.FindWindow(None, window_title)
+            if not hwnd:
+                self.logger.warning(f"未找到窗口: 标题：{window_title}")
+            else:
+                self.logger.info(f"找到窗口: 标题：{window_title}")
+                return hwnd
+        for window_class in self.config.get_config("窗口类名"):
+            hwnd = win32gui.FindWindow(window_class, None)
+            if not hwnd:
+                self.logger.warning(f"未找到窗口: 类名：{window_class}")
+            else:
+                self.logger.info(f"找到窗口: 类名：{window_class}")
+                return hwnd
+
+        return None
+
+    def _callback_all_windows(self):
+        """遍历所有窗口并打印类名和标题"""
+        windows = []
+
+        def callback(hwnd, extra):
+            # 过滤不可见窗口（可选）
+            if win32gui.IsWindowVisible(hwnd):
+                # 获取窗口标题
+                window_title = win32gui.GetWindowText(hwnd)
+                # 获取窗口类名
+                window_class = win32gui.GetClassName(hwnd)
+                if window_title or window_class:  # 过滤空标题和空类名的窗口
+                    windows.append((hwnd, window_class, window_title))
+
+        # 枚举所有顶级窗口
+        win32gui.EnumWindows(callback, None)
+
+        # 打印结果
+        self.logger.debug(f"共找到 {len(windows)} 个可见窗口：")
+        self.logger.debug("窗口句柄\t类名\t\t标题")
+        self.logger.debug("-" * 80)
+        for hwnd, class_name, title in windows:
+            self.logger.debug(f"{hwnd}\t{class_name.ljust(15)}\t{title}")
 
     def screencap(self):
         """捕获窗口画面，支持被遮挡或最小化状态"""
@@ -112,28 +171,6 @@ class WindowCapture:
         self.release()
         return img
 
-    def find_hwnd(self):
-        """
-        查找窗口句柄
-        :return: hwnd对象
-        """
-        for window_title in self.config.get_config("窗口标题"):
-            hwnd = win32gui.FindWindow(None, window_title)
-            if not hwnd:
-                self.logger.warning(f"未找到窗口: 标题：{window_title}")
-            else:
-                self.logger.info(f"找到窗口: 标题：{window_title}")
-                return hwnd
-        for window_class in self.config.get_config("窗口类名"):
-            hwnd = win32gui.FindWindow(window_class, None)
-            if not hwnd:
-                self.logger.warning(f"未找到窗口: 类名：{window_class}")
-            else:
-                self.logger.info(f"找到窗口: 类名：{window_class}")
-                return hwnd
-
-        return None
-
     def release(self):
         """必须显式调用的资源释放方法"""
         if hasattr(self, 'save_dc') and self.save_dc:
@@ -149,46 +186,6 @@ class WindowCapture:
             win32gui.DeleteObject(self.bmp_handle)
             self.bmp_handle = None
         # self.logger.debug("截图实例资源已清除")
-
-    def callback_all_windows(self):
-        """遍历所有窗口并打印类名和标题"""
-        windows = []
-
-        def callback(hwnd, extra):
-            # 过滤不可见窗口（可选）
-            if win32gui.IsWindowVisible(hwnd):
-                # 获取窗口标题
-                window_title = win32gui.GetWindowText(hwnd)
-                # 获取窗口类名
-                window_class = win32gui.GetClassName(hwnd)
-                if window_title or window_class:  # 过滤空标题和空类名的窗口
-                    windows.append((hwnd, window_class, window_title))
-
-        # 枚举所有顶级窗口
-        win32gui.EnumWindows(callback, None)
-
-        # 打印结果
-        self.logger.debug(f"共找到 {len(windows)} 个可见窗口：")
-        self.logger.debug("窗口句柄\t类名\t\t标题")
-        self.logger.debug("-" * 80)
-        for hwnd, class_name, title in windows:
-            self.logger.debug(f"{hwnd}\t{class_name.ljust(15)}\t{title}")
-
-    # 保障2：上下文管理器（with语法自动释放）
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.release()
-
-    # 保障3：析构函数兜底（非可靠但必要）
-    def __del__(self):
-        try:  # 防止析构时抛出异常导致崩溃
-            if any([self.save_dc, self.mfc_dc, self.hwnd_dc, self.bmp_handle]):
-                self.logger.warning("资源未显式释放! 正在自动清理")
-                self.release()
-        except Exception:  # 确保析构不会崩溃
-            self.logger.error("析构出错")
 
 
 if __name__ == "__main__":

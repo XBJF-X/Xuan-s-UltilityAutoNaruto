@@ -475,7 +475,7 @@ QTreeView QScrollBar::add-line:vertical {
             }</string>
            </property>
            <property name="currentIndex">
-            <number>0</number>
+            <number>1</number>
            </property>
            <widget class="QWidget" name="Overview_Panel_widget">
             <property name="enabled">
@@ -1131,8 +1131,8 @@ QScrollArea &gt; QWidget &gt; QWidget {
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>232</width>
-                        <height>609</height>
+                        <width>84</width>
+                        <height>20</height>
                        </rect>
                       </property>
                      </widget>
@@ -1358,9 +1358,9 @@ QCheckBox::indicator:disabled {
                    <property name="geometry">
                     <rect>
                      <x>0</x>
-                     <y>-81</y>
+                     <y>0</y>
                      <width>877</width>
-                     <height>1144</height>
+                     <height>1139</height>
                     </rect>
                    </property>
                    <layout class="QVBoxLayout" name="verticalLayout_25">
@@ -1627,8 +1627,9 @@ border-radius:1px;
                            <item>
                             <widget class="QLabel" name="label_19">
                              <property name="toolTip">
-                              <string>ADB：通用方案，性能不高
-U2：uiautomator2</string>
+                              <string>ADB：安卓原生控制方案，性能不高
+U2：性能适中
+MiniTouch：高性能，推荐</string>
                              </property>
                              <property name="styleSheet">
                               <string notr="true">QLabel QToolTip {
@@ -1668,13 +1669,16 @@ margin-left:18px;</string>
                           <widget class="QComboBox" name="control_mode">
                            <property name="maximumSize">
                             <size>
-                             <width>120</width>
+                             <width>150</width>
                              <height>16777215</height>
                             </size>
                            </property>
+                           <property name="currentIndex">
+                            <number>0</number>
+                           </property>
                            <item>
                             <property name="text">
-                             <string>ADB</string>
+                             <string>MiniTouch</string>
                             </property>
                            </item>
                            <item>

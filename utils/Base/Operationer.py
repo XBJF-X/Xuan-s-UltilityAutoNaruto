@@ -589,7 +589,7 @@ class Operationer:
     def back_to_naruto(self):
         front_app = self.device.current_app()
         while front_app["package"] != self.device.package_name:
-            self.device.controller.app_start(self.device.package_name)
+            self.device.control_manager.app_start(self.device.package_name)
             front_app = self.device.current_app()
 
     def screen_cap(self):

@@ -264,6 +264,7 @@ class TransitionManager:
         @self.register("叛忍来袭-是否开启-双倍", "组织")
         @self.register("叛忍来袭-战斗中", "叛忍来袭-内部")
         @self.register("叛忍来袭-单局结算", "叛忍来袭-内部")
+        @self.register("忍术对战-调整阵容", "忍术对战")
         def _(operationer: Operationer, *args, **kwargs):
             """通用返回函数，点击[X]"""
             operationer.click_and_wait("X")
@@ -366,15 +367,17 @@ class TransitionManager:
         def _(operationer: Operationer, *args, **kwargs):
             """主场景跳转分场景函数，滑动屏幕找到[传入的目标ID]并点击"""
             operationer.swipe_and_wait(
-                (202, 150),
-                (202, 750),
-                duration=0.1,
-                times=7
+                (200, 150),
+                (200, 750),
+                duration=0.3,
+                times=8,
+                wait_time=0.1
             )
 
             for i in range(8):
                 if operationer.click_and_wait(
-                        kwargs.get("target_id")
+                    kwargs.get("target_id"),
+                    max_time=0.4
                 ):
                     operationer.click_and_wait(
                         "即刻前往",
@@ -384,11 +387,13 @@ class TransitionManager:
                 if i == 7:
                     break
                 operationer.swipe_and_wait(
-                    (202, 763),
-                    (202, 150),
-                    duration=0.8
+                    (200, 763),
+                    (200, 150),
+                    duration=0.7,
+                    wait_time=0.2
                 )
-                operationer.click_and_wait("空白", wait_time=0.1)
+                # operationer.click_and_wait("空白", wait_time=0.2)
+            operationer.click_and_wait("X")
             #
             # if operationer.search_and_click(
             #         [
@@ -432,8 +437,9 @@ class TransitionManager:
             operationer.swipe_and_wait(
                 (414, 214),
                 (414, 736),
-                duration=0.2,
-                times=7
+                duration=0.3,
+                times=8,
+                wait_time=0.1
             )
             for i in range(8):
                 if operationer.click_and_wait(
@@ -449,9 +455,11 @@ class TransitionManager:
                 operationer.swipe_and_wait(
                     (414, 736),
                     (414, 214),
-                    duration=0.8,
+                    duration=0.7,
+                    wait_time=0.2
                 )
-                operationer.click_and_wait("空白", wait_time=0.1)
+                # operationer.click_and_wait("空白", wait_time=0.1)
+            operationer.click_and_wait("X")
             # if operationer.search_and_click(
             #         [
             #             kwargs.get("target_id")

@@ -1,4 +1,5 @@
 import ctypes
+import logging
 import os
 from ctypes import wintypes, POINTER, c_void_p, c_uint, c_char, c_ubyte, \
     create_string_buffer
@@ -8,6 +9,7 @@ import cv2
 import numpy as np
 
 from utils.Base.Config import Config
+from utils.Base.Screen import Screen
 
 # 定义 Windows API 函数
 kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
@@ -104,34 +106,33 @@ CreateScreenShotInstanceFunc = ctypes.WINFUNCTYPE(
 )
 
 
-class LD:
+class LD(Screen):
     """LD 模拟器控制器，实现截图功能"""
 
-    def __init__(self, config: Config, parent_logger):
-        self.logger = parent_logger.getChild(self.__class__.__name__)
-        self.config = config
+    def __init__(self, config: Config, parent_logger=None):
+        super().__init__(config, parent_logger)
         self.dll_handle = None  # ldopengl64.dll 句柄
         self.screenshot_instance = None  # IScreenShotClass 实例
         self.emu_info = LDLIST2()  # 模拟器信息
-        self.ready = False
+        self._ready = False
 
     def init(self):
         try:
-            self.set_ld_path()
-            if not self.connect_emu():
+            self._set_ld_path()
+            if not self._connect_emu():
                 self.logger.error("[LD]实例化失败")
-                self.ready = False
+                self._ready = False
                 return
-            self.ready = True
+            self._ready = True
         except Exception as e:
             self.logger.error("[LD]实例化失败")
-            self.ready = False
+            self._ready = False
 
     def __del__(self):
         """析构函数，释放资源"""
         self.release()
 
-    def set_ld_path(self) -> bool:
+    def _set_ld_path(self) -> bool:
         """设置 LD 模拟器安装路径"""
         if not os.path.exists(self.config.get_config('雷电安装路径')):
             self.logger.warning(f"LD 模拟器路径不存在: {self.config.get_config('雷电安装路径')}")
@@ -144,7 +145,7 @@ class LD:
             return False
         return True
 
-    def get_emu_list(self) -> List[LDLIST2]:
+    def _get_emu_list(self) -> List[LDLIST2]:
         """获取所有模拟器实例列表（通过 ldconsole.exe list2 命令）"""
         if not self.config.get_config('雷电安装路径'):
             self.logger.warning("请先设置 LD 模拟器路径")
@@ -167,10 +168,10 @@ class LD:
             self.logger.error(f"获取模拟器列表出错: {str(e)}")
             return []
 
-    def connect_emu(self) -> bool:
+    def _connect_emu(self) -> bool:
         """连接到指定索引的模拟器实例"""
         # 获取模拟器列表
-        emu_list = self.get_emu_list()
+        emu_list = self._get_emu_list()
         if not emu_list:
             return False
 
@@ -199,63 +200,6 @@ class LD:
             return False
 
         return True
-
-    def screencap(self) -> Optional[np.ndarray]:
-        """捕获当前模拟器屏幕截图"""
-        if not self.screenshot_instance:
-            self.logger.warning("未连接到模拟器，请先调用 connect_emu 方法")
-            return None
-
-        # 调用 cap() 方法获取像素数据
-        try:
-            # 获取虚函数表中的 cap 方法
-            cap_func = self.screenshot_instance.contents.lpVtbl.contents.cap
-            pixels = cap_func(self.screenshot_instance)
-
-            if not pixels:
-                self.logger.warning("截图失败，返回空指针")
-                return None
-
-            # 转换像素数据为 OpenCV 图像（BGR 格式，3通道）
-            width = self.emu_info.width
-            height = self.emu_info.height
-            buffer_size = width * height * 3  # 3字节 per pixel (BGR)
-
-            # 将像素指针转换为字节数组
-            pixels_array = ctypes.cast(
-                pixels,
-                POINTER(c_ubyte * buffer_size)
-            ).contents
-
-            # 转换为 numpy 数组并重塑为图像尺寸
-            img = np.frombuffer(pixels_array, dtype=np.uint8)
-            img = img.reshape((height, width, 3))
-            if img.shape[:2] < (900, 1600):
-                img = cv2.resize(img, (1600, 900), interpolation=cv2.INTER_CUBIC)
-            elif img.shape[:2] > (900, 1600):
-                img = cv2.resize(img, (1600, 900), interpolation=cv2.INTER_AREA)
-            # 垂直翻转图像（与 C++ 代码一致）
-            img = cv2.flip(img, 0)
-
-            return img
-
-        except Exception as e:
-            self.logger.error(f"截图出错: {str(e)}")
-            return None
-
-    def release(self) -> None:
-        """释放资源"""
-        # # 调用 release() 方法释放截图实例
-        # if self.screenshot_instance:
-        #     try:
-        #         release_func = self.screenshot_instance.contents.lpVtbl.contents.release
-        #         release_func(self.screenshot_instance)
-        #     except Exception as e:
-        #         self.logger.error(f"释放截图实例出错: {str(e)}")
-        #     self.screenshot_instance = None
-
-        # 不需要手动释放 DLL，Python 会自动处理
-        self.dll_handle = None
 
     def _load_ld_opengl_dll(self) -> bool:
         """加载 ldopengl64.dll 并获取函数地址"""
@@ -391,3 +335,60 @@ class LD:
                 continue
 
         return emu_list
+
+    def screencap(self) -> Optional[np.ndarray]:
+        """捕获当前模拟器屏幕截图"""
+        if not self.screenshot_instance:
+            self.logger.warning("未连接到模拟器，请先调用 connect_emu 方法")
+            return None
+
+        # 调用 cap() 方法获取像素数据
+        try:
+            # 获取虚函数表中的 cap 方法
+            cap_func = self.screenshot_instance.contents.lpVtbl.contents.cap
+            pixels = cap_func(self.screenshot_instance)
+
+            if not pixels:
+                self.logger.warning("截图失败，返回空指针")
+                return None
+
+            # 转换像素数据为 OpenCV 图像（BGR 格式，3通道）
+            width = self.emu_info.width
+            height = self.emu_info.height
+            buffer_size = width * height * 3  # 3字节 per pixel (BGR)
+
+            # 将像素指针转换为字节数组
+            pixels_array = ctypes.cast(
+                pixels,
+                POINTER(c_ubyte * buffer_size)
+            ).contents
+
+            # 转换为 numpy 数组并重塑为图像尺寸
+            img = np.frombuffer(pixels_array, dtype=np.uint8)
+            img = img.reshape((height, width, 3))
+            if img.shape[:2] < (900, 1600):
+                img = cv2.resize(img, (1600, 900), interpolation=cv2.INTER_CUBIC)
+            elif img.shape[:2] > (900, 1600):
+                img = cv2.resize(img, (1600, 900), interpolation=cv2.INTER_AREA)
+            # 垂直翻转图像（与 C++ 代码一致）
+            img = cv2.flip(img, 0)
+
+            return img
+
+        except Exception as e:
+            self.logger.error(f"截图出错: {str(e)}")
+            return None
+
+    def release(self) -> None:
+        """释放资源"""
+        # # 调用 release() 方法释放截图实例
+        # if self.screenshot_instance:
+        #     try:
+        #         release_func = self.screenshot_instance.contents.lpVtbl.contents.release
+        #         release_func(self.screenshot_instance)
+        #     except Exception as e:
+        #         self.logger.error(f"释放截图实例出错: {str(e)}")
+        #     self.screenshot_instance = None
+
+        # 不需要手动释放 DLL，Python 会自动处理
+        self.dll_handle = None

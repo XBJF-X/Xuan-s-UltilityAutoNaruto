@@ -1,31 +1,6 @@
 import enum
 
 
-class TaskType(enum.IntEnum):
-    """任务类型枚举"""
-    DAILY = 0
-    WEEKLY = 1
-    MONTHLY = 2
-    PERIODIC = 3
-    AVTIVITY = 4
-    TEMP = 5
-
-
-class ScreenMode(enum.IntEnum):
-    """截图模式枚举"""
-    DroidCastRaw = 0
-    WindowCapture = 1
-    U2 = 2
-    MuMu = 3
-    LD = 4
-
-
-class ControlMode(enum.IntEnum):
-    """控制模式枚举"""
-    ADB = 0
-    U2 = 1
-
-
 class ElementType(enum.IntEnum):
     """元素类型"""
     IMG = 0

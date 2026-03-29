@@ -77,6 +77,9 @@ class MeiRiShengChang(BaseTask):
         )
         match flag:
             case 0:
+                # self.checked = True
+                # self.operationer.click_and_wait("X")
+                # return False
                 self.checked = False
                 self.operationer.click_and_wait("X")
                 self.logger.info("结束执行")

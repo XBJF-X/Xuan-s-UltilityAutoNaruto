@@ -4,6 +4,7 @@ import inspect
 import sys
 import threading
 import time
+from enum import IntEnum
 from logging import Logger
 from pathlib import Path
 from types import FrameType
@@ -14,10 +15,20 @@ from PySide6.QtCore import Signal
 
 from StaticFunctions import get_real_path
 from utils.Base.Config import Config
-from utils.Base.Enums import TaskType
+
 from utils.Base.Exceptions import StepFailedError, TimeOut, Stop, EndEarly
 from utils.Base.Operationer import Operationer
 from utils.Base.Scene.TransitionManager import TransitionManager
+
+
+class TaskType(IntEnum):
+    """任务类型枚举"""
+    DAILY = 0
+    WEEKLY = 1
+    MONTHLY = 2
+    PERIODIC = 3
+    AVTIVITY = 4
+    TEMP = 5
 
 
 class TransitionOn:

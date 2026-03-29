@@ -11,9 +11,10 @@ from requests import Session
 
 from StaticFunctions import get_real_path
 from utils.Base.Config import Config
+from utils.Base.Screen import Screen
 
 
-class DroidCastRaw:
+class DroidCastRaw(Screen):
     adb_command = ['adb']
 
     class DeviceConnect(Exception):
@@ -32,14 +33,13 @@ class DroidCastRaw:
         pass
 
     def __init__(self, config: Config, parent_logger):
-        self.logger = parent_logger.getChild(self.__class__.__name__)
-        self.config = config
+        super().__init__(config, parent_logger)
         self.serial = config.get_config("串口")  # 设备序列号
         self.device_port = 8080  # 设备上的服务端口
         self.pc_port = 53516  # 电脑上的转发端口
         self.session = Session()
         self.service_thread = None
-        self.ready = False
+        self._ready = False
 
     def init(self):
         signal.signal(signal.SIGINT, self._handler)
@@ -51,7 +51,7 @@ class DroidCastRaw:
             self._push_apk()
             self._start_droidcastraw_service()
             Timer(2, self._forward_port).start()
-            self.ready = True
+            self._ready = True
         except self.DeviceConnect as e:
             self.logger.error(f"设备连接错误：{e}")
         except self.PushApk as e:
@@ -60,7 +60,7 @@ class DroidCastRaw:
             self.logger.error(f"端口转发错误: {e}")
         except Exception as e:
             self.logger.error(f"未知错误：{e}")
-            self.ready = False
+            self._ready = False
 
     def _cleanup_ports(self):
         """连接前清理设备和电脑上的端口占用"""
