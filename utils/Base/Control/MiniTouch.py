@@ -42,7 +42,7 @@ class MiniTouch(Control):
 
             self.u2 = U2(config, parent_logger, self.device_serial)
             self.screen_size = self.get_screen_size()
-            self.logger.info(f"MiniTouch 初始化成功 | 分辨率:{self.max_x + 1}x{self.max_y + 1}")
+            self.logger.info(f"MiniTouch 初始化成功 | 分辨率:{self.screen_size[0]}x{self.screen_size[1]}")
         except Exception as e:
             self.logger.error(f"MiniTouch 初始化失败: {e}")
             self._released = True
@@ -56,7 +56,7 @@ class MiniTouch(Control):
 
     def get_screen_size(self) -> Tuple[int, int]:
         """Control约束：屏幕尺寸（兼容原有逻辑）"""
-        return self.max_x + 1, self.max_y + 1
+        return self.u2.screen_size
 
     def release(self):
         if self._released:

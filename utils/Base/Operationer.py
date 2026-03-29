@@ -223,8 +223,7 @@ class Operationer:
                     raise Stop
                 time_1 = time.perf_counter()
                 if element.type == ElementType.COORDINATE:
-                    self.logger.debug(f"[{element.name}] Click"
-                                      f" ({element.coordinate_x},{element.coordinate_y})")
+
                     self.device.click(element.coordinate_x, element.coordinate_y, times=click_times)
                     self.screen_save_signal.emit(self.task_name)
                     if wait_time is not None:
@@ -247,7 +246,7 @@ class Operationer:
                         # 按照元素可点击位置相对于模版左上角，相对整体的比例确定点击坐标
                         x, y = (coordinate[0] * (1 - x_ratio) + coordinate[2] * x_ratio), (
                                 coordinate[1] * (1 - y_ratio) + coordinate[3] * y_ratio)
-                        self.logger.debug(f"[{element.name}] Click ({x},{y})")
+
                         self.device.click(x, y, times=click_times)
                         self.screen_save_signal.emit(self.task_name)
                         if wait_time is not None:
@@ -268,8 +267,7 @@ class Operationer:
             while time.perf_counter() - start_time < max_time:
                 time_1 = time.perf_counter()
                 if element.type == ElementType.COORDINATE:
-                    self.logger.debug(f"[{element.name}] Click"
-                                      f" ({element.coordinate_x},{element.coordinate_y})")
+
                     self.device.click(element.coordinate_x, element.coordinate_y, times=click_times)
                     self.screen_save_signal.emit(self.task_name)
                     if wait_time is not None:
@@ -292,7 +290,7 @@ class Operationer:
                         # 按照元素可点击位置相对于模版左上角，相对整体的比例确定点击坐标
                         x, y = (coordinate[0] * (1 - x_ratio) + coordinate[2] * x_ratio), (
                                 coordinate[1] * (1 - y_ratio) + coordinate[3] * y_ratio)
-                        self.logger.debug(f"[{element.name}] Click ({x},{y})")
+
                         self.device.click(x, y, times=click_times)
                         self.screen_save_signal.emit(self.task_name)
                         if wait_time is not None:
@@ -343,7 +341,7 @@ class Operationer:
         for _ in range(times):
             if self._should_stop():
                 raise Stop
-            self.logger.debug(f"[SWIPE] {start_coordinate}->{end_coordinate}")
+
             self.device.swipe(
                 start_coordinate,
                 end_coordinate,

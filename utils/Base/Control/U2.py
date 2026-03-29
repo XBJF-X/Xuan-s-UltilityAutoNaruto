@@ -25,7 +25,7 @@ class U2(Control):
         try:
             self.u2_device = u2.connect(self.serial)
             self.screen_size = self.get_screen_size()
-            self.logger.info(f"成功连接设备 {self.serial}，屏幕尺寸 {self.get_screen_size}")
+            self.logger.info(f"成功连接设备 {self.serial}，屏幕尺寸 {self.get_screen_size()}")
         except Exception as e:
             self.u2_device = None
             self.logger.error(f"连接设备失败: {e}")

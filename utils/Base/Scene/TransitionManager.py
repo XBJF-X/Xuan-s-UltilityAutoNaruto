@@ -371,7 +371,7 @@ class TransitionManager:
                 (200, 750),
                 duration=0.3,
                 times=8,
-                wait_time=0.1
+                wait_time=0.3
             )
 
             for i in range(8):
@@ -390,7 +390,7 @@ class TransitionManager:
                     (200, 763),
                     (200, 150),
                     duration=0.7,
-                    wait_time=0.2
+                    wait_time=0.3
                 )
                 # operationer.click_and_wait("空白", wait_time=0.2)
             operationer.click_and_wait("X")
@@ -526,8 +526,8 @@ class TransitionManager:
             operationer.swipe_and_wait(
                 (107, 213),
                 (107, 846),
-                duration=0.2,
-                wait_time=0.3,
+                duration=0.3,
+                wait_time=0.2,
                 times=4
             )
             operationer.search_and_click(
@@ -537,13 +537,13 @@ class TransitionManager:
                 [
                     {
                         "swipe": {
-                            "start_coordinate": [107, 846],
-                            "end_coordinate": [107, 213],
-                            "duration": 0.5
+                            "start_coordinate": [107, 800],
+                            "end_coordinate": [107, 300],
+                            "duration": 0.8
                         }
                     }
                 ],
-                max_attempts=2
+                max_attempts=4
             )
 
         @self.register("主场景-组织", "组织祈福")
