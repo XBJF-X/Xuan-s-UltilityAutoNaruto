@@ -263,11 +263,15 @@ class Xuan(QMainWindow):
         menu = QMenu(self)
 
         # 添加菜单选项
-        update_action = QAction("更新", self)
+        update_action = QAction("检查更新", self)
         update_action.triggered.connect(self._on_update_btn_clicked)
 
-        github_action = QAction("Github", self)
-        github_action.triggered.connect(self._on_go_to_github_btn_clicked)
+        # 添加菜单选项
+        log_action = QAction("日志目录", self)
+        log_action.triggered.connect(self._on_log_btn_clicked)
+
+        help_action = QAction("帮助", self)
+        help_action.triggered.connect(self._on_help_btn_clicked)
 
         settings_action = QAction("设置", self)
         settings_action.triggered.connect(self._on_setting_btn_clicked)
@@ -278,7 +282,8 @@ class Xuan(QMainWindow):
         # 将选项添加到菜单
         menu.addAction(update_action)
         menu.addSeparator()  # 添加分隔线
-        menu.addAction(github_action)
+        menu.addAction(log_action)
+        menu.addAction(help_action)
         menu.addAction(settings_action)
         menu.addSeparator()  # 添加分隔线
         menu.addAction(exit_action)
@@ -293,7 +298,11 @@ class Xuan(QMainWindow):
         self.UI.add_config_btn.clicked.connect(self._on_add_config_btn_clicked)
 
     @staticmethod
-    def _on_go_to_github_btn_clicked():
+    def _on_log_btn_clicked():
+        os.startfile(get_real_path("log"))
+
+    @staticmethod
+    def _on_help_btn_clicked():
         webbrowser.open("https://github.com/XBJF-X/Xuan-s-UltilityAutoNaruto")
 
     def _on_setting_btn_clicked(self):
