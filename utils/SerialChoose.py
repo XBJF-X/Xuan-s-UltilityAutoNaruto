@@ -1,4 +1,5 @@
 import logging
+import time
 from typing import List
 
 from PySide6.QtCore import QSize
@@ -81,7 +82,6 @@ class SerialChoose(QDialog):
         """
         try:
             self.logger.info("正在获取ADB设备列表...")
-            # 修复：使用 device_list() 获取所有设备
             devices = adb.device_list()
             device_serials = []
             for device in devices:
@@ -108,7 +108,8 @@ class SerialChoose(QDialog):
         """终止ADB服务"""
         try:
             self.logger.info("正在终止ADB服务...")
-            adb.server.kill()
+            adb.server_kill()
+            time.sleep(1)  # 必须加等待
             self.logger.info("ADB服务已成功终止")
         except AdbError as e:
             self.logger.error(f"终止ADB服务失败: {str(e)}")
@@ -119,9 +120,14 @@ class SerialChoose(QDialog):
         """重启ADB服务"""
         try:
             self.logger.info("正在重启ADB服务...")
-            adb.server.kill()
-            adb.server.start()
-            self.logger.info("ADB服务已成功启动")
+            try:
+                adb.server_kill()
+            except Exception:
+                pass
+            time.sleep(1)
+            adb.server_version()
+            # 验证服务已重启
+            self.logger.info("ADB server 已重启")
         except AdbError as e:
             self.logger.error(f"重启ADB服务失败: {str(e)}")
         except Exception as e:
