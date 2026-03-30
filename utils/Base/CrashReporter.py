@@ -1,174 +1,170 @@
-import sys
-import os
-import traceback
-import faulthandler
 import atexit
+import faulthandler
+import subprocess
+import sys
+import traceback
 from datetime import datetime
 from pathlib import Path
-import subprocess
-import ctypes
 
 
 class CrashReporter:
-    """崩溃报告器"""
+    """统一的崩溃报告与处理模块，所有日志记录至 Main.log"""
 
-    def __init__(self):
-        self.log_dir = Path("log")
+    def __init__(self, log_dir="log", auto_restart=True, show_dialog=True):
+        self.log_dir = Path(log_dir)
         self.log_dir.mkdir(exist_ok=True)
+        self.main_log_path = self.log_dir / "Main.log"
+        self.auto_restart = auto_restart
+        self.show_dialog = show_dialog
+        self._original_excepthook = sys.excepthook
+        self._qt_app = None
+        self._monitor_timer = None
         self.setup()
 
+    def _log_to_main(self, content, category="General"):
+        """将内容写入 main.log，自动添加分隔符和时间戳"""
+        try:
+            with open(self.main_log_path, "a", encoding="utf-8") as f:
+                f.write("\n" + "=" * 80 + "\n")
+                f.write(f"时间: {datetime.now()}\n")
+                f.write(f"类型: {category}\n")
+                f.write("=" * 80 + "\n")
+                f.write(content)
+                f.write("\n" + "=" * 80 + "\n\n")
+        except Exception as e:
+            # 如果连日志写入都失败，至少尝试输出到控制台
+            print(f"写入日志失败: {e}")
+
     def setup(self):
-        """设置崩溃处理器"""
-        # 1. Python异常
+        """设置全局异常处理器和崩溃检测"""
+        # Python 异常钩子
         sys.excepthook = self._python_exception_hook
 
-        # 2. C层崩溃（如段错误）
-        faulthandler.enable(file=open(self.log_dir / "crash_dump.log", "a"))
+        # C 层崩溃（段错误等）——重定向到 main.log
+        faulthandler.enable(file=open(self.main_log_path, "a"))
 
-        # 3. Windows特定：未处理的C++异常
+        # Windows 未处理异常
         if sys.platform == "win32":
             self._setup_windows_exception_handler()
 
-        # 4. 程序退出回调
+        # 程序退出回调
         atexit.register(self._on_exit)
 
     def _python_exception_hook(self, exc_type, exc_value, exc_traceback):
-        """Python异常处理器"""
+        """处理未捕获的 Python 异常"""
         if exc_type is KeyboardInterrupt:
-            sys.__excepthook__(exc_type, exc_value, exc_traceback)
+            if self._original_excepthook:
+                self._original_excepthook(exc_type, exc_value, exc_traceback)
             return
 
-        # 记录异常信息
+        # 记录异常
         error_msg = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
-        self._write_crash_report("Python Exception", error_msg)
+        self._log_to_main(error_msg, category="Python Exception")
 
-        # 显示崩溃对话框（可选）
-        self._show_crash_dialog(error_msg)
+        # 针对 ModuleNotFoundError 输出友好提示
+        if exc_type is ModuleNotFoundError:
+            missing_module = getattr(exc_value, 'name', str(exc_value))
+            print(f"\n[错误] 缺少必要模块: {missing_module}")
+            print(f"请前往项目主页 https://github.com/XBJF-X/Xuan-s-UltilityAutoNaruto 的Release页检查是否存在新版本更新安装包")
+            input("输入任意键退出程序...")
 
-        # 调用原始处理器
-        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        # 显示崩溃对话框
+        if self.show_dialog:
+            self._show_crash_dialog(error_msg)
 
-    def _setup_windows_exception_handler(self):
-        """Windows异常处理器（处理Access Violation等）"""
-        try:
-            import ctypes
-            import ctypes.wintypes
-
-            # 定义异常处理函数
-            @ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_void_p)
-            def exception_handler(exception_info):
-                try:
-                    exc_code = ctypes.c_uint.from_address(
-                        exception_info + 4
-                    ).value
-
-                    # 写入崩溃日志
-                    with open(self.log_dir / "windows_crash.log", "a") as f:
-                        f.write(f"[{datetime.now()}] Windows异常代码: 0x{exc_code:08X}\n")
-                        f.write("=" * 80 + "\n")
-
-                        # 获取线程信息
-                        import threading
-                        for thread in threading.enumerate():
-                            f.write(f"线程: {thread.name} (ID: {thread.ident})\n")
-
-                        # 获取堆栈（需要dbghelp.dll）
-                        self._write_stack_trace(f)
-
-                except:
-                    pass
-
-                return 1  # EXCEPTION_EXECUTE_HANDLER
-
-            # 设置异常处理器
-            ctypes.windll.kernel32.SetUnhandledExceptionFilter(exception_handler)
-        except Exception as e:
-            print(f"Windows异常处理器设置失败: {e}")
-
-    def _write_stack_trace(self, file_handle):
-        """写入堆栈跟踪（Windows）"""
-        try:
-            import ctypes
-            from ctypes.wintypes import DWORD, HANDLE
-
-            # 使用Win32 API获取堆栈
-            process = ctypes.windll.kernel32.GetCurrentProcess()
-            thread = ctypes.windll.kernel32.GetCurrentThread()
-
-            # 这里可以扩展，使用StackWalk64等API获取详细堆栈
-            file_handle.write("[堆栈跟踪] 需要安装调试器获取详细信息\n")
-
-        except Exception as e:
-            file_handle.write(f"获取堆栈失败: {e}\n")
-
-    def _write_crash_report(self, crash_type, error_msg):
-        """写入崩溃报告"""
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        crash_file = self.log_dir / f"crash_{timestamp}.log"
-
-        with open(crash_file, "w", encoding="utf-8") as f:
-            f.write(f"程序崩溃报告\n")
-            f.write("=" * 80 + "\n")
-            f.write(f"崩溃时间: {datetime.now()}\n")
-            f.write(f"崩溃类型: {crash_type}\n")
-            f.write("=" * 80 + "\n\n")
-            f.write("异常信息:\n")
-            f.write(error_msg)
-            f.write("\n" + "=" * 80 + "\n\n")
-
-            # 系统信息
-            f.write("系统信息:\n")
-            f.write(f"平台: {sys.platform}\n")
-            f.write(f"Python版本: {sys.version}\n")
-            f.write(f"工作目录: {os.getcwd()}\n")
-            f.write(f"命令行: {' '.join(sys.argv)}\n")
-            f.write(f"PYTHONPATH: {sys.path}\n")
-
-            # 环境变量（部分）
-            f.write("\n环境变量:\n")
-            for key in ['PATH', 'PYTHONHOME', 'QT_QPA_PLATFORM_PLUGIN_PATH']:
-                if key in os.environ:
-                    f.write(f"{key}: {os.environ[key][:200]}...\n")
+        # 调用原始钩子（可能显示系统错误对话框）
+        if self._original_excepthook:
+            self._original_excepthook(exc_type, exc_value, exc_traceback)
 
     def _show_crash_dialog(self, error_msg):
-        """显示崩溃对话框"""
+        """显示控制台交互对话框"""
         try:
-            # 使用tkinter显示简单对话框，避免依赖Qt
-            import tkinter as tk
-            from tkinter import messagebox
-
-            root = tk.Tk()
-            root.withdraw()  # 隐藏主窗口
-
-            # 截取错误前几行
             error_preview = "\n".join(error_msg.split("\n")[:10])
-
-            result = messagebox.askyesno(
-                "程序崩溃",
-                f"程序发生意外错误:\n\n{error_preview}\n\n"
-                f"详细日志已保存到: {self.log_dir}\n\n"
-                "是否尝试重新启动程序？"
-            )
-
-            root.destroy()
-
-            if result:
-                self._restart_program()
-
+            print("\n" + "=" * 50)
+            print("程序崩溃")
+            print(f"错误信息:\n{error_preview}")
+            print(f"详细日志已保存到: {self.main_log_path}")
+            if self.auto_restart:
+                print("是否尝试重新启动程序？(y/n): ", end="")
+                choice = input().strip().lower()
+                if choice in ('y', 'yes'):
+                    self._restart_program()
         except Exception as e:
             print(f"无法显示崩溃对话框: {e}")
 
     def _restart_program(self):
-        """重启程序"""
+        """重启当前程序"""
         python = sys.executable
         subprocess.Popen([python] + sys.argv)
         sys.exit(0)
 
+    def _setup_windows_exception_handler(self):
+        """Windows 原生异常处理器（处理 Access Violation 等）"""
+        try:
+            import ctypes
+            import ctypes.wintypes
+
+            @ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_void_p)
+            def exception_handler(exception_info):
+                try:
+                    exc_code = ctypes.c_uint.from_address(exception_info + 4).value
+                    # 构建错误信息
+                    content = f"Windows异常代码: 0x{exc_code:08X}\n"
+                    content += "=" * 80 + "\n"
+                    import threading
+                    for thread in threading.enumerate():
+                        content += f"线程: {thread.name} (ID: {thread.ident})\n"
+                    # 添加堆栈（简化版）
+                    content += "\n[堆栈跟踪] 需要安装调试器获取详细信息\n"
+                    self._log_to_main(content, category="Windows Unhandled Exception")
+                except:
+                    pass
+                return 1  # EXCEPTION_EXECUTE_HANDLER
+
+            ctypes.windll.kernel32.SetUnhandledExceptionFilter(exception_handler)
+        except Exception as e:
+            self._log_to_main(f"Windows异常处理器设置失败: {e}", category="Setup Error")
+
     def _on_exit(self):
-        """程序退出时调用"""
-        with open(self.log_dir / "exit.log", "a") as f:
-            f.write(f"[{datetime.now()}] 程序退出 (正常或异常)\n")
+        """程序退出时的钩子"""
+        self._log_to_main("程序退出 (正常或异常)", category="Exit")
 
+    # -------------------- Qt 相关辅助功能 --------------------
+    def setup_qt_handlers(self, app):
+        """安装 Qt 消息处理器和监控定时器（需要 PySide6）"""
+        try:
+            from PySide6.QtCore import qInstallMessageHandler, QTimer
+            self._qt_app = app
+            qInstallMessageHandler(self._qt_message_handler)
+            self._start_monitor_timer()
+        except ImportError as e:
+            self._log_to_main(f"无法设置 Qt 处理器: {e}", category="Qt Setup Error")
 
-# 在主程序开头使用
-crash_reporter = CrashReporter()
+    def _qt_message_handler(self, mode, context, message):
+        """Qt 日志处理器"""
+        from PySide6.QtCore import QtMsgType
+        if mode == QtMsgType.QtFatalMsg:
+            content = f"Qt致命错误: {message}\n文件: {context.file}, 行: {context.line}\n函数: {context.function}"
+            self._log_to_main(content, category="Qt Fatal")
+        elif mode == QtMsgType.QtCriticalMsg:
+            content = f"Qt关键错误: {message}"
+            self._log_to_main(content, category="Qt Critical")
+
+    def _start_monitor_timer(self):
+        """启动监控定时器，检查应用状态"""
+        try:
+            from PySide6.QtCore import QTimer
+            self._monitor_timer = QTimer()
+            self._monitor_timer.timeout.connect(self._check_app_state)
+            self._monitor_timer.start(5000)  # 每5秒检查一次
+        except Exception as e:
+            self._log_to_main(f"监控定时器启动失败: {e}", category="Monitor Error")
+
+    def _check_app_state(self):
+        """检查 QApplication 实例是否还存在"""
+        try:
+            from PySide6.QtWidgets import QApplication
+            if not QApplication.instance():
+                self._log_to_main("QApplication实例丢失", category="App State")
+        except Exception as e:
+            self._log_to_main(f"监控异常: {e}", category="Monitor Error")

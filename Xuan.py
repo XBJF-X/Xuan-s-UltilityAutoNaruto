@@ -1,89 +1,34 @@
 import ctypes
-import faulthandler
 import json
 import logging
 import os
 import sys
-import traceback
 import webbrowser
-from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import List
 
+from utils.Base.CrashReporter import CrashReporter
+
+crash_reporter = CrashReporter(auto_restart=False, show_dialog=True)
+
 import cv2
-from PySide6.QtCore import QTimer
-from PySide6.QtCore import Qt, QtMsgType
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QPainter, QBrush, QColor, QPainterPath, QAction
-from PySide6.QtWidgets import QMainWindow, QApplication, QPushButton, QDialog, QButtonGroup, QMessageBox, \
-    QMenu
+from PySide6.QtWidgets import QMainWindow, QApplication, QPushButton, QDialog, \
+    QButtonGroup, QMessageBox, QMenu
 
 from StaticFunctions import resource_path, get_real_path
 from tool.ResourceManager.ResourceDBManager import ResourceDBManager
 from utils.AddConfig import AddConfig
-from utils.Base.AutoThemeApp import AutoThemeApp
-from utils.Base.CrashReporter import CrashReporter
 from utils.Base.Scene.SceneGraph import SceneGraph
 from utils.Base.Setting import Setting
 from utils.Base.Updater import Updater
 from utils.Servicer import Service
 from utils.ui.SettingDialog import SettingDialog
 from utils.ui.Xuan_ui import Ui_Xuan
+
 # Todo： 提供主题切换方案，最好跟随系统
-
-# 最早的异常处理器（必须在导入任何其他模块之前）
-def early_exception_handler(exc_type, exc_value, exc_traceback):
-    """最早的异常处理器，在日志系统初始化前使用"""
-    if issubclass(exc_type, KeyboardInterrupt):
-        sys.__excepthook__(exc_type, exc_value, exc_traceback)
-        return
-
-    # 创建基本日志目录
-    log_dir = get_real_path("log")
-    log_dir.mkdir(exist_ok=True)
-
-    # 直接写入文件，不依赖logging模块
-    error_msg = ''.join(traceback.format_exception(exc_type, exc_value, exc_traceback))
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-
-    with open(log_dir / f"EARLY_CRASH_{timestamp}.log", "w", encoding="utf-8") as f:
-        f.write(f"Python崩溃时间: {datetime.now()}\n")
-        f.write(f"异常类型: {exc_type.__name__}\n")
-        f.write(f"异常信息: {str(exc_value)}\n")
-        f.write("=" * 80 + "\n")
-        f.write(error_msg)
-        f.write("\n" + "=" * 80 + "\n")
-        f.write(f"Python路径: {sys.path}\n")
-        f.write(f"当前工作目录: {os.getcwd()}\n")
-        f.write(f"命令行参数: {sys.argv}\n")
-        f.write(f"系统平台: {sys.platform}\n")
-
-    # 调用原始异常处理器
-    sys.__excepthook__(exc_type, exc_value, exc_traceback)
-
-
-# 设置最早的异常处理器
-sys.excepthook = early_exception_handler
-
-# 启用faulthandler（处理C层崩溃）
-faulthandler.enable()
-
-
-def qt_message_handler(mode, context, message):
-    """Qt日志处理器"""
-    log_dir = Path("log")
-    log_dir.mkdir(exist_ok=True)
-
-    if mode == QtMsgType.QtFatalMsg:
-        # Qt致命错误
-        with open(log_dir / "qt_crash.log", "a", encoding="utf-8") as f:
-            f.write(f"[{datetime.now()}] Qt致命错误: {message}\n")
-            f.write(f"文件: {context.file}, 行: {context.line}\n")
-            f.write(f"函数: {context.function}\n")
-    elif mode == QtMsgType.QtCriticalMsg:
-        # Qt关键错误
-        with open(log_dir / "qt_critical.log", "a", encoding="utf-8") as f:
-            f.write(f"[{datetime.now()}] Qt关键错误: {message}\n")
 
 
 # 使用样式表
@@ -115,6 +60,30 @@ QPushButton:pressed {
     color: #2AA79E;
 }
 """
+
+
+def configure_dpi_awareness():
+    """配置 DPI 感知（Windows）"""
+    if sys.platform == "win32":
+        os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1"
+        os.environ["QT_SCALE_FACTOR_ROUNDING_POLICY"] = "PassThrough"
+        try:
+            awareness = ctypes.c_int(1)  # PROCESS_SYSTEM_DPI_AWARE
+            ctypes.windll.shcore.SetProcessDpiAwareness(awareness)
+        except Exception:
+            try:
+                ctypes.windll.user32.SetProcessDPIAware()
+            except Exception as e:
+                print(f"Failed to set DPI awareness: {e}")
+        # 清理冲突的环境变量
+        for var in ["QT_AUTO_SCREEN_SCALE_FACTOR", "QT_SCALE_FACTOR",
+            "QT_SCREEN_SCALE_FACTORS", "QT_DEVICE_PIXEL_RATIO",
+            "QT_DPI_OVERRIDE", "QT_FONT_DPI"]:
+            os.environ.pop(var, None)
+
+    cv2.ocl.setUseOpenCL(True)
+    # 添加 adb 目录到 PATH
+    os.environ['PATH'] = os.pathsep.join([get_real_path('bin/adb'), os.environ.get('PATH', '')])
 
 
 class Xuan(QMainWindow):
@@ -455,96 +424,25 @@ class Xuan(QMainWindow):
         painter.fillPath(path, QBrush(background_color))
 
 
-def configure_dpi_awareness():
-    """配置DPI感知"""
-    if sys.platform == "win32":
-        os.environ["QT_ENABLE_HIGHDPI_SCALING"] = "1"
-        os.environ["QT_SCALE_FACTOR_ROUNDING_POLICY"] = "PassThrough"
-
-        try:
-            awareness = ctypes.c_int(1)  # PROCESS_SYSTEM_DPI_AWARE
-            ctypes.windll.shcore.SetProcessDpiAwareness(awareness)
-        except Exception:
-            try:
-                ctypes.windll.user32.SetProcessDPIAware()
-            except Exception as e:
-                print(f"Failed to set DPI awareness: {e}")
-
-        # Remove conflicting environment variables
-        os.environ.pop("QT_AUTO_SCREEN_SCALE_FACTOR", None)
-        os.environ.pop("QT_SCALE_FACTOR", None)
-        os.environ.pop("QT_SCREEN_SCALE_FACTORS", None)
-        os.environ.pop("QT_DEVICE_PIXEL_RATIO", None)
-        os.environ.pop("QT_DPI_OVERRIDE", None)
-        os.environ.pop("QT_FONT_DPI", None)
-
-    cv2.ocl.setUseOpenCL(True)
-    # 临时把adb目录添加进环境目录
-    os.environ['PATH'] = os.pathsep.join([get_real_path('bin/adb'), os.environ.get('PATH', '')])
-
-
 if __name__ == "__main__":
-    # 确保当前工作目录正确
+    # 切换到脚本目录
     script_dir = os.path.dirname(os.path.abspath(__file__))
     os.chdir(script_dir)
 
-    # 第一步：设置崩溃处理器（必须在所有代码之前）
-    crash_reporter = CrashReporter()
-
-    # 第二步：配置DPI
+    # 配置 DPI
     configure_dpi_awareness()
 
-    # # 第三步：创建应用
-    # app = AutoThemeApp(sys.argv)
+    # 创建 Qt 应用
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(resource_path("src/ASDS.ico")))
-    # 第四步：设置Qt消息处理器
-    from PySide6.QtCore import qInstallMessageHandler
 
-    qInstallMessageHandler(qt_message_handler)
+    crash_reporter.setup_qt_handlers(app)
 
-    # 第五步：简单的应用状态监控
-    app_start_time = datetime.now()
+    # 创建主窗口并显示
+    daily_quests_helper = Xuan()
+    daily_quests_helper.show()
+    if daily_quests_helper.setting.getboolean("Update", "自动更新"):
+        daily_quests_helper.logger.info("自动更新")
+        daily_quests_helper._on_update_btn_clicked()
 
-
-    def check_app_state():
-        """检查应用状态"""
-        try:
-            # 检查应用是否还在运行
-            if not QApplication.instance():
-                log_dir = Path("log")
-                log_dir.mkdir(exist_ok=True)
-                with open(log_dir / "app_crash.log", "a", encoding="utf-8") as f:
-                    f.write(f"[{datetime.now()}] QApplication实例丢失\n")
-                    f.write(f"应用运行时间: {datetime.now() - app_start_time}\n")
-        except Exception as e:
-            # 记录检查过程中的异常
-            log_dir = Path("log")
-            log_dir.mkdir(exist_ok=True)
-            with open(log_dir / "monitor_error.log", "a", encoding="utf-8") as f:
-                f.write(f"[{datetime.now()}] 监控异常: {e}\n")
-
-
-    # 创建监控定时器
-    monitor_timer = QTimer()
-    monitor_timer.timeout.connect(check_app_state)
-    monitor_timer.start(5000)  # 每5秒检查一次
-
-    try:
-        daily_quests_helper = Xuan()
-        daily_quests_helper.show()
-        if daily_quests_helper.setting.getboolean("Update", "自动更新"):
-            daily_quests_helper.logger.info("自动更新")
-            daily_quests_helper._on_update_btn_clicked()
-        sys.exit(app.exec())
-    except Exception as e:
-        # 最后一道防线
-        if 'crash_reporter' in locals():
-            crash_reporter._write_crash_report("Main Loop Exception", str(e))
-        else:
-            # 如果crash_reporter还没初始化，直接写入文件
-            log_dir = Path("log")
-            log_dir.mkdir(exist_ok=True)
-            with open(log_dir / "final_crash.log", "a", encoding="utf-8") as f:
-                f.write(f"[{datetime.now()}] 主循环崩溃: {e}\n")
-        raise
+    sys.exit(app.exec())
