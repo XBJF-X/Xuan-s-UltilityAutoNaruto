@@ -36,8 +36,6 @@ class MiniTouch(Control):
 
             self._mt_core = MiniTouchCore(self.device_serial)
             self.max_contacts = int(self._mt_core.max_contacts)
-            self.max_x = int(self._mt_core.max_x)
-            self.max_y = int(self._mt_core.max_y)
             self.max_pressure = int(self._mt_core.max_pressure)
 
             self.u2 = U2(config, parent_logger, self.device_serial)
@@ -97,8 +95,8 @@ class MiniTouch(Control):
         if not self.ready:
             return
         # 坐标边界保护
-        x = max(0, min(self.max_x, x))
-        y = max(0, min(self.max_y, y))
+        x = max(0, min(self.screen_size[0], x))
+        y = max(0, min(self.screen_size[1], y))
         # 直接调用minidevice官方点击
         self._mt_core.click(x, y, duration)
 
@@ -116,10 +114,10 @@ class MiniTouch(Control):
         x1, y1 = start_coordinate
         x2, y2 = end_coordinate
         # 坐标边界校验
-        x1 = max(0, min(self.max_x, x1))
-        y1 = max(0, min(self.max_y, y1))
-        x2 = max(0, min(self.max_x, x2))
-        y2 = max(0, min(self.max_y, y2))
+        x1 = max(0, min(self.screen_size[0], x1))
+        y1 = max(0, min(self.screen_size[1], y1))
+        x2 = max(0, min(self.screen_size[0], x2))
+        y2 = max(0, min(self.screen_size[1], y2))
 
         total_ms = int(duration * 1000)
         TOTAL_STEPS = int(total_ms / 16)
@@ -180,8 +178,7 @@ class MiniTouch(Control):
 
         # 限制触点数量并进行坐标边界保护
         points = points[:self.max_contacts]
-        points = [(max(0, min(self.max_x, x)), max(0, min(self.max_y, y))) for x, y in points]
-
+        points = [(max(0, min(self.screen_size[0], x)), max(0, min(self.screen_size[1], y))) for x, y in points]
         builder = CommandBuilder()
         # 1. 同时按下所有点
         for idx, (x, y) in enumerate(points):
