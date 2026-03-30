@@ -29,7 +29,7 @@ from utils.Base.Updater import Updater
 from utils.Servicer import Service
 from utils.ui.SettingDialog import SettingDialog
 from utils.ui.Xuan_ui import Ui_Xuan
-
+# Todo： 提供主题切换方案，最好跟随系统
 
 # 最早的异常处理器（必须在导入任何其他模块之前）
 def early_exception_handler(exc_type, exc_value, exc_traceback):

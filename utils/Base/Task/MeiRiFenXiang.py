@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo
 
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
-
+# Todo：优化返回游戏逻辑，必须先跳出再跳回
 class MeiRiFenXiang(BaseTask):
     source_scene = "个人信息-分享"
     task_max_duration = timedelta(minutes=3)
