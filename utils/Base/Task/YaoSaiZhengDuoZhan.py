@@ -27,6 +27,7 @@ YS_list = [
 ]
 
 
+# Todo：适配跨服要塞战部分
 class YaoSaiZhengDuoZhan(BaseTask):
     source_scene = "主场景-组织"
     dead_line = datetime.time(20, 30)
@@ -172,7 +173,6 @@ class YaoSaiZhengDuoZhan(BaseTask):
         return next_execute_time
 
     def _handle_execution_completed(self, current_time: datetime) -> datetime:
-
         # china_tz = current_time.tzinfo
         # next_day = current_time + datetime.timedelta(weeks=1)
         # return datetime.datetime(

@@ -30,7 +30,6 @@ from utils.ui.Xuan_ui import Ui_Xuan
 
 # Todo： 提供主题切换方案，最好跟随系统
 
-
 # 使用样式表
 button_style = """
 QPushButton {
@@ -82,8 +81,8 @@ def configure_dpi_awareness():
             os.environ.pop(var, None)
 
     cv2.ocl.setUseOpenCL(True)
-    # 添加 adb 目录到 PATH
-    os.environ['PATH'] = os.pathsep.join([get_real_path('bin/adb'), os.environ.get('PATH', '')])
+    # # 添加 adb 目录到 PATH
+    # os.environ['PATH'] = os.pathsep.join([get_real_path('bin/adb'), os.environ.get('PATH', '')])
 
 
 class Xuan(QMainWindow):

@@ -3,6 +3,9 @@ from datetime import datetime, timedelta
 
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
+
+# Todo：添加自动收集周活跃度奖励和周任务奖励
+
 class RenFaTieDianZanFenXiang(BaseTask):
     source_scene = "忍法帖-排行榜"
     task_max_duration = timedelta(minutes=2)
