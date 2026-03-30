@@ -34,12 +34,13 @@ class PaiHangBangDianZan(BaseTask):
         if next_exec_ts == 0:
             return next_execute_time
         else:
-            # 转换为带时区的datetime
-            stored_time = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
-            if stored_time+timedelta(days=1) < current_time:
-                return next_execute_time
-            else:
-                return stored_time
+            return datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+            # # 转换为带时区的datetime
+            # stored_time = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+            # if stored_time+timedelta(days=1) < current_time:
+            #     return next_execute_time
+            # else:
+            #     return stored_time
 
     def _handle_execution_completed(self, current_time: datetime) -> datetime:
         """处理任务执行完成后的时间更新（case1）"""
