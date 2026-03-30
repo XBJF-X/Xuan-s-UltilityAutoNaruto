@@ -33,6 +33,17 @@ class U2(Control):
     def ready(self):
         return self.u2_device is not None
 
+    @property
+    def rotated(self) -> bool:
+        """获取设备旋转状态，False表示竖屏，True表示横屏"""
+        with self._lock:
+            if self.u2_device is None:
+                self.logger.error("设备未连接，无法执行点击")
+                return True
+            rotation = self.u2_device.info.get('displayRotation', 0)
+            self.logger.debug(f"旋转状态：{rotation}")
+            return rotation in [1, 3]
+
     def get_screen_size(self) -> Tuple[int, int]:
         return self.u2_device.window_size()  # (width, height)
 

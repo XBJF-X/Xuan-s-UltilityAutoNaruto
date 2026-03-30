@@ -119,6 +119,28 @@ class QingBaoZhan(BaseTask):
             else:
                 self.logger.info("返回福利站")
                 self.operationer.press_key("back", wait_time=7)
+
+                # timeout = 15
+                # start_time = time.perf_counter()
+                # while self.operationer.rotated:
+                #     self.logger.debug("仍未进入金币助手...")
+                #     time.sleep(1)
+                #     if time.perf_counter() - start_time > timeout:
+                #         self.logger.debug("进入金币助手失败")
+                #         break
+                # start_time = time.perf_counter()
+                # while not self.operationer.rotated:
+                #     self.logger.debug("进入金币助手成功，将返回福利站...")
+                #     time.sleep(1)
+                #     self.operationer.press_key("back", wait_time=2)
+                #     if not self.operationer.rotated:
+                #         self.logger.debug("返回福利站，将尝试再次点击[Esc]键")
+                #         self.operationer.press_key("back", wait_time=1)
+                #
+                #     if time.perf_counter() - start_time > timeout:
+                #         self.logger.debug("返回福利站失败，请自行检查...")
+                #         break
+
             self.config.set_task_exe_prog(self.task_name, "浏览金币助手", True)
             return False
 

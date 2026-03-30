@@ -25,6 +25,10 @@ class Device:
     def screen_size(self):
         return self.control_manager.current_control.screen_size
 
+    @property
+    def rotated(self):
+        return self.control_manager.rotated
+
     def regularize_coordinate(self, coordinate_x, coordinate_y):
         scale = self.screen_size[0] / self.resolution[0]
         x, y = int(scale * coordinate_x), int(scale * coordinate_y)
@@ -55,11 +59,19 @@ class Device:
                 duration
             )
 
-    def restart(self):
+    def app_restart(self):
         # 停止应用
-        self.control_manager.app_stop(self.package_name)
+        self.app_stop()
+        # 启动应用
+        self.app_start()
+
+    def app_start(self):
         # 启动应用
         self.control_manager.app_start(self.package_name)
+
+    def app_stop(self):
+        # 停止应用
+        self.control_manager.app_stop(self.package_name)
 
     def current_app(self):
         return self.control_manager.current_app()

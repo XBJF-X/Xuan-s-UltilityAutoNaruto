@@ -135,3 +135,8 @@ class ControlManager:
     def long_press(self, x, y, duration):
         if self.ready:
             self.current_control.long_press(x, y, duration)
+
+    @property
+    def rotated(self):
+        if self.ready:
+            return self.current_control.rotated

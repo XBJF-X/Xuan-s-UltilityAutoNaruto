@@ -54,6 +54,10 @@ class MiniTouch(Control):
         """Control约束：就绪状态"""
         return not self._released and self._mt_core is not None
 
+    @property
+    def rotated(self):
+        return self.u2.rotated
+
     def get_screen_size(self) -> Tuple[int, int]:
         """Control约束：屏幕尺寸（兼容原有逻辑）"""
         return self.u2.screen_size

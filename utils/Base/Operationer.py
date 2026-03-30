@@ -223,7 +223,6 @@ class Operationer:
                     raise Stop
                 time_1 = time.perf_counter()
                 if element.type == ElementType.COORDINATE:
-
                     self.device.click(element.coordinate_x, element.coordinate_y, times=click_times)
                     self.screen_save_signal.emit(self.task_name)
                     if wait_time is not None:
@@ -267,7 +266,6 @@ class Operationer:
             while time.perf_counter() - start_time < max_time:
                 time_1 = time.perf_counter()
                 if element.type == ElementType.COORDINATE:
-
                     self.device.click(element.coordinate_x, element.coordinate_y, times=click_times)
                     self.screen_save_signal.emit(self.task_name)
                     if wait_time is not None:
@@ -577,18 +575,32 @@ class Operationer:
         self.device.long_press(x, y, duration)
         self.screen_save_signal.emit(self.task_name)
 
-    def restart(self):
+    def app_restart(self):
         """
         重启火影忍者
         """
         self.logger.info("重启火影忍者")
-        self.device.restart()
+        self.device.app_restart()
 
-    def back_to_naruto(self):
+    def app_start(self):
+        # 启动应用
+        self.device.app_start()
+
+    def app_stop(self):
+        # 停止应用
+        self.device.app_stop()
+
+    @property
+    def is_naruto_frontend(self):
         front_app = self.device.current_app()
-        while front_app["package"] != self.device.package_name:
-            self.device.control_manager.app_start(self.device.package_name)
-            front_app = self.device.current_app()
+        if front_app:
+            return front_app["package"] == self.device.package_name
+        else:
+            return False
+
+    @property
+    def rotated(self):
+        return self.device.rotated
 
     def screen_cap(self):
         return self.device.screen_cap()

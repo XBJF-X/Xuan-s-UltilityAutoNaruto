@@ -90,3 +90,9 @@ class Control(abc.ABC):
     def long_press(self, x, y, duration):
         """长按"""
         pass
+
+    @property
+    @abc.abstractmethod
+    def rotated(self):
+        """是否旋转"""
+        pass
