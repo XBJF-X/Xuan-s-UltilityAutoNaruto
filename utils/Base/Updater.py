@@ -13,6 +13,8 @@ from StaticFunctions import get_real_path
 
 class Updater(QObject):
     update_message = Signal(str, str)  # 第一个参数是标题，第二个参数是消息内容
+    restart_required = Signal()  # 新增：通知主窗口需要重启
+
     repo_owner = "XBJF-X"
     repo_name = "Xuan-s-UltilityAutoNaruto"
     branch_name = "master"
@@ -108,6 +110,8 @@ class Updater(QObject):
                 # 更新完成，发出信号，注意这里传递两个参数：标题和消息
                 commit_message = new_version["commit"]['commit']['message']
                 self.update_message.emit("更新完成", f"新版本更新完毕，请重启程序\n更新内容：{commit_message}")
+
+                self.restart_required.emit()
 
             with open("version.json", "w", encoding="utf-8") as f:
                 json.dump(new_version, f, indent=4, ensure_ascii=False)

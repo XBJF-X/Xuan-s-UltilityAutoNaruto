@@ -260,10 +260,42 @@ class Xuan(QMainWindow):
 
     def bind_signals(self):
         self.updater.update_message.connect(self.update_message)
+        self.updater.restart_required.connect(self._perform_restart)
+
         self.UI.menu_btn.setMenu(self._create_menu())
 
         self.UI.min_btn.clicked.connect(self.showMinimized)
         self.UI.add_config_btn.clicked.connect(self._on_add_config_btn_clicked)
+
+    # 新增重启方法
+    def _perform_restart(self):
+        """更新完成后自动重启程序"""
+        import subprocess
+        import time
+
+        # 1. 停止所有后台服务（确保资源释放）
+        self._on_about_to_quit()
+
+        # 2. 给用户一点提示（可选）
+        self.logger.info("更新已完成，程序将自动重启...")
+
+        # 3. 启动新进程（当前程序）
+        # 如果是打包后的 exe，sys.argv[0] 就是 exe 路径
+        # 如果是脚本运行，则使用 python 解释器 + 脚本路径
+        if getattr(sys, 'frozen', False):
+            # 打包成 exe 的情况
+            program = sys.argv[0]
+            args = [program] + sys.argv[1:]
+        else:
+            # 脚本运行的情况
+            program = sys.executable
+            args = [program] + sys.argv
+
+        # 使用 subprocess.Popen 启动新进程，不等待
+        subprocess.Popen(args, shell=False)
+
+        # 4. 延迟退出当前进程，确保新进程已启动（可选）
+        QApplication.quit()  # 或者 sys.exit(0)
 
     @staticmethod
     def _on_log_btn_clicked():
