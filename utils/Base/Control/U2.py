@@ -13,12 +13,10 @@ class U2(Control):
     使用uiautomator2进行控制的控制方案
     """
 
-    def __init__(self, config: Config, parent_logger, serial=None):
+    def __init__(self, config: Config, parent_logger, serial: str = ""):
         super().__init__(config, parent_logger)
-        if serial:
-            self.serial = serial
-        else:
-            self.serial = config.get_config("串口")
+        self.serial = serial or config.get_config("串口")
+        self.serial = self.serial.replace("：", ":")
         self.u2_device: u2.Device | None = None
         self._lock = threading.Lock()  # 新增：设备操作锁，避免多线程竞争
         try:

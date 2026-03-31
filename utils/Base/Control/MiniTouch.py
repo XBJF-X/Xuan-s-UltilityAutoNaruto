@@ -28,7 +28,8 @@ class MiniTouch(Control):
         self._released = False
         self._mt_core = None
         try:
-            self.serial = serial if serial else self.config.get_config("串口", "")
+            self.serial = serial or config.get_config("串口")
+            self.serial = self.serial.replace("：", ":")
             if not self.serial:
                 raise RuntimeError("设备序列号不能为空")
 
