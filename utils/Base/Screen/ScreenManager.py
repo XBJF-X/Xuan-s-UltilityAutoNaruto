@@ -1,7 +1,5 @@
 import logging
 
-from PySide6.QtWidgets import QMessageBox
-
 from utils.Base.Config import Config
 from utils.Base.Screen import Screen, ScreenMode
 from utils.Base.Screen.DroidCastRaw import DroidCastRaw

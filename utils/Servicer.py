@@ -7,8 +7,8 @@ from typing import Dict
 from zoneinfo import ZoneInfo
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QBrush, QColor, QStandardItemModel, QStandardItem
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QFileDialog, QTreeWidgetItem
+from PySide6.QtGui import QColor, QStandardItemModel, QStandardItem
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QFileDialog
 
 from StaticFunctions import get_real_path, setup_logging
 from utils.Base.Config import Config

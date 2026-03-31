@@ -1,6 +1,7 @@
-import subprocess
 import re
+import subprocess
 from typing import Tuple
+
 from utils.Base.Config import Config
 from utils.Base.Control import Control
 

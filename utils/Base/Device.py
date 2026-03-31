@@ -1,8 +1,6 @@
 import logging
-import time
 
 from utils.Base.Config import Config
-
 from utils.Base.Control.ControlManager import ControlManager
 from utils.Base.Screen.ScreenManager import ScreenManager
 

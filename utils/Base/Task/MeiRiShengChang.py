@@ -1,11 +1,7 @@
 import time
-from datetime import timedelta, datetime
-from zoneinfo import ZoneInfo
-
-from PySide6.QtCore import QThread
+from datetime import timedelta
 
 from utils.Base.Enums import KEY_INDEX
-from utils.Base.Exceptions import StepFailedError
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 

@@ -4,8 +4,6 @@ from collections import deque
 from logging import Logger
 from typing import List, Callable, Dict
 
-from PySide6.QtCore import QThread
-
 from utils.Base.Config import Config
 from utils.Base.Enums import KEY_INDEX
 from utils.Base.Operationer import Operationer

@@ -23,6 +23,8 @@ from utils.Base.Task.BaseTask import BaseTask
 from utils.ui.Service_ui import Ui_Service
 
 
+# Todo：触发其他任务时应该回调时恢复原状态
+# Todo：带连点器的任务应该有额外的优先级
 class TaskWidget(QFrame):
     def __init__(self, task: BaseTask, parent=None):
         super().__init__(parent)

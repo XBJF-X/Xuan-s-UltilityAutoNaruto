@@ -1,4 +1,3 @@
-import logging
 import sys
 
 import cv2
@@ -7,8 +6,8 @@ from PySide6.QtCore import Qt, QPoint
 from PySide6.QtGui import QCursor, QPainter, QColor, QPen, QImage
 from PySide6.QtWidgets import QDialog, QApplication, QWidget
 
-from utils.ui.KeyMapConfiguration_ui import Ui_KeyMapConfiguration
 from utils.Base.Config import Config
+from utils.ui.KeyMapConfiguration_ui import Ui_KeyMapConfiguration
 
 
 class SkillButton(QWidget):
