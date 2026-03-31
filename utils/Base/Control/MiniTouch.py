@@ -21,7 +21,6 @@ class ArchType(Enum):
 class MiniTouch(Control):
     """
     基于minidevice.MiniTouch封装的控制器
-    严格遵循Control抽象类约束，兼容原有业务接口
     """
 
     def __init__(self, config: Config, parent_logger=None, serial: str = ""):
@@ -219,37 +218,37 @@ class MiniTouch(Control):
         if hasattr(self, '_released') and not self._released:
             self.release()
 
-
-if __name__ == "__main__":
-    c = MiniTouch(None, None, "127.0.0.1:16448")
-    # c = MiniTouch(None, None, "emulator-5559")
-    c.multi_tap([[
-        1432,
-        747
-    ],
-        [
-            1252,
-            803
-        ],
-        [
-            1278,
-            622
-        ],
-        [
-            1442,
-            540
-        ],
-        [
-            1086,
-            802
-        ],
-        [
-            1446,
-            370
-        ],
-        [
-            1448,
-            222
-        ]])
-    print(c.current_app())
-    c.release()
+#
+# if __name__ == "__main__":
+#     c = MiniTouch(None, None, "127.0.0.1:16448")
+#     # c = MiniTouch(None, None, "emulator-5559")
+#     c.multi_tap([[
+#         1432,
+#         747
+#     ],
+#         [
+#             1252,
+#             803
+#         ],
+#         [
+#             1278,
+#             622
+#         ],
+#         [
+#             1442,
+#             540
+#         ],
+#         [
+#             1086,
+#             802
+#         ],
+#         [
+#             1446,
+#             370
+#         ],
+#         [
+#             1448,
+#             222
+#         ]])
+#     print(c.current_app())
+#     c.release()

@@ -131,11 +131,12 @@ class Clicker:
         """
         control = None
         try:
+            self.operationer.device.control_manager.release()
+            self.operationer.device.control_manager.current_control = self.operationer.device.control_manager.create_control_instance()
             control = self.operationer.device.control_manager.current_control
             if not control.ready:
                 self.logger.error("MiniTouch 实例未就绪，无法启动多点连点")
                 return
-
             points = [[x, y] for x, y in coords]
             self.logger.debug(f"MiniTouch 多点连点线程启动，坐标数量: {len(points)}")
 

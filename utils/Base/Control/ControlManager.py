@@ -18,8 +18,7 @@ class ControlManager:
         self.logger = parent_logger.getChild(self.__class__.__name__) if parent_logger else logging.getLogger(self.__class__.__name__)
         self.config = config
         self.control_mode = ControlMode(self.config.get_config('控制模式'))
-        self.current_control: Control | None = None
-        self.init_control_instance()
+        self.current_control: Control | None = self.create_control_instance()
 
     def __del__(self):
         """析构函数：自动释放资源"""
@@ -30,22 +29,23 @@ class ControlManager:
         """统一的就绪判断（对外接口）"""
         return self.current_control is not None and self.current_control.ready
 
-    def init_control_instance(self):
+    def create_control_instance(self):
         """初始化控制实例"""
         self.logger.info(f"当前控制模式：[{self.control_mode.name}]")
         try:
             # 根据模式创建对应子类
             if self.control_mode == ControlMode.U2:
-                self.current_control = U2(self.config, self.logger)
+                control = U2(self.config, self.logger)
             elif self.control_mode == ControlMode.MiniTouch:
-                self.current_control = MiniTouch(self.config, self.logger)
+                control = MiniTouch(self.config, self.logger)
             else:
-                self.current_control = U2(self.config, self.logger)
+                control = U2(self.config, self.logger)
 
             # 初始化提示
-            if self.current_control.ready:
+            if control.ready:
                 self.logger.info(f"[{self.control_mode.name}]控制实例初始化完成")
             self.config.set_config('控制模式', self.control_mode.value)
+            return control
 
         except Exception as e:
             # 初始化失败：回退到U2方案
@@ -55,6 +55,7 @@ class ControlManager:
             )
             self.logger.error(f"[{self.control_mode.name}]初始化失败，切换U2")
             self._fallback_to_u2()
+            return None
 
     def _fallback_to_u2(self):
         """初始化失败：降级到U2"""
@@ -77,7 +78,7 @@ class ControlManager:
         # 释放旧实例 → 创建新实例
         self.control_mode = new_mode
         self.release()
-        self.init_control_instance()
+        self.create_control_instance()
 
     def release(self):
         """释放当前实例"""

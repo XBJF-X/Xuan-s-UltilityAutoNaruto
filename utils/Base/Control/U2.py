@@ -244,7 +244,7 @@ class U2(Control):
             self.u2_device = None
             self.logger.error(f"重连设备失败: {e}")
 
-
-if __name__ == "__main__":
-    c = U2(None, None, "127.0.0.1:16448")
-    print(c.current_app())
+#
+# if __name__ == "__main__":
+#     c = U2(None, None, "127.0.0.1:16448")
+#     print(c.current_app())
