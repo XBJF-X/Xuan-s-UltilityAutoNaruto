@@ -48,25 +48,12 @@ class ControlManager:
             return control
 
         except Exception as e:
-            # 初始化失败：回退到U2方案
             QMessageBox.warning(
-                None, "", f"[{self.control_mode.name}]初始化失败，启用[U2]方案",
+                None, "", f"【{self.control_mode.name}】 初始化失败\n\n原因：{e}\n\n请检查方案参数配置或尝试其他方案",
                 QMessageBox.StandardButton.Ok
             )
-            self.logger.error(f"[{self.control_mode.name}]初始化失败，切换U2")
-            self._fallback_to_u2()
+            self.logger.error(f"【{self.control_mode.name}】 初始化失败\n\n原因：{e}\n\n请检查方案参数配置或尝试其他方案")
             return None
-
-    def _fallback_to_u2(self):
-        """初始化失败：降级到U2"""
-        try:
-            self.control_mode = ControlMode.U2
-            self.current_control = U2(self.config, self.logger)
-            self.config.set_config('控制模式', self.control_mode.value)
-            self.logger.info("U2备用实例初始化成功")
-        except Exception as e:
-            self.logger.error("U2备用实例初始化失败，控制功能不可用")
-            self.current_control = None
 
     def switch_control_mode(self, new_mode: ControlMode):
         """切换控制模式（核心方法）"""

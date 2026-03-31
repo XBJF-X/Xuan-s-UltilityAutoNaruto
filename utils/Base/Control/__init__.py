@@ -12,10 +12,13 @@ class ControlMode(IntEnum):
     U2 = 1
 
 
+class InvalidResolution(Exception):
+    pass
+
+
 class Control(abc.ABC):
     """
     控制模块抽象基类
-    强制所有控制子类实现：点击、滑动、启动/停止App等核心方法
     """
 
     def __init__(self, config: Config, parent_logger=None):
@@ -36,6 +39,11 @@ class Control(abc.ABC):
 
     @abc.abstractmethod
     def get_device_info(self):
+        """获取硬件信息"""
+        pass
+
+    @abc.abstractmethod
+    def check_resolution(self):
         """获取硬件信息"""
         pass
 

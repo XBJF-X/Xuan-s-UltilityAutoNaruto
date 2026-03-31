@@ -5,7 +5,7 @@ from typing import Tuple
 import uiautomator2 as u2
 
 from utils.Base.Config import Config
-from utils.Base.Control import Control
+from utils.Base.Control import Control, InvalidResolution
 
 
 class U2(Control):
@@ -23,6 +23,8 @@ class U2(Control):
             self.u2_device = u2.connect(self.serial)
             self.get_device_info()
             self.logger.info(f"成功连接设备 {self.serial}")
+            if not self.check_resolution():
+                raise InvalidResolution("模拟器分辨率比例不符合16:9的要求，请在模拟器设置内切换！")
         except Exception as e:
             self.u2_device = None
             self.logger.error(f"连接设备失败: {e}")
@@ -60,6 +62,9 @@ class U2(Control):
         self.width = self.window_size[0]
         self.height = self.window_size[1]
         self.logger.debug(f"屏幕方向:{self.orientation}，屏幕宽度:{self.width}，屏幕高度:{self.height}")
+
+    def check_resolution(self):
+        return int(self.screen_size[0] * 9) == int(self.screen_size[1] * 16)
 
     def click(self, x: int, y: int, duration: float = 0.03):
         if not self.u2_device:
