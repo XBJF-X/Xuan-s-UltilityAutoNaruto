@@ -59,7 +59,7 @@ class U2(Control):
         self.window_size = self.u2_device.window_size()
         self.width = self.window_size[0]
         self.height = self.window_size[1]
-        self.logger.debug(f"\n屏幕方向:{self.orientation}\n屏幕宽度:{self.width}\n屏幕高度:{self.height}")
+        self.logger.debug(f"屏幕方向:{self.orientation}，屏幕宽度:{self.width}，屏幕高度:{self.height}")
 
     def click(self, x: int, y: int, duration: float = 0.03):
         if not self.u2_device:
