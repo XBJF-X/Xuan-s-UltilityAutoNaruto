@@ -24,7 +24,6 @@ class U2(Screen):
             self.screen_size = self.u2_device.window_size()  # (width, height)
             self._ready = True
         except Exception as e:
-            self.logger.error("[U2]实例化失败")
             self._ready = False
 
     def screencap(self):

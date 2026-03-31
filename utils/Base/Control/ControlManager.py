@@ -27,7 +27,7 @@ class ControlManager:
     @property
     def ready(self):
         """统一的就绪判断（对外接口）"""
-        return self.current_control is not None and self.current_control.ready
+        return (self.current_control is not None) and self.current_control.ready
 
     def create_control_instance(self):
         """初始化控制实例"""

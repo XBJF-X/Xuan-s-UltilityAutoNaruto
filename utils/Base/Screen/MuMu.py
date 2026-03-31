@@ -60,14 +60,18 @@ class MuMu(Screen):
 
     def init(self):
         """初始化 MuMu 模拟器连接"""
-        self.current_mumu_path = self.config.get_config('MuMu安装路径')
-        self.current_inst_index = self.config.get_config('MuMu实例索引')
-        self.package_name = self.config.get_config('MuMu操作应用包名')
+        try:
+            self.current_mumu_path = self.config.get_config('MuMu安装路径')
+            self.current_inst_index = self.config.get_config('MuMu实例索引')
+            self.package_name = self.config.get_config('MuMu操作应用包名')
 
-        # 尝试加载 DLL
-        self.inited = self._load_mumu_library() and self._connect_mumu() and self._init_screencap()
-        self._ready = True
-        return self.inited
+            # 尝试加载 DLL
+            self.inited = self._load_mumu_library() and self._connect_mumu() and self._init_screencap()
+            self._ready = True
+            return self.inited
+        except Exception as e:
+            self._ready = False
+            raise e
 
     def _reload(self):
         """重新加载库和连接"""

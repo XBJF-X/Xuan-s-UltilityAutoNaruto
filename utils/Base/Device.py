@@ -16,10 +16,11 @@ class Device:
             self.screen_manager = ScreenManager(config, self.logger)
         except Exception as e:
             self.logger.error(e)
-        self.logger.debug("初始化完成...")
+        self.logger.debug("Device初始化完成...")
 
     @property
     def device_ready(self):
+        print(self.control_manager.ready, self.screen_manager.ready)
         return self.control_manager.ready and self.screen_manager.ready
 
     @property

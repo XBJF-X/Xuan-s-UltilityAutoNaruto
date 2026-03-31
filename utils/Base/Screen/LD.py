@@ -113,18 +113,15 @@ class LD(Screen):
         self.dll_handle = None  # ldopengl64.dll 句柄
         self.screenshot_instance = None  # IScreenShotClass 实例
         self.emu_info = LDLIST2()  # 模拟器信息
-        self._ready = False
 
     def init(self):
         try:
             self._set_ld_path()
             if not self._connect_emu():
-                self.logger.error("[LD]实例化失败")
                 self._ready = False
                 return
             self._ready = True
         except Exception as e:
-            self.logger.error("[LD]实例化失败")
             self._ready = False
 
     def __del__(self):

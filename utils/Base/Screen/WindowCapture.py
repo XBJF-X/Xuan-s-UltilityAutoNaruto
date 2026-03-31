@@ -65,7 +65,6 @@ class WindowCapture(Screen):
             self._ready = True
         except Exception:  # 初始化失败时立即清理
             self.release()
-            self.logger.error("[WindowCapture]实例化失败")
             self._ready = False
             raise
 

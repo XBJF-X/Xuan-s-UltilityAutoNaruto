@@ -20,15 +20,11 @@ class ScreenManager:
 
     @property
     def ready(self):
-        return self.current_screen is not None and self.current_screen.ready
+        return (self.current_screen is not None) and self.current_screen.ready
 
     def create_screen_instance(self):
         """根据模式创建对应的截图实例"""
         try:
-            # 先释放原有实例
-            if self.current_screen:
-                self.current_screen.release()
-
             # 根据模式创建子类实例
             if self.control_mode == ScreenMode.DroidCastRaw:
                 screen = DroidCastRaw(self.config, self.logger)
@@ -42,18 +38,18 @@ class ScreenManager:
                 screen = U2(self.config, self.logger)
             else:
                 screen = U2(self.config, self.logger)
-
             # 初始化新实例
             screen.init()
-            # QMessageBox.information(None, "", f"[{self.control_mode.name}]截图实例初始化完毕", QMessageBox.StandardButton.Ok)
-            self.logger.info(f"[{self.control_mode.name}] 截图实例创建并初始化完成")
+            # 初始化提示
+            if screen.ready:
+                self.logger.info(f"[{self.control_mode.name}] 截图实例创建并初始化完成")
             return screen
         except Exception as e:
             return None
 
     def screencap(self):
         """统一对外提供截图接口"""
-        if self.current_screen and self.current_screen.ready:
+        if self.ready:
             return self.current_screen.screencap()
         self.logger.warning("截图实例未初始化或未就绪")
         return None

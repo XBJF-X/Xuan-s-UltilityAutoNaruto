@@ -39,7 +39,6 @@ class DroidCastRaw(Screen):
         self.pc_port = 53516  # 电脑上的转发端口
         self.session = Session()
         self.service_thread = None
-        self._ready = False
 
     def init(self):
         signal.signal(signal.SIGINT, self._handler)
@@ -60,7 +59,6 @@ class DroidCastRaw(Screen):
             self.logger.error(f"端口转发错误: {e}")
         except Exception as e:
             self.logger.error(f"未知错误：{e}")
-            self._ready = False
 
     def _cleanup_ports(self):
         """连接前清理设备和电脑上的端口占用"""

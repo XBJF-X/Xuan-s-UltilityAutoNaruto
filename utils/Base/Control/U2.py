@@ -54,7 +54,6 @@ class U2(Control):
 
     def get_device_info(self):
         """获取硬件信息"""
-        print(self.u2_device.info)
         self.abi = self.u2_device.shell('getprop ro.product.cpu.abi').output.strip()
         self.sdk = self.u2_device.info.get('sdkInt', 32)  # 获取设备sdk
         self.orientation = self.u2_device.info.get('displayRotation', 0)
