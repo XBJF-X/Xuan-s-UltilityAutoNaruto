@@ -23,8 +23,8 @@ class U2(Control):
         self._lock = threading.Lock()  # 新增：设备操作锁，避免多线程竞争
         try:
             self.u2_device = u2.connect(self.serial)
-            self.screen_size = self.get_screen_size()
-            self.logger.info(f"成功连接设备 {self.serial}，屏幕尺寸 {self.get_screen_size()}")
+            self.get_device_info()
+            self.logger.info(f"成功连接设备 {self.serial}")
         except Exception as e:
             self.u2_device = None
             self.logger.error(f"连接设备失败: {e}")
@@ -42,10 +42,26 @@ class U2(Control):
                 return True
             rotation = self.u2_device.info.get('displayRotation', 0)
             self.logger.debug(f"旋转状态：{rotation}")
-            return rotation in [1, 3]
+            # return rotation in [1, 3]
+            return rotation
 
-    def get_screen_size(self) -> Tuple[int, int]:
-        return self.u2_device.window_size()  # (width, height)
+    @property
+    def screen_size(self) -> Tuple[int, int]:
+        width, height = self.window_size[0], self.window_size[1]
+        if width < height:
+            return height, width
+        return width, height
+
+    def get_device_info(self):
+        """获取硬件信息"""
+        print(self.u2_device.info)
+        self.abi = self.u2_device.shell('getprop ro.product.cpu.abi').output.strip()
+        self.sdk = self.u2_device.info.get('sdkInt', 32)  # 获取设备sdk
+        self.orientation = self.u2_device.info.get('displayRotation', 0)
+        self.window_size = self.u2_device.window_size()
+        self.width = self.window_size[0]
+        self.height = self.window_size[1]
+        self.logger.debug(f"\n屏幕方向:{self.orientation}\n屏幕宽度:{self.width}\n屏幕高度:{self.height}")
 
     def click(self, x: int, y: int, duration: float = 0.03):
         if not self.u2_device:
@@ -230,8 +246,5 @@ class U2(Control):
 
 
 if __name__ == "__main__":
-    instance = U2(None, None, "emulator-5554")
-    for _ in range(8):
-        instance.swipe([202, 150], [202, 763], duration=0.1)
-    for _ in range(8):
-        instance.swipe([202, 763], [202, 150], duration=0.8)
+    c = U2(None, None, "127.0.0.1:16448")
+    print(c.current_app())

@@ -22,16 +22,21 @@ class Control(abc.ABC):
         self.config = config
         self.logger = parent_logger.getChild(self.__class__.__name__) if parent_logger else logging.getLogger(self.__class__.__name__)
         self._ready = False  # 实例就绪状态
-        self.screen_size = None
 
     @property
     def ready(self):
         """统一的就绪状态判断（子类重写）"""
         return self._ready
 
+    @property
     @abc.abstractmethod
-    def get_screen_size(self) -> Tuple[int, int]:
+    def screen_size(self) -> Tuple[int, int]:
         """获取屏幕尺寸"""
+        pass
+
+    @abc.abstractmethod
+    def get_device_info(self):
+        """获取硬件信息"""
         pass
 
     # ------------------- 抽象方法（子类必须实现）-------------------

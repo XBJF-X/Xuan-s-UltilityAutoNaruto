@@ -2,12 +2,12 @@ import time
 from enum import Enum
 from typing import List, Tuple
 
+from adbutils import adb
 from minidevice import MiniTouch as MiniTouchCore
 from minidevice.utils.command_builder_utils import CommandBuilder
 
 from utils.Base.Config import Config
 from utils.Base.Control import Control
-from utils.Base.Control.U2 import U2
 
 
 class ArchType(Enum):
@@ -24,23 +24,22 @@ class MiniTouch(Control):
     严格遵循Control抽象类约束，兼容原有业务接口
     """
 
-    def __init__(self, config: Config, parent_logger=None, device_serial: str = ""):
+    def __init__(self, config: Config, parent_logger=None, serial: str = ""):
         super().__init__(config, parent_logger)
         self._released = False
         self._mt_core = None
-        self.u2 = None
         try:
-            self.device_serial = device_serial or self.config.get_config("串口", "")
-            if not self.device_serial:
+            self.serial = serial if serial else self.config.get_config("串口", "")
+            if not self.serial:
                 raise RuntimeError("设备序列号不能为空")
 
-            self._mt_core = MiniTouchCore(self.device_serial)
+            self._mt_core = MiniTouchCore(self.serial)
             self.max_contacts = int(self._mt_core.max_contacts)
             self.max_pressure = int(self._mt_core.max_pressure)
 
-            self.u2 = U2(config, parent_logger, self.device_serial)
-            self.screen_size = self.get_screen_size()
-            self.logger.info(f"MiniTouch 初始化成功 | 分辨率:{self.screen_size[0]}x{self.screen_size[1]}")
+            self.adb = adb.device(self.serial)
+            self.get_device_info()
+            self.logger.info(f"MiniTouch 初始化成功 | 分辨率:{self.screen_size[0]}x{self.screen_size[1]},最大连接数:{self.max_contacts},最大压力:{self.max_pressure}")
         except Exception as e:
             self.logger.error(f"MiniTouch 初始化失败: {e}")
             self._released = True
@@ -54,11 +53,24 @@ class MiniTouch(Control):
 
     @property
     def rotated(self):
-        return self.u2.rotated
+        return self.orientation
 
-    def get_screen_size(self) -> Tuple[int, int]:
-        """Control约束：屏幕尺寸（兼容原有逻辑）"""
-        return self.u2.screen_size
+    @property
+    def screen_size(self):
+        width, height = self.window_size[0], self.window_size[1]
+        if width < height:
+            return height, width
+        return width, height
+
+    def get_device_info(self):
+        """获取设备信息"""
+        self.abi = self.adb.getprop("ro.product.cpu.abi")  # 获取设备架构
+        self.sdk = self.adb.getprop("ro.build.version.sdk")  # 获取设备sdk
+        self.orientation = self.adb.rotation()  # 屏幕方向获取
+        self.window_size = self.adb.window_size()
+        self.width = self.window_size.width
+        self.height = self.window_size.height
+        self.logger.debug(f"屏幕方向:{self.orientation},屏幕宽度:{self.width},屏幕高度:{self.height}")
 
     def release(self):
         if self._released:
@@ -70,8 +82,6 @@ class MiniTouch(Control):
                 self._mt_core.stop()
             except Exception as e:
                 self.logger.warning(f"停止 MiniTouch 服务失败: {e}")
-        if self.u2:
-            self.u2.release()
         self.logger.info("MiniTouch 已完全释放")
 
     def up_all_contacts(self):
@@ -94,9 +104,6 @@ class MiniTouch(Control):
         """
         if not self.ready:
             return
-        # 坐标边界保护
-        x = max(0, min(self.screen_size[0], x))
-        y = max(0, min(self.screen_size[1], y))
         # 直接调用minidevice官方点击
         self._mt_core.click(x, y, duration)
 
@@ -113,11 +120,6 @@ class MiniTouch(Control):
 
         x1, y1 = start_coordinate
         x2, y2 = end_coordinate
-        # 坐标边界校验
-        x1 = max(0, min(self.screen_size[0], x1))
-        y1 = max(0, min(self.screen_size[1], y1))
-        x2 = max(0, min(self.screen_size[0], x2))
-        y2 = max(0, min(self.screen_size[1], y2))
 
         total_ms = int(duration * 1000)
         TOTAL_STEPS = int(total_ms / 16)
@@ -136,19 +138,23 @@ class MiniTouch(Control):
 
     # ==================== 复用ADB实现Control其他抽象方法 ====================
     def app_stop(self, package_name: str):
-        self.u2.app_stop(package_name)
+        self.adb.app_stop(package_name)
 
     def app_start(self, package_name: str):
-        self.u2.app_start(package_name)
+        self.adb.app_start(package_name)
 
-    def current_app(self) -> Tuple[str, str]:
-        return self.u2.current_app()
+    def current_app(self):
+        front_app = self.adb.app_current()
+        return {
+            "package": front_app.package,
+            "activity": front_app.activity
+        }
 
     def input(self, input_text: str):
-        self.u2.input(input_text)
+        self.adb.input(input_text)
 
     def press_key(self, key: int | str):
-        self.u2.press_key(key)
+        self.adb.press_key(key)
 
     def touch_down(self, x: int, y: int):
         """Control约束：按下（基于minitouch指令封装）"""
@@ -178,7 +184,9 @@ class MiniTouch(Control):
 
         # 限制触点数量并进行坐标边界保护
         points = points[:self.max_contacts]
-        points = [(max(0, min(self.screen_size[0], x)), max(0, min(self.screen_size[1], y))) for x, y in points]
+        points = [self.__convert(point[0], point[1]) for point in points]
+        points = [list(map(int, each_point)) for each_point in points]
+
         builder = CommandBuilder()
         # 1. 同时按下所有点
         for idx, (x, y) in enumerate(points):
@@ -196,6 +204,52 @@ class MiniTouch(Control):
         # 4. 发送命令到设备（self._mt_core 有 send 方法）
         builder.publish(self._mt_core)
 
+    def __convert(self, x, y):
+        if self.rotated == 0:
+            pass
+        elif self.rotated == 1:
+            x, y = self.screen_size[1] - y, x
+        elif self.rotated == 2:
+            x, y = self.screen_size[0] - x, self.screen_size[1] - y
+        elif self.rotated == 3:
+            x, y = y, self.screen_size[0] - x
+        return x, y
+
     def __del__(self):
         if hasattr(self, '_released') and not self._released:
             self.release()
+
+
+if __name__ == "__main__":
+    c = MiniTouch(None, None, "127.0.0.1:16448")
+    # c = MiniTouch(None, None, "emulator-5559")
+    c.multi_tap([[
+        1432,
+        747
+    ],
+        [
+            1252,
+            803
+        ],
+        [
+            1278,
+            622
+        ],
+        [
+            1442,
+            540
+        ],
+        [
+            1086,
+            802
+        ],
+        [
+            1446,
+            370
+        ],
+        [
+            1448,
+            222
+        ]])
+    print(c.current_app())
+    c.release()
