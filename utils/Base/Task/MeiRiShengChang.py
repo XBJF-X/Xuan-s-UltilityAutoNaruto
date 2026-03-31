@@ -66,9 +66,9 @@ class MeiRiShengChang(BaseTask):
                 {
                     'swipe':
                     {
-                        "start_coordinate": [1095, 618],
-                        "end_coordinate": [1095, 167],
-                        "duration": 0.5
+                        "start_coordinate": [1095, 500],
+                        "end_coordinate": [1095, 250],
+                        "duration": 0.8
                     }
                 }
             ],
