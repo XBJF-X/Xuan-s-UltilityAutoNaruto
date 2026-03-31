@@ -2034,7 +2034,7 @@ margin-left:18px;</string>
                        <item>
                         <widget class="QStackedWidget" name="screen_mode_settings_stackedWidget">
                          <property name="currentIndex">
-                          <number>2</number>
+                          <number>3</number>
                          </property>
                          <widget class="QWidget" name="DroidCastRaw">
                           <layout class="QVBoxLayout" name="verticalLayout_11">
@@ -2196,9 +2196,15 @@ margin-left:18px;</string>
                                </property>
                                <property name="maximumSize">
                                 <size>
-                                 <width>70</width>
+                                 <width>100</width>
                                  <height>35</height>
                                 </size>
+                               </property>
+                               <property name="alignment">
+                                <set>Qt::AlignmentFlag::AlignCenter</set>
+                               </property>
+                               <property name="maximum">
+                                <number>100000</number>
                                </property>
                               </widget>
                              </item>
@@ -2348,9 +2354,15 @@ margin-left:18px;</string>
                               <widget class="QSpinBox" name="LD_instance_index">
                                <property name="maximumSize">
                                 <size>
-                                 <width>70</width>
+                                 <width>100</width>
                                  <height>35</height>
                                 </size>
+                               </property>
+                               <property name="alignment">
+                                <set>Qt::AlignmentFlag::AlignCenter</set>
+                               </property>
+                               <property name="maximum">
+                                <number>100000</number>
                                </property>
                               </widget>
                              </item>

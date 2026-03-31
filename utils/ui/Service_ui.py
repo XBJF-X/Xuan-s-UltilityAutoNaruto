@@ -1194,7 +1194,9 @@ class Ui_Service(object):
         self.MuMu_instance_index = QSpinBox(self.MuMu)
         self.MuMu_instance_index.setObjectName(u"MuMu_instance_index")
         self.MuMu_instance_index.setMinimumSize(QSize(0, 34))
-        self.MuMu_instance_index.setMaximumSize(QSize(70, 35))
+        self.MuMu_instance_index.setMaximumSize(QSize(100, 35))
+        self.MuMu_instance_index.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.MuMu_instance_index.setMaximum(100000)
 
         self.gridLayout_11.addWidget(self.MuMu_instance_index, 3, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
 
@@ -1263,7 +1265,9 @@ class Ui_Service(object):
 
         self.LD_instance_index = QSpinBox(self.LD)
         self.LD_instance_index.setObjectName(u"LD_instance_index")
-        self.LD_instance_index.setMaximumSize(QSize(70, 35))
+        self.LD_instance_index.setMaximumSize(QSize(100, 35))
+        self.LD_instance_index.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.LD_instance_index.setMaximum(100000)
 
         self.gridLayout_2.addWidget(self.LD_instance_index, 3, 1, 1, 1, Qt.AlignmentFlag.AlignHCenter)
 
@@ -1861,7 +1865,7 @@ class Ui_Service(object):
         self.overview_panel_button.setDefault(False)
         self.stackedWidget.setCurrentIndex(1)
         self.control_mode.setCurrentIndex(0)
-        self.screen_mode_settings_stackedWidget.setCurrentIndex(2)
+        self.screen_mode_settings_stackedWidget.setCurrentIndex(3)
 
 
         QMetaObject.connectSlotsByName(Service)
