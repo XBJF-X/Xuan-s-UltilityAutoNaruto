@@ -49,10 +49,9 @@ class ControlManager:
 
         except Exception as e:
             QMessageBox.warning(
-                None, "", f"【{self.control_mode.name}】 初始化失败\n\n原因：{e}\n\n请检查方案参数配置或尝试其他方案",
+                None, "", f"【{self.control_mode.name}】 初始化失败\n\n{e}\n\n请检查方案参数配置或尝试其他方案",
                 QMessageBox.StandardButton.Ok
             )
-            self.logger.error(f"【{self.control_mode.name}】 初始化失败\n\n原因：{e}\n\n请检查方案参数配置或尝试其他方案")
             return None
 
     def switch_control_mode(self, new_mode: ControlMode):

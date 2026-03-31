@@ -7,7 +7,7 @@ from minidevice import MiniTouch as MiniTouchCore
 from minidevice.utils.command_builder_utils import CommandBuilder
 
 from utils.Base.Config import Config
-from utils.Base.Control import Control,InvalidResolution
+from utils.Base.Control import Control, InvalidResolution
 
 
 class ArchType(Enum):
@@ -39,9 +39,9 @@ class MiniTouch(Control):
 
             self.adb = adb.device(self.serial)
             self.get_device_info()
-            self.logger.info(f"MiniTouch 初始化成功 | 分辨率:{self.screen_size[0]}x{self.screen_size[1]},最大连接数:{self.max_contacts},最大压力:{self.max_pressure}")
             if not self.check_resolution():
                 raise InvalidResolution("模拟器分辨率比例不符合16:9的要求，请在模拟器设置内切换！")
+            self.logger.info(f"MiniTouch 初始化成功 | 分辨率:{self.screen_size[0]}x{self.screen_size[1]},最大连接数:{self.max_contacts},最大压力:{self.max_pressure}")
 
         except Exception as e:
             self.logger.error(f"MiniTouch 初始化失败: {e}")

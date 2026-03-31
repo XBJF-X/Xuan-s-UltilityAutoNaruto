@@ -22,9 +22,9 @@ class U2(Control):
         try:
             self.u2_device = u2.connect(self.serial)
             self.get_device_info()
-            self.logger.info(f"成功连接设备 {self.serial}")
             if not self.check_resolution():
                 raise InvalidResolution("模拟器分辨率比例不符合16:9的要求，请在模拟器设置内切换！")
+            self.logger.info(f"成功连接设备 {self.serial}")
         except Exception as e:
             self.u2_device = None
             self.logger.error(f"连接设备失败: {e}")

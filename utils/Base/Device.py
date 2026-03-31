@@ -11,8 +11,11 @@ class Device:
     def __init__(self, config: Config, parent_logger=None):
         self.logger = parent_logger.getChild(self.__class__.__name__) if parent_logger else logging.getLogger(self.__class__.__name__)
         self.package_name = "com.tencent.KiHan"
-        self.control_manager = ControlManager(config, self.logger)
-        self.screen_manager = ScreenManager(config, self.logger)
+        try:
+            self.control_manager = ControlManager(config, self.logger)
+            self.screen_manager = ScreenManager(config, self.logger)
+        except Exception as e:
+            self.logger.error(e)
         self.logger.debug("初始化完成...")
 
     @property
