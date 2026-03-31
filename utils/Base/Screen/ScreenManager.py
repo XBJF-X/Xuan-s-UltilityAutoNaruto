@@ -18,10 +18,9 @@ class ScreenManager:
         self.control_mode = ScreenMode(self.config.get_config('截图模式'))
         self.current_screen: Screen | None = self.create_screen_instance()
 
-
     @property
     def ready(self):
-        return self.current_screen.ready
+        return self.current_screen is not None and self.current_screen.ready
 
     def create_screen_instance(self):
         """根据模式创建对应的截图实例"""
