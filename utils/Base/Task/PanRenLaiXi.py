@@ -1,5 +1,5 @@
+import datetime
 import time
-from datetime import timedelta
 
 from utils.Base.Enums import KEY_INDEX
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
@@ -7,13 +7,17 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 class PanRenLaiXi(BaseTask):
     source_scene = "主场景-组织"
-    task_max_duration = timedelta(minutes=40)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.auto = False
         self.check = False
         self.decrease_difficulty = True
+        match datetime.datetime.now().weekday():
+            case 2:
+                self.dead_line = datetime.time(hour=22)
+            case 5:
+                self.dead_line = datetime.time(hour=21)
 
     @TransitionOn()
     def _(self):
@@ -176,6 +180,12 @@ class PanRenLaiXi(BaseTask):
             self.decrease_difficulty = False
         time.sleep(2)
         return False
+
+    def _cleanup_on_timeout(self):
+        """超时时的清理"""
+        self.operationer.clicker.stop()
+        self.update_next_execute_time()
+        self.reset_task_exe_proc()
 
     def reset_task_exe_proc(self) -> bool:
         self.check = False
