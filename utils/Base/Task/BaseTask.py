@@ -269,8 +269,8 @@ class BaseTask:
 
             # 检查超时
             if self.running_deadline and datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai")) >= self.running_deadline:
-                self.logger.warning("任务已超时，正在清理并退出")
-                self._cleanup_on_timeout()  # 执行超时清理
+                self.logger.error("任务已超时，正在清理并退出")
+                self._cleanup_on_timeout()
                 return
 
             # 执行步骤转换
@@ -378,7 +378,7 @@ class BaseTask:
     def _cleanup_on_complete(self):
         """任务正常完成时的清理"""
         self.operationer.clicker.stop()  # 任务结束，停止点击器
-        self.update_next_execute_time(flag=1)  # 更新下次执行时间
+        self.update_next_execute_time()
         self.reset_task_exe_proc()  # 重置任务进度（如果需要）
 
     def _activate_another_task(self, task_name: str):

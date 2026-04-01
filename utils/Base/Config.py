@@ -33,15 +33,19 @@ class Config:
         self.save_config_to_file()
 
     def get_task_config(self, task_name: str):
+        """获取任务所有的属性"""
         return self.tasks.get(task_name, {})
 
     def get_task_base_config(self, task_name: str, key: str, empty=None):
+        """获取任务共有的属性"""
         return self.tasks.get(task_name, {}).get(key, empty)
 
     def get_task_exe_param(self, task_name: str, key: str, empty=None):
+        """获取任务的执行参数"""
         return self.tasks.get(task_name, {}).get("执行参数", {}).get(key, {}).get("当前值", empty)
 
     def get_task_exe_prog(self, task_name: str, key: str, empty=None):
+        """获取任务的执行进度"""
         return self.tasks.get(task_name, {}).get("执行进度", {}).get(key, empty)
 
     def set_task_base_config(self, task_name: str, key: str, value: Any):
