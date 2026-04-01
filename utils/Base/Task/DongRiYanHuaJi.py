@@ -26,17 +26,19 @@ class DongRiYanHuaJi(BaseTask):
             self.operationer.click_and_wait("免费烟火")
             self.bool_light_fireworks = True
             return False
-        if self.running_deadline and datetime.now(tz=ZoneInfo("Asia/Shanghai")) < self.running_deadline:
-            self.operationer.clicker.start()
-            return False
-        self.operationer.clicker.stop()
-        self.update_next_execute_time()
-        return True
+        self.operationer.clicker.start()
+        return False
 
     @TransitionOn("冬日烟花季-点燃免费爆竹")
     def _(self):
         self.operationer.click_and_wait("是")
         return False
+
+    def _cleanup_on_timeout(self):
+        """超时时的清理"""
+        self.operationer.clicker.stop()
+        self.update_next_execute_time()
+        self.reset_task_exe_proc()
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         """

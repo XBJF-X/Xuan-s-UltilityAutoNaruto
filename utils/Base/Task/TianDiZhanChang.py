@@ -31,6 +31,9 @@ class TianDiZhanChang(BaseTask):
             self.config.get_config("键位")[KEY_INDEX.Summon],
             self.config.get_config("键位")[KEY_INDEX.Substitution]
         ])
+        stop_time = self.config.get_task_exe_param(self.task_name, "本任务执行多少分钟后执行叛忍", 0)
+        if stop_time:
+            self.dead_line = datetime.time(21, stop_time)
 
     @TransitionOn()
     def _(self):
@@ -40,10 +43,6 @@ class TianDiZhanChang(BaseTask):
     @TransitionOn("天之战场")
     def _(self):
         current_time = datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai"))
-        if current_time > current_time.replace(hour=21, minute=30, second=0, microsecond=0):
-            self.logger.info("天地战场时间已过，停止执行")
-            self.update_next_execute_time()
-            return True
         if not self.guwu_done:
             self.operationer.click_and_wait("组织鼓舞")
             self.guwu_done = True
@@ -77,11 +76,6 @@ class TianDiZhanChang(BaseTask):
         if time.perf_counter() - self.last_check_reward_time > 10:
             self.operationer.click_and_wait("战场奖励")
             self.last_check_reward_time = time.perf_counter()
-        return False
-
-    @TransitionOn("天地战场-确定进入")
-    def _(self):
-        self.operationer.click_and_wait("确认")
         return False
 
     @TransitionOn("天地战场-确定进入")
@@ -128,7 +122,8 @@ class TianDiZhanChang(BaseTask):
     @TransitionOn("天地战场-确认退出")
     def _(self):
         self.operationer.click_and_wait("确认")
-        return False
+        self.update_next_execute_time()
+        return True
 
     @TransitionOn("恭喜你获得")
     def _(self):
@@ -165,6 +160,12 @@ class TianDiZhanChang(BaseTask):
         self.operationer.clicker.stop()
         time.sleep(1)
         return False
+
+    def _cleanup_on_timeout(self):
+        """超时时的清理"""
+        self.operationer.clicker.stop()
+        self.update_next_execute_time()
+        self.reset_task_exe_proc()
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         """

@@ -45,6 +45,9 @@ class YaoSaiZhengDuoZhan(BaseTask):
             self.config.get_config("键位")[KEY_INDEX.Summon],
             self.config.get_config("键位")[KEY_INDEX.Substitution]
         ])
+        stop_time = self.config.get_task_exe_param(self.task_name, "本任务执行多少分钟后执行叛忍", 0)
+        if stop_time:
+            self.dead_line = datetime.time(20, stop_time)
 
     @TransitionOn()
     def _(self):
@@ -95,12 +98,9 @@ class YaoSaiZhengDuoZhan(BaseTask):
     @TransitionOn("要塞内部")
     def _(self):
         self.operationer.clicker.stop()
-        if self.running_deadline and datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai")) < self.running_deadline:
-            self.operationer.long_press(self.joystick[0] + 60, self.joystick[1], 3)
-            return False
-        self.logger.info(f"本服要塞战结束，共战斗 {self.fight_sum} 次")
-        self.update_next_execute_time()
-        return True
+        self.operationer.long_press(self.joystick[0] + 60, self.joystick[1], 3)
+        self.logger.info(f"[本服要塞战]已战斗 {self.fight_sum} 次")
+        return False
 
     @TransitionOn("决斗场-匹配中")
     def _(self):
@@ -145,6 +145,12 @@ class YaoSaiZhengDuoZhan(BaseTask):
         self.operationer.clicker.stop()
         time.sleep(1)
         return False
+
+    def _cleanup_on_timeout(self):
+        """超时时的清理"""
+        self.operationer.clicker.stop()
+        self.update_next_execute_time()
+        self.reset_task_exe_proc()
 
     def _handle_initialization(self, current_time: datetime) -> datetime:
         def is_in_skip_period(target_time, interval_weeks):
