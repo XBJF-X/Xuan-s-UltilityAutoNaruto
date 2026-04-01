@@ -157,10 +157,10 @@ class MiniTouch(Control):
         }
 
     def input(self, input_text: str):
-        self.adb.input(input_text)
+        self.adb.send_keys(input_text)
 
     def press_key(self, key: int | str):
-        self.adb.press_key(key)
+        self.adb.keyevent(key)
 
     def touch_down(self, x: int, y: int):
         """Control约束：按下（基于minitouch指令封装）"""
@@ -225,37 +225,38 @@ class MiniTouch(Control):
         if hasattr(self, '_released') and not self._released:
             self.release()
 
-#
-# if __name__ == "__main__":
-#     c = MiniTouch(None, None, "127.0.0.1:16448")
-#     # c = MiniTouch(None, None, "emulator-5559")
-#     c.multi_tap([[
-#         1432,
-#         747
-#     ],
-#         [
-#             1252,
-#             803
-#         ],
-#         [
-#             1278,
-#             622
-#         ],
-#         [
-#             1442,
-#             540
-#         ],
-#         [
-#             1086,
-#             802
-#         ],
-#         [
-#             1446,
-#             370
-#         ],
-#         [
-#             1448,
-#             222
-#         ]])
-#     print(c.current_app())
-#     c.release()
+
+if __name__ == "__main__":
+    c = MiniTouch(None, None, "emulator-5554")
+    c.press_key("BACK")
+    # c = MiniTouch(None, None, "emulator-5559")
+    # c.multi_tap([[
+    #     1432,
+    #     747
+    # ],
+    #     [
+    #         1252,
+    #         803
+    #     ],
+    #     [
+    #         1278,
+    #         622
+    #     ],
+    #     [
+    #         1442,
+    #         540
+    #     ],
+    #     [
+    #         1086,
+    #         802
+    #     ],
+    #     [
+    #         1446,
+    #         370
+    #     ],
+    #     [
+    #         1448,
+    #         222
+    #     ]])
+    # print(c.current_app())
+    c.release()

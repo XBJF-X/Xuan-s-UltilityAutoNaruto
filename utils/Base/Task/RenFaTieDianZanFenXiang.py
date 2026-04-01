@@ -37,7 +37,7 @@ class RenFaTieDianZanFenXiang(BaseTask):
             time.sleep(1)
             if not self.operationer.is_naruto_frontend:
                 self.logger.debug("返回游戏失败，将尝试点击[Esc]键")
-                self.operationer.press_key("back")
+                self.operationer.press_key("BACK")
 
             if time.perf_counter() - start_time > timeout:
                 self.logger.debug("返回游戏失败，请自行检查...")

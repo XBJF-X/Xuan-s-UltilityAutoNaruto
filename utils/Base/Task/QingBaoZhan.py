@@ -118,7 +118,7 @@ class QingBaoZhan(BaseTask):
                 self.operationer.swipe_and_wait((600, 290), (600, 850), duration=0.5)
             else:
                 self.logger.info("返回福利站")
-                self.operationer.press_key("back", wait_time=7)
+                self.operationer.press_key("BACK", wait_time=7)
 
                 # timeout = 15
                 # start_time = time.perf_counter()
