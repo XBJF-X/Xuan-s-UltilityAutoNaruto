@@ -19,7 +19,8 @@ class TianDiZhanChang(BaseTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.guwu_done = False
-        self.pillar_took = False
+        self.fighted = False
+        self.last_check_reward_time = time.perf_counter()
         self.choose = self.config.get_task_exe_param(self.task_name, "选择战场", 0)
         self.operationer.clicker.update_coordinates([
             self.config.get_config("键位")[KEY_INDEX.BasicAttack],
@@ -51,12 +52,10 @@ class TianDiZhanChang(BaseTask):
             self.logger.info("战场已提前结束，停止执行")
             self.update_next_execute_time()
             return True
-        if not self.pillar_took:
-            if self.operationer.click_and_wait("空闲柱子", max_time=20, auto_raise=False):
-                self.pillar_took = True
-        else:
-            QThread.sleep(20)
-        self.operationer.click_and_wait("战场奖励")
+        self.operationer.click_and_wait("空闲柱子")
+        if time.perf_counter() - self.last_check_reward_time > 10:
+            self.operationer.click_and_wait("战场奖励")
+            self.last_check_reward_time = time.perf_counter()
         return False
 
     @TransitionOn("地之战场")
@@ -74,12 +73,10 @@ class TianDiZhanChang(BaseTask):
             self.logger.info("战场已提前结束，停止执行")
             self.update_next_execute_time()
             return True
-        if not self.pillar_took:
-            if self.operationer.click_and_wait("空闲柱子", max_time=20, auto_raise=False):
-                self.pillar_took = True
-        else:
-            QThread.sleep(20)
-        self.operationer.click_and_wait("战场奖励")
+        self.operationer.click_and_wait("空闲柱子", max_time=10)
+        if time.perf_counter() - self.last_check_reward_time > 10:
+            self.operationer.click_and_wait("战场奖励")
+            self.last_check_reward_time = time.perf_counter()
         return False
 
     @TransitionOn("天地战场-确定进入")
@@ -95,24 +92,24 @@ class TianDiZhanChang(BaseTask):
     @TransitionOn("天地战场-配置阵容")
     def _(self):
         defeated_ninja_num = max(self.config.get_task_exe_prog(self.task_name, "已战败角色数", 0), 2) + 1
-        self.operationer.click_and_wait("忍者页")
+        self.operationer.click_and_wait("忍者页", wait_time=0.2, stable_duration=0)
         if defeated_ninja_num >= 4:
             self.config.set_task_exe_prog(self.task_name, "已战败角色数", 0)
         else:
             if not self.operationer.detect_element(f"默认点位-{defeated_ninja_num}-选中"):
-                self.operationer.click_and_wait(f"默认点位-{defeated_ninja_num}", stable_max_time=0.5)
+                self.operationer.click_and_wait(f"默认点位-{defeated_ninja_num}", wait_time=0.2, stable_duration=0)
                 self.config.set_task_exe_prog(self.task_name, "已战败角色数", defeated_ninja_num)
+        if not self.fighted:
+            self.operationer.click_and_wait("通灵兽页", wait_time=0.2, stable_duration=0)
+            for i in range(1, 4):
+                if not self.operationer.detect_element(f"默认点位-{i}-选中"):
+                    self.operationer.click_and_wait(f"默认点位-{i}", wait_time=0.2, stable_duration=0)
 
-        self.operationer.click_and_wait("通灵兽页", stable_max_time=0.5)
-        for i in range(1, 4):
-            if not self.operationer.detect_element(f"默认点位-{i}-选中"):
-                self.operationer.click_and_wait(f"默认点位-{i}", stable_max_time=0.5)
+            self.operationer.click_and_wait("秘卷页", wait_time=0.2, stable_duration=0)
+            if not self.operationer.detect_element("默认点位-1-选中"):
+                self.operationer.click_and_wait("默认点位-1", wait_time=0.2, stable_duration=0)
 
-        self.operationer.click_and_wait("秘卷页", stable_max_time=0.5)
-        if not self.operationer.detect_element("默认点位-1-选中"):
-            self.operationer.click_and_wait("默认点位-1", stable_max_time=0.5)
-
-        self.operationer.click_and_wait("确认", stable_max_time=0.5)
+        self.operationer.click_and_wait("确认")
         return False
 
     @TransitionOn("天地战场-战场奖励")
@@ -142,19 +139,19 @@ class TianDiZhanChang(BaseTask):
     def _(self):
         self.operationer.clicker.stop()
         self.operationer.click_and_wait("X")
-        self.pillar_took = False
+        self.fighted = True
         return False
 
     @TransitionOn("决斗场-单局结算")
     def _(self):
         self.operationer.clicker.stop()
-        self.pillar_took = False
+        self.fighted = True
         return False
 
     @TransitionOn("决斗场-战斗中")
     def _(self):
         self.operationer.clicker.start()
-        self.pillar_took = False
+        self.fighted = True
         time.sleep(0.5)
         return False
 
@@ -244,4 +241,7 @@ class TianDiZhanChang(BaseTask):
 
     def reset_task_exe_proc(self) -> bool:
         self.config.set_task_exe_prog(self.task_name, "已战败角色数", 0)
+        self.guwu_done = False
+        self.fighted = False
+        self.last_check_reward_time = time.perf_counter()
         return True

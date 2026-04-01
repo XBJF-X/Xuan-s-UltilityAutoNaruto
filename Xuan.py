@@ -81,8 +81,8 @@ def configure_dpi_awareness():
             os.environ.pop(var, None)
 
     cv2.ocl.setUseOpenCL(True)
-    # # 添加 adb 目录到 PATH
-    # os.environ['PATH'] = os.pathsep.join([get_real_path('bin/adb'), os.environ.get('PATH', '')])
+    # 添加 adb 目录到 PATH
+    os.environ['PATH'] = os.pathsep.join([get_real_path("_internal/adbutils/binaries"), os.environ.get('PATH', '')])
 
 
 class Xuan(QMainWindow):

@@ -249,19 +249,9 @@ class BaseTask:
         self._execution_thread.start()
 
     def stop(self):
-        """
-        停止当前正在执行的任务
-        """
-        self.logger.info(f"正在停止任务: {self.task_name}")
-        # 设置停止标志
+        """发出停止请求（非阻塞）"""
+        self.logger.info(f"正在请求停止任务: {self.task_name}")
         self.operationer.stop_event.set()
-        # 如果任务线程正在运行，等待其结束
-        if (hasattr(self, '_execution_thread') and self._execution_thread
-                and self._execution_thread.is_alive()):
-            self._execution_thread.join(timeout=5.0)
-            if self._execution_thread.is_alive():
-                self.logger.warning(f"任务 {self.task_name} 线程未能在5秒内停止")
-        self.operationer.clicker.stop()
 
     def _should_stop(self):
         """检查是否收到停止请求"""
@@ -271,23 +261,24 @@ class BaseTask:
     def _execute(self):
         self.operationer.next_scene = self.source_scene
         while True:
+            # 检查停止信号
             if self._should_stop():
-                self.stop()
-                self.logger.warning("任务已被停止")
+                self.logger.warning("任务收到停止信号，正在清理并退出")
+                self._cleanup_on_stop()  # 执行停止时的清理
                 return
+
+            # 检查超时
             if self.running_deadline and datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai")) >= self.running_deadline:
-                self.logger.warning("任务已超时，将停止")
-                self.stop()
-                self.update_next_execute_time()
-                self.reset_task_exe_proc()
+                self.logger.warning("任务已超时，正在清理并退出")
+                self._cleanup_on_timeout()  # 执行超时清理
                 return
-            else:
-                result = self.transition()
-                if result is not None and result:
-                    self.stop()
-                    self.logger.debug("重置任务执行进度")
-                    self.reset_task_exe_proc()
-                    return
+
+            # 执行步骤转换
+            result = self.transition()
+            if result is not None and result:
+                # 任务正常完成
+                self._cleanup_on_complete()  # 执行完成时的清理
+                return
 
     @handle_transition_exceptions
     def transition(self):
@@ -373,6 +364,22 @@ class BaseTask:
                 pass
             self.transition_return = f"{relative_path}:{frame.f_lineno}"
             self.logger.debug(self.transition_return)
+
+    def _cleanup_on_stop(self):
+        """停止请求时的清理"""
+        self.operationer.clicker.stop()
+        self.reset_task_exe_proc()
+
+    def _cleanup_on_timeout(self):
+        """超时时的清理"""
+        self.operationer.clicker.stop()
+        self.reset_task_exe_proc()
+
+    def _cleanup_on_complete(self):
+        """任务正常完成时的清理"""
+        self.operationer.clicker.stop()  # 任务结束，停止点击器
+        self.update_next_execute_time(flag=1)  # 更新下次执行时间
+        self.reset_task_exe_proc()  # 重置任务进度（如果需要）
 
     def _activate_another_task(self, task_name: str):
         """
