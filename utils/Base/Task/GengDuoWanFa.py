@@ -176,3 +176,8 @@ class GengDuoWanFa(BaseTask):
 
         next_execute_time = get_this_monday_5am(current_time, china_tz) + timedelta(weeks=1)
         return next_execute_time
+
+    def reset_task_exe_prog(self) -> bool:
+        self.checked = False
+        self.finished = False
+        return True

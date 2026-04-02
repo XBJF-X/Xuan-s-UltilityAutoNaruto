@@ -19,7 +19,6 @@ class GouMaiTiLi(BaseTask):
             self.logger.info(f"已购买体力 {times} 次")
             return False
         self.operationer.click_and_wait("X")
-        self.config.set_task_exe_prog("购买体力", "已购买体力次数", 0)
         self.update_next_execute_time()
         return True
 
@@ -46,3 +45,6 @@ class GouMaiTiLi(BaseTask):
         time.sleep(2)
         return False
 
+    def reset_task_exe_prog(self) -> bool:
+        self.config.set_task_exe_prog("购买体力", "已购买体力次数", 0)
+        return True

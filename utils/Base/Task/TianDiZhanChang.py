@@ -165,7 +165,7 @@ class TianDiZhanChang(BaseTask):
         """超时时的清理"""
         self.operationer.clicker.stop()
         self.update_next_execute_time()
-        self.reset_task_exe_proc()
+        self.reset_task_exe_prog()
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         """
@@ -240,7 +240,7 @@ class TianDiZhanChang(BaseTask):
             self._activate_another_task("叛忍来袭")
         return next_execute_time
 
-    def reset_task_exe_proc(self) -> bool:
+    def reset_task_exe_prog(self) -> bool:
         self.config.set_task_exe_prog(self.task_name, "已战败角色数", 0)
         self.guwu_done = False
         self.fighted = False

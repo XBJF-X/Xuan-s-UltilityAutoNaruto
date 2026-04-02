@@ -38,7 +38,7 @@ class DongRiYanHuaJi(BaseTask):
         """超时时的清理"""
         self.operationer.clicker.stop()
         self.update_next_execute_time()
-        self.reset_task_exe_proc()
+        self.reset_task_exe_prog()
 
     def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
         """
@@ -107,3 +107,7 @@ class DongRiYanHuaJi(BaseTask):
             19, 0, 20,
             tzinfo=china_tz
         )
+
+    def reset_task_exe_prog(self) -> bool:
+        self.bool_light_fireworks = False
+        return True

@@ -368,18 +368,18 @@ class BaseTask:
     def _cleanup_on_stop(self):
         """停止请求时的清理"""
         self.operationer.clicker.stop()
-        self.reset_task_exe_proc()
+        self.reset_task_exe_prog()
 
     def _cleanup_on_timeout(self):
         """超时时的清理"""
         self.operationer.clicker.stop()
-        self.reset_task_exe_proc()
+        self.reset_task_exe_prog()
 
     def _cleanup_on_complete(self):
         """任务正常完成时的清理"""
         self.operationer.clicker.stop()  # 任务结束，停止点击器
         self.update_next_execute_time()
-        self.reset_task_exe_proc()  # 重置任务进度（如果需要）
+        self.reset_task_exe_prog()  # 重置任务进度（如果需要）
 
     def _activate_another_task(self, task_name: str):
         """
@@ -485,7 +485,7 @@ class BaseTask:
             return None
         return current_time + delta
 
-    def reset_task_exe_proc(self) -> bool:
+    def reset_task_exe_prog(self) -> bool:
         """重置任务执行进度参数，需要的任务自行重载"""
         return True
 

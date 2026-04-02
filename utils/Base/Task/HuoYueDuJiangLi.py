@@ -15,7 +15,7 @@ class HuoYueDuJiangLi(BaseTask):
     @TransitionOn()
     def _(self):
         if self.finished:
-            if self.reset_task_exe_proc():
+            if self.reset_task_exe_prog():
                 self.update_next_execute_time()
             else:
                 self.update_next_execute_time(3, timedelta(hours=3))
@@ -104,7 +104,7 @@ class HuoYueDuJiangLi(BaseTask):
             self.config.set_task_exe_prog(self.task_name, f"{num}活跃度已领取", True)
             self.logger.info(f"[{num}活跃度宝箱] 已领取")
 
-    def reset_task_exe_proc(self) -> bool:
+    def reset_task_exe_prog(self) -> bool:
         self.finished = False
         if (self.config.get_task_exe_prog(self.task_name, f"周活跃礼已领取", False) and
                 datetime.now(ZoneInfo("Asia/Shanghai")).weekday() == 6):

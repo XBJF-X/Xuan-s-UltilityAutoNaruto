@@ -48,7 +48,7 @@ class HaoYouTiLi(BaseTask):
             return True
         return False
 
-    def reset_task_exe_proc(self) -> bool:
+    def reset_task_exe_prog(self) -> bool:
         self.flag_1 = False
         self.flag_2 = False
         return True

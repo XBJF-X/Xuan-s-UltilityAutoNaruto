@@ -185,9 +185,9 @@ class PanRenLaiXi(BaseTask):
         """超时时的清理"""
         self.operationer.clicker.stop()
         self.update_next_execute_time()
-        self.reset_task_exe_proc()
+        self.reset_task_exe_prog()
 
-    def reset_task_exe_proc(self) -> bool:
+    def reset_task_exe_prog(self) -> bool:
         self.check = False
         self.auto = False
         self.decrease_difficulty = True

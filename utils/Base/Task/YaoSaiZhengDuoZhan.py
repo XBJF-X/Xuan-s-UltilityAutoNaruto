@@ -150,7 +150,7 @@ class YaoSaiZhengDuoZhan(BaseTask):
         """超时时的清理"""
         self.operationer.clicker.stop()
         self.update_next_execute_time()
-        self.reset_task_exe_proc()
+        self.reset_task_exe_prog()
 
     def _handle_initialization(self, current_time: datetime) -> datetime:
         def is_in_skip_period(target_time, interval_weeks):

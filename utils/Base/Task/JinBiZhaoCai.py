@@ -13,7 +13,6 @@ class JinBiZhaoCai(BaseTask):
         if (self.config.get_task_exe_prog("金币招财", "已招财次数") >=
                 self.config.get_task_exe_param("金币招财", "招财次数", 2)):
             self.update_next_execute_time()
-            self.config.set_task_exe_prog("金币招财", "已招财次数", 0)
             raise EndEarly("已招满金币招财")
 
         if self.operationer.click_and_wait("免费一次", wait_time=2):
@@ -32,7 +31,6 @@ class JinBiZhaoCai(BaseTask):
             return False
         self.operationer.click_and_wait("X")
         self.update_next_execute_time()
-        self.config.set_task_exe_prog("金币招财", "已招财次数", 0)
         return True
 
     @TransitionOn("二级密码")
@@ -57,3 +55,7 @@ class JinBiZhaoCai(BaseTask):
         self.config.set_task_exe_prog("金币招财", "已招财次数", times)
         self.logger.info(f"招财次数回退，已招财 {times} 次")
         return False
+
+    def reset_task_exe_prog(self) -> bool:
+        self.config.set_task_exe_prog("金币招财", "已招财次数", 0)
+        return True

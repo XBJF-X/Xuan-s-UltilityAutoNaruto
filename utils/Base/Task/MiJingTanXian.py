@@ -18,7 +18,7 @@ class MiJingTanXian(BaseTask):
             self.config.get_config("键位")[KEY_INDEX.SecondSkill],
             self.config.get_config("键位")[KEY_INDEX.Substitution],
             self.config.get_config("键位")[KEY_INDEX.UltimateSkill]])
-        self.reset_task_exe_proc()
+        self.reset_task_exe_prog()
 
     @TransitionOn()
     def _(self):
@@ -71,7 +71,7 @@ class MiJingTanXian(BaseTask):
         self.logger.info("饰品翻牌已结束")
 
         self.operationer.click_and_wait("返回")
-        self.reset_task_exe_proc()
+        self.reset_task_exe_prog()
         return False
 
     @TransitionOn("恭喜你获得")
@@ -149,7 +149,8 @@ class MiJingTanXian(BaseTask):
         self.operationer.clicker.stop()
         return False
 
-    def reset_task_exe_proc(self) -> bool:
+    def reset_task_exe_prog(self) -> bool:
+        self.fighting = False
         self.config.set_task_exe_prog(self.task_name, "忍具已翻牌次数", 0)
         self.config.set_task_exe_prog(self.task_name, "饰品已翻牌次数", 0)
         return True

@@ -75,3 +75,8 @@ class FengRaoZhiJian(BaseTask):
     def _(self):
         self.operationer.clicker.stop()
         return False
+
+    def reset_task_exe_prog(self) -> bool:
+        self.free_tryed = False
+        self.finished = False
+        return True

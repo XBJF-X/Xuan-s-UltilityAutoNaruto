@@ -107,7 +107,7 @@ class ShengCunTiaoZhan(BaseTask):
         self.update_next_execute_time()
         return True
 
-    def reset_task_exe_proc(self) -> bool:
+    def reset_task_exe_prog(self) -> bool:
         self.check_need_reset = False
         self.bool_start = False
         return True
