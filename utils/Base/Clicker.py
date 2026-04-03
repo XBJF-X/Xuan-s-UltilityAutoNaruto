@@ -9,8 +9,15 @@ from utils.Base.Control import Control, ControlMode
 from utils.Base.Control.MiniTouch import MiniTouch
 from utils.Base.Control.U2 import U2
 
+MINITOUCH_MAX_LIFETIME = 120
+"""
+MiniTouch服务在连点器状态下能存活的最长时间，防止MuMu自动杀死服务
+同时减少高频启动服务导致的性能浪费
+"""
+
 
 class Clicker:
+
     def __init__(self, operationer, parent_logger=None):
         """
         初始化连点器
@@ -22,6 +29,8 @@ class Clicker:
         self.config = operationer.config
         self.control_mode = ControlMode(self.config.get_config('控制模式'))
         self.device_serial = self.config.get_config("串口")
+
+        self.last_minitouch_create_time = time.perf_counter()
 
         self._stop_event = threading.Event()
         self._threads: List[threading.Thread] = []
@@ -131,8 +140,10 @@ class Clicker:
         """
         control = None
         try:
-            self.operationer.device.control_manager.release()
-            self.operationer.device.control_manager.current_control = self.operationer.device.control_manager.create_control_instance()
+            if time.perf_counter() - self.last_minitouch_create_time > MINITOUCH_MAX_LIFETIME:
+                self.operationer.device.control_manager.release()
+                self.operationer.device.control_manager.current_control = self.operationer.device.control_manager.create_control_instance()
+                self.last_minitouch_create_time = time.perf_counter()
             control = self.operationer.device.control_manager.current_control
             if not control.ready:
                 self.logger.error("MiniTouch 实例未就绪，无法启动多点连点")
