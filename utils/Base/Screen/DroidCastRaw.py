@@ -151,7 +151,7 @@ class DroidCastRaw(Screen):
                 raise self.DeviceConnect(f"发现多个设备，请传入设备序列号（可选：{', '.join(devices)}）")
 
     def _push_apk(self):
-        apk_local_path = get_real_path("bin/DroidCastRaw/DroidCast_raw-release-1.1.apk")
+        apk_local_path = get_real_path("_internal/minidevice/bin/DroidCast_1.3.1.apk")
         return_code, output, stderr = self._run_adb(["push", apk_local_path, "/data/local/tmp/"])
         if return_code != 0:
             raise self.PushApk(f"推送安装包出错：{stderr.strip()}")

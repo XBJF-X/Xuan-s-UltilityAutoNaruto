@@ -392,27 +392,6 @@ class TransitionManager:
                 )
                 # operationer.click_and_wait("空白", wait_time=0.2)
             operationer.click_and_wait("X")
-            #
-            # if operationer.search_and_click(
-            #         [
-            #             kwargs.get("target_id")
-            #         ],
-            #         [
-            #             {
-            #                 "swipe": {
-            #                     "start_coordinate": (202, 763),
-            #                     "end_coordinate": (202, 150),
-            #                     "duration": 0.5
-            #                 }
-            #             }
-            #         ],
-            #         max_attempts=10,
-            #         wait_time=2
-            # ):
-            #     operationer.click_and_wait(
-            #         "即刻前往",
-            #         wait_time=2
-            #     )
 
         @self.register("重返木叶-忍界指引", "装备")
         @self.register("重返木叶-忍界指引", "丰饶之间")
@@ -458,26 +437,6 @@ class TransitionManager:
                 )
                 # operationer.click_and_wait("空白", wait_time=0.1)
             operationer.click_and_wait("X")
-            # if operationer.search_and_click(
-            #         [
-            #             kwargs.get("target_id")
-            #         ],
-            #         [
-            #             {
-            #                 "swipe": {
-            #                     "start_coordinate": (414, 736),
-            #                     "end_coordinate": (414, 214),
-            #                     "duration": 0.5
-            #                 }
-            #             }
-            #         ],
-            #         max_attempts=10,
-            #         once_max_attempts=3,
-            # ):
-            #     operationer.click_and_wait(
-            #         "即刻前往",
-            #         wait_time=3
-            #     )
 
         @self.register("好友排名至X位", "主场景")
         @self.register("离开队伍-确认", "小队突袭")
