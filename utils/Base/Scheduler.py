@@ -453,6 +453,7 @@ class TimerThread(QThread):
 class Scheduler(QObject):
     activate_another_task_signal = Signal(str)
     screen_save_signal = Signal(str)
+    task_finished_signal = Signal(object)
 
     def __init__(self,
                  ui: Ui_Service,
@@ -481,6 +482,7 @@ class Scheduler(QObject):
         )
         self.activate_another_task_signal.connect(self.activate_another_task_implement)
         self.screen_save_signal.connect(self._handle_screen_save)
+        self.task_finished_signal.connect(self._on_task_finished)
 
         self.device: Device | None = None
 
@@ -542,10 +544,6 @@ class Scheduler(QObject):
         for task in self.task_queue.get_tasks_by_status(0):
             task.stop()
 
-        # 清空所有队列
-        self.task_queue = PriorityQueue[BaseTask]()
-        # 清除所有任务控件
-        self.task_widget_list.clear_all_widgets()
         if self.device:
             # 释放设备资源
             if self.device.control_manager:
@@ -555,7 +553,10 @@ class Scheduler(QObject):
                 self.device.screen_manager.release()
                 self.device.screen_manager = None
                 self.device = None
-
+        # 清空所有队列
+        self.task_queue = PriorityQueue[BaseTask]()
+        # 清除所有任务控件
+        self.task_widget_list.clear_all_widgets()
         self.UI.start_schedule_button.setEnabled(True)
         self.UI.start_schedule_button.setText("启动")
         self.logger.info("调度器已完全停止")
@@ -673,12 +674,19 @@ class Scheduler(QObject):
             self._scanning = False
 
     def _execute_done_callback(self, task: BaseTask):
+        self.task_finished_signal.emit(task)
+
+    @Slot(object)
+    def _on_task_finished(self, task: BaseTask):
+        """任务完成后的 GUI 更新（在主线程执行）"""
+        if not self.running:
+            self.logger.debug(f"调度器已停止，忽略任务 {task.task_name} 的完成信号")
+            return
         lineedit = self.task_common_control_ref_map[task.task_name]["LineEdit"]
         lineedit.setText(task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
         self.task_queue.update_task_status(task.task_name, 2)
         if task.temp_priority:
             self.config.set_task_base_config(task.task_name, "临时提权", False)
-
         task.temp_dead_line = None
         self.task_widget_list.refresh_task_widget(task.task_name)
         self.logger.info(f"[{task.task_name}]-[{task.base_priority}] 移出执行队列，进入等待队列")

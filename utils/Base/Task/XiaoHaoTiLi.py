@@ -15,14 +15,23 @@ armor_coodinates = [
 # Todo：增加刷修罗副本的功能
 class XiaoHaoTiLi(BaseTask):
     source_scene = "主场景"
-    task_max_duration = timedelta(minutes=3)
+    task_max_duration = timedelta(minutes=5)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.current_task = None
+        self.update_equipment = False
+        self.sweep_dungeon = False
 
     @TransitionOn()
     def _(self):
-        if not self.config.get_task_exe_param(self.task_name, "体力消耗方式", 0):
-            self.operationer.next_scene = "装备"
-        else:
-            self.operationer.next_scene = "精英副本-便捷扫荡"
+        match self.config.get_task_exe_param(self.task_name, "体力消耗方式", 0):
+            case 0:
+                self.current_task = 0
+                self.operationer.next_scene = "装备"
+            case 1:
+                self.current_task = 1
+                self.operationer.next_scene = "精英副本-便捷扫荡"
         return False
 
     @TransitionOn("装备")
@@ -98,15 +107,12 @@ class XiaoHaoTiLi(BaseTask):
         )
         match flag:
             case 1:
-                if not self.config.get_task_exe_prog(self.task_name, "任务1执行结束", False):
-                    if not self.config.get_task_exe_param(self.task_name, "体力消耗方式", 0):
-                        self.operationer.next_scene = "精英副本-便捷扫荡"
-                    else:
-                        self.operationer.next_scene = "装备"
-                    self.config.set_task_exe_prog(self.task_name, "任务1执行结束", True)
+                self.sweep_dungeon = True
+                if not self.update_equipment:
+                    self.operationer.next_scene = "装备"
+                    self.current_task = 0
                     return False
                 self.update_next_execute_time()
-                self.config.set_task_exe_prog(self.task_name, "任务1执行结束", False)
                 return True
             case 2:
                 self.logger.warning("未勾选需要扫荡的副本，即将全选")
@@ -117,15 +123,12 @@ class XiaoHaoTiLi(BaseTask):
     @TransitionOn("便捷扫荡-扫荡结束")
     def _(self):
         self.operationer.click_and_wait("确定")
-        if not self.config.get_task_exe_prog(self.task_name, "任务1执行结束", False):
-            if not self.config.get_task_exe_param(self.task_name, "体力消耗方式", 0):
-                self.operationer.next_scene = "精英副本-便捷扫荡"
-            else:
-                self.operationer.next_scene = "装备"
-            self.config.set_task_exe_prog(self.task_name, "任务1执行结束", True)
+        self.sweep_dungeon = True
+        if not self.update_equipment:
+            self.operationer.next_scene = "装备"
+            self.current_task = 0
             return False
         self.update_next_execute_time()
-        self.config.set_task_exe_prog(self.task_name, "任务1执行结束", False)
         return True
 
     @TransitionOn("便捷扫荡-继续扫荡")
@@ -137,15 +140,32 @@ class XiaoHaoTiLi(BaseTask):
     @TransitionOn("体力不足")
     def _(self):
         self.operationer.click_and_wait("X")
-        self.config.set_task_exe_prog(self.task_name, "任务1执行结束", False)
+        match self.current_task:
+            case 0:
+                self.update_equipment = True
+            case 1:
+                self.sweep_dungeon = True
+        if not self.update_equipment:
+            self.operationer.next_scene = "装备"
+            self.current_task = 0
+            return False
+        if not self.sweep_dungeon:
+            self.operationer.next_scene = "精英副本-便捷扫荡"
+            self.current_task = 1
+            return False
         self.update_next_execute_time()
         return True
 
     @TransitionOn("铜币不足")
     def _(self):
         self.operationer.click_and_wait("X")
-        self.config.set_task_exe_prog(self.task_name, "任务1执行结束", False)
-        return False
+        self.update_equipment = True
+        if not self.sweep_dungeon:
+            self.operationer.next_scene = "精英副本-便捷扫荡"
+            self.current_task = 1
+            return False
+        self.update_next_execute_time()
+        return True
 
     def _handle_execution_completed(self, current_time: datetime) -> datetime:
         """处理任务执行完成后的时间更新（case1）"""
@@ -178,3 +198,9 @@ class XiaoHaoTiLi(BaseTask):
                 tzinfo=china_tz  # 关键：添加时区信息
             )
         return next_execute_time
+
+    def reset_task_exe_prog(self) -> bool:
+        self.update_equipment = False
+        self.sweep_dungeon = False
+        self.current_task = None
+        return True
