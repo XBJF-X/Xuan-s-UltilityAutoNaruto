@@ -573,6 +573,11 @@ class BaseTask:
         self.logger.warning("决斗场网络连接失败，已退出战斗")
         return False
 
+    @TransitionOn("聊天频道")
+    def _(self):
+        self.operationer.click_and_wait("X")
+        return False
+
     @TransitionOn("网络异常重连失败")
     def _(self):
         self.operationer.click_and_wait("确定")
