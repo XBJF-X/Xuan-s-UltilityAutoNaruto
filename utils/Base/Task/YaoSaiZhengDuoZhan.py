@@ -104,7 +104,6 @@ class YaoSaiZhengDuoZhan(BaseTask):
     @TransitionOn("决斗场-匹配中")
     def _(self):
         self.operationer.clicker.stop()
-        time.sleep(1)
         return False
 
     @TransitionOn("决斗场-结算")
@@ -116,14 +115,12 @@ class YaoSaiZhengDuoZhan(BaseTask):
     @TransitionOn("决斗场-战斗中")
     def _(self):
         self.operationer.clicker.start()
-        time.sleep(1)
         return False
 
     @TransitionOn("决斗场-单局结算")
     def _(self):
         self.fight_sum += 1
         self.operationer.clicker.stop()
-        time.sleep(5)
         return False
 
     @TransitionOn("你的对手离开了游戏")

@@ -176,7 +176,7 @@ class MiniTouch(Control):
 
     def long_press(self, x: int, y: int, duration: float):
         """Control约束：长按"""
-        self.click(x, y, duration=int(duration * 1000))
+        self._mt_core.click(x, y, duration=int(duration * 1000))
 
     def multi_tap(self, points: List[List[int]], pressure: int = 100, duration: float = 0.1):
         """

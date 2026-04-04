@@ -145,7 +145,6 @@ class TianDiZhanChang(BaseTask):
     def _(self):
         self.operationer.clicker.start()
         self.fighted = True
-        time.sleep(0.5)
         return False
 
     @TransitionOn("你的对手离开了游戏")

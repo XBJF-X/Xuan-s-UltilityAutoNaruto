@@ -154,7 +154,7 @@ class Clicker:
             while not self._stop_event.is_set():
                 try:
                     control.multi_tap(points, pressure=100, duration=0.08)
-                    time.sleep(0.12)
+                    time.sleep(0.15)
                 except Exception as e:
                     self.logger.error(f"MiniTouch 多点点击失败: {e}")
                     time.sleep(0.1)
