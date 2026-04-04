@@ -159,23 +159,22 @@ class GengDuoWanFa(BaseTask):
             return next_execute_time
         else:
             return datetime.fromtimestamp(next_exec_ts, tz=china_tz)
-            # # 转换为带时区的datetime
-            # stored_time = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
-            # if stored_time + timedelta(weeks=1) < current_time:
-            #     return next_execute_time
-            # else:
-            #     return stored_time
 
     def _handle_execution_completed(self, current_time: datetime) -> datetime:
-        def get_this_monday_5am(current_time, tz):
-            days_ahead = (0 - current_time.weekday()) % 7
-            next_monday = current_time + timedelta(days=days_ahead)
-            return next_monday.replace(hour=5, minute=0, second=0, microsecond=0, tzinfo=tz)
+        def get_this_monday_5am(dt: datetime) -> datetime:
+            """返回 dt 所在周的周一 05:00:00（保留时区）"""
+            days_ahead = (0 - dt.weekday()) % 7
+            this_monday = dt + timedelta(days=days_ahead)
+            return this_monday.replace(hour=5, minute=0, second=0, microsecond=0)
 
-        china_tz = current_time.tzinfo
+        # 先得到本周一的 5:00（保留 current_time 的时区属性）
+        this_monday_5am = get_this_monday_5am(current_time)
 
-        next_execute_time = get_this_monday_5am(current_time, china_tz) + timedelta(weeks=1)
-        return next_execute_time
+        # 如果当前时刻 < 本周一 5:00，则返回本周一 5:00；否则返回下周一 5:00
+        if current_time < this_monday_5am:
+            return this_monday_5am
+        else:
+            return this_monday_5am + timedelta(weeks=1)
 
     def reset_task_exe_prog(self) -> bool:
         self.checked = False

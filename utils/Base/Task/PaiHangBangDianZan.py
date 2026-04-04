@@ -22,33 +22,17 @@ class PaiHangBangDianZan(BaseTask):
         # 读取配置中的时间
         next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
 
-        next_execute_time = datetime(
-            current_time.year,
-            current_time.month,
-            current_time.day,
-            8, 0, 0,
-            tzinfo=china_tz
-        )
+        next_execute_time = current_time.replace(hour=8, minute=0, second=0, microsecond=0)
 
         if next_exec_ts == 0:
             return next_execute_time
         else:
             return datetime.fromtimestamp(next_exec_ts, tz=china_tz)
-            # # 转换为带时区的datetime
-            # stored_time = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
-            # if stored_time+timedelta(days=1) < current_time:
-            #     return next_execute_time
-            # else:
-            #     return stored_time
 
     def _handle_execution_completed(self, current_time: datetime) -> datetime:
-        """处理任务执行完成后的时间更新（case1）"""
-        china_tz = current_time.tzinfo
-        next_day = current_time + timedelta(days=1)
-        return datetime(
-            next_day.year,
-            next_day.month,
-            next_day.day,
-            8, 0, 0,
-            tzinfo=china_tz
-        )
+        """返回下一个 05:00（当天或次日）"""
+        target_today = current_time.replace(hour=8, minute=0, second=0, microsecond=0)
+        if current_time < target_today:
+            return target_today
+        else:
+            return target_today + timedelta(days=1)

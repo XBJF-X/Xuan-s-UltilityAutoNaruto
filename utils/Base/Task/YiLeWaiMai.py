@@ -44,21 +44,8 @@ class YiLeWaiMai(BaseTask):
             return next_execute_time
         else:
             return datetime.fromtimestamp(next_exec_ts, tz=china_tz)
-            # # 转换为带时区的datetime
-            # stored_time = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
-            # if stored_time+timedelta(days=1) < current_time:
-            #     return next_execute_time
-            # else:
-            #     return stored_time
 
     def _handle_execution_completed(self, current_time: datetime) -> datetime:
         """处理任务执行完成后的时间更新（case1）"""
-        china_tz = current_time.tzinfo
-        next_day = current_time + timedelta(days=1)
-        return datetime(
-            next_day.year,
-            next_day.month,
-            next_day.day,
-            11, 0, 20,
-            tzinfo=china_tz
-        )
+        next_execute_time = current_time.replace(hour=11, minute=0, second=20, microsecond=0) + timedelta(days=1)
+        return next_execute_time

@@ -53,12 +53,6 @@ class ZhuiJiXiaoZuZhi(BaseTask):
             return next_execute_time
         else:
             return datetime.fromtimestamp(next_exec_ts, tz=china_tz)
-            # # 转换为带时区的datetime
-            # stored_time = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
-            # if stored_time+timedelta(weeks=1) < current_time:
-            #     return next_execute_time
-            # else:
-            #     return stored_time
 
     def _handle_execution_completed(self, current_time: datetime) -> datetime:
         def get_this_monday_12am(current_time, tz):

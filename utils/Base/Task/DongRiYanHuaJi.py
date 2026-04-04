@@ -85,28 +85,13 @@ class DongRiYanHuaJi(BaseTask):
 
     def _handle_initialization(self, current_time: datetime) -> datetime:
         """处理任务初始化时的时间设置（case0）"""
-        china_tz = current_time.tzinfo
-
-        next_execute_time = datetime(
-            current_time.year,
-            current_time.month,
-            current_time.day,
-            19, 0, 00,
-            tzinfo=china_tz
-        )
+        next_execute_time = current_time.replace(hour=19, minute=0, second=0)
         return next_execute_time
 
     def _handle_execution_completed(self, current_time: datetime) -> datetime:
         """处理任务执行完成后的时间更新（case1）"""
-        china_tz = current_time.tzinfo
-        next_day = current_time + timedelta(days=1)
-        return datetime(
-            next_day.year,
-            next_day.month,
-            next_day.day,
-            19, 0, 20,
-            tzinfo=china_tz
-        )
+        next_execute_time = current_time.replace(hour=19, minute=0, second=0) + timedelta(days=1)
+        return next_execute_time
 
     def reset_task_exe_prog(self) -> bool:
         self.bool_light_fireworks = False
