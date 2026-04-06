@@ -92,7 +92,11 @@ class QingBaoZhan(BaseTask):
         if not self.config.get_task_exe_prog(self.task_name, "情报站签到", False):
             self.logger.info("福利站签到")
             # 点击一键签到
-            self.operationer.click_and_wait("一键签到", auto_raise=False, wait_time=3)
+            self.operationer.click_and_wait(
+                "一键签到",
+                wait_time=3,
+                stable_wait_for_new_scene=True
+            )
             self.config.set_task_exe_prog(self.task_name, "情报站签到", True)
             return False
 
@@ -148,11 +152,7 @@ class QingBaoZhan(BaseTask):
             self.logger.info("领取活跃度奖励")
             receive_times = 0
             # 点击所有的领取按钮
-            while self.operationer.click_and_wait(
-                    "活跃度任务-领取",
-                    wait_time=3,
-                    auto_raise=False
-            ):
+            while self.operationer.click_and_wait("活跃度任务-领取", wait_time=3):
                 receive_times += 1
                 if receive_times > 20:
                     self.logger.warning("情报站活跃度领取奖励失败，请手动领取")
@@ -198,7 +198,7 @@ class QingBaoZhan(BaseTask):
 
     @TransitionOn("福利站-40活跃奖励-抽取中")
     def _(self):
-        time.sleep(1)
+        self.operationer.press_key("BACK")
         return False
 
     @TransitionOn("情报站-文章详情")
@@ -215,13 +215,11 @@ class QingBaoZhan(BaseTask):
         self.logger.info(f"领取{num}活跃度奖励")
         if self.operationer.click_and_wait(
                 f"活跃度任务-{num}",
-                auto_raise=False,
                 wait_time=0
         ):
             if self.operationer.detect_element(
                     "活跃度任务-今日已领取过该奖励",
-                    wait_time=2,
-                    auto_raise=False
+                    wait_time=2
             ):
                 self.logger.warning(f"{num}活跃度奖励已领取")
             self.config.set_task_exe_prog(self.task_name, f"{num}活跃度奖励已领取", True)
