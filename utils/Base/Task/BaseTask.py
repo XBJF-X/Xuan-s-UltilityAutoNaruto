@@ -88,6 +88,8 @@ def handle_transition_exceptions(func):
 
 def handle_task_exceptions(func):
     def wrapper(self, *args, **kwargs):
+        old_trace = sys.gettrace()
+        sys.settrace(self.trace_callback)
         self.logger.debug("开始执行")
         try:
             func(self, *args, **kwargs)
@@ -103,8 +105,7 @@ def handle_task_exceptions(func):
         except Exception as e:
             self.logger.error(f"未知错误：{e}")
         finally:
-            _handle_callback(self)
-
+            sys.settrace(old_trace)
     return wrapper
 
 
