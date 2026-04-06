@@ -13,7 +13,7 @@ class RenFaTieDianZanFenXiang(BaseTask):
     @TransitionOn()
     def _(self):
         self.logger.debug("点赞")
-        if not self.operationer.click_and_wait("点赞", auto_raise=False):
+        if not self.operationer.click_and_wait("点赞"):
             self.logger.warning("点赞失败，可能已点赞")
         self.operationer.click_and_wait("分享")
         return False

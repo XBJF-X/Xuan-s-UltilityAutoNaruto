@@ -11,10 +11,7 @@ class GaoJiRenZheZhaoMu(BaseTask):
     def _(self):
         self.logger.info("进行免费高级招募")
         # 点击高级招募-免费
-        if self.operationer.click_and_wait(
-                "免费",
-                auto_raise=False
-        ):
+        if self.operationer.click_and_wait("免费"):
             self.logger.info("免费高级招募成功")
             return False
         else:

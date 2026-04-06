@@ -62,38 +62,40 @@ class Operationer:
         Args:
             element(str|Element): 元素名
             ** kwargs: 可选参数：
-            - interval: 检测的间隔，默认为80ms
-            - auto_raise: 是否自动抛出异常，默认为True
             - wait_time: 检测到之后的等待时间
             - max_time: 最大尝试时间，默认为2.0
             - max_attempts: 最大尝试次数，如果定义则优先，不定义则按最大时间
-            - bool_debug：是否打印调试日志（默认True）
-            - bool_save_screen：是否保存截图（默认True）
+            - stable_duration：画面需要保持稳定多长时间
+            - stable_max_time：最多等待画面稳定多长时间
+            - stable_wait_for_new_scene：是否希望画面稳定至新场景出现
         """
         if isinstance(element, str):
             element = self.get_element(element)
-        interval: float = kwargs.get("interval", 0.08)
-        auto_raise: bool = kwargs.get("auto_raise", False)
+        interval: float = 0.08
+
         wait_time: float = kwargs.get("wait_time", 1.0)
         max_time: float = kwargs.get("max_time", 1.0)
         max_attempts: int | None = kwargs.get("max_attempts")
-        bool_debug: bool = kwargs.get("bool_debug", True)
-        bool_save_screen: bool = kwargs.get("bool_save_screen", True)
+
+        stable_kwargs = {k: v for k, v in kwargs.items() if k.startswith('stable_')}
+
+        # auto_raise: bool = kwargs.get("auto_raise", False)
+        # bool_debug: bool = kwargs.get("bool_debug", True)
+        # bool_save_screen: bool = kwargs.get("bool_save_screen", True)
 
         start_time = time.perf_counter()
         success = False
-        if bool_save_screen:
-            self.screen_save_signal.emit(self.task_name)
+        self.screen_save_signal.emit(self.task_name)
         if max_attempts is not None:
             for i in range(max_attempts):
                 if self._should_stop():
                     raise Stop
                 time_1 = time.perf_counter()
-                coordinates = self.recognizer.element_match(self.device.screen_cap(), element, bool_debug)
+                coordinates = self.recognizer.element_match(self.device.screen_cap(), element, False)
                 if len(coordinates) != 0:
-                    if bool_save_screen:
-                        self.screen_save_signal.emit(self.task_name)
+                    self.screen_save_signal.emit(self.task_name)
                     time.sleep(wait_time)
+                    self.wait_until_stable(**stable_kwargs)
                     success = True
                     break
                 sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
@@ -101,18 +103,18 @@ class Operationer:
         else:
             while time.perf_counter() - start_time < max_time:
                 time_1 = time.perf_counter()
-                coordinates = self.recognizer.element_match(self.device.screen_cap(), element, bool_debug)
+                coordinates = self.recognizer.element_match(self.device.screen_cap(), element, False)
                 if len(coordinates) != 0:
-                    if bool_save_screen:
-                        self.screen_save_signal.emit(self.task_name)
+                    self.screen_save_signal.emit(self.task_name)
                     time.sleep(wait_time)
+                    self.wait_until_stable(**stable_kwargs)
                     success = True
                     break
                 sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
                 time.sleep(sleep_time)
-        # 根据auto_raise参数决定是抛出异常还是返回结果
-        if not success and auto_raise:
-            self.logger.warning(f"元素 [{element.name}] 未出现")
+        # # 根据auto_raise参数决定是抛出异常还是返回结果
+        # if not success and auto_raise:
+        #     self.logger.warning(f"元素 [{element.name}] 未出现")
 
         return success
 
@@ -122,38 +124,40 @@ class Operationer:
             Args:
                 scene(str|Scene): 元素名
                 ** kwargs: 可选参数：
-                - interval: 检测的间隔，默认为80ms
-                - auto_raise: 是否自动抛出异常，默认为True
                 - wait_time: 检测到之后的等待时间
                 - max_time: 最大尝试时间，默认为2.0
                 - max_attempts: 最大尝试次数，如果定义则优先，不定义则按最大时间
-                - bool_debug：是否打印调试日志（默认True）
-                - bool_save_screen：是否保存截图（默认True）
+                - stable_duration：画面需要保持稳定多长时间
+                - stable_max_time：最多等待画面稳定多长时间
+                - stable_wait_for_new_scene：是否希望画面稳定至新场景出现
             """
         if isinstance(scene, str):
             scene = self.scene_graph.get_scene(scene)
-        interval: float = kwargs.get("interval", 0.08)
-        auto_raise: bool = kwargs.get("auto_raise", False)
+        interval: float = 0.08
+
         wait_time: float = kwargs.get("wait_time", 1.0)
         max_time: float = kwargs.get("max_time", 1.0)
         max_attempts: int | None = kwargs.get("max_attempts")
-        bool_debug: bool = kwargs.get("bool_debug", True)
-        bool_save_screen: bool = kwargs.get("bool_save_screen", True)
+
+        stable_kwargs = {k: v for k, v in kwargs.items() if k.startswith('stable_')}
+
+        # auto_raise: bool = kwargs.get("auto_raise", False)
+        # bool_debug: bool = kwargs.get("bool_debug", True)
+        # bool_save_screen: bool = kwargs.get("bool_save_screen", True)
 
         start_time = time.perf_counter()
         success = False
-        if bool_save_screen:
-            self.screen_save_signal.emit(self.task_name)
+        self.screen_save_signal.emit(self.task_name)
         if max_attempts is not None:
             for i in range(max_attempts):
                 if self._should_stop():
                     raise Stop
                 time_1 = time.perf_counter()
-                flag = self.recognizer.scene_match(self.device.screen_cap(), scene, bool_debug)
+                flag = self.recognizer.scene_match(self.device.screen_cap(), scene, False)
                 if flag:
-                    if bool_save_screen:
-                        self.screen_save_signal.emit(self.task_name)
+                    self.screen_save_signal.emit(self.task_name)
                     time.sleep(wait_time)
+                    self.wait_until_stable(**stable_kwargs)
                     success = True
                     break
                 sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
@@ -161,18 +165,18 @@ class Operationer:
         else:
             while time.perf_counter() - start_time < max_time:
                 time_1 = time.perf_counter()
-                flag = self.recognizer.scene_match(self.device.screen_cap(), scene, bool_debug)
+                flag = self.recognizer.scene_match(self.device.screen_cap(), scene, False)
                 if flag:
-                    if bool_save_screen:
-                        self.screen_save_signal.emit(self.task_name)
+                    self.screen_save_signal.emit(self.task_name)
                     time.sleep(wait_time)
+                    self.wait_until_stable(**stable_kwargs)
                     success = True
                     break
                 sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
                 time.sleep(sleep_time)
-        # 根据auto_raise参数决定是抛出异常还是返回结果
-        if not success and auto_raise:
-            raise StepFailedError(f"场景 [{scene.name}] 未出现")
+        # # 根据auto_raise参数决定是抛出异常还是返回结果
+        # if not success and auto_raise:
+        #     raise StepFailedError(f"场景 [{scene.name}] 未出现")
 
         return success
 
@@ -182,17 +186,14 @@ class Operationer:
         Args:
             element(str|Element): 元素
             ** kwargs: 可选参数：
-            - interval: 检测的间隔，默认为0.08s
-            - auto_raise: 是否自动抛出异常，默认为True,对于试探性的点击一定要设置成False
             - wait_time: 检测到之后的等待时间，默认为None,表示将等待画面稳定，支持自定义
             - max_time: 最大尝试时间，默认为2.0
             - max_attempts: 最大尝试次数，如果定义则优先，不定义则按最大时间
             - click_times：点击次数，默认为1
-            - stable_threshold：wait_until_stable参数
-            - stable_duration：wait_until_stable参数
-            - stable_check_interval：wait_until_stable参数
-            - stable_max_time：wait_until_stable参数
-            - stable_bool_debug：wait_until_stable参数
+
+            - stable_duration：画面需要保持稳定多长时间
+            - stable_max_time：最多等待画面稳定多长时间
+            - stable_wait_for_new_scene：是否希望画面稳定至新场景出现
         """
         if isinstance(element, str):
             element_name = element
@@ -200,19 +201,14 @@ class Operationer:
             if element is None:
                 raise StepFailedError(f"元素 [{element_name}] 未定义")
         self.logger.debug(f"[Click] [{element.name}]")
-        interval: float = kwargs.get("interval", 0.08)
-        auto_raise: bool = kwargs.get("auto_raise", False)
+        interval: float = 0.08
+        # auto_raise: bool = kwargs.get("auto_raise", False)
         wait_time: float | None = kwargs.get("wait_time", None)
         max_time: float = kwargs.get("max_time", 0.7)
         max_attempts: int | None = kwargs.get("max_attempts")
         click_times: int = kwargs.get("click_times", 1)
 
-        # wait_until_stable的参数
-        stable_threshold = kwargs.get("stable_threshold", 0.2)  # 默认1%的像素变化
-        stable_duration = kwargs.get("stable_duration", 1)  # 默认需要稳定1秒
-        stable_check_interval = kwargs.get("stable_check_interval", 0.1)  # 默认每200ms检查一次
-        stable_max_time = kwargs.get("stable_max_time", 10.0)  # 默认最多等待10秒
-        stable_bool_debug = kwargs.get("stable_bool_debug", False)  # 默认不输出调试信息
+        stable_kwargs = {k: v for k, v in kwargs.items() if k.startswith('stable_')}
 
         start_time = time.perf_counter()
         success = False
@@ -228,13 +224,7 @@ class Operationer:
                     if wait_time is not None:
                         time.sleep(wait_time)
                     else:
-                        self.wait_until_stable(
-                            threshold=stable_threshold,
-                            stable_duration=stable_duration,
-                            check_interval=stable_check_interval,
-                            max_time=stable_max_time,
-                            bool_debug=stable_bool_debug
-                        )
+                        self.wait_until_stable(**stable_kwargs)
                     success = True
                     break
                 elif element.type == ElementType.IMG:
@@ -245,19 +235,12 @@ class Operationer:
                         # 按照元素可点击位置相对于模版左上角，相对整体的比例确定点击坐标
                         x, y = (coordinate[0] * (1 - x_ratio) + coordinate[2] * x_ratio), (
                                 coordinate[1] * (1 - y_ratio) + coordinate[3] * y_ratio)
-
                         self.device.click(x, y, times=click_times)
                         self.screen_save_signal.emit(self.task_name)
                         if wait_time is not None:
                             time.sleep(wait_time)
                         else:
-                            self.wait_until_stable(
-                                threshold=stable_threshold,
-                                stable_duration=stable_duration,
-                                check_interval=stable_check_interval,
-                                max_time=stable_max_time,
-                                bool_debug=stable_bool_debug
-                            )
+                            self.wait_until_stable(**stable_kwargs)
                         success = True
                         break
                     sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
@@ -271,13 +254,7 @@ class Operationer:
                     if wait_time is not None:
                         time.sleep(wait_time)
                     else:
-                        self.wait_until_stable(
-                            threshold=stable_threshold,
-                            stable_duration=stable_duration,
-                            check_interval=stable_check_interval,
-                            max_time=stable_max_time,
-                            bool_debug=stable_bool_debug
-                        )
+                        self.wait_until_stable(**stable_kwargs)
                     success = True
                     break
                 elif element.type == ElementType.IMG:
@@ -294,26 +271,20 @@ class Operationer:
                         if wait_time is not None:
                             time.sleep(wait_time)
                         else:
-                            self.wait_until_stable(
-                                threshold=stable_threshold,
-                                stable_duration=stable_duration,
-                                check_interval=stable_check_interval,
-                                max_time=stable_max_time,
-                                bool_debug=stable_bool_debug
-                            )
+                            self.wait_until_stable(**stable_kwargs)
                         success = True
                         break
                     sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
                     time.sleep(sleep_time)
 
-        # 根据auto_raise参数决定是抛出异常还是返回结果
-        if not success and auto_raise:
-            if element.type == ElementType.IMG:
-                self.logger.warning(f"点击元素 [{element.name}] 失败")
-                raise StepFailedError(f"点击元素 [{element.name}] 失败")
-            elif element.type == ElementType.COORDINATE:
-                self.logger.warning(f"点击元素 [{element.name}] 失败")
-                raise StepFailedError(f"点击坐标 ({element.coordinate_x},{element.coordinate_y}) 失败")
+        # # 根据auto_raise参数决定是抛出异常还是返回结果
+        # if not success and auto_raise:
+        #     if element.type == ElementType.IMG:
+        #         self.logger.warning(f"点击元素 [{element.name}] 失败")
+        #         raise StepFailedError(f"点击元素 [{element.name}] 失败")
+        #     elif element.type == ElementType.COORDINATE:
+        #         self.logger.warning(f"点击元素 [{element.name}] 失败")
+        #         raise StepFailedError(f"点击坐标 ({element.coordinate_x},{element.coordinate_y}) 失败")
 
         return success
 
@@ -328,6 +299,9 @@ class Operationer:
             - wait_time: 检测到之后的等待时间
             - duration: 滑动过程时间
             - times: 滑动的次数
+            - stable_duration：画面需要保持稳定多长时间
+            - stable_max_time：最多等待画面稳定多长时间
+            - stable_wait_for_new_scene：是否希望画面稳定至新场景出现
 
         Returns:
             bool
@@ -335,6 +309,7 @@ class Operationer:
         wait_time: float | None = kwargs.get("wait_time", None)
         duration: float = kwargs.get("duration", 1.0)
         times: int = kwargs.get("times", 1)
+        stable_kwargs = {k: v for k, v in kwargs.items() if k.startswith('stable_')}
         self.screen_save_signal.emit(self.task_name)
         for _ in range(times):
             if self._should_stop():
@@ -348,7 +323,7 @@ class Operationer:
             if wait_time is not None:
                 time.sleep(wait_time)
             else:
-                self.wait_until_stable()
+                self.wait_until_stable(**stable_kwargs)
         self.screen_save_signal.emit(self.task_name)
         return True
 
@@ -362,10 +337,14 @@ class Operationer:
                     - {'click': 点击参数}：执行点击操作
                     - {'swipe': 滑动参数}：执行滑动操作
             **kwargs:
-            - search_max_time:  (float): 搜索尝试的最大时间，默认None，即不限时间
+            - search_max_time: (float): 搜索尝试的最大时间，默认None，即不限时间
             - max_attempts: (int):尝试搜索的最大次数，默认None，即不限次数
             - once_max_time: (float):单次搜索点击的最大时间
             - wait_time: (float): 点击后等待的时间
+
+            - stable_duration：画面需要保持稳定多长时间
+            - stable_max_time：最多等待画面稳定多长时间
+            - stable_wait_for_new_scene：是否希望画面稳定至新场景出现
 
         Returns:
             int: 是否成功找到并点击了element_list中的1-based元素
@@ -376,12 +355,7 @@ class Operationer:
         once_max_attempts: int | None = kwargs.get("once_max_attempts")
         wait_time: float | None = kwargs.get("wait_time", None)
 
-        # wait_until_stable的参数
-        stable_threshold = kwargs.get("stable_threshold", 0.2)  # 默认1%的像素变化
-        stable_duration = kwargs.get("stable_duration", 0.8)  # 默认需要稳定1秒
-        stable_check_interval = kwargs.get("stable_check_interval", 0.1)  # 默认每0.1s检查一次
-        stable_max_time = kwargs.get("stable_max_time", 10.0)  # 默认最多等待10秒
-        stable_bool_debug = kwargs.get("stable_bool_debug", True)  # 默认不输出调试信息
+        stable_kwargs = {k: v for k, v in kwargs.items() if k.startswith('stable_')}
 
         self.logger.debug(f"元素点击搜索内容：")
         for element_id in element_list:
@@ -411,12 +385,7 @@ class Operationer:
                         wait_time=wait_time,
                         max_time=once_max_time,
                         max_attempts=once_max_attempts,
-                        auto_raise=False,
-                        stable_threshold=stable_threshold,
-                        stable_duration=stable_duration,
-                        stable_check_interval=stable_check_interval,
-                        stable_max_time=stable_max_time,
-                        stable_bool_debug=stable_bool_debug
+                        **stable_kwargs
                 ):
                     self.screen_save_signal.emit(self.task_name)
                     return index + 1
@@ -427,13 +396,14 @@ class Operationer:
                     self.click_and_wait(
                         action['click'],
                         max_time=1,
-                        auto_raise=False
+                        **stable_kwargs
                     )
                 elif "swipe" in action:
-                    self.device.swipe(
+                    self.swipe_and_wait(
                         action['swipe']['start_coordinate'],
                         action['swipe']['end_coordinate'],
-                        action['swipe']['duration'])
+                        duration=action['swipe']['duration'],
+                        **stable_kwargs)
             attempts += 1
 
     def search_and_detect(self, item_list, search_actions, **kwargs):
@@ -450,7 +420,10 @@ class Operationer:
             - max_attempts: (int):尝试搜索的最大次数，默认None，即不限次数
             - once_max_time: (float):单次搜索的最大时长，默认1.0，定义与detect_and_wait()一致
             - wait_time: (int): 如果寻找到了，要等待几秒，默认1.0
-            - bool_debug: (bool): 是否输出调试日志，默认False
+
+            - stable_duration：画面需要保持稳定多长时间
+            - stable_max_time：最多等待画面稳定多长时间
+            - stable_wait_for_new_scene：是否希望画面稳定至新场景出现
 
         Returns:
             int: 未找到返回0，找到返回1-based索引，表示找到了params_list中哪个元素
@@ -460,7 +433,8 @@ class Operationer:
         once_max_time: float = kwargs.get("once_max_time", 1.0)
         once_max_attempts: int | None = kwargs.get("once_max_attempts")
         wait_time: float = kwargs.get("wait_time", 1.0)
-        bool_debug: bool = kwargs.get("bool_debug", True)
+        stable_kwargs = {k: v for k, v in kwargs.items() if k.startswith('stable_')}
+        # bool_debug: bool = kwargs.get("bool_debug", True)
         self.logger.debug(f"元素检测搜索内容：")
         for item in item_list:
             if isinstance(item, Scene):
@@ -485,9 +459,7 @@ class Operationer:
                             wait_time=wait_time,
                             max_time=once_max_time,
                             max_attempts=once_max_attempts,
-                            bool_save_screen=False,
-                            bool_debug=bool_debug,
-                            auto_raise=False
+                            **stable_kwargs
                     ):
                         self.screen_save_signal.emit(self.task_name)
                         return index + 1
@@ -497,9 +469,7 @@ class Operationer:
                             wait_time=wait_time,
                             max_time=once_max_time,
                             max_attempts=once_max_attempts,
-                            bool_save_screen=False,
-                            bool_debug=bool_debug,
-                            auto_raise=False
+                            **stable_kwargs
                     ):
                         self.screen_save_signal.emit(self.task_name)
                         return index + 1
@@ -521,13 +491,14 @@ class Operationer:
                         action['click'],
                         max_time=1,
                         wait_time=2,
-                        auto_raise=False
+                        **stable_kwargs
                     )
                 elif "swipe" in action:
-                    self.device.swipe(
+                    self.swipe_and_wait(
                         action['swipe']['start_coordinate'],
                         action['swipe']['end_coordinate'],
-                        action['swipe']['duration'])
+                        duration=action['swipe']['duration'],
+                        **stable_kwargs)
             attempts += 1
 
     def click_and_input(self, input_edit: Element, input_text):
@@ -535,17 +506,11 @@ class Operationer:
         第一个参数为需要点击的输入框的对象，第二个为要输入的文字
         """
         self.screen_save_signal.emit(self.task_name)
-        if self.click_and_wait(
-                input_edit,
-                auto_raise=False
-        ):
+        if self.click_and_wait(input_edit):
             self.screen_save_signal.emit(self.task_name)
             self.device.input(input_text)
             self.screen_save_signal.emit(self.task_name)
-            self.click_and_wait(
-                input_edit,
-                auto_raise=False
-            )
+            self.click_and_wait(input_edit)
             self.screen_save_signal.emit(self.task_name)
             return True
         return False
@@ -554,6 +519,7 @@ class Operationer:
         """
         模拟设备按键，输入key即为按键名称
         """
+        self.logger.debug(f"[Press] {key}")
         self.device.press_key(key)
         if wait_time:
             time.sleep(wait_time)
@@ -571,7 +537,7 @@ class Operationer:
 
         """
         self.screen_save_signal.emit(self.task_name)
-        self.logger.debug(f"LongPress ({x},{y}) {duration}s")
+        self.logger.debug(f"[LongPress] ({x},{y}) {duration}s")
         self.device.long_press(x, y, duration)
         self.screen_save_signal.emit(self.task_name)
 
@@ -584,9 +550,11 @@ class Operationer:
 
     def app_start(self):
         # 启动应用
+        self.logger.debug(f"[App Start]")
         self.device.app_start()
 
     def app_stop(self):
+        self.logger.debug(f"[App Stop]")
         # 停止应用
         self.device.app_stop()
 
@@ -611,12 +579,9 @@ class Operationer:
 
         Args:
             **kwargs: 可选参数：
-                - threshold: 差异阈值（默认0.1，即1%的像素变化）
                 - stable_duration: 需要稳定的持续时间（秒，默认1.0）
-                - check_interval: 检查间隔（秒，默认0.1）
-                - max_time: 最大等待时间（秒，默认10.0）
-                - bool_debug: 是否输出调试信息（默认True）
-                - invalid_threshold: 无效帧阈值（默认0.9，即90%以上像素为黑白视为无效）
+                - stable_max_time: 最大等待时间（秒，默认10.0）
+                - stable_wait_for_new_scene: 是否需要等待稳定后出现新场景（默认False）
 
         Returns:
             bool: 是否在最大时间内达到稳定
@@ -625,13 +590,13 @@ class Operationer:
         import numpy as np
         import time
 
+        threshold = 0.2  # 默认20%的像素变化
+        check_interval = 0.1  # 默认每0.1s检查一次
+        invalid_threshold = 0.9  # 无效帧判断阈值
         # 获取参数
-        threshold = kwargs.get("threshold", 0.2)  # 默认1%的像素变化
         stable_duration = kwargs.get("stable_duration", 1)  # 默认需要稳定1秒
-        check_interval = kwargs.get("check_interval", 0.1)  # 默认每0.1s检查一次
-        max_time = kwargs.get("max_time", 10.0)  # 默认最多等待10秒
-        bool_debug = kwargs.get("bool_debug", False)  # 默认输出调试信息
-        invalid_threshold = kwargs.get("invalid_threshold", 0.9)  # 无效帧判断阈值
+        stable_max_time = kwargs.get("stable_max_time", 10.0)  # 默认最多等待10秒
+        stable_wait_for_new_scene = kwargs.get("stable_wait_for_new_scene", False)  # 默认不需要等待稳定后出现新场景
 
         def is_invalid_frame(frame):
             """判断帧是否为无效帧（全黑、大部分黑、全白、大部分白）"""
@@ -645,8 +610,7 @@ class Operationer:
 
             # 如果黑色或白色像素占比超过阈值，则视为无效帧
             if black_ratio > invalid_threshold or white_ratio > invalid_threshold:
-                if bool_debug:
-                    self.logger.debug(f"检测到无效帧 - 黑色占比: {black_ratio:.4f}, 白色占比: {white_ratio:.4f}")
+                # self.logger.debug(f"检测到无效帧 - 黑色占比: {black_ratio:.4f}, 白色占比: {white_ratio:.4f}")
                 return True
             return False
 
@@ -657,10 +621,9 @@ class Operationer:
         # 将稳定持续时间转换为需要连续稳定的帧数
         stable_frames_needed = max(1, int(stable_duration / check_interval))
 
-        if bool_debug:
-            self.logger.debug(f"等待画面稳定，阈值: {threshold}, 需要稳定帧数: {stable_frames_needed}")
+        # self.logger.debug(f"等待画面稳定，阈值: {threshold}, 需要稳定帧数: {stable_frames_needed}")
 
-        while time.perf_counter() - start_time < max_time:
+        while time.perf_counter() - start_time < stable_max_time:
             if self._should_stop():
                 raise Stop("操作被用户中断")
 
@@ -685,15 +648,16 @@ class Operationer:
                     # 计算变化比例
                     change_ratio = np.count_nonzero(diff_thresh) / diff_thresh.size
 
-                    if bool_debug:
-                        self.logger.debug(f"帧间变化比例: {change_ratio:.4f}")
+                    # self.logger.debug(f"帧间变化比例: {change_ratio:.4f}")
 
                     # 检查是否低于阈值
                     if change_ratio < threshold:
                         stable_frame_count += 1
                         if stable_frame_count >= stable_frames_needed:
-                            if bool_debug:
-                                self.logger.debug("画面已稳定")
+                            if stable_wait_for_new_scene and self.detect_scene(self.current_scene):
+                                stable_frame_count = 0  # 重置稳定计数
+                                continue
+                            self.logger.debug("画面已稳定")
                             return True
                     else:
                         stable_frame_count = 0  # 重置稳定计数
@@ -706,6 +670,5 @@ class Operationer:
             sleep_time = max(0.0, check_interval - elapsed)
             time.sleep(sleep_time)
 
-        if bool_debug:
-            self.logger.debug("等待画面稳定超时")
+        self.logger.warning("等待画面稳定超时")
         return False

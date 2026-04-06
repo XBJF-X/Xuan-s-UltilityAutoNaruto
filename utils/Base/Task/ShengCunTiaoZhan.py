@@ -18,8 +18,7 @@ class ShengCunTiaoZhan(BaseTask):
             if self.check_need_reset:
                 if self.operationer.click_and_wait(
                         "重置",
-                        wait_time=0,
-                        auto_raise=False
+                        wait_time=0
                 ):
                     if self.operationer.detect_element(
                             "生存挑战今天已经不能再重置了",

@@ -40,36 +40,32 @@ class XiaoHaoTiLi(BaseTask):
         self.operationer.click_and_wait(
             armor_coodinates[self.config.get_task_exe_param(self.task_name, "合成目标装备", 0)])
         # 先看看当前装备能不能进阶，毕竟进阶说明没有能扫荡的了
-        if self.operationer.click_and_wait(
-                "进阶",
-                auto_raise=False,
-                max_time=0.5
-        ):
+        if self.operationer.click_and_wait("进阶",max_time=0.5):
             self.logger.info("当前装备可进阶，已点击进阶")
             return False
-        if self.operationer.click_and_wait("可装备", auto_raise=False):
+        if self.operationer.click_and_wait("可装备"):
             self.operationer.click_and_wait("一键添加")
             self.logger.warning("存在[可装备]装备，已一键添加")
-        elif self.operationer.click_and_wait("可合成", auto_raise=False):
+        elif self.operationer.click_and_wait("可合成"):
             self.logger.debug("存在[可合成]装备，将合成")
-        elif self.operationer.click_and_wait("可扫荡", auto_raise=False):
+        elif self.operationer.click_and_wait("可扫荡"):
             self.logger.debug("点击[装备]")
         return False
 
     @TransitionOn("装备-材料详情")
     def _(self):
-        if self.operationer.click_and_wait("一键扫荡", auto_raise=False):
+        if self.operationer.click_and_wait("一键扫荡"):
             self.logger.debug("点击[一键扫荡]")
-        elif self.operationer.click_and_wait("合成", auto_raise=False):
+        elif self.operationer.click_and_wait("合成"):
             self.logger.debug("点击[合成]")
-        elif self.operationer.click_and_wait("装备", auto_raise=False):
+        elif self.operationer.click_and_wait("装备"):
             self.logger.debug("点击[装备]")
         return False
 
     @TransitionOn("材料详情-扫荡")
     def _(self):
         # 勾选自动停止
-        if self.operationer.click_and_wait("材料足够后自动停止-未选中", auto_raise=False):
+        if self.operationer.click_and_wait("材料足够后自动停止-未选中"):
             self.logger.warning("未勾选自动停止，已经勾选")
         self.operationer.click_and_wait("开始扫荡")
         return False
@@ -87,10 +83,7 @@ class XiaoHaoTiLi(BaseTask):
     @TransitionOn("精英副本-便捷扫荡")
     def _(self):
         self.logger.info("检查是否选择[勾选上次扫荡副本]")
-        if self.operationer.click_and_wait(
-                "勾选上次扫荡副本-未选中",
-                auto_raise=False
-        ):
+        if self.operationer.click_and_wait("勾选上次扫荡副本-未选中"):
             self.logger.warning("未选中[勾选上次扫荡副本]，已自动选择")
 
         self.logger.info("点击扫荡")

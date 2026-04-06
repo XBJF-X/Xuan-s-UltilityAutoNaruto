@@ -77,7 +77,7 @@ class GengDuoWanFa(BaseTask):
     @TransitionOn("更多玩法-任务")
     def _(self):
         self.operationer.clicker.stop()
-        if not self.operationer.detect_element("未达成", auto_raise=False) and not self.finished:
+        if not self.operationer.detect_element("未达成") and not self.finished:
             self.operationer.click_and_wait("2100")
             self.finished = True
             return False

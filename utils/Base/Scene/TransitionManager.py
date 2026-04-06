@@ -379,7 +379,8 @@ class TransitionManager:
                 ):
                     operationer.click_and_wait(
                         "即刻前往",
-                        wait_time=3
+                        wait_time=3,
+                        stable_wait_for_new_scene=True
                     )
                     return
                 if i == 7:
@@ -424,7 +425,8 @@ class TransitionManager:
                 ):
                     operationer.click_and_wait(
                         "即刻前往",
-                        wait_time=3
+                        wait_time=3,
+                        stable_wait_for_new_scene=True
                     )
                     return
                 if i == 7:
@@ -639,7 +641,7 @@ class TransitionManager:
         @self.register("组织祈福", "组织")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("X")
-            if operationer.detect_element("蛤蟆存钱罐", auto_raise=False):
+            if operationer.detect_element("蛤蟆存钱罐"):
                 operationer.click_and_wait("X")
 
         @self.register("情报站-首页", "情报站-卷轴")
@@ -689,7 +691,7 @@ class TransitionManager:
         @self.register("决斗场-匹配中", "要塞内部")
         @self.register("决斗场-匹配中", "火影格斗大赛-无差别")
         def _(operationer: Operationer, *args, **kwargs):
-            operationer.click_and_wait("取消匹配", auto_raise=False)
+            operationer.click_and_wait("取消匹配")
 
         @self.register("副本结算-点击任意位置关闭界面", "丰饶之间")
         @self.register("副本结算-点击任意位置关闭界面", "小队突袭")

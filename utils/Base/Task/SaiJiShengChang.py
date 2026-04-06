@@ -29,15 +29,13 @@ class SaiJiShengChang(MeiRiShengChang):
         if not self.checked:
             while self.operationer.click_and_wait(
                     "领取",
-                    auto_raise=False,
                     max_time=1
             ):
                 continue
             if not self.operationer.detect_element(
                     "决斗场内获得N次胜利-已领",
                     wait_time=2,
-                    max_time=1,
-                    auto_raise=False
+                    max_time=1
             ):
                 self.checked = True
                 self.operationer.click_and_wait("X")

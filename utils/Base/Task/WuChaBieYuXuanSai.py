@@ -20,7 +20,7 @@ class WuChaBieYuXuanSai(BaseTask):
             self.operationer.click_and_wait("成就奖励")
             return False
         if self.config.get_task_exe_param(self.task_name, "选择刷取方式", 0) == 1:
-            if self.operationer.detect_element("场次-30", auto_raise=False):
+            if self.operationer.detect_element("场次-30"):
                 self.finished = True
         if not self.finished:
             self.operationer.click_and_wait("出战")
@@ -43,10 +43,10 @@ class WuChaBieYuXuanSai(BaseTask):
     @TransitionOn("无差别-成就奖励")
     def _(self):
         if not self.checked:
-            while self.operationer.click_and_wait("领取", auto_raise=False):
+            while self.operationer.click_and_wait("领取"):
                 continue
             if self.config.get_task_exe_param(self.task_name, "选择刷取方式", 0) == 0:
-                if not self.operationer.detect_element("未达成", auto_raise=False):
+                if not self.operationer.detect_element("未达成"):
                     self.finished = True
         self.operationer.click_and_wait("X")
         self.checked = True
@@ -59,45 +59,45 @@ class WuChaBieYuXuanSai(BaseTask):
 
     @TransitionOn("无差别-禁用忍者选择")
     def _(self):
-        if not self.operationer.detect_element("禁用", wait_time=0, auto_raise=False):
+        if not self.operationer.detect_element("禁用", wait_time=0):
             time.sleep(1)
             return False
         for i in range(1, 13):
             self.operationer.click_and_wait(f"忍者-{i}", wait_time=0.5)
-            if not self.operationer.click_and_wait("禁用", wait_time=0.5, auto_raise=False):
+            if not self.operationer.click_and_wait("禁用", wait_time=0.5):
                 return False
         return False
 
     @TransitionOn("无差别-忍者选择")
     def _(self):
-        if not self.operationer.detect_element("确定", wait_time=0, auto_raise=False):
+        if not self.operationer.detect_element("确定", wait_time=0):
             time.sleep(1)
             return False
         for i in range(1, 13):
             self.operationer.click_and_wait(f"忍者-{i}", wait_time=0.5)
-            if not self.operationer.click_and_wait("确定", wait_time=0.5, auto_raise=False):
+            if not self.operationer.click_and_wait("确定", wait_time=0.5):
                 return False
         return False
 
     @TransitionOn("无差别-禁用秘卷选择")
     def _(self):
-        if not self.operationer.detect_element("禁用", wait_time=0, auto_raise=False):
+        if not self.operationer.detect_element("禁用", wait_time=0):
             time.sleep(1)
             return False
         for i in range(1, 10):
             self.operationer.click_and_wait(f"秘卷-{i}", wait_time=0.5)
-            if not self.operationer.click_and_wait("禁用", wait_time=0.5, auto_raise=False):
+            if not self.operationer.click_and_wait("禁用", wait_time=0.5):
                 return False
         return False
 
     @TransitionOn("无差别-秘卷选择")
     def _(self):
-        if not self.operationer.detect_element("确定", wait_time=0, auto_raise=False):
+        if not self.operationer.detect_element("确定", wait_time=0):
             time.sleep(1)
             return False
         for i in range(1, 10):
             self.operationer.click_and_wait(f"秘卷-{i}", wait_time=0.5)
-            if not self.operationer.click_and_wait("确定", wait_time=0.5, auto_raise=False):
+            if not self.operationer.click_and_wait("确定", wait_time=0.5):
                 return False
         return False
 

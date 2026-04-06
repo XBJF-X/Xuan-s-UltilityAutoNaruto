@@ -41,7 +41,7 @@ class MeiZhouShengChang(MeiRiShengChang):
     @TransitionOn("忍术对战-决斗任务")
     def _(self):
         self.operationer.clicker.stop()
-        if self.operationer.detect_element("满胜场", auto_raise=False):
+        if self.operationer.detect_element("满胜场"):
             self.logger.debug("每周胜场已满")
             self.checked = True
             self.finished = True

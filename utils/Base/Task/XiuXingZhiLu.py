@@ -17,9 +17,9 @@ class XiuXingZhiLu(BaseTask):
     def _(self):
         self.operationer.click_and_wait("扫荡", wait_time=0)
         # 先点击扫荡看看能不能扫荡
-        if self.operationer.detect_element("当前没有可扫荡关卡了", auto_raise=False):
+        if self.operationer.detect_element("当前没有可扫荡关卡了"):
             self.operationer.click_and_wait("重置", wait_time=0)
-            if self.operationer.detect_element("每周只能重置1次", auto_raise=False):
+            if self.operationer.detect_element("每周只能重置1次"):
                 self.operationer.click_and_wait("X")
                 self.update_next_execute_time()
                 raise EndEarly("本周修行之路已完成，提前退出执行")
@@ -37,7 +37,7 @@ class XiuXingZhiLu(BaseTask):
 
     @TransitionOn("修行之路-正在扫荡")
     def _(self):
-        if self.operationer.click_and_wait("超影免费", auto_raise=False):
+        if self.operationer.click_and_wait("超影免费"):
             return False
         self.operationer.click_and_wait("X")
         self.update_next_execute_time(3, timedelta(hours=1, minutes=20))

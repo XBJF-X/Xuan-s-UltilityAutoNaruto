@@ -24,8 +24,7 @@ class FengRaoZhiJian(BaseTask):
     def _(self):
         if self.operationer.detect_element(
                 "今日已完成挑战",
-                max_time=0.3,
-                auto_raise=False
+                max_time=0.3
         ):
             self.update_next_execute_time()
             return True

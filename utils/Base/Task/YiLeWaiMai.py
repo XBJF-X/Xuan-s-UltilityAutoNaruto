@@ -13,7 +13,6 @@ class YiLeWaiMai(BaseTask):
         takeout_sum = 0
         while self.operationer.click_and_wait(
                 "待领取",
-                auto_raise=False,
                 max_time=3,
                 wait_time=1
         ):

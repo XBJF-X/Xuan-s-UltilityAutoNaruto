@@ -41,10 +41,7 @@ class XiaoDuiTuXi(BaseTask):
     def _(self):
         self.logger.info("领取助战奖励")
         # 点击领取
-        if self.operationer.click_and_wait(
-                "领取",
-                auto_raise=False
-        ):
+        if self.operationer.click_and_wait("领取"):
             self.logger.info("助战奖励领取成功")
         self.zhuzhan_reward_collected = True
         self.operationer.click_and_wait("X")
@@ -82,26 +79,14 @@ class XiaoDuiTuXi(BaseTask):
         if ((self.four_reward_times == 2) or
                 (self.four_reward_times == 1 and not self.four_reward_collected_times)):
             self.logger.info("勾选四倍奖励")
-            if not self.operationer.detect_element(
-                    "四倍奖励-选中",
-                    auto_raise=False
-            ):
-                if not self.operationer.click_and_wait(
-                        "四倍奖励-未选中",
-                        auto_raise=False
-                ):
+            if not self.operationer.detect_element("四倍奖励-选中"):
+                if not self.operationer.click_and_wait("四倍奖励-未选中"):
                     self.logger.warning("小队突袭四倍奖励选中失败")
                     return False
         else:
             self.logger.info("取消勾选四倍奖励")
-            if not self.operationer.detect_element(
-                    "四倍奖励-未选中",
-                    auto_raise=False
-            ):
-                if not self.operationer.click_and_wait(
-                        "四倍奖励-选中",
-                        auto_raise=False
-                ):
+            if not self.operationer.detect_element("四倍奖励-未选中"):
+                if not self.operationer.click_and_wait("四倍奖励-选中"):
                     self.logger.warning("小队突袭四倍奖励取消选中失败")
                     return False
         return True

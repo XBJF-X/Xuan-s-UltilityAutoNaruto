@@ -34,10 +34,7 @@ class GouMaiTiLi(BaseTask):
             passward
         )
         # 点击二级密码-确定
-        if not self.operationer.click_and_wait(
-                self.operationer.get_element("确定"),
-                auto_raise=False
-        ):
+        if not self.operationer.click_and_wait(self.operationer.get_element("确定")):
             raise StepFailedError("二级密码验证失败")
         times = self.config.get_task_exe_prog("购买体力", "已购买体力次数")
         times -= 1

@@ -11,11 +11,7 @@ class ZuZhiQiFu(BaseTask):
     def _(self):
         if not self.config.get_task_exe_prog(self.task_name, "祈福", False):
             # 点击组织祈福-超影免费
-            if not self.operationer.click_and_wait(
-                    "超影免费",
-                    auto_raise=False,
-                    wait_time=2
-            ):
+            if not self.operationer.click_and_wait("超影免费", wait_time=2):
                 self.logger.info("超影祈福不存在，点击焚香祈福")
                 # 点击组织祈福-焚香祈福
                 self.operationer.click_and_wait("焚香祈福")
@@ -36,10 +32,7 @@ class ZuZhiQiFu(BaseTask):
     @TransitionOn("昨日奖励")
     def _(self):
         # 点击所有的领取按钮
-        while self.operationer.click_and_wait(
-                "领取",
-                auto_raise=False
-        ):
+        while self.operationer.click_and_wait("领取"):
             continue
         # 随便点下关掉弹窗
         self.operationer.click_and_wait("X")

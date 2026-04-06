@@ -41,10 +41,7 @@ class HuoYueDuJiangLi(BaseTask):
 
     @TransitionOn("周活跃大礼")
     def _(self):
-        if self.operationer.click_and_wait(
-                "领取",
-                auto_raise=False
-        ):
+        if self.operationer.click_and_wait("领取"):
             self.config.set_task_exe_prog(self.task_name, f"周活跃礼已领取", True)
             self.logger.info("周活跃奖励领取成功")
         self.operationer.click_and_wait("X")
@@ -57,8 +54,7 @@ class HuoYueDuJiangLi(BaseTask):
         if not self.operationer.detect_element(
                 f"每日活跃度-{num}-已领取",
                 wait_time=0,
-                max_time=0.3,
-                auto_raise=False
+                max_time=0.3
         ):
             if self.operationer.detect_element(
                     f"每日活跃度-{num}-待领取",

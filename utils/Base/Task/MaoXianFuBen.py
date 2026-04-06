@@ -11,10 +11,7 @@ class MaoXianFuBen(BaseTask):
     @TransitionOn()
     def _(self):
         self.logger.info("检查是否选择[勾选上次扫荡副本]")
-        if self.operationer.click_and_wait(
-                "勾选上次扫荡副本-未选中",
-                auto_raise=False
-        ):
+        if self.operationer.click_and_wait("勾选上次扫荡副本-未选中"):
             self.logger.warning("未选中[勾选上次扫荡副本]，已自动选择")
 
         self.logger.info("点击扫荡")

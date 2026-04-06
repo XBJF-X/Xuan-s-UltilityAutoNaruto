@@ -97,7 +97,7 @@ class MeiRiShengChang(BaseTask):
     @TransitionOn("决斗任务-追回")
     def _(self):
         self.operationer.click_and_wait("追回", wait_time=0)
-        if self.operationer.detect_element("道具不足", auto_raise=False):
+        if self.operationer.detect_element("道具不足"):
             self.checked = False
             self.operationer.click_and_wait("X")
             self.logger.info("结束执行")

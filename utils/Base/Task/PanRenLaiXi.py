@@ -13,6 +13,8 @@ class PanRenLaiXi(BaseTask):
         self.auto = False
         self.check = False
         self.decrease_difficulty = True
+        self.find_time = 0
+        self.find_direction = 1
         match datetime.datetime.now().weekday():
             case 2:
                 self.dead_line = datetime.time(hour=22)
@@ -36,7 +38,8 @@ class PanRenLaiXi(BaseTask):
                 }
             ],
             max_attempts=3,
-            wait_time=5
+            wait_time=5,
+            stable_wait_for_new_scene=True
         )
         return False
 
@@ -75,18 +78,18 @@ class PanRenLaiXi(BaseTask):
             else:
                 self.logger.info("二倍奖励已开启，无需勾选")
 
-        self.operationer.click_and_wait("确定", wait_time=3)
+        self.operationer.click_and_wait("确定", wait_time=4, stable_wait_for_new_scene=True)
         return False
 
     @TransitionOn("叛忍来袭-是否开启")
     def _(self):
-        self.operationer.click_and_wait("确定")
+        self.operationer.click_and_wait("确定", wait_time=4, stable_wait_for_new_scene=True)
         self.logger.info("确认开启 叛忍来袭")
         return False
 
     @TransitionOn("叛忍来袭-是否开启-双倍")
     def _(self):
-        self.operationer.click_and_wait("确定")
+        self.operationer.click_and_wait("确定", wait_time=3, stable_wait_for_new_scene=True)
         self.logger.info("确认开启 叛忍来袭[双倍奖励]")
         return False
 
@@ -106,7 +109,7 @@ class PanRenLaiXi(BaseTask):
                 self.logger.info(f"叛忍挑战忍者选为{ninjas[flag]}")
         else:
             self.logger.info("已有默认选中忍者，将使用")
-        self.operationer.click_and_wait("确定", stable_duration=3)
+        self.operationer.click_and_wait("确定", wait_time=3,stable_wait_for_new_scene=True)
         return False
 
     @TransitionOn("叛忍来袭-内部")
@@ -122,13 +125,19 @@ class PanRenLaiXi(BaseTask):
                 self.logger.info("无法自动参战，将手动挑战")
             self.check = True
         if not self.auto:
-            while not self.operationer.click_and_wait(difficulty):
+            if not self.operationer.click_and_wait(difficulty, wait_time=2):
                 self.logger.info(f"未发现 {difficulty}，将移动寻找")
                 x, y = self.config.get_config("键位")[KEY_INDEX.JoyStick]
-                self.operationer.device.long_press(x + 50, y, duration=0.3)
+                self.operationer.long_press(x + 50 * self.find_direction, y, duration=1)
+                self.find_time += 1
+                if self.find_time > 10:
+                    self.logger.warning(f"寻找 {difficulty} 已经 {self.find_time} 次，将改变寻找方向后重试...")
+                    self.find_time = 0
+                    self.find_direction = -1
+                return False
         else:
             self.logger.info("正在自动参战叛忍...")
-            time.sleep(15)
+            time.sleep(1)
         return False
 
     @TransitionOn("叛忍来袭-战斗中")
@@ -160,12 +169,12 @@ class PanRenLaiXi(BaseTask):
 
     @TransitionOn("叛忍来袭-确认挑战")
     def _(self):
-        self.operationer.click_and_wait("确定")
+        self.operationer.click_and_wait("确定", wait_time=3,stable_wait_for_new_scene=True)
         return False
 
     @TransitionOn("叛忍来袭-已获得2次奖励")
     def _(self):
-        self.operationer.click_and_wait("确定")
+        self.operationer.click_and_wait("确定", wait_time=3,stable_wait_for_new_scene=True)
         return False
 
     @TransitionOn("决斗场-匹配中")
@@ -191,4 +200,6 @@ class PanRenLaiXi(BaseTask):
         self.check = False
         self.auto = False
         self.decrease_difficulty = True
+        self.find_time = 0
+        self.find_direction = 1
         return True

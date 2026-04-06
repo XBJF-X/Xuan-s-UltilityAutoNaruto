@@ -101,12 +101,12 @@ class TianDiZhanChang(BaseTask):
             if not self.operationer.detect_element("默认点位-1-选中"):
                 self.operationer.click_and_wait("默认点位-1", wait_time=0.2, stable_duration=0)
 
-        self.operationer.click_and_wait("确认")
+        self.operationer.click_and_wait("确认", stable_wait_for_new_scene=True)
         return False
 
     @TransitionOn("天地战场-战场奖励")
     def _(self):
-        while self.operationer.click_and_wait("领取", auto_raise=False):
+        while self.operationer.click_and_wait("领取"):
             continue
         self.operationer.click_and_wait("X")
         return False
@@ -125,7 +125,7 @@ class TianDiZhanChang(BaseTask):
 
     @TransitionOn("恭喜你获得")
     def _(self):
-        self.operationer.click_and_wait("")
+        self.operationer.click_and_wait("X")
         return False
 
     @TransitionOn("决斗场-结算")

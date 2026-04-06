@@ -11,10 +11,7 @@ class PuTongRenZheZhaoMu(BaseTask):
     def _(self):
         self.logger.info("进行免费普通招募")
         # 点击普通招募-免费
-        if self.operationer.click_and_wait(
-                "免费",
-                auto_raise=False
-        ):
+        if self.operationer.click_and_wait("免费"):
             self.logger.info("免费普通招募成功")
             return False
         else:
