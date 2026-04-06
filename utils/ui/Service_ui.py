@@ -259,7 +259,7 @@ class Ui_Service(object):
         self.widget_2 = QWidget(self.Overview_Panel_widget)
         self.widget_2.setObjectName(u"widget_2")
         self.widget_2.setMinimumSize(QSize(240, 0))
-        self.widget_2.setMaximumSize(QSize(280, 16777215))
+        self.widget_2.setMaximumSize(QSize(330, 16777215))
         self.widget_2.setStyleSheet(u"")
         self.verticalLayout_3 = QVBoxLayout(self.widget_2)
         self.verticalLayout_3.setSpacing(9)
@@ -471,7 +471,7 @@ class Ui_Service(object):
         self.scrollArea.setWidgetResizable(True)
         self.scroll_tasks_area_content = QWidget()
         self.scroll_tasks_area_content.setObjectName(u"scroll_tasks_area_content")
-        self.scroll_tasks_area_content.setGeometry(QRect(0, 0, 84, 20))
+        self.scroll_tasks_area_content.setGeometry(QRect(0, 0, 282, 610))
         self.scrollArea.setWidget(self.scroll_tasks_area_content)
 
         self.verticalLayout.addWidget(self.scrollArea)
@@ -1863,7 +1863,7 @@ class Ui_Service(object):
         self.screen_mode.currentIndexChanged.connect(self.screen_mode_settings_stackedWidget.setCurrentIndex)
 
         self.overview_panel_button.setDefault(False)
-        self.stackedWidget.setCurrentIndex(1)
+        self.stackedWidget.setCurrentIndex(0)
         self.control_mode.setCurrentIndex(0)
         self.screen_mode_settings_stackedWidget.setCurrentIndex(3)
 

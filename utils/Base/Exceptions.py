@@ -9,7 +9,7 @@ class StepFailedError(TaskError):
 
 
 class TimeOut(TaskError):
-    """步骤执行失败异常（如检测失败、点击无响应等）"""
+    """步骤执行超时"""
     pass
 
 
@@ -19,5 +19,5 @@ class EndEarly(TaskError):
 
 
 class Stop(TaskError):
-    """步骤已经不需要再执行下去了，所以提前结束"""
+    """任务被要求停止"""
     pass

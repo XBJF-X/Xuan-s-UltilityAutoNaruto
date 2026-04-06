@@ -1,9 +1,9 @@
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QScrollArea,
     QWidget as QScrollAreaWidgetContents, QLabel, QCheckBox, QLineEdit,
-    QSpinBox, QComboBox, QSpacerItem, QSizePolicy, QFrame
+    QSpinBox, QComboBox, QSpacerItem, QSizePolicy, QFrame, QPushButton
 )
-from PySide6.QtCore import Qt, QObject
+from PySide6.QtCore import Qt
 from typing import Dict, Any, Optional
 
 card_style = """
@@ -158,7 +158,7 @@ class TaskConfigWidget(QWidget):
     - 第二张卡片：所有执行参数（无论数量多少都在同一张卡片内）
     """
 
-    def __init__(self, task_name, task_info: Dict[str, Any], parent: Optional[QObject] = None):
+    def __init__(self, task_name, task_info: Dict[str, Any], parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.task_name = task_name
         self.task_info = task_info
@@ -270,7 +270,7 @@ class TaskConfigWidget(QWidget):
         self.time_main_label.setText("下次执行时间")
 
         self.time_desc_label = QLabel(self.time_label_widget)
-        self.time_desc_label.setText("自动计算得出，无须修改，如果想立刻运行任务请清空并回车")
+        self.time_desc_label.setText("自动计算得出，无须修改，立即执行功能已移至总览面板")
         self.time_desc_label.setStyleSheet("font-size:11pt;color:#959595;margin-left:18px;")
 
         self.time_label_layout.addWidget(self.time_main_label)

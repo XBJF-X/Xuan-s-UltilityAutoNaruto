@@ -34,7 +34,7 @@ class Service(QWidget):
             user_name=self.config.get_config("用户名"),
             logger_name=self.logger.name
         )
-        self.task_common_control_ref_map: Dict[str:Dict[str:QWidget]] = defaultdict(dict)  # 任务控制控件
+        self.task_common_control_ref_map: Dict[str, Dict[str, QWidget]] = defaultdict(dict)  # 任务控制控件
         self.task_index_dic: Dict[str, int] = {"助手设置": 1}
         self.tree_items = {}
         self.logger.info("初始化UI...")
@@ -104,8 +104,10 @@ class Service(QWidget):
             temp_widget.setText(
                 datetime.fromtimestamp(self.config.get_task_base_config(task_name, "下次执行时间"),
                                        tz=ZoneInfo("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S"))
-            temp_widget.editingFinished.connect(
-                lambda tn=task_name: self.scheduler.task_next_execute_time_editfinished(tn))
+            temp_widget.setEnabled(False)
+            # temp_widget.editingFinished.connect(
+            #     lambda tn=task_name: self._on_task_next_execute_time_edit_finished(tn))
+
             if temp_task_widget.task_widget_dic["执行参数"]:
                 for param_name, param_info in temp_task_widget.task_widget_dic["执行参数"].items():
                     param_widget = param_info["控件"]
@@ -170,6 +172,8 @@ class Service(QWidget):
     def _on_tree_item_clicked(self, index):
         # 获取模型和项目
         model = self.UI.treeView.model()
+        if not isinstance(model, QStandardItemModel):
+            return
         item = model.itemFromIndex(index)
         text = item.text()
 

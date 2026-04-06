@@ -1,6 +1,6 @@
 import threading
 import time
-from typing import Tuple
+from typing import Tuple, Any
 
 from PySide6.QtCore import Signal
 
@@ -23,7 +23,7 @@ class Operationer:
                  config: Config,
                  device: Device,
                  scene_graph: SceneGraph,
-                 screen_save_signal: Signal(str),
+                 screen_save_signal: Any,
                  parent_logger
                  ):
         self.stop_event = threading.Event()
@@ -51,6 +51,8 @@ class Operationer:
     def get_element(self, element_name, scene_name: str | None = None):
         if scene_name:
             return self.scene_graph.get_element(scene_name, element_name)
+        if self.current_scene is None:
+            raise StepFailedError(f"当前场景未设置，无法获取元素 [{element_name}]")
         return self.scene_graph.get_element(self.current_scene.name, element_name)
 
     def get_scene(self, scene_name):

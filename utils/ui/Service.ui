@@ -475,7 +475,7 @@ QTreeView QScrollBar::add-line:vertical {
             }</string>
            </property>
            <property name="currentIndex">
-            <number>1</number>
+            <number>0</number>
            </property>
            <widget class="QWidget" name="Overview_Panel_widget">
             <property name="enabled">
@@ -507,7 +507,7 @@ QTreeView QScrollBar::add-line:vertical {
                </property>
                <property name="maximumSize">
                 <size>
-                 <width>280</width>
+                 <width>330</width>
                  <height>16777215</height>
                 </size>
                </property>
@@ -1131,8 +1131,8 @@ QScrollArea &gt; QWidget &gt; QWidget {
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>84</width>
-                        <height>20</height>
+                        <width>282</width>
+                        <height>610</height>
                        </rect>
                       </property>
                      </widget>

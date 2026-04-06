@@ -8,10 +8,9 @@ from enum import IntEnum
 from logging import Logger
 from pathlib import Path
 from types import FrameType
-from typing import Dict, Callable
+from typing import Any, Dict, Callable
 from zoneinfo import ZoneInfo
 
-from PySide6.QtCore import Signal
 
 from StaticFunctions import get_real_path
 from utils.Base.Config import Config
@@ -26,7 +25,7 @@ class TaskType(IntEnum):
     WEEKLY = 1
     MONTHLY = 2
     PERIODIC = 3
-    AVTIVITY = 4
+    ACTIVITY = 4
     TEMP = 5
 
 
@@ -109,14 +108,6 @@ def handle_task_exceptions(func):
     return wrapper
 
 
-def _handle_callback(self):
-    try:
-        self.logger.debug("回调函数执行")
-        self.callback(self)
-    except Exception as e:
-        self.logger.error(f"callback执行出错: {e}")
-
-
 class BaseTask:
     transition_func: Dict[str, Callable] = {}
     """场景名到处理函数的映射，由TransitionOn装饰器填充"""
@@ -137,7 +128,7 @@ class BaseTask:
         config: Config,
         transition_manager: TransitionManager,
         operationer: Operationer,
-        activate_another_task_signal: Signal(str),
+        activate_another_task_signal: Any,
         callback: Callable,
         parent_logger
     ):
@@ -279,6 +270,11 @@ class BaseTask:
             if result is not None and result:
                 # 任务正常完成
                 self._cleanup_on_complete()  # 执行完成时的清理
+                try:
+                    self.logger.debug("回调函数执行")
+                    self.callback(self)
+                except Exception as e:
+                    self.logger.error(f"callback执行出错: {e}")
                 return
 
     @handle_transition_exceptions
@@ -330,15 +326,19 @@ class BaseTask:
             #     # 如果找不到路径，回退到原来的处理方式
             #     scene_name = "未注册场景"
             self.operationer.next_scene = self.source_scene
-            shortest_path = self.transition_manager.bfs_shortest_path(scene_name, self.source_scene)
-            if shortest_path and len(shortest_path) >= 2:
-                # 执行第一段路径跳转
-                next_scene_in_path = shortest_path[1]
-                self.logger.info(f"自动跳转回场景状态中: 从 {scene_name} 到 {next_scene_in_path} (路径: {' -> '.join(shortest_path)})")
-                return self.transition_manager.transition(self.operationer)
-            else:
-                # 如果找不到路径，回退到原来的处理方式
+            if not self.source_scene:
+                # 没有 source_scene，无法寻路，回退到未注册场景
                 scene_name = "未注册场景"
+            else:
+                shortest_path = self.transition_manager.bfs_shortest_path(scene_name, self.source_scene)
+                if shortest_path and len(shortest_path) >= 2:
+                    # 执行第一段路径跳转
+                    next_scene_in_path = shortest_path[1]
+                    self.logger.info(f"自动跳转回场景状态中: 从 {scene_name} 到 {next_scene_in_path} (路径: {' -> '.join(shortest_path)})")
+                    return self.transition_manager.transition(self.operationer)
+                else:
+                    # 如果找不到路径，回退到原来的处理方式
+                    scene_name = "未注册场景"
 
         # 正常执行注册函数
         # self.logger.debug(f"寻找注册函数: {scene_name}")
@@ -358,7 +358,14 @@ class BaseTask:
                 frame.f_trace_lines = False
                 return self.trace_callback
         elif event == "return":
-            relative_path = Path(inspect.getsourcefile(frame))
+            try:
+                srcfile = inspect.getsourcefile(frame) or inspect.getfile(frame)
+            except Exception:
+                srcfile = None
+            if srcfile is None:
+                relative_path = Path("<unknown>")
+            else:
+                relative_path = Path(srcfile)
             try:
                 relative_path = relative_path.relative_to(get_real_path())
             except ValueError:
@@ -394,7 +401,7 @@ class BaseTask:
         self.logger.debug(f"{task_name}被激活，将立即执行")
         self.activate_another_task_signal.emit(task_name)
 
-    def update_next_execute_time(self, flag: int = 1, delta: timedelta = None):
+    def update_next_execute_time(self, flag: int = 1, delta: timedelta = timedelta(0)) -> tuple[bool, datetime.datetime | None]:
         """
         用于更新本任务的下次执行时间
 
@@ -403,7 +410,7 @@ class BaseTask:
                 0：创建任务时初始化时间
                 1：正常执行完毕，更新为下次执行时间
                 2：更新成当前时间，一般用于调试任务时调用
-                3：把执行时间推迟delta时间，要求 delta!=None
+                3：把执行时间推迟delta时间
             delta: 延迟的时长（仅flag=3时有效）
         Returns:
             tuple: (是否成功, 下次执行时间datetime对象)
@@ -480,19 +487,23 @@ class BaseTask:
     @TransitionOn("二级密码")
     def _(self):
         self.logger.debug("出现二级密码窗口")
-        passward = self.config.get_config("二级密码")
-        if len(passward) != 6:
+        password = self.config.get_config("二级密码")
+        if len(password) != 6:
             raise StepFailedError("请检查二级密码！")
         # 输入操作
+        input_el = self.operationer.get_element("输入框")
+        if input_el is None:
+            raise StepFailedError("未找到二级密码输入框")
         self.operationer.click_and_input(
-            self.operationer.get_element("输入框"),
-            passward
+            input_el,
+            password
         )
         # 点击二级密码-确定
-        if not self.operationer.click_and_wait(
-                self.operationer.get_element("确定"),
-                auto_raise=False
-        ):
+        confirm_el = self.operationer.get_element("确定")
+        if confirm_el is None:
+            self.logger.error("未找到二级密码确认按钮")
+            return False
+        if not self.operationer.click_and_wait(confirm_el):
             self.logger.error("二级密码验证失败")
         return False
 

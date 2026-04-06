@@ -34,7 +34,7 @@ class U2(Control):
         return self.u2_device is not None
 
     @property
-    def rotated(self) -> bool:
+    def rotated(self):
         """获取设备旋转状态，False表示竖屏，True表示横屏"""
         with self._lock:
             if self.u2_device is None:

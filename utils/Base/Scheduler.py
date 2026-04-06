@@ -10,7 +10,7 @@ from zoneinfo import ZoneInfo
 
 from PySide6 import QtWidgets
 from PySide6.QtCore import QThread, Signal, QMutex, QWaitCondition, Qt, QObject, Slot
-from PySide6.QtWidgets import QLabel, QBoxLayout, QVBoxLayout, QFrame
+from PySide6.QtWidgets import QLabel, QBoxLayout, QVBoxLayout, QFrame, QHBoxLayout
 
 from StaticFunctions import get_real_path, cv_save
 from utils.Base.Config import Config
@@ -25,68 +25,95 @@ from utils.ui.Service_ui import Ui_Service
 
 # Todo：触发其他任务时应该回调时恢复原状态
 # Todo：带连点器的任务应该有额外的优先级
+
 class TaskWidget(QFrame):
+    execute_clicked = Signal(str)
+
     def __init__(self, task: BaseTask, parent=None):
+        """
+        :param task: 关联的任务对象
+        :param parent: 父控件
+        """
         super().__init__(parent)
         self.task = task
-        self.setFrameStyle(QFrame.Shape.Box)  # 明确边框样式（不影响自定义样式表）
+
+        self.setFrameStyle(QFrame.Shape.Box)
         self.setFixedHeight(50)
         self.setContentsMargins(0, 5, 0, 5)
 
-        # -------------------------- 1. 初始化控件（新增 objectName 用于样式选择）--------------------------
-        # 创建垂直布局
-        self.item_layout = QVBoxLayout(self)
-        self.item_layout.setContentsMargins(5, 0, 5, 0)
-        self.item_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
+        # -------------------------- 外层水平布局 --------------------------
+        main_layout = QHBoxLayout(self)
+        main_layout.setContentsMargins(5, 0, 5, 0)
+        main_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
-        # 任务名称标签（设置 objectName，方便样式表定位）
+        # 左侧：原有的垂直布局（任务名称 + 时间）
+        left_layout = QVBoxLayout()
+        left_layout.setContentsMargins(0, 0, 0, 0)
+        left_layout.setAlignment(Qt.AlignmentFlag.AlignLeft)
+
         self.name_label = QLabel(task.task_name)
-        self.name_label.setObjectName("name_label")  # 关键：给标签命名，用于样式选择
-        self.item_layout.addWidget(self.name_label, alignment=Qt.AlignmentFlag.AlignLeft)
+        self.name_label.setObjectName("name_label")
+        left_layout.addWidget(self.name_label, alignment=Qt.AlignmentFlag.AlignLeft)
 
-        # 时间标签（同样设置 objectName）
         self.time_label = QLabel()
-        self.time_label.setObjectName("time_label")  # 关键：给标签命名
-        self.item_layout.addWidget(self.time_label, alignment=Qt.AlignmentFlag.AlignLeft)
+        self.time_label.setObjectName("time_label")
+        left_layout.addWidget(self.time_label, alignment=Qt.AlignmentFlag.AlignLeft)
 
-        # 初始化时直接调用 update_display（包含样式设置）
+        main_layout.addLayout(left_layout, stretch=1)  # 左侧内容占满剩余空间
+
+        # 右侧：“执行”按钮（透明样式）
+        self.execute_btn = QtWidgets.QPushButton("执行")
+        self.execute_btn.setObjectName("execute_btn")
+        self.execute_btn.setFixedWidth(40)
+        self.execute_btn.setFlat(True)
+        self.execute_btn.setStyleSheet("""
+            QPushButton#execute_btn {
+                font-size: 12pt; 
+                font-weight: bold; 
+                background-color: transparent;
+                border: 0px solid #aaa;
+                border-radius: 4px;
+                color: #779977;
+                padding: 2px 4px;
+            }
+            QPushButton#execute_btn:hover {
+                background-color: #e0e0e0;
+                border-color: #666;
+            }
+            QPushButton#execute_btn:pressed {
+                background-color: #ccc;
+            }
+        """)
+        self.execute_btn.clicked.connect(self.__on_execute_btn_clicked)
+        main_layout.addWidget(self.execute_btn, alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+
         self.update_display()
 
     def update_display(self):
-        """更新显示内容 + 动态修改边框颜色"""
-        # -------------------------- 2. 核心：根据任务状态确定边框颜色 --------------------------
-        # 优先级规则：temp_priority=True（临时提权）> current_status（普通状态）
+        """更新显示内容及边框颜色（原有逻辑不变，仅增加按钮可见性控制）"""
+        # 边框颜色逻辑不变（略，保持原代码）
         if self.task.temp_priority:
-            border_color = "#FF0000"  # 临时提权：红色边框
+            border_color = "#FF0000"
         else:
-            # 普通状态：按 current_status 映射颜色（0=原有色，1=黄色，2=灰色）
             status_color_map = {
-                0: "#779977",  # 状态0：原有默认色（深绿灰）
-                1: "#FFFF00",  # 状态1：黄色
-                2: "#999999"  # 状态2：灰色
+                0: "#779977",
+                1: "#FFFF00",
+                2: "#999999"
             }
-            # 若 current_status 不在 0/1/2 范围内，默认用原有色
             border_color = status_color_map.get(self.task.current_status, "#779977")
 
-        # -------------------------- 3. 构建完整样式表（包含所有控件样式） --------------------------
-        # 注意：样式表需覆盖所有需要的样式（边框、背景、标签字体等），避免原有样式丢失
         self.setStyleSheet(f"""
-            /* 自身（QFrame）的样式：动态边框色 + 原有基础样式 */
             TaskWidget {{
-                border: 3px solid {border_color};  /* 动态边框色 */
-                border-radius: 5px;               /* 保留原有圆角 */
-                background-color: #f0f0f0;        /* 保留原有背景色 */
+                border: 3px solid {border_color};
+                border-radius: 5px;
+                background-color: #f0f0f0;
             }}
-
-            /* 任务名称标签样式（与原逻辑一致） */
             #name_label {{
                 border: none;
                 background-color: transparent;
                 font-size: 13pt; 
                 color: black;
             }}
-
-            /* 时间标签样式（与原逻辑一致） */
             #time_label {{
                 border: none;
                 background-color: transparent;
@@ -97,12 +124,10 @@ class TaskWidget(QFrame):
             }}
         """)
 
-        # -------------------------- 4. 保留原有显示逻辑 --------------------------
-        # 更新任务名称
+        # 更新名称和时间的逻辑（不变）
         priority_str = f"[{self.task.base_priority}]"
         self.name_label.setText(f"{priority_str.ljust(5)}{self.task.task_name}")
 
-        # 更新下次执行时间（原有逻辑不变）
         current_date = datetime.now(ZoneInfo("Asia/Shanghai")).date()
         task_date = self.task.next_execute_time.date()
         delta = (task_date - current_date).days
@@ -117,18 +142,20 @@ class TaskWidget(QFrame):
         time_str = self.task.next_execute_time.strftime("%H:%M:%S")
         self.time_label.setText(f"下次执行 ：{date_str} {time_str}")
 
-        # 控制控件可见性（原有逻辑不变）
         self.setVisible(self.task.is_activated)
+        self.execute_btn.setVisible(self.task.is_activated)
+
+    def __on_execute_btn_clicked(self):
+        self.execute_clicked.emit(self.task.task_name)
 
 
 B = TypeVar('B', bound=BaseTask)
-T = TypeVar('T', bound=TaskWidget)
 
 
 class PriorityQueue(Generic[B]):
     def __init__(self):
         self.heap: List[B] = []  # 存储 Task 的列表
-        self.task_dic: Dict[str:B] = {}
+        self.task_dic: Dict[str, B] = {}
 
     def enqueue(self, item: B):
         heapq.heappush(self.heap, item)  # 插入元素，自动维护堆序
@@ -185,32 +212,41 @@ class PriorityQueue(Generic[B]):
         return [task for task in self.heap if task.current_status == status]
 
 
-class TaskWidgetList(Generic[B, T]):
+class TaskWidgetList(Generic[B]):
     def __init__(
         self,
         task_queue: PriorityQueue[B],
-        tasks_layout: QBoxLayout,
-        parent_logger: Logger = ""
+        tasks_layout: QBoxLayout | None,
+        on_execute_clicked=None,
+        parent_logger: Logger | str = ""
     ):
         if isinstance(parent_logger, str):
             self.logger = logging.getLogger("任务控件列表")
         else:
             self.logger = parent_logger.getChild("任务控件列表")
         self.task_queue = task_queue
+        self.on_execute_clicked = on_execute_clicked
+        if tasks_layout is None:
+            raise ValueError("tasks_layout 不能为空")
 
         # 初始化数据结构
-        self.widgets: Dict[str, T] = {}  # 用字典存储控件，提高查找效率
+        self.widgets: Dict[str, TaskWidget] = {}  # 用字典存储控件，提高查找效率
         self.tasks_layout = tasks_layout
 
-    def add_widget(self, task: B) -> T:
+    def _create_widget(self, task: B) -> TaskWidget:
+        widget = TaskWidget(task, parent=self.tasks_layout.parentWidget())
+        widget.setProperty("task_name", task.task_name)
+        if self.on_execute_clicked:
+            widget.execute_clicked.connect(self.on_execute_clicked)
+        return widget
+
+    def add_widget(self, task: B) -> TaskWidget:
         """添加控件并保持有序"""
         # 如果控件已存在则先移除
         if task.task_name in self.widgets:
             self.remove_widget(task.task_name)
         # 创建新控件
-        widget = TaskWidget(task, parent=self.tasks_layout.parentWidget())
-        # 设置控件属性以便后续查找
-        widget.setProperty("task_name", task.task_name)
+        widget = self._create_widget(task)
         # 计算插入位置
         insert_index = self._find_insert_index(self.tasks_layout, task)
         # 插入到布局
@@ -236,7 +272,7 @@ class TaskWidgetList(Generic[B, T]):
         del self.widgets[task_name]
         return True
 
-    def find_widget(self, task_name: str) -> Optional[T]:
+    def find_widget(self, task_name: str) -> Optional[TaskWidget]:
         """查找指定任务的控件"""
         return self.widgets.get(task_name)
 
@@ -301,8 +337,7 @@ class TaskWidgetList(Generic[B, T]):
                     current_widgets.remove(widget)
             else:
                 # 创建新控件
-                widget = TaskWidget(task, parent=self.tasks_layout.parentWidget())
-                widget.setProperty("task_name", task_name)
+                widget = self._create_widget(task)
                 self.widgets[task_name] = widget
 
             # 插入到正确位置
@@ -363,7 +398,7 @@ class TaskWidgetList(Generic[B, T]):
                 lo = mid + 1
         return lo
 
-    def _find_widget_index(self, widget: T) -> int:
+    def _find_widget_index(self, widget: TaskWidget) -> int:
         """查找控件在布局中的索引"""
         for i in range(self.tasks_layout.count()):
             item = self.tasks_layout.itemAt(i)
@@ -475,9 +510,10 @@ class Scheduler(QObject):
         self.tasks_layout = None
         self.init_scroll_area_layouts()  # 初始化滚动区域布局
         self.task_queue = PriorityQueue[BaseTask]()
-        self.task_widget_list = TaskWidgetList[BaseTask, TaskWidget](
+        self.task_widget_list = TaskWidgetList[BaseTask](
             self.task_queue,
             self.tasks_layout,
+            self.request_task_execute_now,
             self.logger
         )
         self.activate_another_task_signal.connect(self.activate_another_task_implement)
@@ -546,13 +582,18 @@ class Scheduler(QObject):
 
         if self.device:
             # 释放设备资源
-            if self.device.control_manager:
-                self.device.control_manager.release()
-                self.device.control_manager = None
-            if self.device.screen_manager:
-                self.device.screen_manager.release()
-                self.device.screen_manager = None
-                self.device = None
+            if getattr(self.device, "control_manager", None):
+                try:
+                    self.device.control_manager.release()
+                except Exception:
+                    self.logger.exception("释放 control_manager 时出错")
+            if getattr(self.device, "screen_manager", None):
+                try:
+                    self.device.screen_manager.release()
+                except Exception:
+                    self.logger.exception("释放 screen_manager 时出错")
+            # 释放完资源后，清理对 device 的引用
+            self.device = None
         # 清空所有队列
         self.task_queue = PriorityQueue[BaseTask]()
         # 清除所有任务控件
@@ -563,7 +604,9 @@ class Scheduler(QObject):
 
     def toggle_task_activation(self, state, task_name: str):
         """切换任务的启用/禁用状态"""
-        checkbox_widget = self.task_common_control_ref_map[task_name]["CheckBox"]
+        checkbox_widget = self._get_task_control(task_name, "CheckBox")
+        if checkbox_widget is None:
+            return
         checkbox_widget.setEnabled(False)
         self.config.set_task_base_config(task_name, "是否启用", state)
         temp_task = self.task_queue.get_task(task_name)
@@ -574,38 +617,63 @@ class Scheduler(QObject):
             self.logger.info(f"任务 {task_name} {'已启用' if state else '已禁用'}")
         checkbox_widget.setEnabled(True)
 
-    def task_next_execute_time_editfinished(self, task_name):
-        """如果清空则立即执行任务"""
-        lineedit_widget = self.task_common_control_ref_map[task_name]["LineEdit"]
-        if lineedit_widget.text() != "":
-            return
-        task = self.task_queue.get_task(task_name)
-        if not task:
-            self.logger.error(f"任务 {task_name} 不在队列中")
-            return
-        lineedit_widget.setEnabled(False)
-        task.update_next_execute_time(2)
-        self.task_widget_list.refresh_task_widget(task_name)
-        lineedit_widget.setText(task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
-        lineedit_widget.setEnabled(True)
-        self.logger.info(f"任务 {task_name} 等待立即执行")
-
     def activate_another_task_implement(self, task_name):
         """任务调用其他任务立刻执行"""
-        lineedit_widget = self.task_common_control_ref_map[task_name]["LineEdit"]
-        lineedit_widget.setEnabled(False)
-        self.config.set_task_base_config(task_name, "是否启用", True)
-        self.config.set_task_base_config(task_name, "临时提权", True)
+        self.request_task_execute_now(
+            task_name,
+            enable_if_needed=True,
+            temporary_priority=True,
+            source="Activate_signal"
+        )
+
+    def _get_task_control(self, task_name: str, control_key: str):
+        task_controls = self.task_common_control_ref_map.get(task_name)
+        if not task_controls:
+            self.logger.error(f"未找到任务 {task_name} 的控件映射")
+            return None
+        widget = task_controls.get(control_key)
+        if widget is None:
+            self.logger.error(f"任务 {task_name} 缺少控件 {control_key}")
+        return widget
+
+    @Slot(str)
+    def request_task_execute_now(
+        self,
+        task_name: str,
+        enable_if_needed: bool = False,
+        temporary_priority: bool = False,
+        source: str = "Manual"
+    ):
+        """统一入口：将任务的执行时间更新为当前，从而在下一轮扫描中尽快执行。"""
         task = self.task_queue.get_task(task_name)
         if not task:
             self.logger.error(f"任务 {task_name} 不在队列中")
             return
-        lineedit_widget.setEnabled(False)
+
+        line_edit_widget = self._get_task_control(task_name, "LineEdit")
+        checkbox_widget = self._get_task_control(task_name, "CheckBox")
+
+        if enable_if_needed:
+            self.config.set_task_base_config(task_name, "是否启用", True)
+            if checkbox_widget is not None and not checkbox_widget.isChecked():
+                checkbox_widget.blockSignals(True)
+                checkbox_widget.setChecked(True)
+                checkbox_widget.blockSignals(False)
+
+        if temporary_priority:
+            self.config.set_task_base_config(task_name, "临时提权", True)
+
+        if line_edit_widget is not None:
+            line_edit_widget.setEnabled(False)
+
         task.update_next_execute_time(2)
         self.task_widget_list.refresh_task_widget(task_name)
-        lineedit_widget.setText(task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
-        lineedit_widget.setEnabled(True)
-        self.logger.info(f"任务 {task_name} 等待立即执行")
+
+        if line_edit_widget is not None:
+            line_edit_widget.setText(task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
+            line_edit_widget.setEnabled(True)
+
+        self.logger.info(f"任务 {task_name} 已请求立即执行，来源: {source}")
 
     def init_scroll_area_layouts(self):
         """初始化任务滚动区域的布局"""
@@ -682,12 +750,13 @@ class Scheduler(QObject):
         if not self.running:
             self.logger.debug(f"调度器已停止，忽略任务 {task.task_name} 的完成信号")
             return
-        lineedit = self.task_common_control_ref_map[task.task_name]["LineEdit"]
-        lineedit.setText(task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
+        line_edit = self._get_task_control(task.task_name, "LineEdit")
+        if line_edit is not None:
+            line_edit.setText(task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
         self.task_queue.update_task_status(task.task_name, 2)
         if task.temp_priority:
             self.config.set_task_base_config(task.task_name, "临时提权", False)
-        task.temp_dead_line = None
+
         self.task_widget_list.refresh_task_widget(task.task_name)
         self.logger.info(f"[{task.task_name}]-[{task.base_priority}] 移出执行队列，进入等待队列")
         task.last_run_time = datetime.now(ZoneInfo("Asia/Shanghai"))

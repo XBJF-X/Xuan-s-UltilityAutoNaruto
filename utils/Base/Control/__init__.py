@@ -106,6 +106,6 @@ class Control(abc.ABC):
 
     @property
     @abc.abstractmethod
-    def rotated(self):
+    def rotated(self)-> int:
         """是否旋转"""
         pass
