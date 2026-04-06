@@ -2,7 +2,7 @@ from datetime import timedelta, datetime, time, date
 
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
-armor_coodinates = [
+armor_coordinates = [
     "武器",
     "头盔",
     "胸甲",
@@ -38,7 +38,11 @@ class XiaoHaoTiLi(BaseTask):
     def _(self):
         # 点击配置设置中选中的装备
         self.operationer.click_and_wait(
-            armor_coodinates[self.config.get_task_exe_param(self.task_name, "合成目标装备", 0)])
+            armor_coordinates[self.config.get_task_exe_param(self.task_name, "合成目标装备", 0)])
+        if self.operationer.detect_element("已满阶"):
+            self.logger.warning("当前装备已满阶，请在配置设置中选择其他装备")
+            self.update_equipment = True
+            return self.__set_next_scene()
         # 先看看当前装备能不能进阶，毕竟进阶说明没有能扫荡的了
         if self.operationer.click_and_wait("进阶",max_time=0.5):
             self.logger.info("当前装备可进阶，已点击进阶")
@@ -101,12 +105,7 @@ class XiaoHaoTiLi(BaseTask):
         match flag:
             case 1:
                 self.sweep_dungeon = True
-                if not self.update_equipment:
-                    self.operationer.next_scene = "装备"
-                    self.current_task = 0
-                    return False
-                self.update_next_execute_time()
-                return True
+                return self.__set_next_scene()
             case 2:
                 self.logger.warning("未勾选需要扫荡的副本，即将全选")
                 self.operationer.click_and_wait("一键全选-未选中")
@@ -117,12 +116,7 @@ class XiaoHaoTiLi(BaseTask):
     def _(self):
         self.operationer.click_and_wait("确定")
         self.sweep_dungeon = True
-        if not self.update_equipment:
-            self.operationer.next_scene = "装备"
-            self.current_task = 0
-            return False
-        self.update_next_execute_time()
-        return True
+        return self.__set_next_scene()
 
     @TransitionOn("便捷扫荡-继续扫荡")
     def _(self):
@@ -138,27 +132,13 @@ class XiaoHaoTiLi(BaseTask):
                 self.update_equipment = True
             case 1:
                 self.sweep_dungeon = True
-        if not self.update_equipment:
-            self.operationer.next_scene = "装备"
-            self.current_task = 0
-            return False
-        if not self.sweep_dungeon:
-            self.operationer.next_scene = "精英副本-便捷扫荡"
-            self.current_task = 1
-            return False
-        self.update_next_execute_time()
-        return True
+        return self.__set_next_scene()
 
     @TransitionOn("铜币不足")
     def _(self):
         self.operationer.click_and_wait("X")
         self.update_equipment = True
-        if not self.sweep_dungeon:
-            self.operationer.next_scene = "精英副本-便捷扫荡"
-            self.current_task = 1
-            return False
-        self.update_next_execute_time()
-        return True
+        return self.__set_next_scene()
 
     def _handle_execution_completed(self, current_time: datetime) -> datetime:
         """处理任务执行完成后的时间更新（case1）"""
@@ -196,4 +176,16 @@ class XiaoHaoTiLi(BaseTask):
         self.update_equipment = False
         self.sweep_dungeon = False
         self.current_task = None
+        return True
+
+    def __set_next_scene(self):
+        if not self.update_equipment:
+            self.operationer.next_scene = "装备"
+            self.current_task = 0
+            return False
+        if not self.sweep_dungeon:
+            self.operationer.next_scene = "精英副本-便捷扫荡"
+            self.current_task = 1
+            return False
+        self.update_next_execute_time()
         return True

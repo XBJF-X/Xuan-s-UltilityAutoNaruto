@@ -184,14 +184,14 @@ class Operationer:
 
     def click_and_wait(self, element, **kwargs):
         """
-        点击并等待一段时间
+        点击并等待一段时间  
         Args:
-            element(str|Element): 元素
-            ** kwargs: 可选参数：
-            - wait_time: 检测到之后的等待时间，默认为None,表示将等待画面稳定，支持自定义
-            - max_time: 最大尝试时间，默认为2.0
-            - max_attempts: 最大尝试次数，如果定义则优先，不定义则按最大时间
-            - click_times：点击次数，默认为1
+            element(str|Element): 元素  
+            ** kwargs: 可选参数：  
+            - wait_time: 检测到之后的等待时间，默认为None,表示将等待画面稳定，支持自定义  
+            - max_time: 最大尝试时间，默认为2.0  
+            - max_attempts: 最大尝试次数，如果定义则优先，不定义则按最大时间  
+            - click_times：点击次数，默认为1  
 
             - stable_duration：画面需要保持稳定多长时间
             - stable_max_time：最多等待画面稳定多长时间

@@ -4,7 +4,7 @@ from PySide6.QtWidgets import QDialog
 
 from tool.ResourceManager.ResourceDBManager import ResourceDBManager
 from tool.ResourceManager.SceneGraphView import SceneGraphView
-from ui.NewScene_ui import Ui_NewScene
+from tool.ResourceManager.ui.NewScene_ui import Ui_NewScene
 
 
 class NewScene(QDialog):

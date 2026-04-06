@@ -39,9 +39,11 @@ class TransitionManager:
         无需传入source_id和target_id，完全由operationer的状态决定
         """
 
-        # 从Operationer中获取当前场景和目标场景
-        source_id = operationer.current_scene.name
+        # 从Operationer中获取当前场景和目标场景（安全访问以避免 current_scene 为 None）
+        source_id = getattr(operationer.current_scene, "name", None)
         target_id = operationer.next_scene
+        if source_id is None:
+            raise ValueError("Operationer.current_scene 未设置或不包含 'name' 属性，无法确定当前场景")
         self.logger.debug(f"{source_id}->{target_id}")
 
         # 校验场景合法性
@@ -72,11 +74,13 @@ class TransitionManager:
         else:
             raise RuntimeError(f"从 {source_id} 到 {target_id} 跳转失败")
 
-    def _execute_transition(self, operationer: Operationer, *args, **kwargs) -> int:
+    def _execute_transition(self, operationer: Operationer, *args, **kwargs) -> bool:
         """执行单个跳转步骤：从operationer.current_scene到operationer.next_scene"""
         source_id = kwargs.get("source_id")
         target_id = kwargs.get("target_id")
-        key = (source_id, target_id)
+        if not isinstance(source_id, str) or not isinstance(target_id, str):
+            raise ValueError("source_id 和 target_id 必须为字符串，无法构造跳转键")
+        key: tuple[str, str] = (source_id, target_id)
 
         if key not in self.transition_map:
             raise ValueError(f"无 {source_id} 到 {target_id} 的跳转逻辑")
@@ -346,7 +350,7 @@ class TransitionManager:
                 max_attempts=4
             )
 
-        @self.register("忍界指引", "装备")
+        # @self.register("忍界指引", "装备")
         @self.register("忍界指引", "丰饶之间")
         @self.register("忍界指引", "任务集会所")
         @self.register("忍界指引", "修罗副本")
@@ -394,7 +398,7 @@ class TransitionManager:
                 # operationer.click_and_wait("空白", wait_time=0.2)
             operationer.click_and_wait("X")
 
-        @self.register("重返木叶-忍界指引", "装备")
+        # @self.register("重返木叶-忍界指引", "装备")
         @self.register("重返木叶-忍界指引", "丰饶之间")
         @self.register("重返木叶-忍界指引", "任务集会所")
         @self.register("重返木叶-忍界指引", "修罗副本")
@@ -741,4 +745,4 @@ class TransitionManager:
 
 if __name__ == "__main__":
     TM = TransitionManager(None)
-    print(TM.bfs_shortest_path("重返木叶", "忍术对战"))
+    print(TM.bfs_shortest_path("主场景", "装备"))

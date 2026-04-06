@@ -10,7 +10,7 @@ from StaticFunctions import get_real_path, setup_logging
 from tool.ResourceManager.NewScene import NewScene
 from tool.ResourceManager.ResourceDBManager import ResourceDBManager
 from tool.ResourceManager.SceneGraphView import SceneGraphView
-from ui.SceneManager_ui import Ui_SceneManager
+from tool.ResourceManager.ui.SceneManager_ui import Ui_SceneManager
 
 
 class SceneManager(QMainWindow):

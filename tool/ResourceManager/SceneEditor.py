@@ -16,7 +16,7 @@ from StaticFunctions import cv_imread, split_gray_alpha, split_gray_alpha_bytes,
 from tool.ResourceManager.NewElement import NewElement, RatioDialog
 from tool.ResourceManager.ResourceDBManager import ResourceDBManager
 from tool.ResourceManager.model import Element, element_to_qpixmap, Scene
-from ui.SceneEditor_ui import Ui_SceneEditor
+from tool.ResourceManager.ui.SceneEditor_ui import Ui_SceneEditor
 from utils.Base.Enums import ElementType, MatchType
 from utils.Base.Recognizer import Recognizer
 
