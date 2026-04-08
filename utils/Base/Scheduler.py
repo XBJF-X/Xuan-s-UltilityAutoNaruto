@@ -91,16 +91,12 @@ class TaskWidget(QFrame):
 
     def update_display(self):
         """更新显示内容及边框颜色（原有逻辑不变，仅增加按钮可见性控制）"""
-        # 边框颜色逻辑不变（略，保持原代码）
-        if self.task.temp_priority:
-            border_color = "#FF0000"
-        else:
-            status_color_map = {
-                0: "#779977",
-                1: "#FFFF00",
-                2: "#999999"
-            }
-            border_color = status_color_map.get(self.task.current_status, "#779977")
+        status_color_map = {
+            0: "#779977",
+            1: "#FFFF00",
+            2: "#999999"
+        }
+        border_color = status_color_map.get(self.task.current_status, "#779977")
 
         self.setStyleSheet(f"""
             TaskWidget {{
@@ -125,7 +121,7 @@ class TaskWidget(QFrame):
         """)
 
         # 更新名称和时间的逻辑（不变）
-        priority_str = f"[{self.task.base_priority}]"
+        priority_str = f"[{self.task.current_priority}]"
         self.name_label.setText(f"{priority_str.ljust(5)}{self.task.task_name}")
 
         current_date = datetime.now(ZoneInfo("Asia/Shanghai")).date()
@@ -409,16 +405,18 @@ class TaskWidgetList(Generic[B]):
     @staticmethod
     def _compare_tasks(task1: B, task2: B) -> int:
         """比较两个任务的优先级（先按状态，再按任务本身规则）"""
-        if task1.current_status != task2.current_status:
-            # 状态值越小优先级越高（根据实际业务调整）
-            return -1 if task1.current_status < task2.current_status else 1
-        # 先比较有无临时提权
-        if task1.temp_priority != task2.temp_priority:
-            return -1 if task1.temp_priority > task2.temp_priority else 1
 
+        if task1.current_status != task2.current_status:
+            # 状态值越小优先级越高
+            return -1 if task1.current_status < task2.current_status else 1
+        
         # 比较执行时间
         if task1.next_execute_time != task2.next_execute_time:
             return -1 if task1.next_execute_time < task2.next_execute_time else 1
+        
+        # Scheduler 只认 current_priority
+        if task1.current_priority != task2.current_priority:
+            return -1 if task1.current_priority < task2.current_priority else 1
 
         # 比较任务ID
         if task1.base_priority != task2.base_priority:
@@ -622,7 +620,6 @@ class Scheduler(QObject):
         self.request_task_execute_now(
             task_name,
             enable_if_needed=True,
-            temporary_priority=True,
             source="Activate_signal"
         )
 
@@ -641,7 +638,6 @@ class Scheduler(QObject):
         self,
         task_name: str,
         enable_if_needed: bool = False,
-        temporary_priority: bool = False,
         source: str = "Manual"
     ):
         """统一入口：将任务的执行时间更新为当前，从而在下一轮扫描中尽快执行。"""
@@ -659,9 +655,6 @@ class Scheduler(QObject):
                 checkbox_widget.blockSignals(True)
                 checkbox_widget.setChecked(True)
                 checkbox_widget.blockSignals(False)
-
-        if temporary_priority:
-            self.config.set_task_base_config(task_name, "临时提权", True)
 
         if line_edit_widget is not None:
             line_edit_widget.setEnabled(False)
@@ -729,8 +722,7 @@ class Scheduler(QObject):
                 else:
                     running_task = running_tasks[0]
                     if running_task > next_task:
-                        # 说明执行中任务的优先级低于就绪任务，先提权，再停止正在执行的任务，再触发一次扫描，这样就能把提权后的任务放在执行队列了
-                        self.config.set_task_base_config(next_task.task_name, "临时提权", True)
+                        # 说明执行中任务的优先级低于就绪任务，直接停止当前任务以让更高优先级任务执行
                         running_task.stop()
 
             if self.running:
@@ -754,8 +746,6 @@ class Scheduler(QObject):
         if line_edit is not None:
             line_edit.setText(task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
         self.task_queue.update_task_status(task.task_name, 2)
-        if task.temp_priority:
-            self.config.set_task_base_config(task.task_name, "临时提权", False)
 
         self.task_widget_list.refresh_task_widget(task.task_name)
         self.logger.info(f"[{task.task_name}]-[{task.base_priority}] 移出执行队列，进入等待队列")

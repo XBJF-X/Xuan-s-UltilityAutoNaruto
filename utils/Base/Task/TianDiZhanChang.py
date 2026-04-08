@@ -35,12 +35,13 @@ class TianDiZhanChang(BaseTask):
 
     @TransitionOn()
     def _(self):
+        self.bool_click = False
         self.operationer.click_and_wait(choose_dic[self.choose])
         return False
 
     @TransitionOn("天之战场")
     def _(self):
-        current_time = datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai"))
+        self.bool_click = False
         if not self.guwu_done:
             self.operationer.click_and_wait("组织鼓舞")
             self.guwu_done = True
@@ -57,11 +58,7 @@ class TianDiZhanChang(BaseTask):
 
     @TransitionOn("地之战场")
     def _(self):
-        current_time = datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai"))
-        if current_time > current_time.replace(hour=21, minute=30, second=0, microsecond=0):
-            self.logger.info("天地战场时间已过，停止执行")
-            self.update_next_execute_time()
-            return True
+        self.bool_click = False
         if not self.guwu_done:
             self.operationer.click_and_wait("组织鼓舞")
             self.guwu_done = True
@@ -78,11 +75,13 @@ class TianDiZhanChang(BaseTask):
 
     @TransitionOn("天地战场-确定进入")
     def _(self):
+        self.bool_click = False
         self.operationer.click_and_wait("确认")
         return False
 
     @TransitionOn("天地战场-配置阵容")
     def _(self):
+        self.bool_click = False
         defeated_ninja_num = max(self.config.get_task_exe_prog(self.task_name, "已战败角色数", 0), 2) + 1
         self.operationer.click_and_wait("忍者页", wait_time=0.2, stable_duration=0)
         if defeated_ninja_num >= 4:
@@ -106,6 +105,7 @@ class TianDiZhanChang(BaseTask):
 
     @TransitionOn("天地战场-战场奖励")
     def _(self):
+        self.bool_click = False
         while self.operationer.click_and_wait("领取"):
             continue
         self.operationer.click_and_wait("X")
@@ -113,23 +113,27 @@ class TianDiZhanChang(BaseTask):
 
     @TransitionOn("天地战场-战场战斗已经结束")
     def _(self):
+        self.bool_click = False
         self.operationer.click_and_wait("确认")
         self.update_next_execute_time()
         return True
 
     @TransitionOn("天地战场-确认退出")
     def _(self):
+        self.bool_click = False
         self.operationer.click_and_wait("确认")
         self.update_next_execute_time()
         return True
 
     @TransitionOn("恭喜你获得")
     def _(self):
+        self.bool_click = False
         self.operationer.click_and_wait("X")
         return False
 
     @TransitionOn("决斗场-结算")
     def _(self):
+        self.bool_click = False
         self.operationer.clicker.stop()
         self.operationer.click_and_wait("X")
         self.fighted = True
@@ -137,18 +141,21 @@ class TianDiZhanChang(BaseTask):
 
     @TransitionOn("决斗场-单局结算")
     def _(self):
+        self.bool_click = False
         self.operationer.clicker.stop()
         self.fighted = True
         return False
 
     @TransitionOn("决斗场-战斗中")
     def _(self):
+        self.bool_click = True
         self.operationer.clicker.start()
         self.fighted = True
         return False
 
     @TransitionOn("你的对手离开了游戏")
     def _(self):
+        self.bool_click = False
         self.operationer.click_and_wait("确定")
         return False
 
@@ -207,35 +214,42 @@ class TianDiZhanChang(BaseTask):
             self.logger.error(f"更新下次执行时间失败: {str(e)}")
             return False, None
 
-    def _handle_initialization(self, current_time: datetime) -> datetime:
-        def get_this_wednesday_9pm(current_time, tz):
-            days_ahead = (2 - current_time.weekday()) % 7
-            next_time = current_time + timedelta(days=days_ahead)
-            return next_time.replace(hour=21, minute=0, second=0, microsecond=0, tzinfo=tz)
-
+    def get_cycle_execute_time(self,dt: datetime.datetime) -> datetime.datetime:
+        """返回 dt 所属执行周期的任务执行时间"""
+        return (dt - timedelta(days=dt.weekday() - 2)).replace(
+            hour=21,
+            minute=0,
+            second=0,
+            microsecond=0,
+        )
+    def get_next_cycle_execute_time(self, dt: datetime.datetime) -> datetime.datetime:
+        """返回下一个周期的执行时间"""
+        return self.get_cycle_execute_time(dt) + timedelta(weeks=1)
+    def _handle_initialization(self, current_time: datetime.datetime) -> datetime.datetime:
         china_tz = current_time.tzinfo
+        # 读取配置中的时间
+        next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
+        next_execute_time = self.get_cycle_execute_time(current_time)
 
-        # 本周周三下午9点的时间对象
-        next_execute_time = get_this_wednesday_9pm(current_time, china_tz)
+        if not next_exec_ts:
+            return next_execute_time
 
-        if current_time > next_execute_time + timedelta(minutes=30):
-            next_execute_time += timedelta(days=7)
+        try:
+            next_exec_dt = datetime.datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+        except Exception as e:
+            self.logger.warning(f"解析下次执行时间戳失败: {next_exec_ts}, 错误: {e}")
+            return next_execute_time
 
-        return next_execute_time
+        if next_exec_dt < current_time:
+            return next_execute_time
+        else:
+            return next_exec_dt
 
-    def _handle_execution_completed(self, current_time: datetime) -> datetime:
-        def get_this_wednesday_9pm(current_time, tz):
-            days_ahead = (2 - current_time.weekday()) % 7
-            next_time = current_time + timedelta(days=days_ahead)
-            return next_time.replace(hour=21, minute=0, second=0, microsecond=0, tzinfo=tz)
-
-        china_tz = current_time.tzinfo
-
-        # 下周周六下午8点的时间对象
-        next_execute_time = get_this_wednesday_9pm(current_time, china_tz) + timedelta(weeks=1)
+    def _handle_execution_completed(self, current_time: datetime.datetime) -> datetime.datetime:
         if self.config.get_task_exe_param(self.task_name, "执行结束后是否有叛忍", True):
             self._activate_another_task("叛忍来袭")
-        return next_execute_time
+        return self.get_next_cycle_execute_time(current_time)
+    
 
     def reset_task_exe_prog(self) -> bool:
         self.config.set_task_exe_prog(self.task_name, "已战败角色数", 0)

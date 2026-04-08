@@ -23,6 +23,7 @@ class GengDuoWanFa(BaseTask):
     @TransitionOn()
     def _(self):
         self.operationer.clicker.stop()
+        self.bool_click=False
         if self.operationer.detect_element("集结团队战"):
             self.logger.warning("本周更多玩法为集结团队战，将推迟任务执行至下周")
             self.update_next_execute_time()
@@ -39,6 +40,7 @@ class GengDuoWanFa(BaseTask):
     @TransitionOn("绝迹战场")
     def _(self):
         self.operationer.clicker.stop()
+        self.bool_click=False
         if not self.checked:
             self.operationer.click_and_wait("返回")
             return False
@@ -51,6 +53,7 @@ class GengDuoWanFa(BaseTask):
     @TransitionOn("大蛇丸试炼")
     def _(self):
         self.operationer.clicker.stop()
+        self.bool_click=False
         if not self.checked:
             self.operationer.click_and_wait("返回")
             return False
@@ -63,6 +66,7 @@ class GengDuoWanFa(BaseTask):
     @TransitionOn("大蛇丸试炼-副本内")
     def _(self):
         self.checked = False
+        self.bool_click = True
         self.operationer.clicker.start()
         self.operationer.next_scene = None
         return False
@@ -70,6 +74,7 @@ class GengDuoWanFa(BaseTask):
     @TransitionOn("绝迹战场-副本内")
     def _(self):
         self.checked = False
+        self.bool_click = True
         self.operationer.clicker.start()
         self.operationer.next_scene = None
         return False
@@ -77,6 +82,7 @@ class GengDuoWanFa(BaseTask):
     @TransitionOn("更多玩法-任务")
     def _(self):
         self.operationer.clicker.stop()
+        self.bool_click=False
         if not self.operationer.detect_element("未达成") and not self.finished:
             self.operationer.click_and_wait("2100")
             self.finished = True
@@ -87,17 +93,20 @@ class GengDuoWanFa(BaseTask):
 
     @TransitionOn("更多玩法-匹配中")
     def _(self):
+        self.bool_click = True
         self.operationer.clicker.stop()
         return False
 
     @TransitionOn("更多玩法-匹配成功")
     def _(self):
+        self.bool_click = True
         self.operationer.clicker.stop()
         self.operationer.click_and_wait("准备就绪")
         return False
 
     @TransitionOn("更多玩法-选择忍者")
     def _(self):
+        self.bool_click = True
         self.operationer.clicker.stop()
         self.operationer.click_and_wait("默认忍者-1", wait_time=0)
         self.operationer.click_and_wait("确定", wait_time=0)
@@ -110,12 +119,14 @@ class GengDuoWanFa(BaseTask):
 
     @TransitionOn("更多玩法-结算")
     def _(self):
+        self.bool_click = False
         self.operationer.clicker.stop()
         self.operationer.click_and_wait("确定")
         return False
 
     @TransitionOn("你的对手离开了游戏")
     def _(self):
+        self.bool_click = False
         self.operationer.clicker.stop()
         self.operationer.click_and_wait("确定")
         return False
@@ -123,12 +134,14 @@ class GengDuoWanFa(BaseTask):
     @TransitionOn("决斗场-首页")
     def _(self):
         self.operationer.clicker.stop()
+        self.bool_click=False
         self.operationer.click_and_wait("更多玩法")
         return False
 
     @TransitionOn("任务奖励-一键领取")
     def _(self):
         self.operationer.clicker.stop()
+        self.bool_click=False
         self.operationer.click_and_wait("确定")
         self.finished = True
         return False
@@ -143,38 +156,43 @@ class GengDuoWanFa(BaseTask):
         self.operationer.clicker.stop()
         self.operationer.next_scene = "更多玩法"
         return False
-
+    
+    def get_cycle_execute_time(self,dt: datetime) -> datetime:
+        """返回 dt 所属执行周期的任务执行时间"""
+        cycle_execute_time = (dt - timedelta(days=dt.weekday())).replace(
+            hour=5,
+            minute=0,
+            second=0,
+            microsecond=0,
+        )
+        if dt < cycle_execute_time:
+            return cycle_execute_time - timedelta(weeks=1)
+        return cycle_execute_time
+    
     def _handle_initialization(self, current_time: datetime) -> datetime:
-        def get_this_monday_5am(current_time, tz):
-            days_ahead = (0 - current_time.weekday()) % 7
-            next_monday = current_time + timedelta(days=days_ahead)
-            return next_monday.replace(hour=5, minute=0, second=0, microsecond=0, tzinfo=tz)
-
         china_tz = current_time.tzinfo
         # 读取配置中的时间
         next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
-        next_execute_time = get_this_monday_5am(current_time, china_tz)
+        next_execute_time = self.get_cycle_execute_time(current_time)
 
-        if next_exec_ts == 0:
+        if not next_exec_ts:
+            return next_execute_time
+
+        try:
+            next_exec_dt = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+        except Exception as e:
+            self.logger.warning(f"解析下次执行时间戳失败: {next_exec_ts}, 错误: {e}")
+            return next_execute_time
+
+        if next_exec_dt < current_time:
             return next_execute_time
         else:
-            return datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+            return next_exec_dt
 
-    def _handle_execution_completed(self, current_time: datetime) -> datetime:
-        def get_this_monday_5am(dt: datetime) -> datetime:
-            """返回 dt 所在周的周一 05:00:00（保留时区）"""
-            days_ahead = (0 - dt.weekday()) % 7
-            this_monday = dt + timedelta(days=days_ahead)
-            return this_monday.replace(hour=5, minute=0, second=0, microsecond=0)
+    def get_next_cycle_execute_time(self, dt: datetime) -> datetime:
+        """返回下一个周期的执行时间"""
+        return self.get_cycle_execute_time(dt) + timedelta(weeks=1)
 
-        # 先得到本周一的 5:00（保留 current_time 的时区属性）
-        this_monday_5am = get_this_monday_5am(current_time)
-
-        # 如果当前时刻 < 本周一 5:00，则返回本周一 5:00；否则返回下周一 5:00
-        if current_time < this_monday_5am:
-            return this_monday_5am
-        else:
-            return this_monday_5am + timedelta(weeks=1)
 
     def reset_task_exe_prog(self) -> bool:
         self.checked = False

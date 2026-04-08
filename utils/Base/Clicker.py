@@ -32,6 +32,8 @@ class Clicker:
 
         self.last_minitouch_create_time = time.perf_counter()
 
+        self.running = False
+
         self._stop_event = threading.Event()
         self._threads: List[threading.Thread] = []
         self._threads_lock = threading.Lock()
@@ -56,7 +58,7 @@ class Clicker:
         """启动点击线程（MiniTouch 使用多点模式，其他使用独立线程模式）"""
         with self._threads_lock:
             # 1. 检查是否存在存活线程
-            if any(t.is_alive() for t in self._threads):
+            if self.running:
                 self.logger.debug("点击线程已启动，忽略重复启动请求")
                 return
 
@@ -96,6 +98,7 @@ class Clicker:
                     thread.start()
                     self._threads.append(thread)
                 self.logger.debug(f"已启动 {len(coords)} 个点击线程")
+            self.running = True
 
     def stop(self):
         """停止所有点击线程"""
@@ -109,6 +112,7 @@ class Clicker:
                     self.logger.warning("某个点击线程未及时退出")
             self._threads.clear()
         self._stop_event.clear()
+        self.running = False
         self.logger.debug("所有点击线程已停止")
 
     def update_coordinates(self, coordinates: List[Tuple[int, int]]):
@@ -162,7 +166,8 @@ class Clicker:
             self.logger.error(f"创建 MiniTouch 实例失败: {e}")
         finally:
             try:
-                control.up_all_contacts()
+                if control and control.ready:
+                    control.up_all_contacts()
             except Exception as e:
                 self.logger.warning(f"抬起所有触点失败: {e}")
             self.logger.debug("MiniTouch 多点连点线程结束")

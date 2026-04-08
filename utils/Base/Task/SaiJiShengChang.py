@@ -25,6 +25,7 @@ class SaiJiShengChang(MeiRiShengChang):
 
     @TransitionOn()
     def _(self):
+        self.bool_click = False
         self.operationer.clicker.stop()
         if not self.checked:
             while self.operationer.click_and_wait(
@@ -54,6 +55,7 @@ class SaiJiShengChang(MeiRiShengChang):
 
     @TransitionOn("决斗场-首页")
     def _(self):
+        self.bool_click = False
         self.operationer.clicker.stop()
         if self.checked:
             self.operationer.click_and_wait("忍术对战")
@@ -63,89 +65,92 @@ class SaiJiShengChang(MeiRiShengChang):
 
     @TransitionOn("忍术对战")
     def _(self):
+        self.bool_click = False
         self.operationer.clicker.stop()
         if not self.finished:
             self.operationer.click_and_wait("开战")
             self.operationer.click_and_wait("开战")
+            self.bool_click = True
             return False
         self.update_next_execute_time()
         return True
 
-    def _handle_initialization(self, current_time: datetime) -> datetime:
-        def get_last_day_of_month(dt: datetime) -> datetime:
-            # 如果是12月，下个月是1月，年份加1
-            if dt.month == 12:
-                next_month = 1
-                next_year = dt.year + 1
-            else:
-                next_month = dt.month + 1
-                next_year = dt.year
-            # 下个月第一天减去一天就是当月最后一天
-            first_day_of_next_month = datetime(next_year, next_month, 1, tzinfo=dt.tzinfo)
-            last_day_of_current_month = first_day_of_next_month - timedelta(days=1)
-            return datetime(
-                last_day_of_current_month.year, last_day_of_current_month.month,
-                last_day_of_current_month.day, 5, 0, tzinfo=dt.tzinfo
-            )
-
-        china_tz = current_time.tzinfo
-        # 读取配置中的时间
-        next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
-        next_execute_time = get_last_day_of_month(current_time)
-
-        if next_exec_ts == 0:
-            return next_execute_time
+    def get_cycle_execute_time(self, dt: datetime) -> datetime:
+        """返回 dt 所属周期的执行时间：当月最后一天 05:00:00"""
+        if dt.month == 12:
+            next_month = 1
+            next_year = dt.year + 1
         else:
-            return datetime.fromtimestamp(next_exec_ts, tz=china_tz)
-            # # 转换为带时区的datetime
-            # stored_time = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
-            # if stored_time + timedelta(days=1) < current_time:
-            #     return next_execute_time
-            # else:
-            #     return stored_time
+            next_month = dt.month + 1
+            next_year = dt.year
 
-    def _handle_execution_completed(self, current_time: datetime) -> datetime:
-        def get_last_day_of_next_month(dt: datetime) -> datetime:
-            """得到下个月的最后一天，保留原有时区信息"""
-            # 计算下个月的年份和月份
-            if dt.month == 12:
-                next_year = dt.year + 1
-                next_month = 1
-            else:
-                next_year = dt.year
-                next_month = dt.month + 1
+        first_day_of_next_month = datetime(next_year, next_month, 1, tzinfo=dt.tzinfo)
+        last_day_of_current_month = first_day_of_next_month - timedelta(days=1)
+        return datetime(
+            last_day_of_current_month.year,
+            last_day_of_current_month.month,
+            last_day_of_current_month.day,
+            5,
+            0,
+            tzinfo=dt.tzinfo,
+        )
 
-            # 构造下个月的第一天
-            first_day_next_month = dt.replace(
-                year=next_year,
-                month=next_month,
+    def get_next_cycle_execute_time(self, dt: datetime) -> datetime:
+        """返回下一个周期的执行时间：下个月最后一天 05:00:00"""
+        if dt.month == 12:
+            next_year = dt.year + 1
+            next_month = 1
+        else:
+            next_year = dt.year
+            next_month = dt.month + 1
+
+        first_day_next_month = dt.replace(
+            year=next_year,
+            month=next_month,
+            day=1,
+            hour=0,
+            minute=0,
+            second=0,
+            microsecond=0,
+        )
+
+        if next_month == 12:
+            first_day_after_next = first_day_next_month.replace(
+                year=next_year + 1,
+                month=1,
                 day=1,
-                hour=0,
-                minute=0,
-                second=0,
-                microsecond=0
+            )
+        else:
+            first_day_after_next = first_day_next_month.replace(
+                month=next_month + 1,
+                day=1,
             )
 
-            # 计算下下个月的第一天
-            if next_month == 12:
-                first_day_after_next = first_day_next_month.replace(
-                    year=next_year + 1,
-                    month=1,
-                    day=1
-                )
-            else:
-                first_day_after_next = first_day_next_month.replace(
-                    month=next_month + 1,
-                    day=1
-                )
+        last_day_next_month = first_day_after_next - timedelta(days=1)
+        return datetime(
+            last_day_next_month.year,
+            last_day_next_month.month,
+            last_day_next_month.day,
+            5,
+            0,
+            tzinfo=dt.tzinfo,
+        )
 
-            # 下下个月的第一天减去1天，即为下个月的最后一天
-            last_day_next_month = first_day_after_next - timedelta(days=1)
-            return datetime(
-                last_day_next_month.year, last_day_next_month.month,
-                last_day_next_month.day, 5, 0, tzinfo=dt.tzinfo
-            )
+    def _handle_initialization(self, current_time: datetime) -> datetime:
+        """处理任务初始化时的时间设置（case0）"""
+        china_tz = current_time.tzinfo
+        next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
+        next_execute_time = self.get_cycle_execute_time(current_time)
 
-        # 计算并返回下个月的最后一天
-        next_execute_time = get_last_day_of_next_month(current_time)
-        return next_execute_time
+        if not next_exec_ts:
+            return next_execute_time
+
+        try:
+            next_exec_dt = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+        except Exception as e:
+            self.logger.warning(f"解析下次执行时间戳失败: {next_exec_ts}, 错误: {e}")
+            return next_execute_time
+
+        # 保留原有逻辑：只要配置中有有效时间戳，初始化时直接沿用。
+        return next_exec_dt
+

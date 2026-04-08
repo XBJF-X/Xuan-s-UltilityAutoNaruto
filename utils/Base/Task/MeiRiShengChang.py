@@ -25,17 +25,25 @@ class MeiRiShengChang(BaseTask):
     @TransitionOn()
     def _(self):
         self.operationer.clicker.stop()
+        self.bool_click=False
+
+        #############################
+        # 注释掉这部分则直接开始挑战，开发者测试使用
         if not self.checked:
             self.operationer.clicker.stop()
             self.operationer.click_and_wait("决斗任务")
             return False
+        #############################
+
         self.operationer.click_and_wait("开战")
         self.operationer.click_and_wait("开战")
+        self.bool_click=True
         return False
 
     @TransitionOn("决斗场-匹配中")
     def _(self):
         self.operationer.clicker.stop()
+        self.bool_click=True
         time.sleep(1)
         return False
 
@@ -73,9 +81,6 @@ class MeiRiShengChang(BaseTask):
         )
         match flag:
             case 0:
-                # self.checked = True
-                # self.operationer.click_and_wait("X")
-                # return False
                 self.checked = False
                 self.operationer.click_and_wait("X")
                 self.logger.info("结束执行")
@@ -109,12 +114,14 @@ class MeiRiShengChang(BaseTask):
     def _(self):
         self.checked = False
         self.operationer.clicker.stop()
+        self.bool_click=False
         self.operationer.click_and_wait("X")
         return False
 
     @TransitionOn("决斗场-战斗中")
     def _(self):
         self.checked = False
+        self.bool_click=True
         self.operationer.clicker.start()
         time.sleep(1)
         return False
@@ -122,6 +129,7 @@ class MeiRiShengChang(BaseTask):
     @TransitionOn("决斗场-单局结算")
     def _(self):
         self.checked = False
+        self.bool_click=True
         self.operationer.clicker.stop()
         time.sleep(5)
         return False
@@ -129,6 +137,7 @@ class MeiRiShengChang(BaseTask):
     @TransitionOn("你的对手离开了游戏")
     def _(self):
         self.checked = False
+        self.bool_click=False
         self.operationer.clicker.stop()
         self.operationer.click_and_wait("确定")
         return False

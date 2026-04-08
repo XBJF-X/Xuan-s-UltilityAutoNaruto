@@ -12,10 +12,10 @@ class DongRiYanHuaJi(BaseTask):
         super().__init__(*args, **kwargs)
         self.bool_light_fireworks = False
         self.operationer.clicker.update_coordinates([
-            [self.operationer.get_element("领取", "冬日烟花季-主页").coordinate_x,
-                self.operationer.get_element("领取", "冬日烟花季-主页").coordinate_y],
-            [self.operationer.get_element("关闭红包", "冬日烟花季-主页").coordinate_x,
-                self.operationer.get_element("关闭红包", "冬日烟花季-主页").coordinate_y]
+            (self.operationer.get_element("领取", "冬日烟花季-主页").coordinate_x,
+                self.operationer.get_element("领取", "冬日烟花季-主页").coordinate_y),
+            (self.operationer.get_element("关闭红包", "冬日烟花季-主页").coordinate_x,
+                self.operationer.get_element("关闭红包", "冬日烟花季-主页").coordinate_y)
         ])
 
     @TransitionOn()

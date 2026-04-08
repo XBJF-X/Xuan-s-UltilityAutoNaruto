@@ -30,12 +30,13 @@ class RatioDialog(QDialog):
         # 加载图片
         if isinstance(image, Path):
             pixmap = QPixmap(str(image))
-            if pixmap.isNull():
-                QMessageBox.critical(self, "错误", "无法加载图片")
-                self.reject()
-                return
         elif isinstance(image, Element):
             pixmap = element_to_qpixmap(image, "bgra")
+
+        if pixmap is None or pixmap.isNull():
+            QMessageBox.critical(self, "错误", "无法加载图片")
+            self.reject()
+            return
 
         # 缩放图片以适应窗口
         max_size = QSize(600, 600)

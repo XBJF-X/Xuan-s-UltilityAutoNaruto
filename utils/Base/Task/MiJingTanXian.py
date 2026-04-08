@@ -24,6 +24,7 @@ class MiJingTanXian(BaseTask):
     def _(self):
         self.fighting = False
         self.operationer.clicker.stop()
+        self.bool_click=False
         if not self.operationer.detect_element(
                 "剩余挑战券-0",
                 max_time=0.7,
@@ -31,6 +32,7 @@ class MiJingTanXian(BaseTask):
                 auto_raise=False
         ):
             self.operationer.click_and_wait("出战")
+            self.bool_click=True
             self.logger.info("挑战券不为0，继续执行")
             return False
         self.update_next_execute_time()
@@ -39,6 +41,7 @@ class MiJingTanXian(BaseTask):
     @TransitionOn("秘境奖励")
     def _(self):
         self.fighting = False
+        self.bool_click=True
         self.operationer.clicker.stop()
         self.logger.info("等待系统自动翻牌结束...")
         time.sleep(6)
@@ -71,24 +74,28 @@ class MiJingTanXian(BaseTask):
         self.logger.info("饰品翻牌已结束")
 
         self.operationer.click_and_wait("返回")
+        self.bool_click=False
         self.reset_task_exe_prog()
         return False
 
     @TransitionOn("恭喜你获得")
     def _(self):
         self.fighting = False
+        self.bool_click=True
         self.operationer.clicker.stop()
         self.operationer.click_and_wait("X")
         return False
 
     @TransitionOn("秘境探险-匹配-继续挑战确认")
     def _(self):
+        self.bool_click=False
         self.operationer.click_and_wait("今日不再提示")
         self.operationer.click_and_wait("确定")
         return False
 
     @TransitionOn("副本内")
     def _(self):
+        self.bool_click=True
         if not self.fighting:
             flag = self.operationer.search_and_detect(
                 [
@@ -127,12 +134,14 @@ class MiJingTanXian(BaseTask):
 
     @TransitionOn("副本内-暂停")
     def _(self):
+        self.bool_click=True
         self.fighting = False
         self.operationer.click_and_wait("退出战斗")
         return False
 
     @TransitionOn("副本内-暂停-退出战斗确认")
     def _(self):
+        self.bool_click=True
         self.fighting = False
         self.operationer.click_and_wait("确定")
         return False

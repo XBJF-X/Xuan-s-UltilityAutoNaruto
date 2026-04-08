@@ -96,7 +96,6 @@ def handle_task_exceptions(func):
             self.logger.error(e)
         except EndEarly as e:
             self.logger.warning(e)
-            return True
         except Stop as e:
             self.logger.warning("线程被要求停止")
         except TimeOut as e:
@@ -105,13 +104,19 @@ def handle_task_exceptions(func):
             self.logger.error(f"未知错误：{e}")
         finally:
             sys.settrace(old_trace)
+            try:
+                self.bool_click = False
+                self.logger.debug("回调函数执行")
+                self.callback(self)
+            except Exception as e:
+                self.logger.error(f"callback执行出错: {e}")
     return wrapper
 
 
 class BaseTask:
     transition_func: Dict[str, Callable] = {}
     """场景名到处理函数的映射，由TransitionOn装饰器填充"""
-    transition_return: str | None = ""
+    transition_return: str  = ""
     """记录transition返回的位置，方便调试"""
     source_scene: str | None = None
     """任务的初始场景，需要先寻路到此处才能正式开始执行任务"""
@@ -121,6 +126,10 @@ class BaseTask:
     """任务当天截至的时间点（超过当天该时间点将强制结束任务）"""
     stopped_duration: timedelta = timedelta(0)
     """任务停止所需的制动时长"""
+    base_priority: int
+    """基础优先级，数值越小优先级越高"""
+    click_priority: int
+    """执行连点时的优先级，数值越小优先级越高"""
 
     def __init__(
         self,
@@ -143,8 +152,12 @@ class BaseTask:
         self._execution_thread = None
         self.task_name = task_name
         self.logger: Logger = parent_logger.getChild(self.task_name)
-        self.base_priority = config.get_task_base_config(self.task_name, "优先级")
+        self.base_priority = config.get_task_base_config(self.task_name, "基础优先级")
+        self.click_priority = config.get_task_base_config(self.task_name, "连点优先级")
+        
         self.task_type = TaskType(config.get_task_base_config(self.task_name, "类型"))
+
+        self.bool_click = False
 
         self.update_next_execute_time(0)
         self.transition_func = {}
@@ -162,29 +175,26 @@ class BaseTask:
     def __lt__(self, other):
         """
         任务比较规则：
-        1. temp_priority=True的任务优先级更高（值更大）
-        2. temp_priority相同的情况下，base_priority小的优先级更高
-        3. 如果base_priority也相同，create_time小的优先级更高
+        1. current_priority小的优先级更高
+        2. 如果current_priority也相同，create_time小的优先级更高
 
         注意：由于堆是最小堆，我们需要让优先级高的任务"更小"
         """
-        # 1. 比较临时提权状态
-        if self.temp_priority != other.temp_priority:
-            # 有临时提权的任务优先级更高，在最小堆中应该排在前面（值更小）
-            return self.temp_priority > other.temp_priority
 
-        # 2. 比较基础优先级
-        if self.base_priority != other.base_priority:
-            # base_priority大的优先级更高，在最小堆中应该排在前面（值更小）
-            return self.base_priority < other.base_priority
+        # 1. 比较当前优先级
+        if self.current_priority != other.current_priority:
+            # current_priority小的优先级更高，在最小堆中应该排在前面（值更小）
+            return self.current_priority < other.current_priority
 
-        # 3. 比较创建时间
+        # 2. 比较创建时间
         # create_time小的优先级更高，在最小堆中应该排在前面（值更小）
         return self.create_time < other.create_time
 
     def __repr__(self):
         info_text = (f"任务名称: {self.task_name},"
-                     f"任务ID:{self.base_priority},"
+                     f"任务基础优先级:{self.base_priority},"
+                     f"任务连点优先级:{self.click_priority},"
+                     f"任务当前优先级:{self.current_priority},"
                      f"是否启用:{self.is_activated},"
                      f"任务状态:{self.current_status},"
                      f"下次执行时间:{self.next_execute_time}"
@@ -194,10 +204,6 @@ class BaseTask:
     @property
     def is_activated(self):
         return self.config.get_task_base_config(self.task_name, "是否启用")
-
-    @property
-    def temp_priority(self):
-        return self.config.get_task_base_config(self.task_name, "临时提权")
 
     @property
     def running_deadline(self):
@@ -215,8 +221,8 @@ class BaseTask:
 
     @property
     def current_priority(self):
-        """返回当前有效优先级（临时优先级优先于基础优先级）"""
-        return self.temp_priority if self.temp_priority is not None else self.base_priority
+        """返回当前有效优先级（连点状态下连点优先级优先于基础优先级）"""
+        return self.click_priority if self.bool_click else self.base_priority
 
     @property
     def next_execute_time(self):
@@ -255,26 +261,19 @@ class BaseTask:
         while True:
             # 检查停止信号
             if self._should_stop():
-                self.logger.warning("任务收到停止信号，正在清理并退出")
                 self._cleanup_on_stop()  # 执行停止时的清理
-                return
+                raise Stop("任务被停止")
 
             # 检查超时
             if self.running_deadline and datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai")) >= self.running_deadline:
-                self.logger.error("任务已超时，正在清理并退出")
                 self._cleanup_on_timeout()
-                return
+                raise TimeOut("任务执行超时")
 
             # 执行步骤转换
             result = self.transition()
             if result is not None and result:
                 # 任务正常完成
                 self._cleanup_on_complete()  # 执行完成时的清理
-                try:
-                    self.logger.debug("回调函数执行")
-                    self.callback(self)
-                except Exception as e:
-                    self.logger.error(f"callback执行出错: {e}")
                 return
 
     @handle_transition_exceptions
@@ -448,6 +447,21 @@ class BaseTask:
         except Exception as e:
             self.logger.error(f"更新下次执行时间失败: {str(e)}")
             return False, None
+    
+    def get_cycle_execute_time(self,dt: datetime.datetime) -> datetime.datetime:
+        """返回 dt 所属执行周期的任务执行时间"""
+        cycle_execute_time = dt.replace(
+            hour=5,
+            minute=0,
+            second=0,
+            microsecond=0,
+        )
+        if dt < cycle_execute_time:
+            return cycle_execute_time - timedelta(days=1)
+        return cycle_execute_time
+    def get_next_cycle_execute_time(self, dt: datetime.datetime) -> datetime.datetime:
+        """返回下一个周期的执行时间"""
+        return self.get_cycle_execute_time(dt) + timedelta(days=1)
 
     def _handle_initialization(self, current_time: datetime.datetime) -> datetime.datetime:
         """处理任务初始化时的时间设置（case0）"""
@@ -455,20 +469,30 @@ class BaseTask:
         # 读取配置中的时间
         next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
 
-        next_execute_time = current_time.replace(hour=5,minute=0,second=20)
+        # 取得当前执行周期的任务执行时间
+        next_execute_time = self.get_cycle_execute_time(current_time)
 
-        if next_exec_ts == 0:
+        if not next_exec_ts:
+            # 配置中未设置下次执行时间，返回默认时间
             return next_execute_time
-        else:
-            return datetime.datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+
+        try:
+            next_exec_dt = datetime.datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+        except Exception as e:
+            self.logger.warning(f"解析下次执行时间戳失败: {next_exec_ts}, 错误: {e}")
+            return next_execute_time
+
+        # 判断下次执行时间是否过期
+        if next_exec_dt < current_time:
+            return next_execute_time
+
+        # 配置中的下次执行时间未过期，直接返回
+        return next_exec_dt
+
 
     def _handle_execution_completed(self, current_time: datetime.datetime) -> datetime.datetime:
-        """返回下一个 05:00（当天或次日）"""
-        target_today = current_time.replace(hour=5, minute=0, second=20, microsecond=0)
-        if current_time < target_today:
-            return target_today
-        else:
-            return target_today + datetime.timedelta(days=1)
+        """返回下一个执行周期的任务执行时间"""
+        return self.get_next_cycle_execute_time(current_time)
 
     def _handle_delay(self, current_time: datetime.datetime, delta: timedelta) -> datetime.datetime | None:
         """处理时间延迟更新（case3）"""

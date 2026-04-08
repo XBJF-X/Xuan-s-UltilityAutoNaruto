@@ -139,6 +139,8 @@ class XiaoHaoTiLi(BaseTask):
         self.operationer.click_and_wait("X")
         self.update_equipment = True
         return self.__set_next_scene()
+    
+    
 
     def _handle_execution_completed(self, current_time: datetime) -> datetime:
         """处理任务执行完成后的时间更新（case1）"""

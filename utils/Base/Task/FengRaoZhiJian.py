@@ -53,6 +53,7 @@ class FengRaoZhiJian(BaseTask):
 
     @TransitionOn("丰饶之间-内部")
     def _(self):
+        self.bool_click = True
         self.operationer.clicker.start()
         time.sleep(1)
         return False
@@ -61,6 +62,7 @@ class FengRaoZhiJian(BaseTask):
     def _(self):
         self.logger.info("挑战[丰饶之间]成功")
         self.finished = True
+        self.bool_click = False
         self.operationer.clicker.stop()
         self.operationer.click_and_wait("点击任意位置关闭界面")
         return False

@@ -26,12 +26,14 @@ class MeiZhouShengChang(MeiRiShengChang):
     @TransitionOn()
     def _(self):
         self.operationer.clicker.stop()
+        self.bool_click=False
         if not self.checked:
             self.operationer.click_and_wait("决斗任务")
             return False
         if not self.finished:
             self.operationer.click_and_wait("开战")
             self.operationer.click_and_wait("开战")
+            self.bool_click=True
             return False
         self.operationer.click_and_wait("X")
         self.logger.info("结束执行")
@@ -40,6 +42,7 @@ class MeiZhouShengChang(MeiRiShengChang):
 
     @TransitionOn("忍术对战-决斗任务")
     def _(self):
+        self.bool_click=False
         self.operationer.clicker.stop()
         if self.operationer.detect_element("满胜场"):
             self.logger.debug("每周胜场已满")
@@ -55,34 +58,37 @@ class MeiZhouShengChang(MeiRiShengChang):
         self.operationer.click_and_wait("X")
         return False
 
+    def get_cycle_execute_time(self,dt: datetime) -> datetime:
+        """返回 dt 所属执行周期的任务执行时间"""
+        cycle_execute_time = (dt - timedelta(days=dt.weekday())).replace(
+            hour=5,
+            minute=0,
+            second=0,
+            microsecond=0,
+        )
+        if dt < cycle_execute_time:
+            return cycle_execute_time - timedelta(weeks=1)
+        return cycle_execute_time
+    
     def _handle_initialization(self, current_time: datetime) -> datetime:
-        def get_this_monday_5am(current_time, tz):
-            days_ahead = (0 - current_time.weekday()) % 7
-            next_monday = current_time + timedelta(days=days_ahead)
-            return next_monday.replace(hour=5, minute=0, second=0, microsecond=0, tzinfo=tz)
-
         china_tz = current_time.tzinfo
         # 读取配置中的时间
         next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
-        next_execute_time = get_this_monday_5am(current_time, china_tz)
+        next_execute_time = self.get_cycle_execute_time(current_time)
 
-        if next_exec_ts == 0:
+        if not next_exec_ts:
+            return next_execute_time
+
+        try:
+            next_exec_dt = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+        except Exception as e:
+            self.logger.warning(f"解析下次执行时间戳失败: {next_exec_ts}, 错误: {e}")
+            return next_execute_time
+
+        if next_exec_dt < current_time:
             return next_execute_time
         else:
-            return datetime.fromtimestamp(next_exec_ts, tz=china_tz)
-
-    def _handle_execution_completed(self, current_time: datetime) -> datetime:
-        def get_this_monday_5am(dt: datetime) -> datetime:
-            """返回 dt 所在周的周一 05:00:00（保留时区）"""
-            days_ahead = (0 - dt.weekday()) % 7
-            this_monday = dt + timedelta(days=days_ahead)
-            return this_monday.replace(hour=5, minute=0, second=0, microsecond=0)
-
-        # 先得到本周一的 5:00（保留 current_time 的时区属性）
-        this_monday_5am = get_this_monday_5am(current_time)
-
-        # 如果当前时刻 < 本周一 5:00，则返回本周一 5:00；否则返回下周一 5:00
-        if current_time < this_monday_5am:
-            return this_monday_5am
-        else:
-            return this_monday_5am + timedelta(weeks=1)
+            return next_exec_dt
+    def get_next_cycle_execute_time(self, dt: datetime) -> datetime:
+        """返回下一个周期的执行时间"""
+        return self.get_cycle_execute_time(dt) + timedelta(weeks=1)

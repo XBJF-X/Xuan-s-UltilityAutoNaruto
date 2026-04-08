@@ -25,26 +25,48 @@ class YiLeWaiMai(BaseTask):
             self._activate_another_task("消耗体力")
         return True
 
+    def get_cycle_execute_time(self,dt: datetime) -> datetime:
+        """返回 dt 所属执行周期的任务执行时间"""
+        cycle_execute_time = dt.replace(
+            hour=11,
+            minute=0,
+            second=20,
+            microsecond=0,
+        )
+        today_5am = dt.replace(
+            hour=5,
+            minute=0,
+            second=0,
+            microsecond=0
+        )
+
+        if dt < today_5am:
+            return cycle_execute_time - timedelta(days=1)
+        return cycle_execute_time
+    
     def _handle_initialization(self, current_time: datetime) -> datetime:
         """处理任务初始化时的时间设置（case0）"""
         china_tz = current_time.tzinfo
         # 读取配置中的时间
         next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
 
-        next_execute_time = datetime(
-            current_time.year,
-            current_time.month,
-            current_time.day,
-            11, 0, 20,
-            tzinfo=china_tz
-        )
+        # 取得当前执行周期的任务执行时间
+        next_execute_time = self.get_cycle_execute_time(current_time)
 
-        if next_exec_ts == 0:
+        if not next_exec_ts:
+            # 配置中未设置下次执行时间，返回默认时间
             return next_execute_time
-        else:
-            return datetime.fromtimestamp(next_exec_ts, tz=china_tz)
 
-    def _handle_execution_completed(self, current_time: datetime) -> datetime:
-        """处理任务执行完成后的时间更新（case1）"""
-        next_execute_time = current_time.replace(hour=11, minute=0, second=20, microsecond=0) + timedelta(days=1)
-        return next_execute_time
+        try:
+            next_exec_dt = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+        except Exception as e:
+            self.logger.warning(f"解析下次执行时间戳失败: {next_exec_ts}, 错误: {e}")
+            return next_execute_time
+
+        # 判断下次执行时间是否过期
+        if next_exec_dt < current_time:
+            return next_execute_time
+
+        # 配置中的下次执行时间未过期，直接返回
+        return next_exec_dt
+

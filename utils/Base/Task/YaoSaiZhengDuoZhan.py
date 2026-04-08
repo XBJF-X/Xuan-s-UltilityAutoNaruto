@@ -148,58 +148,50 @@ class YaoSaiZhengDuoZhan(BaseTask):
         self.update_next_execute_time()
         self.reset_task_exe_prog()
 
-    def _handle_initialization(self, current_time: datetime) -> datetime:
+    
+    def get_cycle_execute_time(self,dt: datetime.datetime) -> datetime.datetime:
+        """返回 dt 所属执行周期的任务执行时间"""
+        return (dt - datetime.timedelta(days=dt.weekday() - 5)).replace(
+            hour=20,
+            minute=0,
+            second=10,
+            microsecond=0,
+        )
+    def get_next_cycle_execute_time(self, dt: datetime.datetime) -> datetime.datetime:
+        """返回下一个周期的执行时间"""
+        return self.get_cycle_execute_time(dt) + datetime.timedelta(weeks=1)
+    def _handle_initialization(self, current_time: datetime.datetime) -> datetime.datetime:
         def is_in_skip_period(target_time, interval_weeks):
             base_date = datetime.datetime(2025, 9, 20, tzinfo=china_tz)
             delta_weeks = (target_time - base_date).days // 7
             return delta_weeks >= 0 and delta_weeks % interval_weeks == 0
-
-        def get_this_saturday_8pm(current_time, tz):
-            days_ahead = (5 - current_time.weekday()) % 7
-            next_time = current_time + datetime.timedelta(days=days_ahead)
-            return next_time.replace(hour=20, minute=0, second=15, microsecond=0, tzinfo=tz)
-
         china_tz = current_time.tzinfo
-
-        # 本周周六下午8点的时间对象
-        next_execute_time = get_this_saturday_8pm(current_time, china_tz)
-
+        # 读取配置中的时间
+        next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
+        next_execute_time = self.get_cycle_execute_time(current_time)
         while is_in_skip_period(next_execute_time, 5):
             next_execute_time += datetime.timedelta(weeks=1)
 
-        if current_time > next_execute_time + datetime.timedelta(minutes=30):
-            next_execute_time += datetime.timedelta(days=7)
-            while is_in_skip_period(next_execute_time, 5):
-                next_execute_time += datetime.timedelta(weeks=1)
+        if not next_exec_ts:
+            return next_execute_time
 
-        return next_execute_time
+        try:
+            next_exec_dt = datetime.datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+        except Exception as e:
+            self.logger.warning(f"解析下次执行时间戳失败: {next_exec_ts}, 错误: {e}")
+            return next_execute_time
 
-    def _handle_execution_completed(self, current_time: datetime) -> datetime:
-        # china_tz = current_time.tzinfo
-        # next_day = current_time + datetime.timedelta(weeks=1)
-        # return datetime.datetime(
-        #     next_day.year,
-        #     next_day.month,
-        #     next_day.day,
-        #     20, 30, 20,
-        #     tzinfo=china_tz
-        # )
+        if next_exec_dt < current_time:
+            return next_execute_time
+        else:
+            return next_exec_dt
 
+    def _handle_execution_completed(self, current_time: datetime.datetime) -> datetime.datetime:
         def is_in_skip_period(target_time, interval_weeks):
-            base_date = datetime.datetime(2025, 9, 20, tzinfo=china_tz)
+            base_date = datetime.datetime(2025, 9, 20, tzinfo=current_time.tzinfo)
             delta_weeks = (target_time - base_date).days // 7
             return delta_weeks >= 0 and delta_weeks % interval_weeks == 0
-
-        def get_this_saturday_8pm(current_time, tz):
-            days_ahead = (5 - current_time.weekday()) % 7
-            next_time = current_time + datetime.timedelta(days=days_ahead)
-            return next_time.replace(hour=20, minute=0, second=15, microsecond=0, tzinfo=tz)
-
-        china_tz = current_time.tzinfo
-
-        # 下周周六下午8点的时间对象
-        next_execute_time = get_this_saturday_8pm(current_time, china_tz) + datetime.timedelta(weeks=1)
-
+        next_execute_time = self.get_next_cycle_execute_time(current_time)
         while is_in_skip_period(next_execute_time, 5):
             next_execute_time += datetime.timedelta(weeks=1)
         if self.config.get_task_exe_param(self.task_name, "执行结束后是否有叛忍", True):

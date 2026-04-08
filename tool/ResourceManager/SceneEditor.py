@@ -481,6 +481,12 @@ class ImagePreviewDialog(QDialog):
         gray = element_to_qpixmap(element, "gray")
         mask = element_to_qpixmap(element, "mask")
 
+        for img, label in zip([bgar, gray, mask], ["BGAR", "GRAY", "MASK"]):
+            if img is None:
+                print(f"{label}图像数据为空，无法加载")
+            elif img.isNull():
+                print(f"{label}图像数据无效，无法加载")
+
         # 依次添加三张图片
         self._add_image_to_layout(container_layout, bgar, "原图 (BGAR)")
         self._add_image_to_layout(container_layout, gray, "灰度图 (GRAY)")

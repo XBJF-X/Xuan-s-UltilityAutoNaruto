@@ -38,29 +38,46 @@ class ZhuiJiXiaoZuZhi(BaseTask):
         self.operationer.click_and_wait("确定")
         return False
 
-    def _handle_initialization(self, current_time: datetime) -> datetime:
-        def get_this_monday_12am(current_time, tz):
-            days_ahead = (0 - current_time.weekday()) % 7
-            next_time = current_time + timedelta(days=days_ahead)
-            return next_time.replace(hour=12, minute=0, second=0, microsecond=0, tzinfo=tz)
+    def get_cycle_execute_time(self,dt: datetime) -> datetime:
+        """返回 dt 所属执行周期的任务执行时间"""
+        cycle_execute_time = (dt - timedelta(days=dt.weekday())).replace(
+            hour=12,
+            minute=0,
+            second=0,
+            microsecond=0,
+        )
+        this_monday_5am = dt.replace(
+            hour=5,
+            minute=0,
+            second=0,
+            microsecond=0,
+        )
 
+        if dt < this_monday_5am:
+            return cycle_execute_time - timedelta(weeks=1)
+        return cycle_execute_time
+    
+    def get_next_cycle_execute_time(self, dt: datetime) -> datetime:
+        """返回下一个周期的执行时间"""
+        return self.get_cycle_execute_time(dt) + timedelta(weeks=1)
+    def _handle_initialization(self, current_time: datetime) -> datetime:
         china_tz = current_time.tzinfo
         # 读取配置中的时间
         next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
-        next_execute_time = get_this_monday_12am(current_time, china_tz)
+        next_execute_time = self.get_cycle_execute_time(current_time)
 
-        if next_exec_ts == 0:
+        if not next_exec_ts:
+            return next_execute_time
+
+        try:
+            next_exec_dt = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+        except Exception as e:
+            self.logger.warning(f"解析下次执行时间戳失败: {next_exec_ts}, 错误: {e}")
+            return next_execute_time
+
+        if next_exec_dt < current_time:
             return next_execute_time
         else:
-            return datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+            return next_exec_dt
 
-    def _handle_execution_completed(self, current_time: datetime) -> datetime:
-        def get_this_monday_12am(current_time, tz):
-            days_ahead = (0 - current_time.weekday()) % 7
-            next_time = current_time + timedelta(days=days_ahead)
-            return next_time.replace(hour=12, minute=0, second=0, microsecond=0, tzinfo=tz)
 
-        china_tz = current_time.tzinfo
-
-        next_execute_time = get_this_monday_12am(current_time, china_tz)+timedelta(weeks=1)
-        return next_execute_time
