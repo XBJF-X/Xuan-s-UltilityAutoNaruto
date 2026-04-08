@@ -49,7 +49,8 @@ class MeiZhouShengChang(MeiRiShengChang):
             self.checked = True
             self.finished = True
             for i in ["2", "5", "7", "10"]:
-                self.operationer.click_and_wait(f"胜场{i}场", click_times=3)
+                self.operationer.click_and_wait(f"胜场{i}场",wait_time=0.5)
+                self.operationer.click_and_wait(f"胜场{i}场",wait_time=0.5)
             self.logger.info("每周胜场奖励已领取")
             self.operationer.click_and_wait("X", click_times=2)
             self.update_next_execute_time()

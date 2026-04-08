@@ -46,15 +46,16 @@ class Device:
 
     def click(self, coordinate_x, coordinate_y, times=1):
         x, y = self.regularize_coordinate(coordinate_x, coordinate_y)
-        self.logger.debug(f"[Click] ({coordinate_x},{coordinate_y})[{x},{y}]")
         for _ in range(times):
+            self.logger.debug(f"[Click] ({coordinate_x},{coordinate_y})[{x},{y}]")
             self.control_manager.click(x, y)
+
 
     def swipe(self, start_coordinate, end_coordinate, duration=0.5, times=1):
         x1, y1 = self.regularize_coordinate(start_coordinate[0], start_coordinate[1])
         x2, y2 = self.regularize_coordinate(end_coordinate[0], end_coordinate[1])
-        self.logger.debug(f"[Swipe] ({start_coordinate[0]},{start_coordinate[1]})->({end_coordinate[0]},{end_coordinate[1]}) [ ({x1},{y1})->({x2},{y2}) ]")
         for _ in range(times):
+            self.logger.debug(f"[Swipe] ({start_coordinate[0]},{start_coordinate[1]})->({end_coordinate[0]},{end_coordinate[1]}) [ ({x1},{y1})->({x2},{y2}) ]")
             self.control_manager.swipe(
                 (x1, y1),
                 (x2, y2),
