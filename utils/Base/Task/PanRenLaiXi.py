@@ -130,10 +130,10 @@ class PanRenLaiXi(BaseTask):
                 x, y = self.config.get_config("键位")[KEY_INDEX.JoyStick]
                 self.operationer.long_press(x + 50 * self.find_direction, y, duration=1)
                 self.find_time += 1
-                if self.find_time > 10:
+                if self.find_time >= 7:
                     self.logger.warning(f"寻找 {difficulty} 已经 {self.find_time} 次，将改变寻找方向后重试...")
                     self.find_time = 0
-                    self.find_direction = -1
+                    self.find_direction *= -1
                 return False
         else:
             self.logger.info("正在自动参战叛忍...")
