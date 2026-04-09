@@ -24,16 +24,17 @@ class GengDuoWanFa(BaseTask):
     def _(self):
         self.operationer.clicker.stop()
         self.bool_click=False
-        if self.operationer.detect_element("集结团队战"):
-            self.logger.warning("本周更多玩法为集结团队战，将推迟任务执行至下周")
-            self.update_next_execute_time()
-            return True
         if not self.checked:
             self.operationer.click_and_wait("任务")
             return False
         if not self.finished:
-            self.operationer.click_and_wait("入口")
-            return False
+            if self.operationer.click_and_wait("大蛇丸试炼"):
+                return False
+            elif self.operationer.click_and_wait("绝迹战场"):
+                return False
+            if self.operationer.detect_element("集结团队战"):
+                self.logger.warning("本周更多玩法为集结团队战，将推迟任务执行至下周")
+
         self.update_next_execute_time()
         return True
 
