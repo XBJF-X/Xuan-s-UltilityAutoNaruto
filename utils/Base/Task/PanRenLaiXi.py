@@ -16,9 +16,9 @@ class PanRenLaiXi(BaseTask):
         self.find_time = 0
         self.find_direction = 1
         match datetime.datetime.now().weekday():
-            case 2:
+            case 0|1|2:
                 self.dead_line = datetime.time(hour=22)
-            case 5:
+            case 3|4|5|6:
                 self.dead_line = datetime.time(hour=21)
 
     @TransitionOn()
@@ -46,9 +46,13 @@ class PanRenLaiXi(BaseTask):
     @TransitionOn("叛忍来袭-未开始")
     def _(self):
         self.logger.info("叛忍来袭还未开启...")
+        if (datetime.datetime.now()+datetime.timedelta(hours=1)).time() <self.dead_line: # type: ignore
+            self.logger.info("叛忍来袭启动时间过早，将关闭并等待下一次执行...")
+            self.update_next_execute_time()
+            return True
+        
         if self.config.get_task_exe_param(self.task_name, "是否需要开启叛忍", True):
             self.operationer.click_and_wait("开启")
-        time.sleep(3)
         return False
 
     @TransitionOn("叛忍来袭-即将开始")
@@ -195,6 +199,36 @@ class PanRenLaiXi(BaseTask):
         self.operationer.clicker.stop()
         self.update_next_execute_time()
         self.reset_task_exe_prog()
+
+    def _handle_initialization(self, current_time: datetime.datetime) -> datetime.datetime:
+        """处理任务初始化时的时间设置（case0）"""
+        china_tz = current_time.tzinfo
+        # 读取配置中的时间
+        next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
+
+        # 取得当前执行周期的任务执行时间
+        next_execute_time = self.get_cycle_execute_time(current_time)
+
+        if not next_exec_ts:
+            # 配置中未设置下次执行时间，返回默认时间
+            return next_execute_time
+
+        try:
+            next_exec_dt = datetime.datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+        except Exception as e:
+            self.logger.warning(f"解析下次执行时间戳失败: {next_exec_ts}, 错误: {e}")
+            return next_execute_time
+
+        # 判断下次执行时间是否过期
+        if next_exec_dt < current_time:
+            return next_execute_time
+
+        # 配置中的下次执行时间未过期，直接返回
+        return next_exec_dt
+    
+    def _handle_execution_completed(self, current_time: datetime.datetime) -> datetime.datetime:
+        """返回下一个执行周期的任务执行时间"""
+        return self.get_next_cycle_execute_time(current_time)
 
     def reset_task_exe_prog(self) -> bool:
         self.check = False

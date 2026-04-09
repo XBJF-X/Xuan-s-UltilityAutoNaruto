@@ -19,7 +19,7 @@ from utils.Base.Operationer import Operationer
 from utils.Base.Scene.SceneGraph import SceneGraph
 from utils.Base.Scene.TransitionManager import TransitionManager
 from utils.Base.Task import TASK_TYPE_MAP
-from utils.Base.Task.BaseTask import BaseTask
+from utils.Base.Task.BaseTask import BaseTask, TaskType
 from utils.ui.Service_ui import Ui_Service
 
 
@@ -746,6 +746,15 @@ class Scheduler(QObject):
         if line_edit is not None:
             line_edit.setText(task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
         self.task_queue.update_task_status(task.task_name, 2)
+
+        if task.task_type == TaskType.TEMP:
+            self.config.set_task_base_config(task.task_name, "是否启用", False)
+            checkbox_widget = self._get_task_control(task.task_name, "CheckBox")
+            if checkbox_widget is not None and checkbox_widget.isChecked():
+                checkbox_widget.blockSignals(True)
+                checkbox_widget.setChecked(False)
+                checkbox_widget.blockSignals(False)
+            
 
         self.task_widget_list.refresh_task_widget(task.task_name)
         self.logger.info(f"[{task.task_name}]-[{task.base_priority}] 移出执行队列，进入等待队列")
