@@ -10,6 +10,7 @@ class WuChaBieYuXuanSai(BaseTask):
     source_scene = "火影格斗大赛-无差别"
     start_line= datetime.time(18, 0)
     dead_line = datetime.time(22, 0)
+    task_max_duration = timedelta(hours=4)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

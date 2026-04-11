@@ -8,6 +8,7 @@ class DongRiYanHuaJi(BaseTask):
     source_scene = "冬日烟花季-主页"
     start_line = time(19, 0)
     dead_line = time(22, 0)
+    task_max_duration = timedelta(hours=3)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
