@@ -2,6 +2,7 @@ import datetime
 import time
 from datetime import timedelta
 
+from utils.Base.Enums import KEY_INDEX
 from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
@@ -17,9 +18,22 @@ class WuChaBieYuXuanSai(BaseTask):
         self.checked = False
         self.finished = False
 
+    def run(self):
+        self.operationer.clicker.update_coordinates([
+            self.config.get_config("键位")[KEY_INDEX.BasicAttack],
+            self.config.get_config("键位")[KEY_INDEX.FirstSkill],
+            self.config.get_config("键位")[KEY_INDEX.SecondSkill],
+            self.config.get_config("键位")[KEY_INDEX.UltimateSkill],
+            self.config.get_config("键位")[KEY_INDEX.SecretScroll],
+            self.config.get_config("键位")[KEY_INDEX.Summon],
+            self.config.get_config("键位")[KEY_INDEX.Substitution]
+        ])
+        super().run()
+
     @TransitionOn()
     def _(self):
         self.bool_click = False
+        self.operationer.clicker.stop()
         if not self.checked:
             self.operationer.click_and_wait("成就奖励")
             return False
@@ -33,6 +47,7 @@ class WuChaBieYuXuanSai(BaseTask):
         raise TaskCompleted("任务执行完成")
     @TransitionOn("无差别-继续出战")
     def _(self):
+        self.operationer.clicker.stop()
         if not self.checked:
             self.operationer.click_and_wait("X")
             return False
@@ -45,6 +60,7 @@ class WuChaBieYuXuanSai(BaseTask):
     @TransitionOn("无差别-成就奖励")
     def _(self):
         self.bool_click = False
+        self.operationer.clicker.stop()
         if not self.checked:
             while self.operationer.click_and_wait("领取"):
                 continue
@@ -58,12 +74,13 @@ class WuChaBieYuXuanSai(BaseTask):
     @TransitionOn("无差别-等待对方选择")
     def _(self):
         self.bool_click = True
-        time.sleep(1)
+        self.operationer.clicker.stop()
         return False
 
     @TransitionOn("无差别-禁用忍者选择")
     def _(self):
         self.bool_click = True
+        self.operationer.clicker.stop()
         if not self.operationer.detect_element("禁用", wait_time=0):
             time.sleep(1)
             return False
@@ -76,6 +93,7 @@ class WuChaBieYuXuanSai(BaseTask):
     @TransitionOn("无差别-忍者选择")
     def _(self):
         self.bool_click = True
+        self.operationer.clicker.stop()
         if not self.operationer.detect_element("确定", wait_time=0):
             time.sleep(1)
             return False
@@ -88,7 +106,7 @@ class WuChaBieYuXuanSai(BaseTask):
     @TransitionOn("无差别-禁用秘卷选择")
     def _(self):
         self.bool_click = True
-
+        self.operationer.clicker.stop()
         if not self.operationer.detect_element("禁用", wait_time=0):
             time.sleep(1)
             return False
@@ -101,6 +119,7 @@ class WuChaBieYuXuanSai(BaseTask):
     @TransitionOn("无差别-秘卷选择")
     def _(self):
         self.bool_click = True
+        self.operationer.clicker.stop()
         if not self.operationer.detect_element("确定", wait_time=0):
             time.sleep(1)
             return False
@@ -113,12 +132,14 @@ class WuChaBieYuXuanSai(BaseTask):
     @TransitionOn("决斗场-匹配中")
     def _(self):
         self.bool_click = True
+        self.operationer.clicker.stop()
         return False
 
     @TransitionOn("决斗场-战斗中")
     def _(self):
         self.checked = False
         self.bool_click = True
+        self.operationer.clicker.start()
         time.sleep(0.5)
         self.operationer.next_scene = "火影格斗大赛-无差别"
         return False
@@ -127,6 +148,7 @@ class WuChaBieYuXuanSai(BaseTask):
     def _(self):
         self.checked = False
         self.bool_click = True
+        self.operationer.clicker.stop()
         self.operationer.next_scene = "火影格斗大赛-无差别"
         return False
 
@@ -134,6 +156,7 @@ class WuChaBieYuXuanSai(BaseTask):
     def _(self):
         self.checked = False
         self.bool_click = False
+        self.operationer.clicker.stop()
         self.operationer.click_and_wait("X")
         self.operationer.next_scene = "火影格斗大赛-无差别"
         return False
@@ -142,6 +165,7 @@ class WuChaBieYuXuanSai(BaseTask):
     def _(self):
         self.checked = False
         self.bool_click = False
+        self.operationer.clicker.stop()
         self.operationer.click_and_wait("确定")
         self.operationer.next_scene = "火影格斗大赛-无差别"
         return False
@@ -150,16 +174,17 @@ class WuChaBieYuXuanSai(BaseTask):
     def _(self):
         self.checked = False
         self.bool_click = False
+        self.operationer.clicker.stop()
         self.operationer.click_and_wait("确定")
         self.operationer.next_scene = "火影格斗大赛-无差别"
         return False
 
     @TransitionOn("未知场景")
     def _(self):
-        time.sleep(1)
+        self.operationer.clicker.stop()
         return False
 
     @TransitionOn("未注册场景")
     def _(self):
-        time.sleep(1)
+        self.operationer.clicker.stop()
         return False
