@@ -2,6 +2,7 @@ import time
 from datetime import timedelta
 
 from utils.Base.Enums import KEY_INDEX
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -12,6 +13,8 @@ class MeiRiShengChang(BaseTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.checked = False
+
+    def run(self):
         self.operationer.clicker.update_coordinates([
             self.config.get_config("键位")[KEY_INDEX.BasicAttack],
             self.config.get_config("键位")[KEY_INDEX.FirstSkill],
@@ -21,7 +24,7 @@ class MeiRiShengChang(BaseTask):
             self.config.get_config("键位")[KEY_INDEX.Summon],
             self.config.get_config("键位")[KEY_INDEX.Substitution]
         ])
-
+        super().run()
     @TransitionOn()
     def _(self):
         self.operationer.clicker.stop()
@@ -30,7 +33,6 @@ class MeiRiShengChang(BaseTask):
         #############################
         # 注释掉这部分则直接开始挑战，开发者测试使用
         if not self.checked:
-            self.operationer.clicker.stop()
             self.operationer.click_and_wait("决斗任务")
             return False
         #############################
@@ -84,8 +86,7 @@ class MeiRiShengChang(BaseTask):
                 self.checked = False
                 self.operationer.click_and_wait("X")
                 self.logger.info("结束执行")
-                self.update_next_execute_time()
-                return True
+                raise TaskCompleted("任务执行完成")
             case 1:
                 # 触发追回
                 self.operationer.click_and_wait("宝箱-追回")
@@ -106,8 +107,7 @@ class MeiRiShengChang(BaseTask):
             self.checked = False
             self.operationer.click_and_wait("X")
             self.logger.info("结束执行")
-            self.update_next_execute_time()
-            return True
+            raise TaskCompleted("任务执行完成")
         return False
 
     @TransitionOn("决斗场-结算")

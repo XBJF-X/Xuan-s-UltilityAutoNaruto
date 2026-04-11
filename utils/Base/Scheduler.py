@@ -22,9 +22,9 @@ from utils.Base.Task import TASK_TYPE_MAP
 from utils.Base.Task.BaseTask import BaseTask, TaskType
 from utils.ui.Service_ui import Ui_Service
 
-
 # Todo：触发其他任务时应该回调时恢复原状态
 # Todo：带连点器的任务应该有额外的优先级
+
 
 class TaskWidget(QFrame):
     execute_clicked = Signal(str)
@@ -44,7 +44,8 @@ class TaskWidget(QFrame):
         # -------------------------- 外层水平布局 --------------------------
         main_layout = QHBoxLayout(self)
         main_layout.setContentsMargins(5, 0, 5, 0)
-        main_layout.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        main_layout.setAlignment(Qt.AlignmentFlag.AlignLeft
+                                 | Qt.AlignmentFlag.AlignVCenter)
 
         # 左侧：原有的垂直布局（任务名称 + 时间）
         left_layout = QVBoxLayout()
@@ -53,11 +54,13 @@ class TaskWidget(QFrame):
 
         self.name_label = QLabel(task.task_name)
         self.name_label.setObjectName("name_label")
-        left_layout.addWidget(self.name_label, alignment=Qt.AlignmentFlag.AlignLeft)
+        left_layout.addWidget(self.name_label,
+                              alignment=Qt.AlignmentFlag.AlignLeft)
 
         self.time_label = QLabel()
         self.time_label.setObjectName("time_label")
-        left_layout.addWidget(self.time_label, alignment=Qt.AlignmentFlag.AlignLeft)
+        left_layout.addWidget(self.time_label,
+                              alignment=Qt.AlignmentFlag.AlignLeft)
 
         main_layout.addLayout(left_layout, stretch=1)  # 左侧内容占满剩余空间
 
@@ -85,18 +88,17 @@ class TaskWidget(QFrame):
             }
         """)
         self.execute_btn.clicked.connect(self.__on_execute_btn_clicked)
-        main_layout.addWidget(self.execute_btn, alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        main_layout.addWidget(self.execute_btn,
+                              alignment=Qt.AlignmentFlag.AlignRight
+                              | Qt.AlignmentFlag.AlignVCenter)
 
         self.update_display()
 
     def update_display(self):
         """更新显示内容及边框颜色（原有逻辑不变，仅增加按钮可见性控制）"""
-        status_color_map = {
-            0: "#779977",
-            1: "#FFFF00",
-            2: "#999999"
-        }
-        border_color = status_color_map.get(self.task.current_status, "#779977")
+        status_color_map = {0: "#779977", 1: "#FFFF00", 2: "#999999"}
+        border_color = status_color_map.get(self.task.current_status,
+                                            "#779977")
 
         self.setStyleSheet(f"""
             TaskWidget {{
@@ -122,7 +124,8 @@ class TaskWidget(QFrame):
 
         # 更新名称和时间的逻辑（不变）
         priority_str = f"[{self.task.current_priority}]"
-        self.name_label.setText(f"{priority_str.ljust(5)}{self.task.task_name}")
+        self.name_label.setText(
+            f"{priority_str.ljust(5)}{self.task.task_name}")
 
         current_date = datetime.now(ZoneInfo("Asia/Shanghai")).date()
         task_date = self.task.next_execute_time.date()
@@ -149,6 +152,7 @@ B = TypeVar('B', bound=BaseTask)
 
 
 class PriorityQueue(Generic[B]):
+
     def __init__(self):
         self.heap: List[B] = []  # 存储 Task 的列表
         self.task_dic: Dict[str, B] = {}
@@ -209,13 +213,12 @@ class PriorityQueue(Generic[B]):
 
 
 class TaskWidgetList(Generic[B]):
-    def __init__(
-        self,
-        task_queue: PriorityQueue[B],
-        tasks_layout: QBoxLayout | None,
-        on_execute_clicked=None,
-        parent_logger: Logger | str = ""
-    ):
+
+    def __init__(self,
+                 task_queue: PriorityQueue[B],
+                 tasks_layout: QBoxLayout | None,
+                 on_execute_clicked=None,
+                 parent_logger: Logger | str = ""):
         if isinstance(parent_logger, str):
             self.logger = logging.getLogger("任务控件列表")
         else:
@@ -353,7 +356,8 @@ class TaskWidgetList(Generic[B]):
                 if task_name:
                     task = self.task_queue.get_task(str(task_name))
                     if task:
-                        insert_idx = self._find_insert_index(self.tasks_layout, task)
+                        insert_idx = self._find_insert_index(
+                            self.tasks_layout, task)
                         self.tasks_layout.insertWidget(insert_idx, widget)
 
     def clear_all_widgets(self):
@@ -409,11 +413,11 @@ class TaskWidgetList(Generic[B]):
         if task1.current_status != task2.current_status:
             # 状态值越小优先级越高
             return -1 if task1.current_status < task2.current_status else 1
-        
+
         # 比较执行时间
         if task1.next_execute_time != task2.next_execute_time:
             return -1 if task1.next_execute_time < task2.next_execute_time else 1
-        
+
         # Scheduler 只认 current_priority
         if task1.current_priority != task2.current_priority:
             return -1 if task1.current_priority < task2.current_priority else 1
@@ -488,13 +492,8 @@ class Scheduler(QObject):
     screen_save_signal = Signal(str)
     task_finished_signal = Signal(object)
 
-    def __init__(self,
-                 ui: Ui_Service,
-                 config: Config,
-                 scene_graph: SceneGraph,
-                 ref_map: Dict,
-                 parent_logger
-                 ):
+    def __init__(self, ui: Ui_Service, config: Config, scene_graph: SceneGraph,
+                 ref_map: Dict, parent_logger):
         super().__init__()
         self.logger = parent_logger.getChild(self.__class__.__name__)
         self.running = False
@@ -503,22 +502,20 @@ class Scheduler(QObject):
         self.task_common_control_ref_map = ref_map
         self.scene_graph = scene_graph
         self.transition_manager = TransitionManager(self.config, self.logger)
+        self.operationer: Operationer | None = None
+        self.device: Device | None = None
 
         # 初始化UI相关属性
         self.tasks_layout = None
         self.init_scroll_area_layouts()  # 初始化滚动区域布局
         self.task_queue = PriorityQueue[BaseTask]()
         self.task_widget_list = TaskWidgetList[BaseTask](
-            self.task_queue,
-            self.tasks_layout,
-            self.request_task_execute_now,
-            self.logger
-        )
-        self.activate_another_task_signal.connect(self.activate_another_task_implement)
+            self.task_queue, self.tasks_layout, self.request_task_execute_now,
+            self.logger)
+        self.activate_another_task_signal.connect(
+            self.activate_another_task_implement)
         self.screen_save_signal.connect(self._handle_screen_save)
         self.task_finished_signal.connect(self._on_task_finished)
-
-        self.device: Device | None = None
 
         self.timer_thread = TimerThread()
         self.timer_thread.timeout.connect(self.scan)
@@ -537,29 +534,29 @@ class Scheduler(QObject):
             self.UI.start_schedule_button.setEnabled(True)
             self.UI.start_schedule_button.setText("启动")
             return
+        self.operationer = Operationer("",
+                                       self.config,
+                                       self.device,
+                                       self.scene_graph,
+                                       self.screen_save_signal,
+                                       parent_logger=self.logger)
+        
+        # 将临时任务设置成禁用状态，避免无唤醒状态下被执行
+        self.config.set_task_base_config("叛忍来袭", "是否启用", False)
+
         for task_name, task_info in self.config.tasks.items():
             self.logger.debug(f"[{task_name}]任务准备进入调度器")
             task_class = TASK_TYPE_MAP.get(task_name, None)
             if not task_class:
                 self.logger.warning(f"[{task_name}] 任务创建出错")
                 continue
-            operationer_instance = Operationer(
-                task_name,
-                self.config,
-                self.device,
-                self.scene_graph,
-                self.screen_save_signal,
-                parent_logger=self.logger
-            )
-            task_instance = task_class(
-                task_name,
-                self.config,
-                self.transition_manager,
-                operationer_instance,
-                self.activate_another_task_signal,
-                self._execute_done_callback,
-                parent_logger=self.logger
-            )
+            task_instance = task_class(task_name,
+                                       self.config,
+                                       self.transition_manager,
+                                       self.operationer,
+                                       self.activate_another_task_signal,
+                                       self._execute_done_callback,
+                                       parent_logger=self.logger)
             self.task_queue.enqueue(task_instance)
             self.task_widget_list.add_widget(task_instance)
         self.task_widget_list.refresh_all_task_widgets()
@@ -611,17 +608,16 @@ class Scheduler(QObject):
         if temp_task:
             if not state and temp_task.current_status == 0:
                 temp_task.stop()
+                self.task_queue.update_task_status(temp_task.task_name, 2)
             self.task_widget_list.refresh_task_widget(task_name)
             self.logger.info(f"任务 {task_name} {'已启用' if state else '已禁用'}")
         checkbox_widget.setEnabled(True)
 
     def activate_another_task_implement(self, task_name):
         """任务调用其他任务立刻执行"""
-        self.request_task_execute_now(
-            task_name,
-            enable_if_needed=True,
-            source="Activate_signal"
-        )
+        self.request_task_execute_now(task_name,
+                                      enable_if_needed=True,
+                                      source="Activate_signal")
 
     def _get_task_control(self, task_name: str, control_key: str):
         task_controls = self.task_common_control_ref_map.get(task_name)
@@ -634,12 +630,10 @@ class Scheduler(QObject):
         return widget
 
     @Slot(str)
-    def request_task_execute_now(
-        self,
-        task_name: str,
-        enable_if_needed: bool = False,
-        source: str = "Manual"
-    ):
+    def request_task_execute_now(self,
+                                 task_name: str,
+                                 enable_if_needed: bool = False,
+                                 source: str = "Manual"):
         """统一入口：将任务的执行时间更新为当前，从而在下一轮扫描中尽快执行。"""
         task = self.task_queue.get_task(task_name)
         if not task:
@@ -659,24 +653,28 @@ class Scheduler(QObject):
         if line_edit_widget is not None:
             line_edit_widget.setEnabled(False)
 
-        task.update_next_execute_time(2)
+        task.schedule_execute_now()
         self.task_widget_list.refresh_task_widget(task_name)
 
         if line_edit_widget is not None:
-            line_edit_widget.setText(task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
+            line_edit_widget.setText(
+                task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
             line_edit_widget.setEnabled(True)
 
         self.logger.info(f"任务 {task_name} 已请求立即执行，来源: {source}")
 
     def init_scroll_area_layouts(self):
         """初始化任务滚动区域的布局"""
-        self.tasks_layout = QtWidgets.QVBoxLayout(self.UI.scroll_tasks_area_content)
+        self.tasks_layout = QtWidgets.QVBoxLayout(
+            self.UI.scroll_tasks_area_content)
         self.tasks_layout.setAlignment(Qt.AlignmentFlag.AlignTop)
         self.tasks_layout.setSpacing(5)
 
     def _handle_screen_save(self, task_name):
         if self.UI.bool_save_img.isChecked():
-            threading.Thread(target=self.save_screen, args=(task_name,), daemon=True).start()
+            threading.Thread(target=self.save_screen,
+                             args=(task_name, ),
+                             daemon=True).start()
 
     def scan(self):
         """改进的扫描方法，避免快速重入"""
@@ -700,12 +698,17 @@ class Scheduler(QObject):
                 if not task.is_activated or task.current_status != 2:
                     continue
 
-                if task.next_execute_time <= datetime.now(ZoneInfo("Asia/Shanghai")):
-                    success = self.task_queue.update_task_status(task.task_name, 1)
+                if task.next_execute_time <= datetime.now(
+                        ZoneInfo("Asia/Shanghai")):
+                    success = self.task_queue.update_task_status(
+                        task.task_name, 1)
                     if success:
-                        self.task_widget_list.refresh_task_widget(task.task_name)
+                        self.task_widget_list.refresh_task_widget(
+                            task.task_name)
                         moved_tasks.append(task)
-                        self.logger.info(f"[{task.task_name}]-[{task.base_priority}] 进入就绪队列")
+                        self.logger.info(
+                            f"[{task.task_name}]-[{task.base_priority}] 进入就绪队列"
+                        )
             if moved_tasks:
                 if self.running:
                     self.timer_thread.trigger(500)
@@ -715,9 +718,11 @@ class Scheduler(QObject):
                 # 检查运行队列
                 running_tasks = self.task_queue.get_tasks_by_status(0)
                 if not running_tasks:
-                    success = self.task_queue.update_task_status(next_task.task_name, 0)
+                    success = self.task_queue.update_task_status(
+                        next_task.task_name, 0)
                     if success:
-                        self.task_widget_list.refresh_task_widget(next_task.task_name)
+                        self.task_widget_list.refresh_task_widget(
+                            next_task.task_name)
                         next_task.run()
                 else:
                     running_task = running_tasks[0]
@@ -726,8 +731,10 @@ class Scheduler(QObject):
                         running_task.stop()
 
             if self.running:
-                wait_time = max(100, self.config.get_config("扫描间隔") - 1000 * (
-                        time.perf_counter() - start))
+                wait_time = max(
+                    100,
+                    self.config.get_config("扫描间隔") - 1000 *
+                    (time.perf_counter() - start))
                 self.timer_thread.trigger(int(wait_time))
 
         finally:
@@ -744,20 +751,22 @@ class Scheduler(QObject):
             return
         line_edit = self._get_task_control(task.task_name, "LineEdit")
         if line_edit is not None:
-            line_edit.setText(task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
+            line_edit.setText(
+                task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S"))
         self.task_queue.update_task_status(task.task_name, 2)
 
         if task.task_type == TaskType.TEMP:
             self.config.set_task_base_config(task.task_name, "是否启用", False)
-            checkbox_widget = self._get_task_control(task.task_name, "CheckBox")
+            checkbox_widget = self._get_task_control(task.task_name,
+                                                     "CheckBox")
             if checkbox_widget is not None and checkbox_widget.isChecked():
                 checkbox_widget.blockSignals(True)
                 checkbox_widget.setChecked(False)
                 checkbox_widget.blockSignals(False)
-            
 
         self.task_widget_list.refresh_task_widget(task.task_name)
-        self.logger.info(f"[{task.task_name}]-[{task.base_priority}] 移出执行队列，进入等待队列")
+        self.logger.info(
+            f"[{task.task_name}]-[{task.base_priority}] 移出执行队列，进入等待队列")
         task.last_run_time = datetime.now(ZoneInfo("Asia/Shanghai"))
 
     def save_screen(self, name):

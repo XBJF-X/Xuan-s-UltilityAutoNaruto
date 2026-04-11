@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -34,18 +35,16 @@ class HaoYouTiLi(BaseTask):
             self.operationer.click_and_wait("一键领取")
             self.flag_2 = True
             return False
-        self.update_next_execute_time()
         self.operationer.click_and_wait("X")
-        return True
+        raise TaskCompleted("好友体力领取完成")
 
     @TransitionOn("领取好友体力成功")
     def _(self):
         self.operationer.click_and_wait("确认")
         self.logger.info("好友体力领取成功")
         if self.flag_2:
-            self.update_next_execute_time()
             self.operationer.click_and_wait("X")
-            return True
+            raise TaskCompleted("好友体力领取完成")
         return False
 
     def reset_task_exe_prog(self) -> bool:

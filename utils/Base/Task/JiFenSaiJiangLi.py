@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -10,9 +11,7 @@ class JiFenSaiJiangLi(BaseTask):
     @TransitionOn()
     def _(self):
         self.operationer.click_and_wait("X")
-        self.update_next_execute_time()
-        return True
-
+        raise TaskCompleted("任务执行完成")
     @TransitionOn("积分赛-段位奖励")
     def _(self):
         self.operationer.click_and_wait("X")

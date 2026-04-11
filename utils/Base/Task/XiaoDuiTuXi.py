@@ -1,6 +1,7 @@
 import time
 from datetime import timedelta
 
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -33,9 +34,8 @@ class XiaoDuiTuXi(BaseTask):
             self.logger.info("出战")
             self.operationer.click_and_wait("出战",wait_time=3)
             return False
-        self.update_next_execute_time()
         self.logger.info("小队突袭次数已用尽")
-        return True
+        raise TaskCompleted("小队突袭次数已用尽")
 
     @TransitionOn("组织助战-助战忍者")
     def _(self):

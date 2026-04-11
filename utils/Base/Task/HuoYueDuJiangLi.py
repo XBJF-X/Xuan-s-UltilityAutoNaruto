@@ -1,6 +1,7 @@
 from datetime import timedelta, datetime
 from zoneinfo import ZoneInfo
 
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -16,10 +17,10 @@ class HuoYueDuJiangLi(BaseTask):
     def _(self):
         if self.finished:
             if self.reset_task_exe_prog():
-                self.update_next_execute_time()
+                raise TaskCompleted("活跃度奖励领取完成")
             else:
-                self.update_next_execute_time(3, timedelta(hours=3))
-            return True
+                self.schedule_next_with_delay(timedelta(hours=3))
+                raise TaskCompleted("活跃度不足，延迟重试")
 
         if not self.config.get_task_exe_prog(self.task_name, f"10活跃度已领取", False):
             self._handle_daily_activity_reward(10)

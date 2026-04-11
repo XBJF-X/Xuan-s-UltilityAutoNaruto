@@ -1,6 +1,8 @@
 import time
-from datetime import datetime, timedelta
+import datetime
 
+
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -8,7 +10,7 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 class RenFaTieDianZanFenXiang(BaseTask):
     source_scene = "忍法帖-排行榜"
-    task_max_duration = timedelta(minutes=2)
+    task_max_duration = datetime.timedelta(minutes=2)
 
     @TransitionOn()
     def _(self):
@@ -43,41 +45,21 @@ class RenFaTieDianZanFenXiang(BaseTask):
             if time.perf_counter() - start_time > timeout:
                 self.logger.debug("返回游戏失败，请自行检查...")
                 raise
-        self.update_next_execute_time()
-        return True
+        raise TaskCompleted("任务执行完成")
+    def _get_execute_window(self,dt: datetime.datetime | None = None):
+        if dt is None:
+            dt=self.last_run_time
+        today = dt.date()
+        if dt.time() < datetime.time(5, 0):
+            today -= datetime.timedelta(days=1)
+        
+        # 计算today所在的周一
+        this_monday = today - datetime.timedelta(days=today.weekday())
 
-    def get_cycle_execute_time(self,dt: datetime) -> datetime:
-        """返回 dt 所属执行周期的周一 05:00:00"""
-        this_monday_5am = (dt - timedelta(days=dt.weekday())).replace(
-            hour=5,
-            minute=0,
-            second=0,
-            microsecond=0,
-        )
-        if dt < this_monday_5am:
-            return this_monday_5am - timedelta(weeks=1)
-        return this_monday_5am
+        start_dt = datetime.datetime.combine(this_monday, datetime.time(5, 0), tzinfo=self.tz_info)
+        dead_dt = datetime.datetime.combine(this_monday+datetime.timedelta(weeks=1), datetime.time(5, 0), tzinfo=self.tz_info)
+
+        return [(start_dt, dead_dt)]
     
-    def get_next_cycle_execute_time(self, dt: datetime) -> datetime:
-        """返回下一个周期的执行时间"""
-        return self.get_cycle_execute_time(dt) + timedelta(weeks=1)
-    
-    def _handle_initialization(self, current_time: datetime) -> datetime:
-        china_tz = current_time.tzinfo
-        # 读取配置中的时间
-        next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
-        next_execute_time = self.get_cycle_execute_time(current_time)
-
-        if not next_exec_ts:
-            return next_execute_time
-
-        try:
-            next_exec_dt = datetime.fromtimestamp(next_exec_ts, tz=china_tz)
-        except Exception as e:
-            self.logger.warning(f"解析下次执行时间戳失败: {next_exec_ts}, 错误: {e}")
-            return next_execute_time
-
-        if next_exec_dt < current_time:
-            return next_execute_time
-        else:
-            return next_exec_dt
+    def get_next_cycle_day(self, dt: datetime.datetime) -> datetime.datetime:
+        return dt + datetime.timedelta(weeks=1)

@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -26,9 +27,7 @@ class ZuZhiQiFu(BaseTask):
                 self.logger.warning("昨日奖励已领取或昨日祈福人数不足15")
                 self.config.set_task_exe_prog(self.task_name, "昨日奖励领取", True)
             return False
-        self.update_next_execute_time()
-        return True
-
+        raise TaskCompleted("任务执行完成")
     @TransitionOn("昨日奖励")
     def _(self):
         # 点击所有的领取按钮

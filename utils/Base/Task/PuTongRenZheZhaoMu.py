@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -16,9 +17,9 @@ class PuTongRenZheZhaoMu(BaseTask):
             return False
         else:
             self.logger.warning("免费普通招募失败")
-            self.update_next_execute_time(delta=timedelta(hours=3))
+            self.schedule_next_with_delay(timedelta(hours=3))
             self.operationer.click_and_wait("X")
-            return True
+            raise TaskCompleted("免费普通招募失败，延迟重试")
 
     @TransitionOn("招募结果")
     def _(self):
@@ -38,9 +39,7 @@ class PuTongRenZheZhaoMu(BaseTask):
                 once_max_time=5
         ):
             continue
-        self.update_next_execute_time()
-        return True
-
+        raise TaskCompleted("任务执行完成")
     @TransitionOn("招募忍者已拥有")
     def _(self):
         self.operationer.click_and_wait("确定")

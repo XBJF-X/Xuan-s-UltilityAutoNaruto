@@ -25,19 +25,24 @@ class Device:
 
     @property
     def screen_size(self):
-        return self.control_manager.current_control.screen_size
+        control = self.control_manager.current_control
+        if control is None:
+            self.logger.warning("控制实例为空，使用默认分辨率")
+            return self.resolution
+        return control.screen_size
 
     @property
     def rotated(self):
         return self.control_manager.rotated
 
     def regularize_coordinate(self, coordinate_x, coordinate_y):
-        scale = self.screen_size[0] / self.resolution[0]
+        screen_size = self.screen_size
+        scale = screen_size[0] / self.resolution[0]
         x, y = int(scale * coordinate_x), int(scale * coordinate_y)
 
         # 确保坐标在屏幕范围内
-        x = max(0, min(x, self.screen_size[0] - 1))  # 宽度最大为 screen_size[0]-1
-        y = max(0, min(y, self.screen_size[1] - 1))  # 高度最大为 screen_size[1]-1
+        x = max(0, min(x, screen_size[0] - 1))  # 宽度最大为 screen_size[0]-1
+        y = max(0, min(y, screen_size[1] - 1))  # 高度最大为 screen_size[1]-1
 
         return x, y
 

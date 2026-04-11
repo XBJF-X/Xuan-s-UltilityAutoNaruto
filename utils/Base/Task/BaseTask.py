@@ -1,3 +1,4 @@
+from abc import abstractmethod
 import datetime
 import inspect
 import sys
@@ -8,13 +9,18 @@ from enum import IntEnum
 from logging import Logger
 from pathlib import Path
 from types import FrameType
-from typing import Any, Dict, Callable
+from typing import Any, Dict, Callable, List, Tuple
 from zoneinfo import ZoneInfo
-
 
 from StaticFunctions import get_real_path
 from utils.Base.Config import Config
-from utils.Base.Exceptions import StepFailedError, TimeOut, Stop, EndEarly
+from utils.Base.Exceptions import (
+    StepFailedError,
+    TimeOut,
+    Stop,
+    TaskCompleted,
+    TooEarlyToRun,
+)
 from utils.Base.Operationer import Operationer
 from utils.Base.Scene.TransitionManager import TransitionManager
 
@@ -61,24 +67,13 @@ class TransitionOn:
 
 
 def handle_transition_exceptions(func):
+
     def wrapper(self, *args, **kwargs):
         old_trace = sys.gettrace()
         sys.settrace(self.trace_callback)
         try:
             result = func(self, *args, **kwargs)
             return result
-        except StepFailedError as e:
-            self.logger.error(e)
-        except EndEarly as e:
-            self.logger.warning(e)
-            return True
-        except Stop as e:
-            self.logger.warning("线程被要求停止")
-        except TimeOut as e:
-            self.logger.error(f"任务超时：{e}")
-        except Exception as e:
-            self.logger.error(f"未知错误：{e}")
-            return True
         finally:
             sys.settrace(old_trace)
 
@@ -86,20 +81,37 @@ def handle_transition_exceptions(func):
 
 
 def handle_task_exceptions(func):
+
     def wrapper(self, *args, **kwargs):
         old_trace = sys.gettrace()
         sys.settrace(self.trace_callback)
         self.logger.debug("开始执行")
+        before_next_execute_ts = self.config.get_task_base_config(
+            self.task_name, "下次执行时间")
         try:
             func(self, *args, **kwargs)
+        except TaskCompleted as e:
+            self.logger.info(str(e) if str(e) else "任务执行完成")
+            self._cleanup_on_complete()
+            after_next_execute_ts = self.config.get_task_base_config(
+                self.task_name, "下次执行时间")
+            if after_next_execute_ts == before_next_execute_ts:
+                self.schedule_next_on_complete()
+            if self.task_type == TaskType.TEMP:
+                self.config.set_task_base_config(self.task_name, "是否启用", False)
+        except TooEarlyToRun as e:
+            self.logger.info(str(e) if str(e) else "任务执行时间过早，推迟执行")
+            self._cleanup_on_too_early()
+            self.schedule_next_on_too_early()
         except StepFailedError as e:
             self.logger.error(e)
-        except EndEarly as e:
-            self.logger.warning(e)
         except Stop as e:
             self.logger.warning("线程被要求停止")
+            self._cleanup_on_stop()
         except TimeOut as e:
             self.logger.error(f"任务超时：{e}")
+            self._cleanup_on_timeout()
+            self.schedule_next_on_timeout()
         except Exception as e:
             self.logger.error(f"未知错误：{e}")
         finally:
@@ -110,40 +122,40 @@ def handle_task_exceptions(func):
                 self.callback(self)
             except Exception as e:
                 self.logger.error(f"callback执行出错: {e}")
+
     return wrapper
 
 
 class BaseTask:
+
     transition_func: Dict[str, Callable] = {}
     """场景名到处理函数的映射，由TransitionOn装饰器填充"""
-    transition_return: str  = ""
+    transition_return: str = ""
     """记录transition返回的位置，方便调试"""
     source_scene: str | None = None
     """任务的初始场景，需要先寻路到此处才能正式开始执行任务"""
-    task_max_duration: timedelta = timedelta(minutes=10)
-    """任务最长执行时间（无DDL的情况下生效）"""
-    dead_line: datetime.time | None = None
-    """任务当天截至的时间点（超过当天该时间点将强制结束任务）"""
-    stopped_duration: timedelta = timedelta(0)
-    """任务停止所需的制动时长"""
+
     base_priority: int
     """基础优先级，数值越小优先级越高"""
     click_priority: int
     """执行连点时的优先级，数值越小优先级越高"""
 
-    def __init__(
-        self,
-        task_name: str,
-        config: Config,
-        transition_manager: TransitionManager,
-        operationer: Operationer,
-        activate_another_task_signal: Any,
-        callback: Callable,
-        parent_logger
-    ):
+    task_max_duration: timedelta = timedelta(minutes=10)
+    """任务最长执行时间（无DDL的情况下生效）"""
+    start_line: datetime.time | None = None
+    """任务当天最早开始的时间点，如果早于该时间点将推迟到该时间点执行"""
+    dead_line: datetime.time | None = None
+    """任务当天截至的时间点（超过当天该时间点将强制结束任务）"""
+
+    tz_info = ZoneInfo("Asia/Shanghai")
+
+    def __init__(self, task_name: str, config: Config,
+                 transition_manager: TransitionManager,
+                 operationer: Operationer, activate_another_task_signal: Any,
+                 callback: Callable, parent_logger):
         # 任务信息
-        self.create_time = datetime.datetime.now(ZoneInfo("Asia/Shanghai"))
-        self.last_run_time = datetime.datetime.now(ZoneInfo("Asia/Shanghai"))
+        self.create_time = datetime.datetime.now(self.tz_info)
+        self.last_run_time = datetime.datetime.now(self.tz_info)
         self.current_status = 2
         # 0 - 正在执行
         # 1 - 就绪状态，等待执行
@@ -152,14 +164,17 @@ class BaseTask:
         self._execution_thread = None
         self.task_name = task_name
         self.logger: Logger = parent_logger.getChild(self.task_name)
-        self.base_priority = config.get_task_base_config(self.task_name, "基础优先级")
-        self.click_priority = config.get_task_base_config(self.task_name, "连点优先级")
-        
-        self.task_type = TaskType(config.get_task_base_config(self.task_name, "类型"))
+        self.base_priority = config.get_task_base_config(
+            self.task_name, "基础优先级")
+        self.click_priority = config.get_task_base_config(
+            self.task_name, "连点优先级")
+
+        self.task_type = TaskType(
+            config.get_task_base_config(self.task_name, "类型"))
 
         self.bool_click = False
 
-        self.update_next_execute_time(0)
+        self.schedule_next_on_initialization()
         self.transition_func = {}
         for cls in reversed(self.__class__.mro()):
             if hasattr(cls, "transition_func"):
@@ -197,27 +212,12 @@ class BaseTask:
                      f"任务当前优先级:{self.current_priority},"
                      f"是否启用:{self.is_activated},"
                      f"任务状态:{self.current_status},"
-                     f"下次执行时间:{self.next_execute_time}"
-                     )
+                     f"下次执行时间:{self.next_execute_time}")
         return info_text
 
     @property
     def is_activated(self):
         return self.config.get_task_base_config(self.task_name, "是否启用")
-
-    @property
-    def running_deadline(self):
-        if not self.dead_line:
-            if self.task_max_duration:
-                return self.last_run_time + self.task_max_duration
-        else:
-            return datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai")).replace(
-                hour=self.dead_line.hour,
-                minute=self.dead_line.minute,
-                second=self.dead_line.second,
-                microsecond=self.dead_line.microsecond
-            )
-        return None
 
     @property
     def current_priority(self):
@@ -226,8 +226,9 @@ class BaseTask:
 
     @property
     def next_execute_time(self):
-        china_tz = ZoneInfo("Asia/Shanghai")
-        next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
+        china_tz = self.tz_info
+        next_exec_ts = self.config.get_task_base_config(
+            self.task_name, "下次执行时间")
         if next_exec_ts == 0:
             # 若初始值为0，设置为当前中国时区时间
             return datetime.datetime.now(china_tz)
@@ -242,8 +243,10 @@ class BaseTask:
         # 重置停止标志
         self.operationer.stop_event.clear()  # 重置停止标志
         # 保存线程对象以便后续停止
-        self.last_run_time = datetime.datetime.now(ZoneInfo("Asia/Shanghai"))
-        self._execution_thread = threading.Thread(target=self._execute, daemon=True)
+        self.last_run_time = datetime.datetime.now(self.tz_info)
+        self.operationer.task_name=self.task_name
+        self._execution_thread = threading.Thread(target=self._execute,
+                                                  daemon=True)
         self._execution_thread.start()
 
     def stop(self):
@@ -255,26 +258,56 @@ class BaseTask:
         """检查是否收到停止请求"""
         return self.operationer.stop_event.is_set()
 
+    def _ensure_tz_aware(self, dt: datetime.datetime) -> datetime.datetime:
+        """将datetime标准化为任务时区的有时区对象。"""
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=self.tz_info)
+        return dt.astimezone(self.tz_info)
+
+    def _check_window_invalid(self, dt: datetime.datetime, base: datetime.datetime|None=None) -> bool:
+        """检查时间是否在可执行窗口内"""
+        dt = self._ensure_tz_aware(dt)
+        windows = self._get_execute_window(base)
+        for start_dt, end_dt in windows:
+            if start_dt:
+                start_dt = self._ensure_tz_aware(start_dt)
+            if end_dt:
+                end_dt = self._ensure_tz_aware(end_dt)
+            if start_dt and dt < start_dt:
+                return True
+            if end_dt and dt >= end_dt:
+                return True
+        return False
+
+    def _check_timeout(self, current_time: datetime.datetime) -> bool:
+        """检查是否超过任务最大执行时间"""
+        if self.task_max_duration:
+            if current_time - self.last_run_time > self.task_max_duration:
+                return True
+        return False
+
     @handle_task_exceptions
     def _execute(self):
         self.operationer.next_scene = self.source_scene
         while True:
             # 检查停止信号
             if self._should_stop():
-                self._cleanup_on_stop()  # 执行停止时的清理
                 raise Stop("任务被停止")
 
-            # 检查超时
-            if self.running_deadline and datetime.datetime.now(tz=ZoneInfo("Asia/Shanghai")) >= self.running_deadline:
-                self._cleanup_on_timeout()
-                raise TimeOut("任务执行超时")
+            current_time = datetime.datetime.now(self.tz_info)
+            windows = self._get_execute_window()
+            for start_dt, end_dt in windows:
+                if start_dt and current_time < start_dt:
+                    raise TooEarlyToRun("[StartLine]未到任务可执行时间")
+                if end_dt and current_time >= end_dt:
+                    raise TimeOut("[DeadLine]任务执行超时")
+            if self._check_timeout(current_time):
+                raise TimeOut("[MaxDuration]任务执行超时")
 
             # 执行步骤转换
             result = self.transition()
             if result is not None and result:
-                # 任务正常完成
-                self._cleanup_on_complete()  # 执行完成时的清理
-                return
+                raise TaskCompleted("任务执行完成")
 
     @handle_transition_exceptions
     def transition(self):
@@ -295,7 +328,8 @@ class BaseTask:
             if self.operationer.next_scene == scene_name:
                 self.operationer.next_scene = None
             else:
-                path = self.transition_manager.bfs_shortest_path(scene_name, self.operationer.next_scene)
+                path = self.transition_manager.bfs_shortest_path(
+                    scene_name, self.operationer.next_scene)
                 if path and len(path) >= 2:
                     return self.transition_manager.transition(self.operationer)
 
@@ -329,11 +363,14 @@ class BaseTask:
                 # 没有 source_scene，无法寻路，回退到未注册场景
                 scene_name = "未注册场景"
             else:
-                shortest_path = self.transition_manager.bfs_shortest_path(scene_name, self.source_scene)
+                shortest_path = self.transition_manager.bfs_shortest_path(
+                    scene_name, self.source_scene)
                 if shortest_path and len(shortest_path) >= 2:
                     # 执行第一段路径跳转
                     next_scene_in_path = shortest_path[1]
-                    self.logger.info(f"自动跳转回场景状态中: 从 {scene_name} 到 {next_scene_in_path} (路径: {' -> '.join(shortest_path)})")
+                    self.logger.info(
+                        f"自动跳转回场景状态中: 从 {scene_name} 到 {next_scene_in_path} (路径: {' -> '.join(shortest_path)})"
+                    )
                     return self.transition_manager.transition(self.operationer)
                 else:
                     # 如果找不到路径，回退到原来的处理方式
@@ -358,7 +395,8 @@ class BaseTask:
                 return self.trace_callback
         elif event == "return":
             try:
-                srcfile = inspect.getsourcefile(frame) or inspect.getfile(frame)
+                srcfile = inspect.getsourcefile(frame) or inspect.getfile(
+                    frame)
             except Exception:
                 srcfile = None
             if srcfile is None:
@@ -384,9 +422,13 @@ class BaseTask:
 
     def _cleanup_on_complete(self):
         """任务正常完成时的清理"""
-        self.operationer.clicker.stop()  # 任务结束，停止点击器
-        self.update_next_execute_time()
-        self.reset_task_exe_prog()  # 重置任务进度（如果需要）
+        self.operationer.clicker.stop()
+        self.reset_task_exe_prog()
+
+    def _cleanup_on_too_early(self):
+        """过早执行时的清理"""
+        self.operationer.clicker.stop()
+        self.reset_task_exe_prog()
 
     def _activate_another_task(self, task_name: str):
         """
@@ -400,105 +442,136 @@ class BaseTask:
         self.logger.debug(f"{task_name}被激活，将立即执行")
         self.activate_another_task_signal.emit(task_name)
 
-    def update_next_execute_time(self, flag: int = 1, delta: timedelta = timedelta(0)) -> tuple[bool, datetime.datetime | None]:
-        """
-        用于更新本任务的下次执行时间
-
-        Args:
-            flag: 更新下次执行时间的模式
-                0：创建任务时初始化时间
-                1：正常执行完毕，更新为下次执行时间
-                2：更新成当前时间，一般用于调试任务时调用
-                3：把执行时间推迟delta时间
-            delta: 延迟的时长（仅flag=3时有效）
-        Returns:
-            tuple: (是否成功, 下次执行时间datetime对象)
-        """
-        china_tz = ZoneInfo("Asia/Shanghai")
-        current_time = datetime.datetime.now(china_tz)
-
-        try:
-            match flag:
-                case 0:
-                    next_execute_time = self._handle_initialization(current_time)
-                case 1:
-                    next_execute_time = self._handle_execution_completed(current_time)
-                    if self.task_type == TaskType.TEMP:
-                        self.config.set_task_base_config(self.task_name, "是否启用", False)
-                case 2:
-                    next_execute_time = current_time
-                case 3:
-                    next_execute_time = self._handle_delay(current_time, delta)
-                case _:
-                    self.logger.warning(f"不支持的更新模式: {flag}")
-                    return False, None
-
-            if next_execute_time is None:
-                return False, None
-
-            self.logger.info(f"下次执行时间为：{next_execute_time.strftime('%Y-%m-%d %H:%M:%S')}")
-            self.config.set_task_base_config(
-                self.task_name,
-                "下次执行时间",
-                int(next_execute_time.timestamp())
-            )
-            return True, next_execute_time
-
-        except Exception as e:
-            self.logger.error(f"更新下次执行时间失败: {str(e)}")
+    def _save_next_execute_time(
+        self, next_execute_time: datetime.datetime | None
+    ) -> tuple[bool, datetime.datetime | None]:
+        if next_execute_time is None:
             return False, None
-    
-    def get_cycle_execute_time(self,dt: datetime.datetime) -> datetime.datetime:
-        """返回 dt 所属执行周期的任务执行时间"""
-        cycle_execute_time = dt.replace(
-            hour=5,
-            minute=0,
-            second=0,
-            microsecond=0,
-        )
-        if dt < cycle_execute_time:
-            return cycle_execute_time - timedelta(days=1)
-        return cycle_execute_time
-    def get_next_cycle_execute_time(self, dt: datetime.datetime) -> datetime.datetime:
-        """返回下一个周期的执行时间"""
-        return self.get_cycle_execute_time(dt) + timedelta(days=1)
+        self.logger.info(
+            f"下次执行时间为：{next_execute_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        self.config.set_task_base_config(self.task_name, "下次执行时间",
+                                         int(next_execute_time.timestamp()))
+        return True, next_execute_time
 
-    def _handle_initialization(self, current_time: datetime.datetime) -> datetime.datetime:
-        """处理任务初始化时的时间设置（case0）"""
-        china_tz = current_time.tzinfo
+    def schedule_next_on_initialization(
+            self) -> tuple[bool, datetime.datetime | None]:
+        current_time = datetime.datetime.now(self.tz_info)
+        next_execute_time = self._handle_initialization(current_time)
+        return self._save_next_execute_time(next_execute_time)
+
+    def schedule_next_on_complete(
+            self) -> tuple[bool, datetime.datetime | None]:
+        current_time = datetime.datetime.now(self.tz_info)
+        next_execute_time = self._handle_execution_completed(current_time)
+        return self._save_next_execute_time(next_execute_time)
+
+    def schedule_next_on_timeout(
+            self) -> tuple[bool, datetime.datetime | None]:
+        current_time = datetime.datetime.now(self.tz_info)
+        next_execute_time = self._handle_timeout(current_time)
+        return self._save_next_execute_time(next_execute_time)
+
+    def schedule_next_on_too_early(
+            self) -> tuple[bool, datetime.datetime | None]:
+        current_time = datetime.datetime.now(self.tz_info)
+        next_execute_time = self._handle_too_early(current_time)
+        return self._save_next_execute_time(next_execute_time)
+
+    def schedule_next_with_delay(
+            self, delta: timedelta) -> tuple[bool, datetime.datetime | None]:
+        current_time = datetime.datetime.now(self.tz_info)
+        next_execute_time = self._handle_delay(current_time, delta)
+        return self._save_next_execute_time(next_execute_time)
+
+    def schedule_execute_now(self) -> tuple[bool, datetime.datetime | None]:
+        current_time = datetime.datetime.now(self.tz_info)
+        next_execute_time = self._handle_execute_now(current_time)
+        return self._save_next_execute_time(next_execute_time)
+
+    ############################################################################################
+    #                                和任务执行时间处理相关的函数                                 #
+    ############################################################################################
+
+    def _get_execute_window(
+        self,
+        dt: datetime.datetime | None = None
+    ) -> List[Tuple[datetime.datetime, datetime.datetime]]:
+        """
+        返回一个列表，列表中的每个元素是一个二元组(start_dt, end_dt)，表示一个可执行窗口的开始和结束时间  
+        执行检查时应以self.last_run_time为基准，避免执行时跨过窗口期导致的异常
+        """
+        if dt is None:
+            dt=self.last_run_time
+        dt = self._ensure_tz_aware(dt)
+        today = dt.date()
+        if dt.time() < datetime.time(5, 0):
+            today -= timedelta(days=1)
+        tomorrow = today + timedelta(days=1)
+
+        start_dt = datetime.datetime.combine(today, self.start_line or datetime.time(5, 0), tzinfo=self.tz_info)
+        if self.dead_line:
+            dead_dt = datetime.datetime.combine(today, self.dead_line, tzinfo=self.tz_info)
+        else:
+            dead_dt = datetime.datetime.combine(tomorrow, datetime.time(5, 0), tzinfo=self.tz_info)
+
+        return [(start_dt, dead_dt)]
+
+    def get_next_cycle_day(self, dt: datetime.datetime) -> datetime.datetime:
+        """返回dt所在周期的下个周期的第一天"""
+        return dt + timedelta(days=1)
+
+    def get_cycle_execute_time(self,
+                               dt: datetime.datetime,
+                               completed=False) -> datetime.datetime:
+        """返回 dt 所属执行周期的任务执行时间"""
+        window=self._get_execute_window(self.get_next_cycle_day(dt) if completed else None)
+        return window[0][0]
+
+    def _handle_initialization(
+            self, current_time: datetime.datetime) -> datetime.datetime:
+        """处理任务初始化时的时间设置"""
         # 读取配置中的时间
         next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
 
-        # 取得当前执行周期的任务执行时间
-        next_execute_time = self.get_cycle_execute_time(current_time)
-
         if not next_exec_ts:
             # 配置中未设置下次执行时间，返回默认时间
-            return next_execute_time
-
+            return self.get_cycle_execute_time(current_time)
         try:
-            next_exec_dt = datetime.datetime.fromtimestamp(next_exec_ts, tz=china_tz)
+            next_exec_dt = datetime.datetime.fromtimestamp(next_exec_ts, tz=self.tz_info)
         except Exception as e:
             self.logger.warning(f"解析下次执行时间戳失败: {next_exec_ts}, 错误: {e}")
-            return next_execute_time
+            return self.get_cycle_execute_time(current_time)
+        if self._check_window_invalid(next_exec_dt) and self._check_window_invalid(next_exec_dt,self.get_next_cycle_day(self.last_run_time)):
+            self.logger.warning(f"配置中的下次执行时间 {next_exec_dt} 超前或已过期")
+        else:
+            return next_exec_dt
+        return self.get_cycle_execute_time(current_time)
 
-        # 判断下次执行时间是否过期
-        if next_exec_dt < current_time:
-            return next_execute_time
-
-        # 配置中的下次执行时间未过期，直接返回
-        return next_exec_dt
-
-
-    def _handle_execution_completed(self, current_time: datetime.datetime) -> datetime.datetime:
+    def _handle_execution_completed(
+            self, current_time: datetime.datetime) -> datetime.datetime:
         """返回下一个执行周期的任务执行时间"""
-        return self.get_next_cycle_execute_time(current_time)
+        return self.get_cycle_execute_time(current_time, completed=True)
 
-    def _handle_delay(self, current_time: datetime.datetime, delta: timedelta) -> datetime.datetime | None:
-        """处理时间延迟更新（case3）"""
-        if delta is None:
-            self.logger.warning("延迟更新时间时delta不能为空")
-            return None
+    def _handle_timeout(self,
+                        current_time: datetime.datetime) -> datetime.datetime:
+        """处理超时逻辑"""
+        return self._handle_initialization(current_time)
+
+
+    def _handle_too_early(
+            self, current_time: datetime.datetime) -> datetime.datetime:
+        """过早执行时默认推迟到周期窗口开始时间"""
+        return self._handle_initialization(current_time)
+
+
+    def _handle_execute_now(
+            self, current_time: datetime.datetime) -> datetime.datetime:
+        """立即执行时间计算"""
+        return self._handle_delay(current_time, timedelta(0))
+
+    def _handle_delay(self, current_time: datetime.datetime,
+                      delta: timedelta) -> datetime.datetime:
+        """处理时间延迟更新"""
         return current_time + delta
 
     def reset_task_exe_prog(self) -> bool:
@@ -506,7 +579,7 @@ class BaseTask:
         return True
 
     ############################################################################################
-    #                        某些弹窗或独立场景（即不绑定某个任务的场景）的处理                      #
+    #                                 某些弹窗或独立场景的处理                                   #
     ############################################################################################
     @TransitionOn("二级密码")
     def _(self):
@@ -518,10 +591,7 @@ class BaseTask:
         input_el = self.operationer.get_element("输入框")
         if input_el is None:
             raise StepFailedError("未找到二级密码输入框")
-        self.operationer.click_and_input(
-            input_el,
-            password
-        )
+        self.operationer.click_and_input(input_el, password)
         # 点击二级密码-确定
         confirm_el = self.operationer.get_element("确定")
         if confirm_el is None:
@@ -622,16 +692,13 @@ class BaseTask:
 
     @TransitionOn("未知含X场景")
     def _(self):
-        if self.operationer.search_and_click(
-                [
-                    self.operationer.get_element("X-普通", "主场景"),
-                    self.operationer.get_element("X-广告-1", "主场景"),
-                    self.operationer.get_element("X-广告-2", "主场景")
-                ],
-                [],
-                once_max_attempts=1,
-                max_attempts=1
-        ):
+        if self.operationer.search_and_click([
+                self.operationer.get_element("X-普通", "主场景"),
+                self.operationer.get_element("X-广告-1", "主场景"),
+                self.operationer.get_element("X-广告-2", "主场景")
+        ], [],
+                                             once_max_attempts=1,
+                                             max_attempts=1):
             self.logger.info("点击X关闭")
         return False
 

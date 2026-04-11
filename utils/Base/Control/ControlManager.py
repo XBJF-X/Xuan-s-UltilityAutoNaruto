@@ -65,7 +65,7 @@ class ControlManager:
         # 释放旧实例 → 创建新实例
         self.control_mode = new_mode
         self.release()
-        self.create_control_instance()
+        self.current_control = self.create_control_instance()
 
     def release(self):
         """释放当前实例"""

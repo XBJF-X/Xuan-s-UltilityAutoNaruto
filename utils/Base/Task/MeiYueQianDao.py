@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -17,5 +18,4 @@ class MeiYueQianDao(BaseTask):
             self.logger.info(f"每月签到{remedy_times}次")
         self.operationer.click_and_wait("持之以恒")
         self.operationer.click_and_wait("X")
-        self.update_next_execute_time()
-        return True
+        raise TaskCompleted("任务执行完成")

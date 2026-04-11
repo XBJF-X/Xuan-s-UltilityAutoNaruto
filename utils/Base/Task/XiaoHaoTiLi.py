@@ -1,5 +1,6 @@
 from datetime import timedelta, datetime, time, date
 
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 armor_coordinates = [
@@ -189,5 +190,4 @@ class XiaoHaoTiLi(BaseTask):
             self.operationer.next_scene = "精英副本-便捷扫荡"
             self.current_task = 1
             return False
-        self.update_next_execute_time()
-        return True
+        raise TaskCompleted("任务执行完成")

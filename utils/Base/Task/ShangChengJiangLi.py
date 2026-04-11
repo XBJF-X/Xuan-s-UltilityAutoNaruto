@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -16,6 +17,4 @@ class ShangChengJiangLi(BaseTask):
         else:
             self.logger.warning("特权商店15000铜币领取失败，可能已经被领取")
         self.operationer.click_and_wait("X")
-        self.update_next_execute_time()
-        return True
-
+        raise TaskCompleted("任务执行完成")

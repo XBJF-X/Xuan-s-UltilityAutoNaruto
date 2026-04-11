@@ -1,7 +1,10 @@
 import time
 from datetime import timedelta
+import datetime
+from typing import List, Tuple
 
 from utils.Base.Enums import KEY_INDEX
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -11,14 +14,17 @@ class FengRaoZhiJian(BaseTask):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.free_tryed = False
+        self.free_tried = False
         self.finished = False
+        
+    def run(self):
         self.operationer.clicker.update_coordinates([
-            self.config.get_config("键位")[KEY_INDEX.BasicAttack],
-            self.config.get_config("键位")[KEY_INDEX.FirstSkill],
-            self.config.get_config("键位")[KEY_INDEX.SecondSkill],
-            self.config.get_config("键位")[KEY_INDEX.UltimateSkill]
-        ])
+                    self.config.get_config("键位")[KEY_INDEX.BasicAttack],
+                    self.config.get_config("键位")[KEY_INDEX.FirstSkill],
+                    self.config.get_config("键位")[KEY_INDEX.SecondSkill],
+                    self.config.get_config("键位")[KEY_INDEX.UltimateSkill]
+                ])
+        super().run()
 
     @TransitionOn("丰饶之间")
     def _(self):
@@ -26,9 +32,8 @@ class FengRaoZhiJian(BaseTask):
                 "今日已完成挑战",
                 max_time=0.3
         ):
-            self.update_next_execute_time()
-            return True
-        if not self.free_tryed:
+            raise TaskCompleted("任务执行完成")
+        if not self.free_tried:
             self.operationer.click_and_wait("一键完成")
             return False
         if not self.finished:
@@ -38,16 +43,14 @@ class FengRaoZhiJian(BaseTask):
             return False
         self.operationer.clicker.stop()
         self.operationer.click_and_wait("X")
-        self.update_next_execute_time()
-        return True
-
+        raise TaskCompleted("任务执行完成")
     @TransitionOn("丰饶之间-一键完成")
     def _(self):
         if self.operationer.click_and_wait("超影免费", max_time=0.3) \
                 or self.operationer.click_and_wait("0金币", max_time=0.3):
-            self.free_tryed = True
+            self.free_tried = True
             return False
-        self.free_tryed = True
+        self.free_tried = True
         self.operationer.click_and_wait("X")
         return False
 
@@ -78,6 +81,6 @@ class FengRaoZhiJian(BaseTask):
         return False
 
     def reset_task_exe_prog(self) -> bool:
-        self.free_tryed = False
+        self.free_tried = False
         self.finished = False
         return True

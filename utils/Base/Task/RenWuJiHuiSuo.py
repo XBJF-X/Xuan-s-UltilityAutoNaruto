@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from utils.Base.Exceptions import EndEarly
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -23,8 +23,7 @@ class RenWuJiHuiSuo(BaseTask):
         self.logger.info("开始接取任务")
         # 先看看是不是已经领完了所有任务了
         if self.operationer.detect_element("今天所有任务已经领完"):
-            self.update_next_execute_time()
-            raise EndEarly("今日任务已经领完，提前退出执行")
+            raise TaskCompleted("今日任务已经领完，提前退出执行")
 
         if not self.operationer.detect_element(
                 "今天所有任务已经领完",
@@ -38,11 +37,11 @@ class RenWuJiHuiSuo(BaseTask):
             else:
                 # 能接取的都接了，无法刷新，可以退出执行了
                 self.operationer.click_and_wait("X")
-                self.update_next_execute_time(3, timedelta(hours=1))
-                raise EndEarly("无法刷新，提前退出执行")
+                self.schedule_next_with_delay(timedelta(hours=1))
+                raise TaskCompleted("无法刷新，提前退出执行")
         self.operationer.click_and_wait("X")
-        self.update_next_execute_time(3, timedelta(hours=1))
-        return True
+        self.schedule_next_with_delay(timedelta(hours=1))
+        raise TaskCompleted("任务已处理完成，延迟到下次检查")
 
     @TransitionOn("任务集会所-接取")
     def _(self):
@@ -56,8 +55,8 @@ class RenWuJiHuiSuo(BaseTask):
 
         ):
             self.logger.error("任务分派忍者失败")
-            self.update_next_execute_time(3, timedelta(minutes=10))
-            return True
+            self.schedule_next_with_delay(timedelta(minutes=10))
+            raise TaskCompleted("任务分派失败，延迟重试")
         # 出战
         self.operationer.click_and_wait(
             "出发",
@@ -80,20 +79,20 @@ class RenWuJiHuiSuo(BaseTask):
                 return False
             case 1:
                 self.operationer.click_and_wait("X")
-                self.update_next_execute_time(3, timedelta(hours=1))
-                raise EndEarly("任务栏已满，等待下次检查")
+                self.schedule_next_with_delay(timedelta(hours=1))
+                raise TaskCompleted("任务栏已满，等待下次检查")
             case 2:
                 self.operationer.click_and_wait("X")
-                self.update_next_execute_time(3, timedelta(minutes=10))
-                raise EndEarly("无法为当前任务分派忍者，将等待下次任务刷新再尝试")
+                self.schedule_next_with_delay(timedelta(minutes=10))
+                raise TaskCompleted("无法为当前任务分派忍者，将等待下次任务刷新再尝试")
 
         # if self.operationer.detect_element(
         #         "任务栏满了",
         #         max_time=0.7
         # ):
         #     self.operationer.click_and_wait("X")
-        #     self.update_next_execute_time(3, timedelta(hours=1))
-        #     raise EndEarly("任务栏已满，等待下次检查")
+        #     self.schedule_next_with_delay(timedelta(hours=1))
+        #     raise TaskCompleted("任务栏已满，等待下次检查")
         # else:
         #     self.task_sum += 1
         #     self.logger.info(f"已接取 {self.task_sum} 个任务")

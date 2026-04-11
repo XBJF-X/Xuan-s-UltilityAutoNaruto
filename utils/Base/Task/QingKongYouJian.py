@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -13,5 +14,4 @@ class QingKongYouJian(BaseTask):
         # 点击邮件图标
         self.operationer.click_and_wait("一键提取")
         self.operationer.click_and_wait("X")
-        self.update_next_execute_time()
-        return True
+        raise TaskCompleted("任务执行完成")

@@ -1,12 +1,15 @@
 import datetime
 import time
+from zoneinfo import ZoneInfo
 
 from utils.Base.Enums import KEY_INDEX
+from utils.Base.Exceptions import TaskCompleted, TooEarlyToRun
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
 class PanRenLaiXi(BaseTask):
     source_scene = "主场景-组织"
+    task_max_duration = datetime.timedelta(minutes=30)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -15,11 +18,6 @@ class PanRenLaiXi(BaseTask):
         self.decrease_difficulty = True
         self.find_time = 0
         self.find_direction = 1
-        match datetime.datetime.now().weekday():
-            case 0|1|2:
-                self.dead_line = datetime.time(hour=22)
-            case 3|4|5|6:
-                self.dead_line = datetime.time(hour=21)
 
     @TransitionOn()
     def _(self):
@@ -46,10 +44,6 @@ class PanRenLaiXi(BaseTask):
     @TransitionOn("叛忍来袭-未开始")
     def _(self):
         self.logger.info("叛忍来袭还未开启...")
-        if (datetime.datetime.now()+datetime.timedelta(hours=1)).time() <self.dead_line: # type: ignore
-            self.logger.info("叛忍来袭启动时间过早，将关闭并等待下一次执行...")
-            self.update_next_execute_time()
-            return True
         
         if self.config.get_task_exe_param(self.task_name, "是否需要开启叛忍", True):
             self.operationer.click_and_wait("开启")
@@ -162,14 +156,12 @@ class PanRenLaiXi(BaseTask):
     def _(self):
         self.operationer.click_and_wait("确定")
         self.logger.info("叛忍来袭已结束")
-        self.update_next_execute_time()
-        return True
+        raise TaskCompleted("叛忍来袭已结束")
 
     @TransitionOn("叛忍来袭-今日叛忍已结束")
     def _(self):
         self.logger.info("今日叛忍来袭已结束")
-        self.update_next_execute_time()
-        return True
+        raise TaskCompleted("今日叛忍来袭已结束")
 
     @TransitionOn("叛忍来袭-确认挑战")
     def _(self):
@@ -193,42 +185,50 @@ class PanRenLaiXi(BaseTask):
             self.decrease_difficulty = False
         time.sleep(2)
         return False
-
-    def _cleanup_on_timeout(self):
-        """超时时的清理"""
-        self.operationer.clicker.stop()
-        self.update_next_execute_time()
-        self.reset_task_exe_prog()
-
-    def _handle_initialization(self, current_time: datetime.datetime) -> datetime.datetime:
-        """处理任务初始化时的时间设置（case0）"""
-        china_tz = current_time.tzinfo
-        # 读取配置中的时间
-        next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
-
-        # 取得当前执行周期的任务执行时间
-        next_execute_time = self.get_cycle_execute_time(current_time)
-
-        if not next_exec_ts:
-            # 配置中未设置下次执行时间，返回默认时间
-            return next_execute_time
-
-        try:
-            next_exec_dt = datetime.datetime.fromtimestamp(next_exec_ts, tz=china_tz)
-        except Exception as e:
-            self.logger.warning(f"解析下次执行时间戳失败: {next_exec_ts}, 错误: {e}")
-            return next_execute_time
-
-        # 判断下次执行时间是否过期
-        if next_exec_dt < current_time:
-            return next_execute_time
-
-        # 配置中的下次执行时间未过期，直接返回
-        return next_exec_dt
     
-    def _handle_execution_completed(self, current_time: datetime.datetime) -> datetime.datetime:
-        """返回下一个执行周期的任务执行时间"""
-        return self.get_next_cycle_execute_time(current_time)
+    def _get_task_trigger_time(self, base_time: datetime.time, task_name: str) -> datetime.time:
+        stop_minute = self.config.get_task_exe_param(task_name, "本任务执行多少分钟后执行叛忍", 0)
+        if stop_minute == 0:
+            stop_minute = 30
+        return base_time.replace(minute=stop_minute, second=0, microsecond=0)
+    
+    def _get_execute_window(self,dt: datetime.datetime | None = None):
+        windows=[]
+        if dt is None:
+            dt=self.last_run_time
+        today= dt.date()
+        match today.weekday():
+            case 0|1|2:
+                if self.config.get_task_exe_param("天地战场", "执行结束后是否有叛忍", False):
+                    wednesday = today + datetime.timedelta(days=(2 - today.weekday()))
+                    start_dt = datetime.datetime.combine(wednesday, datetime.time(21, 0), tzinfo=self.tz_info)
+                    end_dt = datetime.datetime.combine(
+                        wednesday, 
+                        self._get_task_trigger_time(datetime.time(21, 0), "天地战场"), 
+                        tzinfo=self.tz_info)
+                    windows.append((start_dt, end_dt + datetime.timedelta(minutes=30)))
+            case 3|4|5:
+                if self.config.get_task_exe_param("要塞争夺战", "执行结束后是否有叛忍", False):
+                    saturday = today + datetime.timedelta(days=(5 - today.weekday()))
+                    start_dt = datetime.datetime.combine(saturday, datetime.time(20, 0), tzinfo=self.tz_info)
+                    end_dt = datetime.datetime.combine(
+                        saturday,
+                        self._get_task_trigger_time(datetime.time(20, 0), "要塞争夺战"),
+                        tzinfo=self.tz_info
+                    )
+                    windows.append((start_dt, end_dt + datetime.timedelta(minutes=30)))
+        next_wednesday = today + datetime.timedelta(days=(2 - today.weekday()) % 7)
+        start_dt = datetime.datetime.combine(next_wednesday, datetime.time(21, 0), tzinfo=self.tz_info)
+        end_dt = start_dt + datetime.timedelta(minutes=60)
+        windows.append((start_dt, end_dt))
+        windows.sort(key=lambda item: item[0])
+        return windows
+    
+    def get_next_cycle_day(self, dt: datetime.datetime) -> datetime.datetime:
+        return dt + datetime.timedelta(weeks=1)
+
+    def _handle_timeout(self, current_time: datetime.datetime) -> datetime.datetime:
+        return self._handle_execution_completed(current_time)
 
     def reset_task_exe_prog(self) -> bool:
         self.check = False

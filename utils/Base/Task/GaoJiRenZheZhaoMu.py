@@ -1,6 +1,7 @@
 import datetime
 from datetime import timedelta
 
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -17,9 +18,9 @@ class GaoJiRenZheZhaoMu(BaseTask):
             return False
         else:
             self.logger.warning("免费高级招募失败")
-            self.update_next_execute_time(3, timedelta(minutes=10))
+            self.schedule_next_with_delay(timedelta(minutes=10))
         self.operationer.click_and_wait("X")
-        return True
+        raise TaskCompleted("免费高级招募失败，延迟重试")
 
     @TransitionOn("招募结果")
     def _(self):
@@ -39,36 +40,10 @@ class GaoJiRenZheZhaoMu(BaseTask):
                 once_max_time=5
         ):
             continue
-        self.update_next_execute_time(3, timedelta(days=2))
-        return True
+        self.schedule_next_with_delay(timedelta(days=2))
+        raise TaskCompleted("高级招募完成，按冷却时间延迟")
 
     @TransitionOn("招募忍者已拥有")
     def _(self):
         self.operationer.click_and_wait("确定")
         return False
-
-    def _handle_initialization(self, current_time: datetime.datetime) -> datetime.datetime:
-        """处理任务初始化时的时间设置（case0）"""
-        china_tz = current_time.tzinfo
-        # 读取配置中的时间
-        next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
-
-        # 高级忍者招募的本周期执行时间默认为当前时间
-        next_execute_time = current_time
-
-        if not next_exec_ts:
-            # 配置中未设置下次执行时间，返回默认时间
-            return next_execute_time
-
-        try:
-            next_exec_dt = datetime.datetime.fromtimestamp(next_exec_ts, tz=china_tz)
-        except Exception as e:
-            self.logger.warning(f"解析下次执行时间戳失败: {next_exec_ts}, 错误: {e}")
-            return next_execute_time
-
-        # 判断下次执行时间是否过期
-        if next_exec_dt < current_time:
-            return next_execute_time
-
-        # 配置中的下次执行时间未过期，直接返回
-        return next_exec_dt

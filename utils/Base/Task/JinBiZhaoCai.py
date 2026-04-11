@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from utils.Base.Exceptions import EndEarly, StepFailedError
+from utils.Base.Exceptions import TaskCompleted, StepFailedError, TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -12,8 +12,7 @@ class JinBiZhaoCai(BaseTask):
     def _(self):
         if (self.config.get_task_exe_prog("金币招财", "已招财次数") >=
                 self.config.get_task_exe_param("金币招财", "招财次数", 2)):
-            self.update_next_execute_time()
-            raise EndEarly("已招满金币招财")
+            raise TaskCompleted("已招满金币招财")
 
         if self.operationer.click_and_wait("免费一次", wait_time=2):
             self.logger.info("免费招财一次")
@@ -30,9 +29,7 @@ class JinBiZhaoCai(BaseTask):
             self.logger.info(f"已招财 {times} 次")
             return False
         self.operationer.click_and_wait("X")
-        self.update_next_execute_time()
-        return True
-
+        raise TaskCompleted("任务执行完成")
     @TransitionOn("二级密码")
     def _(self):
         self.logger.debug("出现二级密码窗口")

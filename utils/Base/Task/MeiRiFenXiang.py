@@ -1,6 +1,7 @@
 import time
 from datetime import timedelta
 
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -36,5 +37,4 @@ class MeiRiFenXiang(BaseTask):
                 self.logger.debug("返回游戏失败，请自行检查...")
                 raise
 
-        self.update_next_execute_time()
-        return True
+        raise TaskCompleted("任务执行完成")

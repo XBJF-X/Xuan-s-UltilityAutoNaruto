@@ -13,8 +13,13 @@ class TimeOut(TaskError):
     pass
 
 
-class EndEarly(TaskError):
-    """步骤已经不需要再执行下去了，所以提前结束"""
+class TaskCompleted(TaskError):
+    """任务正常完成"""
+    pass
+
+
+class TooEarlyToRun(TaskError):
+    """执行时间早于任务可执行窗口"""
     pass
 
 

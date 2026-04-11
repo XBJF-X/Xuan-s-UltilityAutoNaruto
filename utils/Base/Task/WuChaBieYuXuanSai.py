@@ -2,12 +2,14 @@ import datetime
 import time
 from datetime import timedelta
 
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
 class WuChaBieYuXuanSai(BaseTask):
     source_scene = "火影格斗大赛-无差别"
-    dead_line = datetime.time(22)
+    start_line= datetime.time(18, 0)
+    dead_line = datetime.time(22, 0)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -27,9 +29,7 @@ class WuChaBieYuXuanSai(BaseTask):
             self.operationer.click_and_wait("出战")
             self.bool_click = True
             return False
-        self.update_next_execute_time()
-        return True
-
+        raise TaskCompleted("任务执行完成")
     @TransitionOn("无差别-继续出战")
     def _(self):
         if not self.checked:
@@ -40,9 +40,7 @@ class WuChaBieYuXuanSai(BaseTask):
             self.bool_click = True
             return False
         self.operationer.click_and_wait("X")
-        self.update_next_execute_time()
-        return True
-
+        raise TaskCompleted("任务执行完成")
     @TransitionOn("无差别-成就奖励")
     def _(self):
         self.bool_click = False
@@ -164,20 +162,3 @@ class WuChaBieYuXuanSai(BaseTask):
     def _(self):
         time.sleep(1)
         return False
-
-    def _handle_initialization(self, current_time: datetime.datetime) -> datetime.datetime:
-        """处理任务初始化时的时间设置（case0）"""
-        china_tz = current_time.tzinfo
-        # 读取配置中的时间
-        next_exec_ts = self.config.get_task_base_config(self.task_name, "下次执行时间")
-        next_execute_time = current_time.replace(hour=18, minute=0, second=0, microsecond=0)
-
-        if next_exec_ts == 0:
-            return next_execute_time
-        else:
-            return datetime.datetime.fromtimestamp(next_exec_ts, tz=china_tz)
-
-    def _handle_execution_completed(self, current_time: datetime.datetime) -> datetime.datetime:
-        """处理任务执行完成后的时间更新（case1）"""
-        next_execute_time = current_time.replace(hour=18, minute=0, second=0, microsecond=0) + timedelta(days=1)
-        return next_execute_time

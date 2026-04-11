@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -25,8 +26,7 @@ class ShengCunTiaoZhan(BaseTask):
                             max_time=1
                     ):
                         self.logger.warning("已经不能再重置了，结束执行")
-                        self.update_next_execute_time()
-                        return True
+                        raise TaskCompleted("任务执行完成")
                     else:
                         self.check_need_reset = False
                     return False
@@ -103,9 +103,7 @@ class ShengCunTiaoZhan(BaseTask):
     def _(self):
         self.operationer.click_and_wait("X")
         self.logger.warning("扫荡券不足，将停止扫荡，等待第二天执行，请自行解决扫荡券不足任务")
-        self.update_next_execute_time()
-        return True
-
+        raise TaskCompleted("任务执行完成")
     def reset_task_exe_prog(self) -> bool:
         self.check_need_reset = False
         self.bool_start = False

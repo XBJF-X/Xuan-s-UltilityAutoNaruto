@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from utils.Base.Exceptions import EndEarly
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -28,8 +28,7 @@ class MaoXianFuBen(BaseTask):
         )
         match flag:
             case 1:
-                self.update_next_execute_time()
-                raise EndEarly("勾选的副本都已经扫荡完毕，提前退出执行")
+                raise TaskCompleted("勾选的副本都已经扫荡完毕，提前退出执行")
             case 2:
                 self.logger.warning("未勾选需要扫荡的副本，即将全选")
                 self.operationer.click_and_wait("一键全选-未选中")
@@ -40,7 +39,7 @@ class MaoXianFuBen(BaseTask):
     def _(self):
         self.operationer.click_and_wait("确定")
         self._activate_another_task("消耗体力")
-        return True
+        raise TaskCompleted("便捷扫荡结束")
 
     @TransitionOn("便捷扫荡-继续扫荡")
     def _(self):
@@ -51,6 +50,4 @@ class MaoXianFuBen(BaseTask):
     @TransitionOn("体力不足")
     def _(self):
         self.operationer.click_and_wait("X")
-        self.update_next_execute_time()
-        return True
-
+        raise TaskCompleted("任务执行完成")

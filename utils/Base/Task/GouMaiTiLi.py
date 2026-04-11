@@ -1,7 +1,7 @@
 import time
 from datetime import timedelta
 
-from utils.Base.Exceptions import StepFailedError
+from utils.Base.Exceptions import StepFailedError, TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -19,9 +19,7 @@ class GouMaiTiLi(BaseTask):
             self.logger.info(f"已购买体力 {times} 次")
             return False
         self.operationer.click_and_wait("X")
-        self.update_next_execute_time()
-        return True
-
+        raise TaskCompleted("任务执行完成")
     @TransitionOn("二级密码")
     def _(self):
         self.logger.debug("出现二级密码窗口")

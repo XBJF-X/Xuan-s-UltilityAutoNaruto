@@ -59,6 +59,9 @@ class Clicker:
         with self._threads_lock:
             # 1. 检查是否存在存活线程
             if self.running:
+                self._threads = [t for t in self._threads if t.is_alive()]
+                self.running = len(self._threads) > 0
+            if self.running:
                 self.logger.debug("点击线程已启动，忽略重复启动请求")
                 return
 
@@ -106,11 +109,22 @@ class Clicker:
         self._stop_event.set()
 
         with self._threads_lock:
+            alive_threads: List[threading.Thread] = []
             for thread in self._threads:
-                thread.join(timeout=1)
+                thread.join(timeout=2)
                 if thread.is_alive():
                     self.logger.warning("某个点击线程未及时退出")
+                    alive_threads.append(thread)
+
+            # 若仍有线程存活，保持 stop 事件为 set，避免线程继续点击
+            self._threads = alive_threads
+            if alive_threads:
+                self.running = True
+                self.logger.warning(f"仍有 {len(alive_threads)} 个点击线程未退出，将继续等待其自行结束")
+                return
+
             self._threads.clear()
+
         self._stop_event.clear()
         self.running = False
         self.logger.debug("所有点击线程已停止")
@@ -144,12 +158,23 @@ class Clicker:
         """
         control = None
         try:
+            control_manager = self.operationer.device.control_manager
             if time.perf_counter() - self.last_minitouch_create_time > MINITOUCH_MAX_LIFETIME:
-                self.operationer.device.control_manager.release()
-                self.operationer.device.control_manager.current_control = self.operationer.device.control_manager.create_control_instance()
-                self.last_minitouch_create_time = time.perf_counter()
-            control = self.operationer.device.control_manager.current_control
-            if not control.ready:
+                old_control = control_manager.current_control
+                new_control = control_manager.create_control_instance()
+                if new_control is not None:
+                    control_manager.current_control = new_control
+                    self.last_minitouch_create_time = time.perf_counter()
+                    if old_control and old_control is not new_control:
+                        try:
+                            old_control.release()
+                        except Exception as e:
+                            self.logger.warning(f"释放旧 MiniTouch 实例失败: {e}")
+                else:
+                    self.logger.warning("MiniTouch 刷新失败，继续使用旧实例")
+
+            control = control_manager.current_control
+            if not control or not control.ready:
                 self.logger.error("MiniTouch 实例未就绪，无法启动多点连点")
                 return
             points = [[x, y] for x, y in coords]
@@ -157,6 +182,13 @@ class Clicker:
 
             while not self._stop_event.is_set():
                 try:
+                    active_control = control_manager.current_control
+                    if active_control and active_control is not control and active_control.ready:
+                        control = active_control
+                    if not control.ready:
+                        self.logger.warning("MiniTouch 实例已失效，结束多点连点线程")
+                        break
+
                     control.multi_tap(points, pressure=100, duration=0.08)
                     time.sleep(0.15)
                 except Exception as e:

@@ -1,6 +1,7 @@
-import time
-from datetime import timedelta
 
+from datetime import datetime, timedelta,time
+
+from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 
@@ -172,9 +173,7 @@ class QingBaoZhan(BaseTask):
             return False
         self.operationer.click_and_wait("X")
         self.reset_task_exe_prog()
-        self.update_next_execute_time()
-        return True
-
+        raise TaskCompleted("任务执行完成")
     @TransitionOn("福利站-每日签到")
     def _(self):
         self.operationer.click_and_wait("立即签到", wait_time=5)
@@ -226,7 +225,25 @@ class QingBaoZhan(BaseTask):
         else:
             self.logger.warning(f"{num}活跃度奖励领取失败，活跃度未达到要求")
 
-    def reset_task_exe_prog(self) -> None:
+    def _get_execute_window(
+        self,
+        current_time: datetime | None = None
+    ):
+        """
+        返回一个列表，列表中的每个元素是一个二元组(start_dt, end_dt)，表示一个可执行窗口的开始和结束时间  
+        执行检查时应以self.last_run_time为基准，避免执行时跨过窗口期导致的异常
+        """
+        if current_time is None:
+            current_time=self.last_run_time
+        today = current_time.date()
+        tomorrow = today + timedelta(days=1)
+
+        start_dt = datetime.combine(today, time(0, 0), tzinfo=self.tz_info)
+        dead_dt = datetime.combine(tomorrow, time(0, 0), tzinfo=self.tz_info)
+
+        return [(start_dt, dead_dt)]
+
+    def reset_task_exe_prog(self) -> bool:
         flag = all([
             self.config.get_task_exe_prog(self.task_name, f"40活跃度奖励已领取", False),
             self.config.get_task_exe_prog(self.task_name, f"60活跃度奖励已领取", False),
@@ -245,3 +262,4 @@ class QingBaoZhan(BaseTask):
         self.config.set_task_exe_prog(self.task_name, f"40活跃度奖励已领取", False)
         self.config.set_task_exe_prog(self.task_name, f"60活跃度奖励已领取", False)
         self.config.set_task_exe_prog(self.task_name, f"100活跃度奖励已领取", False)
+        return True
