@@ -140,7 +140,7 @@ class MiniTouch(Control):
 
         self._mt_core.swipe(points, total_ms)
         # self.logger.debug(f"滑动: {start_coordinate} -> {end_coordinate} | 总时长:{duration}s")
-        time.sleep(duration * 1.2)
+        time.sleep(duration * 1.1)
 
     # ==================== 复用ADB实现Control其他抽象方法 ====================
     def app_stop(self, package_name: str):
@@ -176,7 +176,21 @@ class MiniTouch(Control):
 
     def long_press(self, x: int, y: int, duration: float):
         """Control约束：长按"""
-        self._mt_core.click(x, y, duration=int(duration * 1000))
+        if not self.ready:
+            return
+        
+        start_time = time.perf_counter()
+
+        hold_ms = max(0, int(duration * 1000))
+        builder = CommandBuilder()
+        builder.down(0, int(x), int(y), self.max_pressure)
+        builder.commit()
+        if hold_ms > 0:
+            builder.wait(hold_ms)
+        builder.up(0)
+        builder.commit()
+        builder.publish(self._mt_core)
+        time.sleep(duration*1.1-(time.perf_counter() - start_time))
 
     def multi_tap(self, points: List[List[int]], pressure: int = 100, duration: float = 0.1):
         """

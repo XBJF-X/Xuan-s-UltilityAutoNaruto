@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from PySide6.QtWidgets import QMessageBox
 
@@ -18,7 +19,7 @@ class ControlManager:
         self.logger = parent_logger.getChild(self.__class__.__name__) if parent_logger else logging.getLogger(self.__class__.__name__)
         self.config = config
         self.control_mode = ControlMode(self.config.get_config('控制模式'))
-        self.current_control: Control | None = self.create_control_instance()
+        self.current_control: Control | Any = self.create_control_instance()
 
     def __del__(self):
         """析构函数：自动释放资源"""
