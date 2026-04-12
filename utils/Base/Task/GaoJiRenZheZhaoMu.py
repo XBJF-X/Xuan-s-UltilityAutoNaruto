@@ -1,5 +1,6 @@
 import datetime
 from datetime import timedelta
+from typing import List
 
 from utils.Base.Exceptions import TaskCompleted
 from utils.Base.Task.BaseTask import BaseTask, TransitionOn
@@ -24,21 +25,14 @@ class GaoJiRenZheZhaoMu(BaseTask):
 
     @TransitionOn("招募结果")
     def _(self):
-        while not self.operationer.search_and_click(
-                [
-                    "确定"
-                ],
-                [
-                    {
-                        "click": {
-                            "type": "COORDINATE",
-                            "coordinate": [800, 730]
-                        }
-                    }
-                ],
-                max_attempts=2,
-                once_max_time=5
-        ):
+        while not self.operationer.search_and_click(["确定"], [{
+                "click": {
+                    "type": "COORDINATE",
+                    "coordinate": [800, 730]
+                }
+        }],
+                                                    max_attempts=2,
+                                                    once_max_time=5):
             continue
         self.schedule_next_with_delay(timedelta(days=2))
         raise TaskCompleted("高级招募完成，按冷却时间延迟")
@@ -47,3 +41,22 @@ class GaoJiRenZheZhaoMu(BaseTask):
     def _(self):
         self.operationer.click_and_wait("确定")
         return False
+    def _get_execute_window(
+        self,
+        dt: datetime.datetime | None = None
+    ):
+        if dt is None:
+            dt=self.last_run_time
+        dt = self._ensure_tz_aware(dt)
+        today = dt.date()
+        if dt.time() < datetime.time(5, 0):
+            today -= timedelta(days=1)
+        after_2_day = today + timedelta(days=2)
+
+        start_dt = datetime.datetime.combine(today, self.start_line or datetime.time(5, 0), tzinfo=self.tz_info)
+        if self.dead_line:
+            dead_dt = datetime.datetime.combine(today, self.dead_line, tzinfo=self.tz_info)
+        else:
+            dead_dt = datetime.datetime.combine(after_2_day, datetime.time(5, 0), tzinfo=self.tz_info)
+
+        return [(start_dt, dead_dt)]
