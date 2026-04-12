@@ -9,7 +9,7 @@ from utils.Base.Control import Control, ControlMode
 from utils.Base.Control.MiniTouch import MiniTouch
 from utils.Base.Control.U2 import U2
 
-MINITOUCH_MAX_LIFETIME = 30
+MINITOUCH_MAX_LIFETIME = 180
 """
 MiniTouch服务在连点器状态下能存活的最长时间，防止MuMu自动杀死服务
 同时减少高频启动服务导致的性能浪费
