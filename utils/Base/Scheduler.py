@@ -589,6 +589,9 @@ class Scheduler(QObject):
                     self.logger.exception("释放 screen_manager 时出错")
             # 释放完资源后，清理对 device 的引用
             self.device = None
+        if self.operationer:
+            self.operationer.stop()
+            self.operationer = None
         # 清空所有队列
         self.task_queue = PriorityQueue[BaseTask]()
         # 清除所有任务控件

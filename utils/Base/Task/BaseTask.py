@@ -16,7 +16,8 @@ from StaticFunctions import get_real_path
 from utils.Base.Config import Config
 from utils.Base.Exceptions import (
     StepFailedError,
-    TimeOut,
+    TimeOutDeadLineError,
+    TimeOutMaxDurationError,
     Stop,
     TaskCompleted,
     TooEarlyToRun,
@@ -108,10 +109,14 @@ def handle_task_exceptions(func):
         except Stop as e:
             self.logger.warning("线程被要求停止")
             self._cleanup_on_stop()
-        except TimeOut as e:
-            self.logger.error(f"任务超时：{e}")
+        except TimeOutDeadLineError as e:
+            self.logger.error(f"任务超时：已到达可执行窗口DeadLine")
             self._cleanup_on_timeout()
-            self.schedule_next_on_timeout()
+            self.schedule_next_on_timeout_deadline()
+        except  TimeOutMaxDurationError as e:
+            self.logger.error(f"任务超时：超过任务最大执行时长")
+            self._cleanup_on_timeout()
+            self.schedule_next_on_timeout_max_duration()
         except Exception as e:
             self.logger.error(f"未知错误：{e}")
         finally:
@@ -300,9 +305,9 @@ class BaseTask:
                 if start_dt and current_time < start_dt:
                     raise TooEarlyToRun("[StartLine]未到任务可执行时间")
                 if end_dt and current_time >= end_dt:
-                    raise TimeOut("[DeadLine]任务执行超时")
+                    raise TimeOutDeadLineError("[DeadLine]任务执行超时")
             if self._check_timeout(current_time):
-                raise TimeOut("[MaxDuration]任务执行超时")
+                raise TimeOutMaxDurationError("[MaxDuration]任务执行超时")
 
             # 执行步骤转换
             result = self.transition()
@@ -465,10 +470,16 @@ class BaseTask:
         next_execute_time = self._handle_execution_completed(current_time)
         return self._save_next_execute_time(next_execute_time)
 
-    def schedule_next_on_timeout(
+    def schedule_next_on_timeout_deadline(
             self) -> tuple[bool, datetime.datetime | None]:
         current_time = datetime.datetime.now(self.tz_info)
-        next_execute_time = self._handle_timeout(current_time)
+        next_execute_time = self._handle_timeout_deadline(current_time)
+        return self._save_next_execute_time(next_execute_time)
+    
+    def schedule_next_on_timeout_max_duration(
+            self) -> tuple[bool, datetime.datetime | None]:
+        current_time = datetime.datetime.now(self.tz_info)
+        next_execute_time = self._handle_timeout_max_duration(current_time)
         return self._save_next_execute_time(next_execute_time)
 
     def schedule_next_on_too_early(
@@ -552,7 +563,12 @@ class BaseTask:
         """返回下一个执行周期的任务执行时间"""
         return self.get_cycle_execute_time(current_time, completed=True)
 
-    def _handle_timeout(self,
+    def _handle_timeout_deadline(self,
+                        current_time: datetime.datetime) -> datetime.datetime:
+        """处理超时逻辑"""
+        return self._handle_execution_completed(current_time)
+    
+    def _handle_timeout_max_duration(self,
                         current_time: datetime.datetime) -> datetime.datetime:
         """处理超时逻辑"""
         return self._handle_initialization(current_time)

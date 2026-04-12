@@ -227,7 +227,7 @@ class PanRenLaiXi(BaseTask):
     def get_next_cycle_day(self, dt: datetime.datetime) -> datetime.datetime:
         return dt + datetime.timedelta(weeks=1)
 
-    def _handle_timeout(self, current_time: datetime.datetime) -> datetime.datetime:
+    def _handle_timeout_max_duration(self, current_time: datetime.datetime) -> datetime.datetime:
         return self._handle_execution_completed(current_time)
 
     def reset_task_exe_prog(self) -> bool:

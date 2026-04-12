@@ -8,7 +8,11 @@ class StepFailedError(TaskError):
     pass
 
 
-class TimeOut(TaskError):
+class TimeOutDeadLineError(TaskError):
+    """步骤执行超时"""
+    pass
+
+class TimeOutMaxDurationError(TaskError):
     """步骤执行超时"""
     pass
 

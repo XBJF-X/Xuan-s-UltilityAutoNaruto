@@ -154,5 +154,5 @@ class YaoSaiZhengDuoZhan(BaseTask):
             self._activate_another_task("叛忍来袭")
         return self.get_cycle_execute_time(current_time, completed=True)
 
-    def _handle_timeout(self, current_time: datetime.datetime):
+    def _handle_timeout_max_duration(self, current_time: datetime.datetime):
         return self._handle_execution_completed(current_time)
