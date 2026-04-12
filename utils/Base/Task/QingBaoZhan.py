@@ -162,17 +162,17 @@ class QingBaoZhan(BaseTask):
             self.config.set_task_exe_prog(self.task_name, "领取情报站活跃度", True)
             return False
 
-        elif not self.config.get_task_exe_prog(self.task_name, "40活跃度奖励已领取", False):
-            self.handle_activity_reward(40)
-            return False
+        
         elif not self.config.get_task_exe_prog(self.task_name, "60活跃度奖励已领取", False):
             self.handle_activity_reward(60)
             return False
         elif not self.config.get_task_exe_prog(self.task_name, "100活跃度奖励已领取", False):
             self.handle_activity_reward(100)
             return False
+        elif not self.config.get_task_exe_prog(self.task_name, "40活跃度奖励已领取", False):
+            self.handle_activity_reward(40)
+            return False
         self.operationer.click_and_wait("X")
-        self.reset_task_exe_prog()
         raise TaskCompleted("任务执行完成")
     @TransitionOn("福利站-每日签到")
     def _(self):
@@ -198,7 +198,7 @@ class QingBaoZhan(BaseTask):
     @TransitionOn("福利站-40活跃奖励-抽取中")
     def _(self):
         self.operationer.press_key("BACK")
-        return False
+        raise TaskCompleted("任务执行完成")
 
     @TransitionOn("情报站-文章详情")
     def _(self):

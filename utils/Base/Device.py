@@ -25,11 +25,15 @@ class Device:
 
     @property
     def screen_size(self):
-        control = self.control_manager.current_control
-        if control is None:
-            self.logger.warning("控制实例为空，使用默认分辨率")
+        control = self.control_manager.get_current_control()
+        if control is None or not control.ready:
+            self.logger.warning("控制实例为空或未就绪，使用默认分辨率")
             return self.resolution
-        return control.screen_size
+        try:
+            return control.screen_size
+        except Exception as e:
+            self.logger.warning(f"读取控制实例分辨率失败，使用默认分辨率: {e}")
+            return self.resolution
 
     @property
     def rotated(self):
@@ -51,21 +55,25 @@ class Device:
 
     def click(self, coordinate_x, coordinate_y, times=1):
         x, y = self.regularize_coordinate(coordinate_x, coordinate_y)
+        success = True
         for _ in range(times):
             self.logger.debug(f"[Click] ({coordinate_x},{coordinate_y})[{x},{y}]")
-            self.control_manager.click(x, y)
+            success = self.control_manager.click(x, y) and success
+        return success
 
 
     def swipe(self, start_coordinate, end_coordinate, duration=0.5, times=1):
         x1, y1 = self.regularize_coordinate(start_coordinate[0], start_coordinate[1])
         x2, y2 = self.regularize_coordinate(end_coordinate[0], end_coordinate[1])
+        success = True
         for _ in range(times):
             self.logger.debug(f"[Swipe] ({start_coordinate[0]},{start_coordinate[1]})->({end_coordinate[0]},{end_coordinate[1]}) [ ({x1},{y1})->({x2},{y2}) ]")
-            self.control_manager.swipe(
+            success = self.control_manager.swipe(
                 (x1, y1),
                 (x2, y2),
                 duration
-            )
+            ) and success
+        return success
 
     def app_restart(self):
         # 停止应用

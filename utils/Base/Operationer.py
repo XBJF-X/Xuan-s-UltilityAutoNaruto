@@ -96,8 +96,11 @@ class Operationer:
                 coordinates = self.recognizer.element_match(self.device.screen_cap(), element, False)
                 if len(coordinates) != 0:
                     self.screen_save_signal.emit(self.task_name)
-                    time.sleep(wait_time)
-                    self.wait_until_stable(**stable_kwargs)
+                    if wait_time is not None:
+                        time.sleep(wait_time)
+                    else:
+                        self.wait_until_stable(**stable_kwargs)
+                    
                     success = True
                     break
                 sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
@@ -108,8 +111,10 @@ class Operationer:
                 coordinates = self.recognizer.element_match(self.device.screen_cap(), element, False)
                 if len(coordinates) != 0:
                     self.screen_save_signal.emit(self.task_name)
-                    time.sleep(wait_time)
-                    self.wait_until_stable(**stable_kwargs)
+                    if wait_time is not None:
+                        time.sleep(wait_time)
+                    else:
+                        self.wait_until_stable(**stable_kwargs)
                     success = True
                     break
                 sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
@@ -158,8 +163,10 @@ class Operationer:
                 flag = self.recognizer.scene_match(self.device.screen_cap(), scene, False)
                 if flag:
                     self.screen_save_signal.emit(self.task_name)
-                    time.sleep(wait_time)
-                    self.wait_until_stable(**stable_kwargs)
+                    if wait_time is not None:
+                        time.sleep(wait_time)
+                    else:
+                        self.wait_until_stable(**stable_kwargs)
                     success = True
                     break
                 sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
@@ -170,8 +177,10 @@ class Operationer:
                 flag = self.recognizer.scene_match(self.device.screen_cap(), scene, False)
                 if flag:
                     self.screen_save_signal.emit(self.task_name)
-                    time.sleep(wait_time)
-                    self.wait_until_stable(**stable_kwargs)
+                    if wait_time is not None:
+                        time.sleep(wait_time)
+                    else:
+                        self.wait_until_stable(**stable_kwargs)
                     success = True
                     break
                 sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
@@ -212,6 +221,13 @@ class Operationer:
 
         stable_kwargs = {k: v for k, v in kwargs.items() if k.startswith('stable_')}
 
+        def _on_click_success():
+            self.screen_save_signal.emit(self.task_name)
+            if wait_time is not None:
+                time.sleep(wait_time)
+            else:
+                self.wait_until_stable(**stable_kwargs)
+
         start_time = time.perf_counter()
         success = False
         self.screen_save_signal.emit(self.task_name)
@@ -221,14 +237,12 @@ class Operationer:
                     raise Stop
                 time_1 = time.perf_counter()
                 if element.type == ElementType.COORDINATE:
-                    self.device.click(element.coordinate_x, element.coordinate_y, times=click_times)
-                    self.screen_save_signal.emit(self.task_name)
-                    if wait_time is not None:
-                        time.sleep(wait_time)
-                    else:
-                        self.wait_until_stable(**stable_kwargs)
-                    success = True
-                    break
+                    if self.device.click(element.coordinate_x, element.coordinate_y, times=click_times):
+                        _on_click_success()
+                        success = True
+                        break
+                    sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
+                    time.sleep(sleep_time)
                 elif element.type == ElementType.IMG:
                     coordinates = self.recognizer.element_match(self.device.screen_cap(), element)
                     if coordinates:
@@ -237,28 +251,22 @@ class Operationer:
                         # 按照元素可点击位置相对于模版左上角，相对整体的比例确定点击坐标
                         x, y = (coordinate[0] * (1 - x_ratio) + coordinate[2] * x_ratio), (
                                 coordinate[1] * (1 - y_ratio) + coordinate[3] * y_ratio)
-                        self.device.click(x, y, times=click_times)
-                        self.screen_save_signal.emit(self.task_name)
-                        if wait_time is not None:
-                            time.sleep(wait_time)
-                        else:
-                            self.wait_until_stable(**stable_kwargs)
-                        success = True
-                        break
+                        if self.device.click(x, y, times=click_times):
+                            _on_click_success()
+                            success = True
+                            break
                     sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
                     time.sleep(sleep_time)
         else:
             while time.perf_counter() - start_time < max_time:
                 time_1 = time.perf_counter()
                 if element.type == ElementType.COORDINATE:
-                    self.device.click(element.coordinate_x, element.coordinate_y, times=click_times)
-                    self.screen_save_signal.emit(self.task_name)
-                    if wait_time is not None:
-                        time.sleep(wait_time)
-                    else:
-                        self.wait_until_stable(**stable_kwargs)
-                    success = True
-                    break
+                    if self.device.click(element.coordinate_x, element.coordinate_y, times=click_times):
+                        _on_click_success()
+                        success = True
+                        break
+                    sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
+                    time.sleep(sleep_time)
                 elif element.type == ElementType.IMG:
                     coordinates = self.recognizer.element_match(self.device.screen_cap(), element)
                     if coordinates:
@@ -268,25 +276,22 @@ class Operationer:
                         x, y = (coordinate[0] * (1 - x_ratio) + coordinate[2] * x_ratio), (
                                 coordinate[1] * (1 - y_ratio) + coordinate[3] * y_ratio)
 
-                        self.device.click(x, y, times=click_times)
-                        self.screen_save_signal.emit(self.task_name)
-                        if wait_time is not None:
-                            time.sleep(wait_time)
-                        else:
-                            self.wait_until_stable(**stable_kwargs)
-                        success = True
-                        break
+                        if self.device.click(x, y, times=click_times):
+                            _on_click_success()
+                            success = True
+                            break
                     sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
                     time.sleep(sleep_time)
 
-        # # 根据auto_raise参数决定是抛出异常还是返回结果
-        # if not success and auto_raise:
-        #     if element.type == ElementType.IMG:
-        #         self.logger.warning(f"点击元素 [{element.name}] 失败")
-        #         raise StepFailedError(f"点击元素 [{element.name}] 失败")
-        #     elif element.type == ElementType.COORDINATE:
-        #         self.logger.warning(f"点击元素 [{element.name}] 失败")
-        #         raise StepFailedError(f"点击坐标 ({element.coordinate_x},{element.coordinate_y}) 失败")
+        # # 结算页常见按钮模板失效时，兜底点击屏幕中心，避免流程卡死。
+        # if (not success and element.type == ElementType.IMG and
+        #         element.name == "点击任意位置关闭界面"):
+        #     center_x = self.device.resolution[0] // 2
+        #     center_y = self.device.resolution[1] // 2
+        #     if self.device.click(center_x, center_y, times=1):
+        #         _on_click_success()
+        #         success = True
+
 
         return success
 
@@ -526,7 +531,7 @@ class Operationer:
         if wait_time:
             time.sleep(wait_time)
 
-    def long_press(self, x, y, duration=1):
+    def long_press(self, x, y, duration=1.0):
         """
         长按
 

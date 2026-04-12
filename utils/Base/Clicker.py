@@ -9,7 +9,7 @@ from utils.Base.Control import Control, ControlMode
 from utils.Base.Control.MiniTouch import MiniTouch
 from utils.Base.Control.U2 import U2
 
-MINITOUCH_MAX_LIFETIME = 120
+MINITOUCH_MAX_LIFETIME = 30
 """
 MiniTouch服务在连点器状态下能存活的最长时间，防止MuMu自动杀死服务
 同时减少高频启动服务导致的性能浪费
@@ -160,10 +160,10 @@ class Clicker:
         try:
             control_manager = self.operationer.device.control_manager
             if time.perf_counter() - self.last_minitouch_create_time > MINITOUCH_MAX_LIFETIME:
-                old_control = control_manager.current_control
+                old_control = control_manager.get_current_control()
                 new_control = control_manager.create_control_instance()
                 if new_control is not None:
-                    control_manager.current_control = new_control
+                    old_control = control_manager.replace_current_control(new_control)
                     self.last_minitouch_create_time = time.perf_counter()
                     if old_control and old_control is not new_control:
                         try:
@@ -173,7 +173,7 @@ class Clicker:
                 else:
                     self.logger.warning("MiniTouch 刷新失败，继续使用旧实例")
 
-            control = control_manager.current_control
+            control = control_manager.get_current_control()
             if not control or not control.ready:
                 self.logger.error("MiniTouch 实例未就绪，无法启动多点连点")
                 return
@@ -182,7 +182,7 @@ class Clicker:
 
             while not self._stop_event.is_set():
                 try:
-                    active_control = control_manager.current_control
+                    active_control = control_manager.get_current_control()
                     if active_control and active_control is not control and active_control.ready:
                         control = active_control
                     if not control.ready:

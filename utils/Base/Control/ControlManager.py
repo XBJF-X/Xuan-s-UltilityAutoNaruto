@@ -1,4 +1,5 @@
 import logging
+import threading
 from typing import Any
 
 from PySide6.QtWidgets import QMessageBox
@@ -19,6 +20,7 @@ class ControlManager:
         self.logger = parent_logger.getChild(self.__class__.__name__) if parent_logger else logging.getLogger(self.__class__.__name__)
         self.config = config
         self.control_mode = ControlMode(self.config.get_config('控制模式'))
+        self._control_lock = threading.RLock()
         self.current_control: Control | Any = self.create_control_instance()
 
     def __del__(self):
@@ -28,7 +30,8 @@ class ControlManager:
     @property
     def ready(self):
         """统一的就绪判断（对外接口）"""
-        return (self.current_control is not None) and self.current_control.ready
+        with self._control_lock:
+            return (self.current_control is not None) and self.current_control.ready
 
     def create_control_instance(self):
         """初始化控制实例"""
@@ -62,69 +65,111 @@ class ControlManager:
             QMessageBox.information(None, "", f"已经是[{new_mode.name}]模式", QMessageBox.StandardButton.Ok)
             return
 
-        # 释放旧实例 → 创建新实例
+        # 先创建新实例，再原子替换，避免 current_control 短暂为空
+        old_mode = self.control_mode
         self.control_mode = new_mode
-        self.release()
-        self.current_control = self.create_control_instance()
+        new_control = self.create_control_instance()
+        if new_control is None:
+            self.control_mode = old_mode
+            return
+
+        with self._control_lock:
+            old_control = self.current_control
+            self.current_control = new_control
+
+        self.config.set_config('控制模式', self.control_mode.value)
+        if old_control:
+            old_control.release()
 
     def release(self):
         """释放当前实例"""
-        if self.current_control:
-            self.current_control.release()
+        with self._control_lock:
+            control = self.current_control
             self.current_control = None
+        if control:
+            control.release()
             self.logger.debug("当前控制实例已释放")
+
+    def get_current_control(self):
+        with self._control_lock:
+            return self.current_control
+
+    def replace_current_control(self, new_control: Control | Any):
+        with self._control_lock:
+            old_control = self.current_control
+            self.current_control = new_control
+            return old_control
 
     # ------------------- 统一对外控制接口 -------------------
     def click(self, x, y) -> bool:
-        if not self.ready:
-            self.logger.warning("控制实例未就绪")
-            return False
-        self.current_control.click(x, y)
-        return True
+        with self._control_lock:
+            if not self.ready:
+                self.logger.warning("控制实例未就绪")
+                return False
+            try:
+                self.current_control.click(x, y)
+                return True
+            except Exception as e:
+                self.logger.warning(f"控制点击失败: {e}")
+                return False
 
     def swipe(self, start_coordinate, end_coordinate, duration=0.5) -> bool:
-        if not self.ready:
-            self.logger.warning("控制实例未就绪")
-            return False
-        self.current_control.swipe(start_coordinate, end_coordinate, duration)
-        return True
+        with self._control_lock:
+            if not self.ready:
+                self.logger.warning("控制实例未就绪")
+                return False
+            try:
+                self.current_control.swipe(start_coordinate, end_coordinate, duration)
+                return True
+            except Exception as e:
+                self.logger.warning(f"控制滑动失败: {e}")
+                return False
 
     def app_stop(self, package_name) -> bool:
-        if not self.ready:
-            return False
-        self.current_control.app_stop(package_name)
-        return True
+        with self._control_lock:
+            if not self.ready:
+                return False
+            self.current_control.app_stop(package_name)
+            return True
 
     def app_start(self, package_name) -> bool:
-        if not self.ready:
-            return False
-        self.current_control.app_start(package_name)
-        return True
+        with self._control_lock:
+            if not self.ready:
+                return False
+            self.current_control.app_start(package_name)
+            return True
 
     def current_app(self):
-        return self.current_control.current_app() if self.ready else None
+        with self._control_lock:
+            return self.current_control.current_app() if self.ready else None
 
     def input(self, input_text):
-        if self.ready:
-            self.current_control.input(input_text)
+        with self._control_lock:
+            if self.ready:
+                self.current_control.input(input_text)
 
     def press_key(self, key):
-        if self.ready:
-            self.current_control.press_key(key)
+        with self._control_lock:
+            if self.ready:
+                self.current_control.press_key(key)
 
     def touch_down(self, x, y):
-        if self.ready:
-            self.current_control.touch_down(x, y)
+        with self._control_lock:
+            if self.ready:
+                self.current_control.touch_down(x, y)
 
     def touch_up(self, x, y):
-        if self.ready:
-            self.current_control.touch_up(x, y)
+        with self._control_lock:
+            if self.ready:
+                self.current_control.touch_up(x, y)
 
     def long_press(self, x, y, duration):
-        if self.ready:
-            self.current_control.long_press(x, y, duration)
+        with self._control_lock:
+            if self.ready:
+                self.current_control.long_press(x, y, duration)
 
     @property
     def rotated(self):
-        if self.ready:
-            return self.current_control.rotated
+        with self._control_lock:
+            if self.ready:
+                return self.current_control.rotated

@@ -30,8 +30,14 @@ class MiJingTanXian(BaseTask):
         self.fighting = False
         self.operationer.clicker.stop()
         self.bool_click = False
+        ##############测试代码##############
+        # self.operationer.click_and_wait("出战")
+        # self.bool_click = True
+        # self.logger.info("测试代码，无视挑战券数量，继续执行")
+        # return False
+        ######################################
         if not self.operationer.detect_element(
-                "剩余挑战券-0", max_time=0.7, wait_time=3, auto_raise=False):
+                "剩余挑战券-0", max_time=0.7, wait_time=3):
             self.operationer.click_and_wait("出战")
             self.bool_click = True
             self.logger.info("挑战券不为0，继续执行")
@@ -44,7 +50,7 @@ class MiJingTanXian(BaseTask):
         self.bool_click = True
         self.operationer.clicker.stop()
         self.logger.info("等待系统自动翻牌结束...")
-        time.sleep(6)
+        self.operationer.wait_until_stable(stable_duration=2)
 
         while self.config.get_task_exe_prog(self.task_name, "忍具已翻牌次数", 0) < \
                 self.config.get_task_exe_param(self.task_name, "忍具翻牌次数", 0):
