@@ -225,17 +225,11 @@ class QingBaoZhan(BaseTask):
         else:
             self.logger.warning(f"{num}活跃度奖励领取失败，活跃度未达到要求")
 
-    def _get_execute_window(
-        self,
-        current_time: datetime | None = None
-    ):
-        """
-        返回一个列表，列表中的每个元素是一个二元组(start_dt, end_dt)，表示一个可执行窗口的开始和结束时间  
-        执行检查时应以self.last_run_time为基准，避免执行时跨过窗口期导致的异常
-        """
-        if current_time is None:
-            current_time=self.last_run_time
-        today = current_time.date()
+    def _get_execute_window(self,dt: datetime | None = None):
+        if dt is None:
+            dt=self.last_run_time
+        dt = self._ensure_tz_aware(dt)
+        today = dt.date()
         tomorrow = today + timedelta(days=1)
 
         start_dt = datetime.combine(today, time(0, 0), tzinfo=self.tz_info)

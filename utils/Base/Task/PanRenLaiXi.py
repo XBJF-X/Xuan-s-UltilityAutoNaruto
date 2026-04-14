@@ -196,6 +196,7 @@ class PanRenLaiXi(BaseTask):
         windows=[]
         if dt is None:
             dt=self.last_run_time
+        dt = self._ensure_tz_aware(dt)
         today= dt.date()
         match today.weekday():
             case 0|1|2:

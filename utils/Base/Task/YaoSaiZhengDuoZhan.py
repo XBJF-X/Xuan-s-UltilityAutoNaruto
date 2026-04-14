@@ -123,6 +123,7 @@ class YaoSaiZhengDuoZhan(BaseTask):
     def _get_execute_window(self, dt: datetime.datetime | None = None):
         if dt is None:
             dt = self.last_run_time
+        dt = self._ensure_tz_aware(dt)
         today = dt.date()
         if dt.time() < datetime.time(5, 0):
             today -= datetime.timedelta(days=1)

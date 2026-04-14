@@ -82,6 +82,7 @@ class SaiJiShengChang(MeiRiShengChang):
     def _get_execute_window(self,dt: datetime | None = None):
         if dt is None:
             dt=self.last_run_time
+        dt = self._ensure_tz_aware(dt)
         today = dt.date()
         if dt.time() < time(5, 0):
             today -= timedelta(days=1)
@@ -90,7 +91,7 @@ class SaiJiShengChang(MeiRiShengChang):
         next_month = today.replace(day=28) + timedelta(days=4)  # this will never fail
         last_day_of_month = next_month - timedelta(days=next_month.day)     
         second_last_day_of_month = last_day_of_month - timedelta(days=1)
-        start_dt = datetime.combine(second_last_day_of_month, time(5, 0))
+        start_dt = datetime.combine(second_last_day_of_month, time(5, 0), tzinfo=self.tz_info)
         dead_dt = start_dt + timedelta(days=2)
 
         return [(start_dt, dead_dt)]

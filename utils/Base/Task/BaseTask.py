@@ -272,7 +272,7 @@ class BaseTask:
     def _check_window_invalid(self, dt: datetime.datetime, base: datetime.datetime|None=None) -> bool:
         """检查时间是否在可执行窗口内"""
         dt = self._ensure_tz_aware(dt)
-        windows = self._get_execute_window(base)
+        windows = self._get_execute_window(self._ensure_tz_aware(base) if base else None)
         for start_dt, end_dt in windows:
             if start_dt:
                 start_dt = self._ensure_tz_aware(start_dt)
@@ -535,7 +535,7 @@ class BaseTask:
                                dt: datetime.datetime,
                                completed=False) -> datetime.datetime:
         """返回 dt 所属执行周期的任务执行时间"""
-        window=self._get_execute_window(self.get_next_cycle_day(dt) if completed else None)
+        window=self._get_execute_window(self.get_next_cycle_day(self._ensure_tz_aware(dt)) if completed else None)
         return window[0][0]
 
     def _handle_initialization(
