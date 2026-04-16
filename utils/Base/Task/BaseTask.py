@@ -662,13 +662,18 @@ class BaseTask:
     @TransitionOn("对方数据异常")
     def _(self):
         self.operationer.click_and_wait("确定")
-        self.logger.warning("对方数据异常，即将退出战斗")
+        self.logger.warning("对方数据异常，即将退出战斗...")
         return False
 
     @TransitionOn("网络不畅通")
     def _(self):
         self.operationer.click_and_wait("确定")
         self.logger.warning("网络不通畅！")
+        return False
+    @TransitionOn("登录授权过期")
+    def _(self):
+        self.operationer.click_and_wait("忽略")
+        self.logger.warning("登陆授权过期，已自动忽略并继续执行...")
         return False
 
     @TransitionOn("版本更新1")
