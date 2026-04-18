@@ -9,7 +9,7 @@ from utils.Base.Task.BaseTask import BaseTask, TransitionOn
 
 class PanRenLaiXi(BaseTask):
     source_scene = "主场景-组织"
-    task_max_duration = datetime.timedelta(minutes=30)
+    task_max_duration = datetime.timedelta(minutes=45)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -189,7 +189,7 @@ class PanRenLaiXi(BaseTask):
     def _get_task_trigger_time(self, base_time: datetime.time, task_name: str) -> datetime.time:
         stop_minute = self.config.get_task_exe_param(task_name, "本任务执行多少分钟后执行叛忍", 0)
         if stop_minute == 0:
-            stop_minute = 30
+            stop_minute = 45
         return base_time.replace(minute=stop_minute, second=0, microsecond=0)
     
     def _get_execute_window(self,dt: datetime.datetime | None = None):
