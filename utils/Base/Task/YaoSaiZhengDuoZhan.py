@@ -36,7 +36,7 @@ class YaoSaiZhengDuoZhan(BaseTask):
     @TransitionOn()
     def _(self):
         if self._bool_kuafuyaosaizhan():
-            raise TaskCompleted("任务执行完成")
+            raise TaskCompleted("本周为跨服要塞战周，跳过要塞争夺战任务")
 
         self.operationer.click_and_wait("玩法")
         self.operationer.search_and_click([f"要塞争夺战-前往"], [{
