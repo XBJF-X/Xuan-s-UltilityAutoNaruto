@@ -124,7 +124,7 @@ class SerialChoose(QDialog):
                 adb.server_kill()
             except Exception:
                 pass
-            time.sleep(1)
+            time.sleep(2)
             adb.server_version()
             # 验证服务已重启
             self.logger.info("ADB server 已重启")

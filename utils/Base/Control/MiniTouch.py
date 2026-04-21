@@ -46,6 +46,7 @@ class MiniTouch(Control):
 
         except Exception as e:
             self.logger.error(f"MiniTouch 初始化失败: {e}")
+            self.release()
             self._released = True
             raise
 

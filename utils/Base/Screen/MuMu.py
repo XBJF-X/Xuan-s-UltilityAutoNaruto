@@ -68,7 +68,7 @@ class MuMu(Screen):
             # 尝试加载 DLL
             self.inited = self._load_mumu_library() and self._connect_mumu() and self._init_screencap()
             self._ready = True
-            return self.inited
+
         except Exception as e:
             self._ready = False
             raise e
@@ -94,6 +94,11 @@ class MuMu(Screen):
 
         if not dll_handle:
             self.logger.warning(f"加载库失败: {new_lib_path} or {lib_path}")
+            self.logger.warning(f"请仔细检查MuMu安装路径和实例索引配置，如果不知道怎么配置请认真参考README！！！")
+            self.logger.warning(f"请仔细检查MuMu安装路径和实例索引配置，如果不知道怎么配置请认真参考README！！！")
+            self.logger.warning(f"请仔细检查MuMu安装路径和实例索引配置，如果不知道怎么配置请认真参考README！！！")
+            self.logger.warning(f"请仔细检查MuMu安装路径和实例索引配置，如果不知道怎么配置请认真参考README！！！")
+            self.logger.warning(f"请仔细检查MuMu安装路径和实例索引配置，如果不知道怎么配置请认真参考README！！！")
             return False
 
         # 获取函数地址
