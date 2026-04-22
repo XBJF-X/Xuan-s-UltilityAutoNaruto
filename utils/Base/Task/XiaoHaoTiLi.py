@@ -12,28 +12,48 @@ armor_coordinates = [
     "戒指"
 ]
 
+task_execute_order = [
+    "精英副本>装备合成>修罗副本",
+    "精英副本>修罗副本>装备合成",
+    "装备合成>精英副本>修罗副本",
+    "装备合成>修罗副本>精英副本",
+    "修罗副本>精英副本>装备合成",
+    "修罗副本>装备合成>精英副本"
+]
+
 
 # Todo：增加刷修罗副本的功能
 class XiaoHaoTiLi(BaseTask):
     source_scene = "主场景"
-    task_max_duration = timedelta(minutes=5)
+    task_max_duration = timedelta(minutes=10)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.current_task = None
-        self.update_equipment = False
-        self.sweep_dungeon = False
+        self.current_task = ""
+        self.execute_progress={
+            "精英副本": {
+                "是否完成": False,
+                "场景":"精英副本-便捷扫荡",
+            },
+            "修罗副本": {
+                "是否完成": False,
+                "场景":"修罗副本-关卡详情",
+            },
+            "装备合成": {
+                "是否完成": False,
+                "场景":"装备",
+            },
+
+        }
+        self.execute_order = []
+
+    def run(self):
+        self.execute_order = task_execute_order[self.config.get_task_exe_param(self.task_name, "体力消耗方式", 0)].split(">")
+        return super().run()
 
     @TransitionOn()
     def _(self):
-        match self.config.get_task_exe_param(self.task_name, "体力消耗方式", 0):
-            case 0:
-                self.current_task = 0
-                self.operationer.next_scene = "装备"
-            case 1:
-                self.current_task = 1
-                self.operationer.next_scene = "精英副本-便捷扫荡"
-        return False
+        return self.__set_next_scene()
 
     @TransitionOn("装备")
     def _(self):
@@ -42,7 +62,7 @@ class XiaoHaoTiLi(BaseTask):
             armor_coordinates[self.config.get_task_exe_param(self.task_name, "合成目标装备", 0)])
         if self.operationer.detect_element("已满阶"):
             self.logger.warning("当前装备已满阶，请在配置设置中选择其他装备")
-            self.update_equipment = True
+            self.__update_progress()
             return self.__set_next_scene()
         # 先看看当前装备能不能进阶，毕竟进阶说明没有能扫荡的了
         if self.operationer.click_and_wait("进阶",max_time=0.5):
@@ -69,10 +89,17 @@ class XiaoHaoTiLi(BaseTask):
 
     @TransitionOn("材料详情-扫荡")
     def _(self):
-        # 勾选自动停止
-        if self.operationer.click_and_wait("材料足够后自动停止-未选中"):
-            self.logger.warning("未勾选自动停止，已经勾选")
-        self.operationer.click_and_wait("开始扫荡")
+        match self.current_task:
+            case "装备合成":
+                # 勾选自动停止
+                if self.operationer.click_and_wait("材料足够后自动停止-未选中"):
+                    self.logger.warning("未勾选自动停止，已经勾选")
+                self.operationer.click_and_wait("开始扫荡")
+            case "修罗副本":
+                if not self.operationer.detect_element("扫荡10次-选中"):
+                    self.logger.warning("未选中[扫荡10次]，已自动选择")
+                    self.operationer.click_and_wait("扫荡10次")
+                self.operationer.click_and_wait("开始扫荡")
         return False
 
     @TransitionOn("扫荡-继续扫荡")
@@ -105,7 +132,7 @@ class XiaoHaoTiLi(BaseTask):
         )
         match flag:
             case 1:
-                self.sweep_dungeon = True
+                self.__update_progress()
                 return self.__set_next_scene()
             case 2:
                 self.logger.warning("未勾选需要扫荡的副本，即将全选")
@@ -116,7 +143,7 @@ class XiaoHaoTiLi(BaseTask):
     @TransitionOn("便捷扫荡-扫荡结束")
     def _(self):
         self.operationer.click_and_wait("确定")
-        self.sweep_dungeon = True
+        self.__update_progress()
         return self.__set_next_scene()
 
     @TransitionOn("便捷扫荡-继续扫荡")
@@ -125,20 +152,21 @@ class XiaoHaoTiLi(BaseTask):
         self.logger.info("扫荡开始，等待扫荡结束")
         return False
 
+    @TransitionOn("修罗副本-关卡详情")
+    def _(self):
+        self.operationer.click_and_wait("扫荡")
+        return False
+
     @TransitionOn("体力不足")
     def _(self):
         self.operationer.click_and_wait("X")
-        match self.current_task:
-            case 0:
-                self.update_equipment = True
-            case 1:
-                self.sweep_dungeon = True
+        self.__update_progress()
         return self.__set_next_scene()
 
     @TransitionOn("铜币不足")
     def _(self):
         self.operationer.click_and_wait("X")
-        self.update_equipment = True
+        self.__update_progress()
         return self.__set_next_scene()
     
     
@@ -176,18 +204,32 @@ class XiaoHaoTiLi(BaseTask):
         return next_execute_time
 
     def reset_task_exe_prog(self) -> bool:
-        self.update_equipment = False
-        self.sweep_dungeon = False
-        self.current_task = None
+        self.current_task = ""
+        self.execute_progress={
+            "精英副本": {
+                "是否完成": False,
+                "场景":"精英副本-便捷扫荡",
+            },
+            "修罗副本": {
+                "是否完成": False,
+                "场景":"修罗副本-关卡详情",
+            },
+            "装备合成": {
+                "是否完成": False,
+                "场景":"装备",
+            },
+
+        }
+        self.execute_order = []
         return True
 
     def __set_next_scene(self):
-        if not self.update_equipment:
-            self.operationer.next_scene = "装备"
-            self.current_task = 0
-            return False
-        if not self.sweep_dungeon:
-            self.operationer.next_scene = "精英副本-便捷扫荡"
-            self.current_task = 1
-            return False
+        for task in self.execute_order:
+            if self.execute_progress[task]["是否完成"] == False:
+                self.operationer.next_scene = self.execute_progress[task]["场景"]
+                self.current_task = task
+                return False
         raise TaskCompleted("任务执行完成")
+
+    def __update_progress(self):
+        self.execute_progress[self.current_task]["是否完成"] = True

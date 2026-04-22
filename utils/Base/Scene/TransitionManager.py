@@ -171,6 +171,7 @@ class TransitionManager:
         @self.register("忍界指引", "主场景")
         @self.register("重返木叶", "主场景")
         @self.register("重返木叶-忍界指引", "主场景")
+        @self.register("冒险-修罗副本", "主场景")
         @self.register("个人信息-分享", "个人信息")
         @self.register("精英副本-便捷扫荡", "冒险-精英副本")
         @self.register("忍术对战", "决斗场-首页")
@@ -267,6 +268,9 @@ class TransitionManager:
         @self.register("叛忍来袭-战斗中", "叛忍来袭-内部")
         @self.register("叛忍来袭-单局结算", "叛忍来袭-内部")
         @self.register("忍术对战-调整阵容", "忍术对战")
+        @self.register("材料详情-扫荡", "修罗副本-关卡详情")
+        @self.register("修罗副本-关卡详情", "修罗副本-章节")
+        @self.register("修罗副本-章节", "冒险-修罗副本")
         def _(operationer: Operationer, *args, **kwargs):
             """通用返回函数，点击[X]"""
             operationer.click_and_wait("X")
@@ -353,8 +357,8 @@ class TransitionManager:
         # @self.register("忍界指引", "装备")
         @self.register("忍界指引", "丰饶之间")
         @self.register("忍界指引", "任务集会所")
-        @self.register("忍界指引", "修罗副本")
-        @self.register("忍界指引", "冒险-精英副本")
+        # @self.register("忍界指引", "冒险-修罗副本")
+        # @self.register("忍界指引", "冒险-精英副本")
         @self.register("忍界指引", "修行之路")
         @self.register("忍界指引", "小队突袭")
         @self.register("忍界指引", "忍术对战")
@@ -401,8 +405,8 @@ class TransitionManager:
         # @self.register("重返木叶-忍界指引", "装备")
         @self.register("重返木叶-忍界指引", "丰饶之间")
         @self.register("重返木叶-忍界指引", "任务集会所")
-        @self.register("重返木叶-忍界指引", "修罗副本")
-        @self.register("重返木叶-忍界指引", "冒险-精英副本")
+        # @self.register("重返木叶-忍界指引", "修罗副本")
+        # @self.register("重返木叶-忍界指引", "冒险-精英副本")
         @self.register("重返木叶-忍界指引", "修行之路")
         @self.register("重返木叶-忍界指引", "小队突袭")
         @self.register("重返木叶-忍界指引", "忍术对战")
@@ -569,16 +573,30 @@ class TransitionManager:
             operationer.click_and_wait("决斗任务")
 
         @self.register("冒险-冒险副本", "冒险-精英副本")
+        @self.register("冒险-修罗副本", "冒险-精英副本")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("精英副本")
 
         @self.register("冒险-精英副本", "冒险-冒险副本")
+        @self.register("冒险-修罗副本", "冒险-冒险副本")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("冒险副本")
+        
+        @self.register("冒险-冒险副本", "冒险-修罗副本")
+        @self.register("冒险-精英副本", "冒险-修罗副本")
+        def _(operationer: Operationer, *args, **kwargs):
+            operationer.click_and_wait("修罗副本")
 
         @self.register("冒险-精英副本", "精英副本-便捷扫荡")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("便捷扫荡")
+
+        @self.register("冒险-修罗副本", "修罗副本-章节")
+        def _(operationer: Operationer, *args, **kwargs):
+            operationer.click_and_wait("卷轴")
+        @self.register("修罗副本-章节", "修罗副本-关卡详情")
+        def _(operationer: Operationer, *args, **kwargs):
+            operationer.click_and_wait("关卡")
 
         @self.register("忍者挑战", "秘境探险-首页")
         def _(operationer: Operationer, *args, **kwargs):

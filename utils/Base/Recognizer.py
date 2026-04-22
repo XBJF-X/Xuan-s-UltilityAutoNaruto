@@ -22,24 +22,24 @@ class Recognizer:
             self.logger = parent_logger.getChild("识别器")
         self.scene_graph = scene_graph
         self.popup_scenes = {
+            "版本更新2",
+            "版本更新1",
+            "响应超时",
+            "重连提示",
+            "网络不畅通",
             "购买体力",
             "铜币不足",
             "是否隐藏气泡",
             "升级",
             "二级密码",
-            "公告",
             "登录奖励",
-            "版本更新2",
-            "版本更新1",
-            "响应超时",
-            "网络不畅通",
             "网络异常重连失败",
             "网络连接失败",
             "安装包更新异常",
             "对方数据异常",
-            "重连提示",
             "登录授权过期",
-            "任务奖励-一键领取"
+            "任务奖励-一键领取",
+            "公告",
         }
         self.coincident_scenes = {
             "活动": [
@@ -53,7 +53,12 @@ class Recognizer:
                 "装备-材料详情",
                 "材料详情-扫荡",
                 "扫荡-继续扫荡",
-                "扫荡-已足够"],
+                "扫荡-已足够"
+            ],
+            "修罗副本-关卡详情": [
+                "材料详情-扫荡",
+                "扫荡-继续扫荡"
+            ],
             "生存挑战": [
                 "生存挑战-扫荡确认",
                 "生存挑战-传送",
@@ -416,24 +421,6 @@ class Recognizer:
             if bool_debug:
                 self.logger.info(f"匹配成功: {template.name}")
             return True
-
-    def element_match(self, scene_img, template, bool_debug=True):
-        """
-        在场景图中匹配模板元素，忽略模板的透明像素（Alpha=0区域），支持多目标和去重
-
-        Args:
-            scene_img(np.ndarray): 场景图像（BGR格式的numpy数组，如截图）
-            template(Element): 模板图像
-            bool_debug(bool): 是否回报日志
-
-        Returns:
-            List[Tuple[int, int, int, int]]
-            目标位置列表，每个元素为(x1, y1, x2, y2)，表示匹配区域的左上角和右下角坐标
-        """
-        if template.match_type == MatchType.SIFT:
-            return self.sift_match(template, scene_img)
-        else:
-            return self.template_match(template, scene_img, bool_debug)
 
     def element_match(self, scene_img, template, bool_debug=True):
         """

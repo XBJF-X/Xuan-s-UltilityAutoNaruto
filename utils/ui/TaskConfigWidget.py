@@ -317,8 +317,8 @@ class TaskConfigWidget(QWidget):
         self.param_grid = QGridLayout()
         self.param_grid.setVerticalSpacing(15)  # 参数之间的垂直间距
         self.param_grid.setContentsMargins(10, 10, 0, 10)
-        self.param_grid.setColumnStretch(0, 5)
-        self.param_grid.setColumnStretch(1, 2)
+        self.param_grid.setColumnStretch(0, 1)   # 标签列可拉伸
+        self.param_grid.setColumnStretch(1, 0)   # 控件列不拉伸，由内容决定宽度
 
         # 遍历所有执行参数，动态生成行
         for row_idx, (param_name, param_detail) in enumerate(self.exec_params.items()):
@@ -361,6 +361,7 @@ class TaskConfigWidget(QWidget):
                 self.param_widget.addItems(enum_list)
                 if enum_list:
                     self.param_widget.setCurrentIndex(0)
+                self.param_widget.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Fixed)
             elif param_type == "BOOL":
                 self.param_widget = QCheckBox(self.param_card)
                 self.param_widget.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
