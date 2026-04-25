@@ -3,7 +3,7 @@ import time
 
 from utils.Base.Enums import KEY_INDEX
 from utils.Base.Exceptions import TaskCompleted
-from utils.Base.Task.BaseTask import BaseTask, TransitionOn
+from utils.Base.Task.BaseTask import BaseTask, TransitionOn, debug_execute_window
 
 YS_list = [
     "火之要塞", "水之要塞", "土之要塞", "风之要塞", "雷之要塞", "汤之要塞", "田之要塞", "铁之要塞", "熊之要塞",
@@ -37,8 +37,16 @@ class YaoSaiZhengDuoZhan(BaseTask):
     def _(self):
         if self._bool_kuafuyaosaizhan():
             raise TaskCompleted("本周为跨服要塞战周，跳过要塞争夺战任务")
-
+        
+        self.operationer.click_and_wait("信息")
         self.operationer.click_and_wait("玩法")
+        self.operationer.swipe_and_wait(
+                (350, 464),
+                (1000, 464),
+                duration=0.3,
+                times=4,
+                wait_time=0.3
+            )
         self.operationer.search_and_click([f"要塞争夺战-前往"], [{
             "swipe": {
                 "start_coordinate": [1000, 464],
@@ -145,7 +153,7 @@ class YaoSaiZhengDuoZhan(BaseTask):
         base_date = datetime.date(2025, 9, 20)
         delta_weeks = (this_saturday - base_date).days // 7
         return delta_weeks >= 0 and (delta_weeks % 5) == 0
-
+    @debug_execute_window
     def _get_execute_window(self, dt: datetime.datetime | None = None):
         if dt is None:
             dt = self.last_run_time

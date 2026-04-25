@@ -565,7 +565,7 @@ class Recognizer:
         # # 检查result的统计信息
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
         if bool_debug:
-            self.logger.debug(f"[{template.name}]匹配结果统计：最大值={max_val:.2f}")
+            self.logger.debug(f"[{template.name}] 匹配结果统计：最大值={max_val:.2f}")
 
         # 5. 筛选超过阈值的匹配位置，并绑定置信度
         locations = np.where(result >= threshold)  # 所有符合条件的位置
@@ -574,7 +574,7 @@ class Recognizer:
 
         # 提取每个匹配位置的置信度值
         confidences = [result[y, x] for y, x in zip(locations[0], locations[1])]
-        h, w = template_img.shape[:2]  # 模板的高和宽
+        h, w = template_img.shape[:2]  # type: ignore # 模板的高和宽
         # 构建(置信度, x1, y1, x2, y2)的列表，并按置信度降序排序
         matches_with_conf = [
             (conf, int(x + dx), int(y + dy), int(x + dx + w), int(y + dy + h))

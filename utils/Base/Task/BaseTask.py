@@ -79,7 +79,19 @@ def handle_transition_exceptions(func):
             sys.settrace(old_trace)
 
     return wrapper
+def debug_execute_window(func):
 
+    def wrapper(self, *args, **kwargs):
+        old_trace = sys.gettrace()
+        sys.settrace(self.trace_callback)
+        try:
+            result = func(self, *args, **kwargs)
+            self.logger.debug(f"可执行时间窗口: {[f'{start_dt.strftime('%Y-%m-%d %H:%M:%S')} - {end_dt.strftime('%Y-%m-%d %H:%M:%S')}' for start_dt, end_dt in result]}")
+            return result
+        finally:
+            sys.settrace(old_trace)
+
+    return wrapper
 
 def handle_task_exceptions(func):
 
@@ -303,11 +315,11 @@ class BaseTask:
             windows = self._get_execute_window()
             for start_dt, end_dt in windows:
                 if start_dt and current_time < start_dt:
-                    raise TooEarlyToRun("[StartLine]未到任务可执行时间")
+                    raise TooEarlyToRun(f"[StartLine]未到任务可执行时间:{start_dt.strftime('%Y-%m-%d %H:%M:%S')}")
                 if end_dt and current_time >= end_dt:
-                    raise TimeOutDeadLineError("[DeadLine]任务执行超时")
+                    raise TimeOutDeadLineError(f"[DeadLine]任务执行超时:{end_dt.strftime('%Y-%m-%d %H:%M:%S')}")
             if self._check_timeout(current_time):
-                raise TimeOutMaxDurationError("[MaxDuration]任务执行超时")
+                raise TimeOutMaxDurationError(f"[MaxDuration]任务执行超时:{current_time.strftime('%Y-%m-%d %H:%M:%S')}")
 
             # 执行步骤转换
             result = self.transition()
@@ -502,7 +514,7 @@ class BaseTask:
     ############################################################################################
     #                                和任务执行时间处理相关的函数                                 #
     ############################################################################################
-
+    @debug_execute_window
     def _get_execute_window(
         self,
         dt: datetime.datetime | None = None

@@ -4,7 +4,7 @@ from zoneinfo import ZoneInfo
 
 from utils.Base.Enums import KEY_INDEX
 from utils.Base.Exceptions import TaskCompleted, TooEarlyToRun
-from utils.Base.Task.BaseTask import BaseTask, TransitionOn
+from utils.Base.Task.BaseTask import BaseTask, TransitionOn, debug_execute_window
 
 
 class PanRenLaiXi(BaseTask):
@@ -192,6 +192,7 @@ class PanRenLaiXi(BaseTask):
             stop_minute = 30
         return base_time.replace(minute=stop_minute, second=0, microsecond=0)
     
+    @debug_execute_window
     def _get_execute_window(self,dt: datetime.datetime | None = None):
         windows=[]
         if dt is None:
@@ -215,14 +216,13 @@ class PanRenLaiXi(BaseTask):
                     end_dt = datetime.datetime.combine(
                         saturday,
                         self._get_task_trigger_time(datetime.time(20, 0), "要塞争夺战"),
-                        tzinfo=self.tz_info
-                    )
+                        tzinfo=self.tz_info)
                     windows.append((start_dt, end_dt + datetime.timedelta(minutes=30)))
-        next_wednesday = today + datetime.timedelta(days=(2 - today.weekday()) % 7)
-        start_dt = datetime.datetime.combine(next_wednesday, datetime.time(21, 0), tzinfo=self.tz_info)
-        end_dt = start_dt + datetime.timedelta(minutes=60)
-        windows.append((start_dt, end_dt))
-        windows.sort(key=lambda item: item[0])
+        # next_wednesday = today + datetime.timedelta(days=(2 - today.weekday()) % 7)
+        # start_dt = datetime.datetime.combine(next_wednesday, datetime.time(21, 0), tzinfo=self.tz_info)
+        # end_dt = start_dt + datetime.timedelta(minutes=60)
+        # windows.append((start_dt, end_dt))
+        # windows.sort(key=lambda x: x[0])
         return windows
     
     def get_next_cycle_day(self, dt: datetime.datetime) -> datetime.datetime:
