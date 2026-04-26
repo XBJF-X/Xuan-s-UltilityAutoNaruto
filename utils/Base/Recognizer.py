@@ -84,6 +84,9 @@ class Recognizer:
                 "便捷扫荡-扫荡结束",
                 "便捷扫荡-继续扫荡",
             ],
+            "冒险-冒险副本": [
+                "决斗场-战斗中",
+            ],
             "精英副本-便捷扫荡": [
                 "体力不足",
                 "便捷扫荡-继续扫荡",
@@ -217,8 +220,12 @@ class Recognizer:
         }
         # 用于记录本次识别中已排除的弹窗
         self._excluded_popups_in_current_recognition: Set[str] = set()
+        # 用于调试时记录每个模板的匹配详情（在 bool_debug=True 时填充）
+        self._debug_match_records = {}
+        # 最近一次成功匹配的场景详情（在 bool_debug=True 时填充）
+        self._last_successful_scene_details = None
 
-    def scene(self, scene_img, bool_debug=False) -> Union[str | Scene]:
+    def scene(self, scene_img, bool_debug=False) -> Union[str, Scene]:
         """
         对场景进行分类的函数
 
@@ -231,15 +238,200 @@ class Recognizer:
         # 重置本次识别的排除弹窗记录
         self._excluded_popups_in_current_recognition.clear()
 
-        # 第一步：优先识别弹窗场景
-        popup_scene = self._detect_popup_first(scene_img, bool_debug)
-        if popup_scene:
-            if bool_debug:
-                self.logger.info(f"优先识别到弹窗场景: {popup_scene}")
-            return popup_scene
+        # 如果不是调试模式，保持原有行为（节省开销）
+        if not bool_debug:
+            popup_scene = self._detect_popup_first(scene_img, bool_debug)
+            if popup_scene:
+                return popup_scene
+            return self._detect_normal_scene(scene_img, bool_debug)
 
-        # 第二步：如果没有弹窗，进行正常场景识别（排除已识别的弹窗）
-        return self._detect_normal_scene(scene_img, bool_debug)
+        # Debug 模式：使用内部列表缓存日志（避免新增 handler），匹配成功时只输出与成功相关的日志，
+        # 匹配失败时再输出本次匹配的全部日志。实现思路：临时猴补当前 logger 的方法，把日志先写入 `buffered_logs`，
+        # 函数返回前再根据匹配结果回放或筛选这些缓存。
+
+        # 清理本次识别的调试记录，并重置当前作用域
+        try:
+            self._debug_match_records.clear()
+            self._last_successful_scene_details = None
+        except Exception:
+            self._debug_match_records = {}
+            self._last_successful_scene_details = None
+        self._current_debug_scope = None
+
+        # 内存缓存：列表 of (levelno, message, scope)
+        buffered_logs: List[tuple] = []
+
+        # 备份原始 logger 方法
+        orig_debug = self.logger.debug
+        orig_info = self.logger.info
+        orig_warning = self.logger.warning
+        orig_error = self.logger.error
+        orig_critical = self.logger.critical
+        orig_exception = self.logger.exception
+        orig_log = self.logger.log
+
+        def _format_message(msg, *args, **kwargs):
+            try:
+                if args:
+                    return msg % args
+                return str(msg)
+            except Exception:
+                try:
+                    return str(msg) + " " + " ".join(map(str, args))
+                except Exception:
+                    return str(msg)
+
+        def _make_wrapper(levelno):
+            def _w(msg, *args, **kwargs):
+                try:
+                    text = _format_message(msg, *args, **kwargs)
+                except Exception:
+                    text = str(msg)
+                # 处理 exc_info 简单情况
+                if kwargs.get('exc_info'):
+                    try:
+                        import traceback, sys
+                        ei = kwargs.get('exc_info')
+                        if ei is True:
+                            text += '\n' + ''.join(traceback.format_exception(*sys.exc_info()))
+                        elif isinstance(ei, tuple):
+                            text += '\n' + ''.join(traceback.format_exception(*ei))
+                    except Exception:
+                        pass
+                scope = getattr(self, '_current_debug_scope', None)
+                buffered_logs.append((levelno, text, scope))
+            return _w
+
+        def _exception_wrapper(msg, *args, **kwargs):
+            try:
+                text = _format_message(msg, *args, **kwargs)
+            except Exception:
+                text = str(msg)
+            try:
+                import traceback, sys
+                text += '\n' + ''.join(traceback.format_exception(*sys.exc_info()))
+            except Exception:
+                pass
+            scope = getattr(self, '_current_debug_scope', None)
+            buffered_logs.append((logging.ERROR, text, scope))
+
+        def _log_wrapper(level, msg, *args, **kwargs):
+            try:
+                text = _format_message(msg, *args, **kwargs)
+            except Exception:
+                text = str(msg)
+            scope = getattr(self, '_current_debug_scope', None)
+            buffered_logs.append((level, text, scope))
+
+        # 替换 logger 方法
+        self.logger.debug = _make_wrapper(logging.DEBUG)
+        self.logger.info = _make_wrapper(logging.INFO)
+        self.logger.warning = _make_wrapper(logging.WARNING)
+        self.logger.error = _make_wrapper(logging.ERROR)
+        self.logger.critical = _make_wrapper(logging.CRITICAL)
+        self.logger.exception = _exception_wrapper
+        self.logger.log = _log_wrapper
+
+        try:
+            # 执行识别流程（所有内部日志会被缓冲）
+            popup_scene = self._detect_popup_first(scene_img, True)
+            if popup_scene:
+                result = popup_scene
+            else:
+                result = self._detect_normal_scene(scene_img, True)
+        finally:
+            # 恢复原始 logger 方法
+            try:
+                self.logger.debug = orig_debug
+                self.logger.info = orig_info
+                self.logger.warning = orig_warning
+                self.logger.error = orig_error
+                self.logger.critical = orig_critical
+                self.logger.exception = orig_exception
+                self.logger.log = orig_log
+            except Exception:
+                pass
+
+        # 判定匹配是否成功（把特殊未知场景视为失败）
+        success = True
+        if result is None or (isinstance(result, str) and result in ("未知场景", "未知含X场景")):
+            success = False
+
+        # 构建需要关联的名字集合，用于筛选相关日志
+        matched_names = set()
+        if isinstance(result, Scene):
+            matched_names.add(result.name)
+        elif isinstance(result, str):
+            matched_names.add(result)
+
+        # 根据匹配结果选择性输出日志
+        if success:
+            # 优先输出结构化的匹配细节（来自 _last_successful_scene_details），然后回放相关的原始缓冲日志
+            details = None
+            try:
+                details = self._last_successful_scene_details
+            except Exception:
+                details = None
+
+            if details:
+                scene_name = details.get("scene")
+                # self.logger.debug(f"匹配成功: {scene_name}")
+                # for el in details.get("elements", []):
+                #     el_name = el.get("element_name")
+                #     match_count = el.get("match_count")
+                #     self.logger.debug(f"  元素: {el_name} 匹配次数: {match_count}")
+                #     dbg = el.get("debug")
+                #     if dbg:
+                #         method = dbg.get("method")
+                #         if method == "TEMPLATE":
+                #             self.logger.debug(f"    [{el_name}] 方法=TEMPLATE, max_val={dbg.get('max_val')}, threshold={dbg.get('threshold')}, matches_before_nms={dbg.get('sorted_matches_len', 0)}")
+                #             kept = dbg.get("kept_confidences")
+                #             if kept:
+                #                 self.logger.debug(f"    [{el_name}] 去重后置信度: {kept}")
+                #             boxes = el.get("boxes") or dbg.get("kept_boxes")
+                #             if boxes:
+                #                 self.logger.debug(f"    [{el_name}] 匹配框: {boxes}")
+                #         elif method == "SIFT":
+                #             self.logger.debug(f"    [{el_name}] 方法=SIFT, good_matches={dbg.get('good_matches')}, feature_template={dbg.get('num_template_features')}")
+                #             if dbg.get("location"):
+                #                 self.logger.debug(f"    [{el_name}] 位置: {dbg.get('location')}")
+
+                # 仅回放属于成功场景作用域（scene:SceneName）的缓冲日志
+                filtered_records = []
+                for level, msg, scope in buffered_logs:
+                    if scope and f"scene:{scene_name}" in scope:
+                        filtered_records.append((level, msg))
+
+                for level, msg in filtered_records:
+                    try:
+                        self.logger.log(level, msg)
+                    except Exception:
+                        pass
+            else:
+                # 无结构化细节时，按作用域筛选日志
+                records_to_emit = []
+                for level, msg, scope in buffered_logs:
+                    if scope and any(f"scene:{name}" in scope for name in matched_names):
+                        records_to_emit.append((level, msg))
+
+                if not records_to_emit:
+                    for name in matched_names:
+                        self.logger.debug(f"匹配成功: {name}")
+                else:
+                    for level, msg in records_to_emit:
+                        try:
+                            self.logger.log(level, msg)
+                        except Exception:
+                            pass
+        else:
+            # 匹配失败：回放本次缓冲的所有日志，便于定位问题
+            for level, msg, scope in buffered_logs:
+                try:
+                    self.logger.log(level, msg)
+                except Exception:
+                    pass
+
+        return result
 
     def _detect_popup_first(self, scene_img, bool_debug=False) -> Union[Scene, None]:
         """
@@ -258,10 +450,16 @@ class Recognizer:
                 self.logger.warning(f"{scene_id}不存在或其下无元素")
                 continue
 
+            # 在调试模式下，设置当前匹配作用域为该场景，便于缓冲日志按场景分组
+            prev_scope = getattr(self, '_current_debug_scope', None)
             if bool_debug:
+                self._current_debug_scope = f"scene:{scene.name}"
                 self.logger.debug(f"检查弹窗场景: {scene.name}")
 
             flag = self.scene_match(scene_img, scene, bool_debug)
+            # 恢复之前的作用域
+            if bool_debug:
+                self._current_debug_scope = prev_scope
             if flag:
                 # 将识别到的弹窗加入排除列表
                 self._excluded_popups_in_current_recognition.add(scene_id)
@@ -272,7 +470,7 @@ class Recognizer:
 
         return None
 
-    def _detect_normal_scene(self, scene_img, bool_debug=False) -> Union[str | Scene]:
+    def _detect_normal_scene(self, scene_img, bool_debug=False) -> Union[str, Scene]:
         """
         识别正常场景（非弹窗）
 
@@ -296,10 +494,15 @@ class Recognizer:
             if not scene.elements:
                 continue
 
+            # 在调试模式下，设置当前匹配作用域为该场景，便于缓冲日志按场景分组
+            prev_scope = getattr(self, '_current_debug_scope', None)
             if bool_debug:
+                self._current_debug_scope = f"scene:{scene.name}"
                 self.logger.debug(f"开始匹配场景: {scene.name}")
 
             flag = self.scene_match(scene_img, scene, bool_debug)
+            if bool_debug:
+                self._current_debug_scope = prev_scope
             if flag:
                 current_scene = scene_id
                 break
@@ -319,8 +522,7 @@ class Recognizer:
 
         return final_scene
 
-    def _check_sub_scenes(self, scene_img, current_scene_id, bool_debug, is_popup=False) -> Union[
-        str | Scene]:
+    def _check_sub_scenes(self, scene_img, current_scene_id, bool_debug, is_popup=False) -> Union[str, Scene]:
         """
         递归检查子场景
 
@@ -354,10 +556,15 @@ class Recognizer:
                 if not sub_scene:
                     continue
 
+                # 在调试模式下，将当前作用域设置为正在检查的子场景
+                prev_scope = getattr(self, '_current_debug_scope', None)
                 if bool_debug:
+                    self._current_debug_scope = f"scene:{sub_scene_name}"
                     self.logger.debug(f"检查子场景: {sub_scene_name}")
 
                 flag = self.scene_match(scene_img, sub_scene, bool_debug)
+                if bool_debug:
+                    self._current_debug_scope = prev_scope
 
                 if flag:
                     # 如果是弹窗场景，标记为已排除
@@ -409,17 +616,46 @@ class Recognizer:
 
         """
         result = []
+        matched_elements_info = []
         for element in template.elements:
             if not element.symbol:
                 continue
-            matches = self.element_match(scene_img, element, bool_debug)
+            # 在调试模式下，设置元素级作用域，保证模板/特征匹配时的日志可追溯到该元素
+            prev_scope = getattr(self, '_current_debug_scope', None)
+            if bool_debug:
+                self._current_debug_scope = f"scene:{template.name}|element:{element.name}"
+            try:
+                matches = self.element_match(scene_img, element, bool_debug)
+            finally:
+                if bool_debug:
+                    self._current_debug_scope = prev_scope
             if matches:
-                result.append(len(matches))
+                match_count = len(matches)
+                result.append(match_count)
+                # 获取 element 的调试记录（如果有）
+                element_debug = None
+                try:
+                    element_debug = self._debug_match_records.get(element.name, None)
+                except Exception:
+                    element_debug = None
+                matched_elements_info.append({
+                    "element_name": element.name,
+                    "match_count": match_count,
+                    "boxes": matches,
+                    "debug": element_debug,
+                })
             else:
                 return False
         if result and max(result) > 0:
             if bool_debug:
                 self.logger.info(f"匹配成功: {template.name}")
+                try:
+                    self._last_successful_scene_details = {
+                        "scene": template.name,
+                        "elements": matched_elements_info,
+                    }
+                except Exception:
+                    self._last_successful_scene_details = None
             return True
 
     def element_match(self, scene_img, template, bool_debug=True):
@@ -466,9 +702,28 @@ class Recognizer:
         min_good_matches = max(4, int(num_template_features * min_match_ratio))
         self.logger.debug(f"[{template.name}] 模板特征数: {num_template_features}, 所需最小匹配: {min_good_matches}")
 
+        # 记录一些基础调试信息
+        try:
+            self._debug_match_records[template.name] = {
+                "method": "SIFT",
+                "num_template_features": int(num_template_features),
+                "min_good_matches": int(min_good_matches),
+            }
+        except Exception:
+            pass
+
         # 如果没有足够的特征点或描述符，直接返回空结果
         if des1 is None or des2 is None or len(kp1) < 4 or len(kp2) < 4:
             self.logger.debug(f"[{template.name}] 特征点不足: 模板={len(kp1) if kp1 else 0}, 场景={len(kp2) if kp2 else 0}")
+            try:
+                rec = self._debug_match_records.get(template.name, {})
+                rec.update({
+                    "kp_template": len(kp1) if kp1 else 0,
+                    "kp_scene": len(kp2) if kp2 else 0,
+                })
+                self._debug_match_records[template.name] = rec
+            except Exception:
+                pass
             return []
 
         # 4. 匹配特征点（使用FLANN快速匹配器）
@@ -488,6 +743,16 @@ class Recognizer:
             if m.distance < ratio * n.distance:  # 最佳匹配距离远小于次佳匹配
                 good_matches.append(m)
         self.logger.debug(f"[{template.name}] 有效匹配点数：{len(good_matches)}")
+        try:
+            rec = self._debug_match_records.get(template.name, {})
+            rec.update({
+                "kp_template": len(kp1),
+                "kp_scene": len(kp2),
+                "good_matches": len(good_matches),
+            })
+            self._debug_match_records[template.name] = rec
+        except Exception:
+            pass
 
         if len(good_matches) >= min_good_matches:
             # 提取匹配点坐标
@@ -499,6 +764,12 @@ class Recognizer:
 
             if H is None:
                 self.logger.debug(f"[{template.name}] 无法计算单应性矩阵")
+                try:
+                    rec = self._debug_match_records.get(template.name, {})
+                    rec.update({"H": None})
+                    self._debug_match_records[template.name] = rec
+                except Exception:
+                    pass
                 return []
 
             # 模板四个角点映射到场景图
@@ -517,6 +788,12 @@ class Recognizer:
             y_coords = [p[1] for p in corners_2d]
             # 框的边界坐标
             location = (int(min(x_coords)), int(min(y_coords)), int(max(x_coords)), int(max(y_coords)))
+            try:
+                rec = self._debug_match_records.get(template.name, {})
+                rec.update({"location": location})
+                self._debug_match_records[template.name] = rec
+            except Exception:
+                pass
             return [location]
         else:
             return []
@@ -566,6 +843,18 @@ class Recognizer:
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
         if bool_debug:
             self.logger.debug(f"[{template.name}] 匹配结果统计：最大值={max_val:.2f}")
+        # 记录模板匹配的调试信息（基本统计），供外部回放和结构化输出
+        try:
+            self._debug_match_records[template.name] = {
+                "method": "TEMPLATE",
+                "max_val": float(max_val),
+                "min_val": float(min_val),
+                "max_loc": max_loc,
+                "roi": (x_start, y_start, x_end, y_end),
+                "threshold": float(threshold),
+            }
+        except Exception:
+            pass
 
         # 5. 筛选超过阈值的匹配位置，并绑定置信度
         locations = np.where(result >= threshold)  # 所有符合条件的位置
@@ -588,9 +877,23 @@ class Recognizer:
         # print(f"[{template_name}]匹配位置（未去重）：{sorted_matches}")
         # print(f"[ELEMENT_MATCH]耗时 {(time.perf_counter() - start) * 1000:.2f} ms")
         # 调用NMS时传入置信度
-        return self._non_max_suppression(sorted_matches,
-                                         iou_threshold=0.3,
-                                         confidences=sorted_confidences)
+        keep_boxes = self._non_max_suppression(sorted_matches,
+                                               iou_threshold=0.3,
+                                               confidences=sorted_confidences)
+        # 记录去重后的置信度信息以便回放
+        try:
+            conf_map = {box: conf for box, conf in zip(sorted_matches, sorted_confidences)}
+            kept_confidences = [conf_map.get(box, None) for box in keep_boxes]
+            rec = self._debug_match_records.get(template.name, {})
+            rec.update({
+                "kept_boxes": keep_boxes,
+                "kept_confidences": kept_confidences,
+                "sorted_matches_len": len(sorted_matches),
+            })
+            self._debug_match_records[template.name] = rec
+        except Exception:
+            pass
+        return keep_boxes
 
     @staticmethod
     def _non_max_suppression(boxes: List[Tuple[int, int, int, int]],

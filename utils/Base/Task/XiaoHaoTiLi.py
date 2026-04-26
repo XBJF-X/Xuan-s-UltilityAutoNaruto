@@ -22,7 +22,7 @@ task_execute_order = [
 ]
 
 
-# Todo：增加刷修罗副本的功能
+# Todo：修复有人不存在修罗副本选项导致的bug
 class XiaoHaoTiLi(BaseTask):
     source_scene = "主场景"
     task_max_duration = timedelta(minutes=10)
@@ -54,6 +54,16 @@ class XiaoHaoTiLi(BaseTask):
     @TransitionOn()
     def _(self):
         return self.__set_next_scene()
+    
+    @TransitionOn("冒险-冒险副本")
+    def _(self):
+        if not self.operationer.detect_element("修罗副本-标志"):
+            self.logger.warning("当前账号没有修罗副本选项，已自动调整任务执行顺序")
+            self.execute_progress["修罗副本"]["是否完成"] = True
+            self.execute_order = [task for task in self.execute_order if task != "修罗副本"]
+        return self.__set_next_scene()
+    
+
 
     @TransitionOn("装备")
     def _(self):

@@ -330,7 +330,7 @@ class BaseTask:
     def transition(self):
         # 获取当前屏幕截图并识别场景
         screenshot = self.operationer.screen_cap()
-        scene = self.operationer.recognizer.scene(screenshot)
+        scene = self.operationer.recognizer.scene(screenshot,bool_debug=True)
 
         # 确保待调用的场景名为str
         if isinstance(scene, str):
