@@ -313,11 +313,44 @@ class BaseTask:
 
             current_time = datetime.datetime.now(self.tz_info)
             windows = self._get_execute_window()
+            valid_window_found = False
+            too_early_windows: List[datetime.datetime] = []
+            expired_windows: List[datetime.datetime] = []
             for start_dt, end_dt in windows:
-                if start_dt and current_time < start_dt:
-                    raise TooEarlyToRun(f"[StartLine]未到任务可执行时间:{start_dt.strftime('%Y-%m-%d %H:%M:%S')}")
-                if end_dt and current_time >= end_dt:
-                    raise TimeOutDeadLineError(f"[DeadLine]任务执行超时:{end_dt.strftime('%Y-%m-%d %H:%M:%S')}")
+                if start_dt:
+                    start_dt = self._ensure_tz_aware(start_dt)
+                if end_dt:
+                    end_dt = self._ensure_tz_aware(end_dt)
+                start_ok = (start_dt is None) or (current_time >= start_dt)
+                end_ok = (end_dt is None) or (current_time < end_dt)
+                if start_ok and end_ok:
+                    valid_window_found = True
+                else:
+                    if start_dt and current_time < start_dt:
+                        too_early_windows.append(start_dt)
+                    if end_dt and current_time >= end_dt:
+                        expired_windows.append(end_dt)
+
+            if valid_window_found:
+                # 如果至少有一个窗口可执行，则只警告其他不符合的窗口，不抛错
+                for dt in too_early_windows:
+                    self.logger.warning(f"[StartLine]未到任务可执行时间:{dt.strftime('%Y-%m-%d %H:%M:%S')}")
+                for dt in expired_windows:
+                    self.logger.warning(f"[DeadLine]可执行窗口已过:{dt.strftime('%Y-%m-%d %H:%M:%S')}")
+            else:
+                # 所有窗口都不符合时再抛出错误，尽量保留原有异常类型和信息
+                if too_early_windows and not expired_windows:
+                    next_start = min(too_early_windows)
+                    raise TooEarlyToRun(f"[StartLine]未到任务可执行时间:{next_start.strftime('%Y-%m-%d %H:%M:%S')}")
+                if expired_windows and not too_early_windows:
+                    last_deadline = max(expired_windows)
+                    raise TimeOutDeadLineError(f"[DeadLine]任务执行超时:{last_deadline.strftime('%Y-%m-%d %H:%M:%S')}")
+                # 混合情况：优先按 DeadLine 抛错
+                if expired_windows:
+                    last_deadline = max(expired_windows)
+                    raise TimeOutDeadLineError(f"[DeadLine]任务执行超时:{last_deadline.strftime('%Y-%m-%d %H:%M:%S')}")
+                # 兜底
+                raise TooEarlyToRun("任务当前时间不在任何可执行窗口内")
             if self._check_timeout(current_time):
                 raise TimeOutMaxDurationError(f"[MaxDuration]任务执行超时:{current_time.strftime('%Y-%m-%d %H:%M:%S')}")
 
