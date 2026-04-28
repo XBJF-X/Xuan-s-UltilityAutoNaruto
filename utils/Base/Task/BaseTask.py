@@ -143,6 +143,10 @@ def handle_task_exceptions(func):
     return wrapper
 
 
+
+
+
+
 class BaseTask:
 
     transition_func: Dict[str, Callable] = {}
@@ -165,6 +169,8 @@ class BaseTask:
     """任务当天截至的时间点（超过当天该时间点将强制结束任务）"""
 
     tz_info = ZoneInfo("Asia/Shanghai")
+
+    UNREGISTER_SCENE_MAX_TIME = 30
 
     def __init__(self, task_name: str, config: Config,
                  transition_manager: TransitionManager,
@@ -190,6 +196,7 @@ class BaseTask:
             config.get_task_base_config(self.task_name, "类型"))
 
         self.bool_click = False
+        self.last_unregistered_scene_time = None
 
         self.schedule_next_on_initialization()
         self.transition_func = {}
@@ -384,44 +391,31 @@ class BaseTask:
                     return self.transition_manager.transition(self.operationer)
 
         if scene_name in self.transition_func:
+            if self.last_unregistered_scene_time:
+                self.last_unregistered_scene_time = None
             func = self.transition_func[scene_name]
             self.logger.debug(f"场景{scene_name}绑定的函数：{func.__qualname__}")
             result = self.transition_func[scene_name](self)
             return result
         else:
-            # # 自动寻找从当前场景到任意已注册场景的路径
-            # registered_scenes = list(self.transition_func.keys())
-            # shortest_path = None
-            #
-            # # 寻找最短路径
-            # for target_scene in registered_scenes:
-            #     path = self.transition_manager.bfs_shortest_path(scene_name, target_scene)
-            #     if path and (shortest_path is None or len(path) < len(shortest_path)):
-            #         shortest_path = path
-            #
-            # if shortest_path and len(shortest_path) >= 2:
-            #     # 执行第一段路径跳转
-            #     next_scene_in_path = shortest_path[1]
-            #     self.logger.info(f"自动跳转: 从 {scene_name} 到 {next_scene_in_path} (路径: {' -> '.join(shortest_path)})")
-            #     self.operationer.next_scene = next_scene_in_path
-            #     return self.transition_manager.transition(self.operationer)
-            # else:
-            #     # 如果找不到路径，回退到原来的处理方式
-            #     scene_name = "未注册场景"
-            self.operationer.next_scene = self.source_scene
+            if not self.last_unregistered_scene_time:
+                self.last_unregistered_scene_time=time.perf_counter()
             if not self.source_scene:
                 # 没有 source_scene，无法寻路，回退到未注册场景
                 scene_name = "未注册场景"
             else:
-                shortest_path = self.transition_manager.bfs_shortest_path(
-                    scene_name, self.source_scene)
-                if shortest_path and len(shortest_path) >= 2:
-                    # 执行第一段路径跳转
-                    next_scene_in_path = shortest_path[1]
-                    self.logger.info(
-                        f"自动跳转回场景状态中: 从 {scene_name} 到 {next_scene_in_path} (路径: {' -> '.join(shortest_path)})"
-                    )
-                    return self.transition_manager.transition(self.operationer)
+                if self.last_unregistered_scene_time and time.perf_counter() - self.last_unregistered_scene_time > self.UNREGISTER_SCENE_MAX_TIME:
+                    self.logger.warning(f"长时间未识别到注册场景，强制跳转回 source_scene: {self.source_scene}")
+                    self.operationer.next_scene = self.source_scene
+                    shortest_path = self.transition_manager.bfs_shortest_path(
+                        scene_name, self.source_scene)
+                    if shortest_path and len(shortest_path) >= 2:
+                        # 执行第一段路径跳转
+                        next_scene_in_path = shortest_path[1]
+                        self.logger.info(
+                            f"自动跳转回场景状态中: 从 {scene_name} 到 {next_scene_in_path} (路径: {' -> '.join(shortest_path)})"
+                        )
+                        return self.transition_manager.transition(self.operationer)
                 else:
                     # 如果找不到路径，回退到原来的处理方式
                     scene_name = "未注册场景"
