@@ -186,6 +186,7 @@ class XiaoHaoTiLi(BaseTask):
                 self.execute_progress["修罗副本"]["最新章节一关未通"] = True
                 self.logger.warning("修罗副本最新章节一关未通，将前往上一章节")
                 self.operationer.click_and_wait("X")
+                return False
             self.operationer.click_and_wait("扫荡")
         return False
 
