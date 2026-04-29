@@ -22,7 +22,6 @@ task_execute_order = [
 ]
 
 
-# Todo：修复有人不存在修罗副本选项导致的bug
 class XiaoHaoTiLi(BaseTask):
     source_scene = "主场景"
     task_max_duration = timedelta(minutes=10)
@@ -37,13 +36,13 @@ class XiaoHaoTiLi(BaseTask):
             },
             "修罗副本": {
                 "是否完成": False,
-                "场景":"修罗副本-关卡详情",
+                "场景":"冒险-修罗副本",
+                "最新章节一关未通":False
             },
             "装备合成": {
                 "是否完成": False,
                 "场景":"装备",
             },
-
         }
         self.execute_order = []
 
@@ -62,8 +61,6 @@ class XiaoHaoTiLi(BaseTask):
             self.execute_progress["修罗副本"]["是否完成"] = True
             self.execute_order = [task for task in self.execute_order if task != "修罗副本"]
         return self.__set_next_scene()
-    
-
 
     @TransitionOn("装备")
     def _(self):
@@ -162,9 +159,34 @@ class XiaoHaoTiLi(BaseTask):
         self.logger.info("扫荡开始，等待扫荡结束")
         return False
 
+    @TransitionOn("冒险-修罗副本")
+    def _(self):
+        if self.execute_progress["修罗副本"]["最新章节一关未通"]:
+            self.operationer.swipe_and_wait(
+                (370,418),
+                (800,418),
+                duration=0.5
+            )
+        self.operationer.click_and_wait("卷轴")
+        return False
     @TransitionOn("修罗副本-关卡详情")
     def _(self):
         self.operationer.click_and_wait("扫荡")
+        return False
+    @TransitionOn("修罗副本-章节")
+    def _(self):
+        if self.execute_progress["修罗副本"]["最新章节一关未通"]:
+            if not self.operationer.click_and_wait("关卡"):
+                self.operationer.click_and_wait("X")
+                self.logger.warning("找不到一个可以执行的修罗副本关卡")
+                self.__update_progress()
+                return self.__set_next_scene()
+        else:
+            if not self.operationer.click_and_wait("关卡"):
+                self.execute_progress["修罗副本"]["最新章节一关未通"] = True
+                self.logger.warning("修罗副本最新章节一关未通，将前往上一章节")
+                self.operationer.click_and_wait("X")
+            self.operationer.click_and_wait("扫荡")
         return False
 
     @TransitionOn("体力不足")
@@ -222,13 +244,13 @@ class XiaoHaoTiLi(BaseTask):
             },
             "修罗副本": {
                 "是否完成": False,
-                "场景":"修罗副本-关卡详情",
+                "场景":"冒险-修罗副本",
+                "最新章节一关未通":False
             },
             "装备合成": {
                 "是否完成": False,
                 "场景":"装备",
             },
-
         }
         self.execute_order = []
         return True
