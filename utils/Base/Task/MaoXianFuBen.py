@@ -38,7 +38,6 @@ class MaoXianFuBen(BaseTask):
     @TransitionOn("便捷扫荡-扫荡结束")
     def _(self):
         self.operationer.click_and_wait("确定")
-        self._activate_another_task("消耗体力")
         raise TaskCompleted("便捷扫荡结束")
 
     @TransitionOn("便捷扫荡-继续扫荡")

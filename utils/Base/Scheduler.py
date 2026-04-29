@@ -642,6 +642,10 @@ class Scheduler(QObject):
         if not task:
             self.logger.error(f"任务 {task_name} 不在队列中")
             return
+        
+        if task.is_activated is False and task.task_type != TaskType.TEMP:
+            self.logger.warning(f"任务 {task_name} 当前处于禁用状态，无法执行")
+            return
 
         line_edit_widget = self._get_task_control(task_name, "LineEdit")
         checkbox_widget = self._get_task_control(task_name, "CheckBox")
