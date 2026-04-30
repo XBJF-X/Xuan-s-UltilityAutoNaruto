@@ -152,6 +152,14 @@ class MiJingTanXian(BaseTask):
         self.fighting = False
         self.operationer.click_and_wait("确定")
         return False
+    
+    @TransitionOn("离开队伍-确认")
+    def _(self):
+        self.bool_click = False
+        self.fighting = False
+        self.operationer.click_and_wait("确定")
+        return False
+    
 
     @TransitionOn("未知场景")
     def _(self):

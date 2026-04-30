@@ -170,7 +170,7 @@ class BaseTask:
 
     tz_info = ZoneInfo("Asia/Shanghai")
 
-    UNREGISTER_SCENE_MAX_TIME = 30
+    UNREGISTER_SCENE_MAX_TIME = 15
 
     def __init__(self, task_name: str, config: Config,
                  transition_manager: TransitionManager,
