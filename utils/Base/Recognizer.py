@@ -14,6 +14,8 @@ from utils.Base.Enums import MatchType
 from utils.Base.Scene.SceneGraph import SceneGraph
 
 
+# Todo：优化场景识别速度
+
 class Recognizer:
     def __init__(self, scene_graph: SceneGraph, parent_logger: str | logging.Logger = ""):
         if isinstance(parent_logger, str):

@@ -388,7 +388,7 @@ class TransitionManager:
                     operationer.click_and_wait(
                         "即刻前往",
                         wait_time=3,
-                        stable_wait_for_new_scene=True
+                        # stable_wait_for_new_scene=True
                     )
                     return
                 if i == 7:
