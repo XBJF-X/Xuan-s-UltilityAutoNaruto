@@ -42,7 +42,9 @@ class MiniTouch(Control):
             self.get_device_info()
             if not self.check_resolution():
                 raise InvalidResolution("模拟器分辨率比例不符合16:9的要求，请在模拟器设置内切换！")
-            self.logger.info(f"MiniTouch 初始化成功 | 分辨率:{self.screen_size[0]}x{self.screen_size[1]},最大连接数:{self.max_contacts},最大压力:{self.max_pressure}")
+            self.logger.info(
+                f"MiniTouch 初始化成功 | 分辨率:{self.screen_size[0]}x{self.screen_size[1]},最大连接数:{self.max_contacts},最大压力:{self.max_pressure}"
+            )
 
         except Exception as e:
             self.logger.error(f"MiniTouch 初始化失败: {e}")
@@ -124,7 +126,8 @@ class MiniTouch(Control):
         self.window_size = self.adb.window_size()
         self.width = self.window_size.width
         self.height = self.window_size.height
-        self.logger.debug(f"屏幕方向:{self.orientation},屏幕宽度:{self.width},屏幕高度:{self.height}")
+        self.logger.debug(
+            f"屏幕方向:{self.orientation},屏幕宽度:{self.width},屏幕高度:{self.height}")
 
     def check_resolution(self):  # type: ignore[override]
         return int(self.screen_size[0] * 9) == int(self.screen_size[1] * 16)
@@ -182,8 +185,10 @@ class MiniTouch(Control):
                     return
                 raise
 
-    def swipe(self, start_coordinate: Tuple[int, int], end_coordinate: Tuple[
-        int, int], duration: float = 1.0):
+    def swipe(self,
+              start_coordinate: Tuple[int, int],
+              end_coordinate: Tuple[int, int],
+              duration: float = 1.0):
         """
         单指滑动
         :param start_coordinate: 起点 (x1,y1)
@@ -231,10 +236,7 @@ class MiniTouch(Control):
 
     def current_app(self):  # type: ignore[override]
         front_app = self.adb.app_current()
-        return {
-            "package": front_app.package,
-            "activity": front_app.activity
-        }
+        return {"package": front_app.package, "activity": front_app.activity}
 
     def input(self, input_text: str):
         self.adb.send_keys(input_text)
@@ -278,10 +280,11 @@ class MiniTouch(Control):
         """Control约束：长按"""
         if not self.ready:
             return
-        
+
         start_time = time.perf_counter()
 
         hold_ms = max(0, int(duration * 1000))
+        x, y = self.__convert(x, y)
         with self._core_lock:
             core = self._mt_core
             if core is None:
@@ -300,9 +303,12 @@ class MiniTouch(Control):
                     self._reconnect()
                     return
                 raise
-        time.sleep(duration*1.2-(time.perf_counter() - start_time))
+        time.sleep(duration * 1.2 - (time.perf_counter() - start_time))
 
-    def multi_tap(self, points: List[List[int]], pressure: int = 100, duration: float = 0.1):
+    def multi_tap(self,
+                  points: List[List[int]],
+                  pressure: int = 100,
+                  duration: float = 0.1):
         """
         多点同时点击（使用 CommandBuilder）
         :param points: 坐标列表 [[x1,y1], [x2,y2], ...]
@@ -318,7 +324,10 @@ class MiniTouch(Control):
                 return
             # 限制触点数量并进行坐标边界保护
             points = points[:self.max_contacts]
-            points = [list(map(int, self.__convert(point[0], point[1]))) for point in points]
+            points = [
+                list(map(int, self.__convert(point[0], point[1])))
+                for point in points
+            ]
 
             builder = CommandBuilder()
             # 1. 同时按下所有点
@@ -358,3 +367,7 @@ class MiniTouch(Control):
         if hasattr(self, '_released') and not self._released:
             self.release()
 
+
+if __name__ == "__main__":
+    mt = MiniTouch(None, None, "emulator-5558")
+    mt.long_press(300, 100, 1)
