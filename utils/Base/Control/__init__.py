@@ -1,7 +1,7 @@
 import abc
 import logging
 from enum import IntEnum
-from typing import Tuple
+from typing import Any, Dict, Tuple
 
 from utils.Base.Config import Config
 
@@ -43,7 +43,7 @@ class Control(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def check_resolution(self):
+    def check_resolution(self)->bool:
         """获取硬件信息"""
         pass
 
@@ -75,7 +75,7 @@ class Control(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def current_app(self):
+    def current_app(self)->Dict[str,Any]:
         """获取当前应用"""
         pass
 

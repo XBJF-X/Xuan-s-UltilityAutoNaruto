@@ -300,7 +300,7 @@ class MiniTouch(Control):
                     self._reconnect()
                     return
                 raise
-        time.sleep(duration*1.1-(time.perf_counter() - start_time))
+        time.sleep(duration*1.2-(time.perf_counter() - start_time))
 
     def multi_tap(self, points: List[List[int]], pressure: int = 100, duration: float = 0.1):
         """

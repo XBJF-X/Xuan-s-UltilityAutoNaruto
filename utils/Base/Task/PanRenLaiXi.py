@@ -126,7 +126,7 @@ class PanRenLaiXi(BaseTask):
             if not self.operationer.click_and_wait(difficulty, wait_time=2):
                 self.logger.info(f"未发现 {difficulty}，将移动寻找")
                 x, y = self.config.get_config("键位")[KEY_INDEX.JoyStick]
-                self.operationer.long_press(x + 50 * self.find_direction, y, duration=1)
+                self.operationer.long_press(x + 100 * self.find_direction, y, duration=1)
                 self.find_time += 1
                 if self.find_time >= 7:
                     self.logger.warning(f"寻找 {difficulty} 已经 {self.find_time} 次，将改变寻找方向后重试...")

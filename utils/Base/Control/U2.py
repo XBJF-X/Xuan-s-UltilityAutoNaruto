@@ -54,6 +54,9 @@ class U2(Control):
 
     def get_device_info(self):
         """获取硬件信息"""
+        if not self.u2_device:
+            self.logger.error("设备未连接，无法获取设备信息")
+            return
         self.abi = self.u2_device.shell('getprop ro.product.cpu.abi').output.strip()
         self.sdk = self.u2_device.info.get('sdkInt', 32)  # 获取设备sdk
         self.orientation = self.u2_device.info.get('displayRotation', 0)
@@ -62,7 +65,10 @@ class U2(Control):
         self.height = self.window_size[1]
         self.logger.debug(f"屏幕方向:{self.orientation}，屏幕宽度:{self.width}，屏幕高度:{self.height}")
 
-    def check_resolution(self):
+    def check_resolution(self) -> bool:
+        if not self.u2_device:
+            self.logger.error("设备未连接，无法检查分辨率")
+            return False
         return int(self.screen_size[0] * 9) == int(self.screen_size[1] * 16)
 
     def click(self, x: int, y: int, duration: float = 0.03):
@@ -167,6 +173,9 @@ class U2(Control):
                 self._reconnect()
 
     def current_app(self):
+        if not self.u2_device:
+            self.logger.error("设备未连接，无法获取当前应用")
+            return {"package": None, "activity": None}
         front_app = self.u2_device.app_current()
         return {
             "package": front_app["package"],
@@ -222,17 +231,21 @@ class U2(Control):
                 self._reconnect()
 
     def long_press(self, x: int, y: int, duration: float):
-        if not self.u2_device:
-            self.logger.error("设备未连接，无法执行长按")
-            return
         with self._lock:
+            if not self.u2_device:
+                self.logger.error("设备未连接，无法执行长按")
+                return
             try:
                 self.u2_device.touch.down(x, y)
-                time.sleep(duration)  # 替换QThread.msleep
-                self.u2_device.touch.up(x, y)
+                time.sleep(duration)
             except Exception as e:
                 self.logger.error(f"长按失败 ({x},{y}): {e}")
                 self._reconnect()
+            finally:
+                try:
+                    self.u2_device.touch.up(x, y)
+                except Exception:
+                    pass
 
     def _reconnect(self):
         """新增：连接异常时重连设备"""

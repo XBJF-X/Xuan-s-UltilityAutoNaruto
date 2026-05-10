@@ -87,7 +87,7 @@ class YaoSaiZhengDuoZhan(BaseTask):
     @TransitionOn("要塞内部")
     def _(self):
         self.operationer.clicker.stop()
-        self.operationer.long_press(self.joystick[0] + 60, self.joystick[1], 1)
+        self.operationer.long_press(self.joystick[0] + 100, self.joystick[1], 1.0)
         self.logger.info(f"[本服要塞战]已战斗 {self.fight_sum} 次")
         return False
 
