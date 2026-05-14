@@ -248,6 +248,7 @@ class MiniTouch(Control):
         """Control约束：按下（基于minitouch指令封装）"""
         if not self.ready:
             return
+        x, y = self.__convert(x, y)
         with self._core_lock:
             core = self._mt_core
             if core is None:
@@ -264,6 +265,7 @@ class MiniTouch(Control):
         """Control约束：抬起"""
         if not self.ready:
             return
+        x, y = self.__convert(x, y)
         with self._core_lock:
             core = self._mt_core
             if core is None:
