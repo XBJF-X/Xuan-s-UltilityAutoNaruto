@@ -147,7 +147,8 @@ class Recognizer:
             ],
             "秘境探险-匹配": [
                 "离开队伍-确认",
-                "秘境探险-匹配-继续挑战确认"
+                "秘境探险-匹配-继续挑战确认",
+                "秘境探险-匹配-只获得忍具确认",
             ],
             "好友": [
                 "领取好友体力成功"
@@ -1001,8 +1002,8 @@ if __name__ == "__main__":
         # 提取场景名（不含扩展名）
         scene_name = os.path.splitext(img_file)[0]
 
-        # if scene_name not in ["网络不畅通"]:
-        #     continue
+        if scene_name not in ["秘境探险-匹配-只获得忍具确认"]:
+            continue
         img_path = os.path.join(image_dir, img_file)
 
         try:

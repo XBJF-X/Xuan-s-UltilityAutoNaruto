@@ -102,6 +102,13 @@ class MiJingTanXian(BaseTask):
         self.operationer.click_and_wait("今日不再提示")
         self.operationer.click_and_wait("确定")
         return False
+    
+    @TransitionOn("秘境探险-匹配-只获得忍具确认")
+    def _(self):
+        self.bool_click = False
+        self.operationer.click_and_wait("本周不再提示")
+        self.operationer.click_and_wait("确定")
+        return False
 
     @TransitionOn("副本内")
     def _(self):

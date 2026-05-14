@@ -229,6 +229,7 @@ class TransitionManager:
         @self.register("更多玩法-任务", "绝迹战场")
         @self.register("更多玩法-任务", "大蛇丸试炼")
         @self.register("秘境探险-匹配-继续挑战确认", "秘境探险-匹配")
+        @self.register("秘境探险-匹配-只获得忍具确认", "秘境探险-匹配")
         @self.register("要塞内部", "要塞战略图")
         @self.register("要塞内部", "要塞内部-退出确认")
         @self.register("天地战场-战场奖励", "天之战场")
