@@ -330,6 +330,16 @@ class Xuan(QMainWindow):
             username = dialog.get_username()
             if username:
                 try:
+                    def _check_username_valid(name:str):
+                        """检查用户名是否有效（不包含特殊字符）"""
+                        if not name:
+                            return False
+                        if any(char in name for char in ["\\", "/", ":", "*?", '"', "<", ">"]):
+                            return False
+                        return True
+                    if not _check_username_valid(username):
+                        QMessageBox.warning(self, "无效的用户名", "用户名不能为空且不能包含特殊字符（\\ / : * ? \" < >）")
+                        return
                     # 1. 找到目录下不重复的最小数字x
                     config_dir = self.config_path
                     existing_numbers = []
