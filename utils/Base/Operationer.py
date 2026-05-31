@@ -18,14 +18,9 @@ class Operationer:
     current_scene: Scene | None = None
     next_scene: str | None = None
 
-    def __init__(self,
-                 task_name: str,
-                 config: Config,
-                 device: Device,
-                 scene_graph: SceneGraph,
-                 screen_save_signal: Any,
-                 parent_logger
-                 ):
+    def __init__(self, task_name: str, config: Config, device: Device,
+                 scene_graph: SceneGraph, screen_save_signal: Any,
+                 parent_logger):
         self.stop_event = threading.Event()
         self.task_name = task_name
         self.config = config
@@ -53,7 +48,8 @@ class Operationer:
             return self.scene_graph.get_element(scene_name, element_name)
         if self.current_scene is None:
             raise StepFailedError(f"当前场景未设置，无法获取元素 [{element_name}]")
-        return self.scene_graph.get_element(self.current_scene.name, element_name)
+        return self.scene_graph.get_element(self.current_scene.name,
+                                            element_name)
 
     def get_scene(self, scene_name):
         return self.scene_graph.get_scene(scene_name)
@@ -79,7 +75,10 @@ class Operationer:
         max_time: float = kwargs.get("max_time", 1.0)
         max_attempts: int | None = kwargs.get("max_attempts")
 
-        stable_kwargs = {k: v for k, v in kwargs.items() if k.startswith('stable_')}
+        stable_kwargs = {
+            k: v
+            for k, v in kwargs.items() if k.startswith('stable_')
+        }
 
         # auto_raise: bool = kwargs.get("auto_raise", False)
         # bool_debug: bool = kwargs.get("bool_debug", True)
@@ -93,22 +92,25 @@ class Operationer:
                 if self._should_stop():
                     raise Stop
                 time_1 = time.perf_counter()
-                coordinates = self.recognizer.element_match(self.device.screen_cap(), element, False)
+                coordinates = self.recognizer.element_match(
+                    self.device.screen_cap(), element, False)
                 if len(coordinates) != 0:
                     self.screen_save_signal.emit(self.task_name)
                     if wait_time is not None:
                         time.sleep(wait_time)
                     else:
                         self.wait_until_stable(**stable_kwargs)
-                    
+
                     success = True
                     break
-                sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
+                sleep_time = max(0.0,
+                                 interval - (time.perf_counter() - time_1))
                 time.sleep(sleep_time)
         else:
             while time.perf_counter() - start_time < max_time:
                 time_1 = time.perf_counter()
-                coordinates = self.recognizer.element_match(self.device.screen_cap(), element, False)
+                coordinates = self.recognizer.element_match(
+                    self.device.screen_cap(), element, False)
                 if len(coordinates) != 0:
                     self.screen_save_signal.emit(self.task_name)
                     if wait_time is not None:
@@ -117,7 +119,8 @@ class Operationer:
                         self.wait_until_stable(**stable_kwargs)
                     success = True
                     break
-                sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
+                sleep_time = max(0.0,
+                                 interval - (time.perf_counter() - time_1))
                 time.sleep(sleep_time)
         # # 根据auto_raise参数决定是抛出异常还是返回结果
         # if not success and auto_raise:
@@ -146,7 +149,10 @@ class Operationer:
         max_time: float = kwargs.get("max_time", 1.0)
         max_attempts: int | None = kwargs.get("max_attempts")
 
-        stable_kwargs = {k: v for k, v in kwargs.items() if k.startswith('stable_')}
+        stable_kwargs = {
+            k: v
+            for k, v in kwargs.items() if k.startswith('stable_')
+        }
 
         # auto_raise: bool = kwargs.get("auto_raise", False)
         # bool_debug: bool = kwargs.get("bool_debug", True)
@@ -160,7 +166,8 @@ class Operationer:
                 if self._should_stop():
                     raise Stop
                 time_1 = time.perf_counter()
-                flag = self.recognizer.scene_match(self.device.screen_cap(), scene, False)
+                flag = self.recognizer.scene_match(self.device.screen_cap(),
+                                                   scene, False)
                 if flag:
                     self.screen_save_signal.emit(self.task_name)
                     if wait_time is not None:
@@ -169,12 +176,14 @@ class Operationer:
                         self.wait_until_stable(**stable_kwargs)
                     success = True
                     break
-                sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
+                sleep_time = max(0.0,
+                                 interval - (time.perf_counter() - time_1))
                 time.sleep(sleep_time)
         else:
             while time.perf_counter() - start_time < max_time:
                 time_1 = time.perf_counter()
-                flag = self.recognizer.scene_match(self.device.screen_cap(), scene, False)
+                flag = self.recognizer.scene_match(self.device.screen_cap(),
+                                                   scene, False)
                 if flag:
                     self.screen_save_signal.emit(self.task_name)
                     if wait_time is not None:
@@ -183,7 +192,8 @@ class Operationer:
                         self.wait_until_stable(**stable_kwargs)
                     success = True
                     break
-                sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
+                sleep_time = max(0.0,
+                                 interval - (time.perf_counter() - time_1))
                 time.sleep(sleep_time)
         # # 根据auto_raise参数决定是抛出异常还是返回结果
         # if not success and auto_raise:
@@ -219,7 +229,10 @@ class Operationer:
         max_attempts: int | None = kwargs.get("max_attempts")
         click_times: int = kwargs.get("click_times", 1)
 
-        stable_kwargs = {k: v for k, v in kwargs.items() if k.startswith('stable_')}
+        stable_kwargs = {
+            k: v
+            for k, v in kwargs.items() if k.startswith('stable_')
+        }
 
         def _on_click_success():
             self.screen_save_signal.emit(self.task_name)
@@ -237,50 +250,64 @@ class Operationer:
                     raise Stop
                 time_1 = time.perf_counter()
                 if element.type == ElementType.COORDINATE:
-                    if self.device.click(element.coordinate_x, element.coordinate_y, times=click_times):
+                    if self.device.click(element.coordinate_x,
+                                         element.coordinate_y,
+                                         times=click_times):
                         _on_click_success()
                         success = True
                         break
-                    sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
+                    sleep_time = max(0.0,
+                                     interval - (time.perf_counter() - time_1))
                     time.sleep(sleep_time)
                 elif element.type == ElementType.IMG:
-                    coordinates = self.recognizer.element_match(self.device.screen_cap(), element)
+                    coordinates = self.recognizer.element_match(
+                        self.device.screen_cap(), element)
                     if coordinates:
                         coordinate = coordinates[0]
                         x_ratio, y_ratio = element.ratio_x, element.ratio_y
                         # 按照元素可点击位置相对于模版左上角，相对整体的比例确定点击坐标
-                        x, y = (coordinate[0] * (1 - x_ratio) + coordinate[2] * x_ratio), (
-                                coordinate[1] * (1 - y_ratio) + coordinate[3] * y_ratio)
+                        x, y = (coordinate[0] * (1 - x_ratio) +
+                                coordinate[2] * x_ratio), (
+                                    coordinate[1] * (1 - y_ratio) +
+                                    coordinate[3] * y_ratio)
                         if self.device.click(x, y, times=click_times):
                             _on_click_success()
                             success = True
                             break
-                    sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
+                    sleep_time = max(0.0,
+                                     interval - (time.perf_counter() - time_1))
                     time.sleep(sleep_time)
         else:
             while time.perf_counter() - start_time < max_time:
                 time_1 = time.perf_counter()
                 if element.type == ElementType.COORDINATE:
-                    if self.device.click(element.coordinate_x, element.coordinate_y, times=click_times):
+                    if self.device.click(element.coordinate_x,
+                                         element.coordinate_y,
+                                         times=click_times):
                         _on_click_success()
                         success = True
                         break
-                    sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
+                    sleep_time = max(0.0,
+                                     interval - (time.perf_counter() - time_1))
                     time.sleep(sleep_time)
                 elif element.type == ElementType.IMG:
-                    coordinates = self.recognizer.element_match(self.device.screen_cap(), element)
+                    coordinates = self.recognizer.element_match(
+                        self.device.screen_cap(), element)
                     if coordinates:
                         coordinate = coordinates[0]
                         x_ratio, y_ratio = element.ratio_x, element.ratio_y
                         # 按照元素可点击位置相对于模版左上角，相对整体的比例确定点击坐标
-                        x, y = (coordinate[0] * (1 - x_ratio) + coordinate[2] * x_ratio), (
-                                coordinate[1] * (1 - y_ratio) + coordinate[3] * y_ratio)
+                        x, y = (coordinate[0] * (1 - x_ratio) +
+                                coordinate[2] * x_ratio), (
+                                    coordinate[1] * (1 - y_ratio) +
+                                    coordinate[3] * y_ratio)
 
                         if self.device.click(x, y, times=click_times):
                             _on_click_success()
                             success = True
                             break
-                    sleep_time = max(0.0, interval - (time.perf_counter() - time_1))
+                    sleep_time = max(0.0,
+                                     interval - (time.perf_counter() - time_1))
                     time.sleep(sleep_time)
 
         # # 结算页常见按钮模板失效时，兜底点击屏幕中心，避免流程卡死。
@@ -291,7 +318,6 @@ class Operationer:
         #     if self.device.click(center_x, center_y, times=1):
         #         _on_click_success()
         #         success = True
-
 
         return success
 
@@ -316,17 +342,16 @@ class Operationer:
         wait_time: float | None = kwargs.get("wait_time", None)
         duration: float = kwargs.get("duration", 1.0)
         times: int = kwargs.get("times", 1)
-        stable_kwargs = {k: v for k, v in kwargs.items() if k.startswith('stable_')}
+        stable_kwargs = {
+            k: v
+            for k, v in kwargs.items() if k.startswith('stable_')
+        }
         self.screen_save_signal.emit(self.task_name)
         for _ in range(times):
             if self._should_stop():
                 raise Stop
 
-            self.device.swipe(
-                start_coordinate,
-                end_coordinate,
-                duration
-            )
+            self.device.swipe(start_coordinate, end_coordinate, duration)
             if wait_time is not None:
                 time.sleep(wait_time)
             else:
@@ -334,7 +359,12 @@ class Operationer:
         self.screen_save_signal.emit(self.task_name)
         return True
 
-    def search_and_click(self, element_list, search_actions, **kwargs, ):
+    def search_and_click(
+        self,
+        element_list,
+        search_actions,
+        **kwargs,
+    ):
         """
         循环执行元素点击搜索，支持多轮次、多位置尝试，并在过程中执行辅助操作（如点击或滑动）
 
@@ -362,7 +392,10 @@ class Operationer:
         once_max_attempts: int | None = kwargs.get("once_max_attempts")
         wait_time: float | None = kwargs.get("wait_time", None)
 
-        stable_kwargs = {k: v for k, v in kwargs.items() if k.startswith('stable_')}
+        stable_kwargs = {
+            k: v
+            for k, v in kwargs.items() if k.startswith('stable_')
+        }
 
         self.logger.debug(f"元素点击搜索内容：")
         for element_id in element_list:
@@ -378,7 +411,8 @@ class Operationer:
                 raise Stop
             if search_max_time:
                 if time.perf_counter() - start > search_max_time:
-                    self.logger.warning(f"搜索超时：{time.perf_counter() - start:.1f}s")
+                    self.logger.warning(
+                        f"搜索超时：{time.perf_counter() - start:.1f}s")
                     return 0
             elif max_attempts:
                 if attempts >= max_attempts:
@@ -387,30 +421,25 @@ class Operationer:
             for index, element_id in enumerate(element_list):
                 if self._should_stop():
                     raise Stop
-                if self.click_and_wait(
-                        element_id,
-                        wait_time=wait_time,
-                        max_time=once_max_time,
-                        max_attempts=once_max_attempts,
-                        **stable_kwargs
-                ):
+                if self.click_and_wait(element_id,
+                                       wait_time=wait_time,
+                                       max_time=once_max_time,
+                                       max_attempts=once_max_attempts,
+                                       **stable_kwargs):
                     self.screen_save_signal.emit(self.task_name)
                     return index + 1
             for action in search_actions:
                 if self._should_stop():
                     raise Stop
                 if "click" in action:
-                    self.click_and_wait(
-                        action['click'],
-                        max_time=1,
-                        **stable_kwargs
-                    )
+                    self.click_and_wait(action['click'],
+                                        max_time=1,
+                                        **stable_kwargs)
                 elif "swipe" in action:
-                    self.swipe_and_wait(
-                        action['swipe']['start_coordinate'],
-                        action['swipe']['end_coordinate'],
-                        duration=action['swipe']['duration'],
-                        **stable_kwargs)
+                    self.swipe_and_wait(action['swipe']['start_coordinate'],
+                                        action['swipe']['end_coordinate'],
+                                        duration=action['swipe']['duration'],
+                                        **stable_kwargs)
             attempts += 1
 
     def search_and_detect(self, item_list, search_actions, **kwargs):
@@ -418,7 +447,7 @@ class Operationer:
         循环执行元素检测，支持多轮次、多位置尝试，并在过程中执行辅助操作（如点击或滑动）
 
         Args:
-            item_list: (List): 搜索的对象列表，每个对象是Element或者Scene
+            item_list: (List): 搜索的对象列表，每个对象是Element/Str或者Scene
             search_actions: (List[Dict]): 搜索过程中执行的辅助动作列表，支持两种操作：
                     - {'click': 点击参数}：执行点击操作
                     - {'swipe': 滑动参数}：执行滑动操作
@@ -440,7 +469,10 @@ class Operationer:
         once_max_time: float = kwargs.get("once_max_time", 1.0)
         once_max_attempts: int | None = kwargs.get("once_max_attempts")
         wait_time: float = kwargs.get("wait_time", 1.0)
-        stable_kwargs = {k: v for k, v in kwargs.items() if k.startswith('stable_')}
+        stable_kwargs = {
+            k: v
+            for k, v in kwargs.items() if k.startswith('stable_')
+        }
         # bool_debug: bool = kwargs.get("bool_debug", True)
         self.logger.debug(f"元素检测搜索内容：")
         for item in item_list:
@@ -450,7 +482,10 @@ class Operationer:
                 if item.type == ElementType.IMG:
                     self.logger.debug(f"[图像] {item.name}")
                 elif item.type == ElementType.COORDINATE:
-                    self.logger.debug(f"[坐标] ({item.coordinate_x},{item.coordinate_y})")
+                    self.logger.debug(
+                        f"[坐标] ({item.coordinate_x},{item.coordinate_y})")
+            elif isinstance(item, str):
+                self.logger.debug(f"[元素] {item}")
         start = time.perf_counter()
         attempts = 0
         self.screen_save_signal.emit(self.task_name)
@@ -461,28 +496,25 @@ class Operationer:
                 if self._should_stop():
                     raise Stop
                 if isinstance(item, Scene):
-                    if self.detect_scene(
-                            item,
-                            wait_time=wait_time,
-                            max_time=once_max_time,
-                            max_attempts=once_max_attempts,
-                            **stable_kwargs
-                    ):
+                    if self.detect_scene(item,
+                                         wait_time=wait_time,
+                                         max_time=once_max_time,
+                                         max_attempts=once_max_attempts,
+                                         **stable_kwargs):
                         self.screen_save_signal.emit(self.task_name)
                         return index + 1
-                elif isinstance(item, Element):
-                    if self.detect_element(
-                            item,
-                            wait_time=wait_time,
-                            max_time=once_max_time,
-                            max_attempts=once_max_attempts,
-                            **stable_kwargs
-                    ):
+                elif (isinstance(item, Element) or isinstance(item, str)):
+                    if self.detect_element(item,
+                                           wait_time=wait_time,
+                                           max_time=once_max_time,
+                                           max_attempts=once_max_attempts,
+                                           **stable_kwargs):
                         self.screen_save_signal.emit(self.task_name)
                         return index + 1
             if search_max_time:
                 if time.perf_counter() - start > search_max_time:
-                    self.logger.warning(f"搜索超时：{time.perf_counter() - start:.1f}s")
+                    self.logger.warning(
+                        f"搜索超时：{time.perf_counter() - start:.1f}s")
                     self.screen_save_signal.emit(self.task_name)
                     return 0
             elif max_attempts:
@@ -494,18 +526,15 @@ class Operationer:
                 if self._should_stop():
                     raise Stop
                 if "click" in action:
-                    self.click_and_wait(
-                        action['click'],
-                        max_time=1,
-                        wait_time=2,
-                        **stable_kwargs
-                    )
+                    self.click_and_wait(action['click'],
+                                        max_time=1,
+                                        wait_time=2,
+                                        **stable_kwargs)
                 elif "swipe" in action:
-                    self.swipe_and_wait(
-                        action['swipe']['start_coordinate'],
-                        action['swipe']['end_coordinate'],
-                        duration=action['swipe']['duration'],
-                        **stable_kwargs)
+                    self.swipe_and_wait(action['swipe']['start_coordinate'],
+                                        action['swipe']['end_coordinate'],
+                                        duration=action['swipe']['duration'],
+                                        **stable_kwargs)
             attempts += 1
 
     def click_and_input(self, input_edit: Element, input_text):
@@ -603,7 +632,8 @@ class Operationer:
         # 获取参数
         stable_duration = kwargs.get("stable_duration", 1)  # 默认需要稳定1秒
         stable_max_time = kwargs.get("stable_max_time", 10.0)  # 默认最多等待10秒
-        stable_wait_for_new_scene = kwargs.get("stable_wait_for_new_scene", False)  # 默认不需要等待稳定后出现新场景
+        stable_wait_for_new_scene = kwargs.get("stable_wait_for_new_scene",
+                                               False)  # 默认不需要等待稳定后出现新场景
 
         def is_invalid_frame(frame):
             """判断帧是否为无效帧（全黑、大部分黑、全白、大部分白）"""
@@ -639,7 +669,8 @@ class Operationer:
             current_frame = self.device.screen_cap()
 
             # 转换为灰度图并调整大小以减少计算量
-            current_gray = cv2.cvtColor(np.array(current_frame), cv2.COLOR_RGB2GRAY)
+            current_gray = cv2.cvtColor(np.array(current_frame),
+                                        cv2.COLOR_RGB2GRAY)
             # current_gray = cv2.resize(current_gray, (300, 300))  # 调整到较小尺寸
 
             # 检查是否为无效帧
@@ -650,10 +681,12 @@ class Operationer:
                 if last_valid_frame is not None:
                     # 计算帧间差异
                     diff = cv2.absdiff(last_valid_frame, current_gray)
-                    _, diff_thresh = cv2.threshold(diff, 10, 255, cv2.THRESH_BINARY)
+                    _, diff_thresh = cv2.threshold(diff, 10, 255,
+                                                   cv2.THRESH_BINARY)
 
                     # 计算变化比例
-                    change_ratio = np.count_nonzero(diff_thresh) / diff_thresh.size
+                    change_ratio = np.count_nonzero(
+                        diff_thresh) / diff_thresh.size
 
                     # self.logger.debug(f"帧间变化比例: {change_ratio:.4f}")
 
@@ -661,7 +694,8 @@ class Operationer:
                     if change_ratio < threshold:
                         stable_frame_count += 1
                         if stable_frame_count >= stable_frames_needed:
-                            if stable_wait_for_new_scene and self.detect_scene(self.current_scene):
+                            if stable_wait_for_new_scene and self.detect_scene(
+                                    self.current_scene):
                                 stable_frame_count = 0  # 重置稳定计数
                                 continue
                             self.logger.debug("画面已稳定")

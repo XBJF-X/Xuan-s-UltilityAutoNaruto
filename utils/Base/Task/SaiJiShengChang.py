@@ -34,14 +34,37 @@ class SaiJiShengChang(MeiRiShengChang):
                     max_time=1
             ):
                 continue
-            if not self.operationer.detect_element(
-                    "决斗场内获得N次胜利-已领",
-                    wait_time=2,
-                    max_time=1
+            self.operationer.swipe_and_wait(
+                start_coordinate=[1262, 191],
+                end_coordinate=[1262, 696],
+                duration=0.5
+            )
+            if not self.operationer.search_and_detect(
+                ["决斗场内获得N次胜利-已领"],
+                [
+                {
+                    'swipe':
+                    {
+                        "start_coordinate": [1262, 696],
+                        "end_coordinate": [1262, 191],
+                        "duration": 0.8
+                    }
+                }
+            ],
+            max_attempts=2,
+            bool_debug=True
             ):
                 self.checked = True
                 self.operationer.click_and_wait("X")
                 return False
+            # if not self.operationer.detect_element(
+            #         "决斗场内获得N次胜利-已领",
+            #         wait_time=2,
+            #         max_time=1
+            # ):
+            #     self.checked = True
+            #     self.operationer.click_and_wait("X")
+            #     return False
             else:
                 self.checked = True
                 self.finished = True
