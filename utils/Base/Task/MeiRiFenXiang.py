@@ -12,12 +12,13 @@ class MeiRiFenXiang(BaseTask):
     @TransitionOn()
     def _(self):
         # 点击发给好友
-        self.operationer.click_and_wait("发给好友", wait_time=0)
+        self.operationer.click_and_wait("发给好友", wait_time=2)
 
         timeout = 30
         start_time = time.perf_counter()
         while self.operationer.is_naruto_frontend:
             self.logger.debug("火影忍者仍处于前台...")
+            self.operationer.click_and_wait("发给好友", wait_time=0)
             time.sleep(2)
             if time.perf_counter() - start_time > timeout:
                 self.logger.debug("跳转分享失败，未能跳出游戏，请检查是否安装QQ/微信(与游戏账号对应)")

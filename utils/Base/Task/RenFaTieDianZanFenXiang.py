@@ -22,15 +22,17 @@ class RenFaTieDianZanFenXiang(BaseTask):
 
     @TransitionOn("忍法帖-分享")
     def _(self):
-        self.operationer.click_and_wait("发给好友", wait_time=0)
+        self.operationer.click_and_wait("发给好友", wait_time=2)
         timeout = 30
         start_time = time.perf_counter()
         while self.operationer.is_naruto_frontend:
-            self.logger.debug("火影忍者仍处于前台...")
+            self.logger.debug("火影忍者仍处于前台...") 
+            self.operationer.click_and_wait("发给好友", wait_time=0)
             time.sleep(2)
             if time.perf_counter() - start_time > timeout:
                 self.logger.debug("跳转分享失败，未能跳出游戏，请检查是否安装QQ/微信(与游戏账号对应)")
                 raise
+        self.logger.debug("跳转分享成功，正在等待返回游戏...")
         start_time = time.perf_counter()
         while not self.operationer.is_naruto_frontend:
             self.logger.debug("跳转成功，将返回游戏...")
