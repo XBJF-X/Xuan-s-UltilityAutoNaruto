@@ -12,6 +12,11 @@ class QingBaoZhan(BaseTask):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.reset_task_exe_prog()
+    def run(self):
+        self.reward_40=False
+        self.reward_60=False
+        self.reward_100=False
+        super().run()
 
     @TransitionOn()
     def _(self):
@@ -163,13 +168,13 @@ class QingBaoZhan(BaseTask):
             return False
 
         
-        elif not self.config.get_task_exe_prog(self.task_name, "60活跃度奖励已领取", False):
+        elif not self.reward_60:
             self.handle_activity_reward(60)
             return False
-        elif not self.config.get_task_exe_prog(self.task_name, "100活跃度奖励已领取", False):
+        elif not self.reward_100:
             self.handle_activity_reward(100)
             return False
-        elif not self.config.get_task_exe_prog(self.task_name, "40活跃度奖励已领取", False):
+        elif not self.reward_40:
             self.handle_activity_reward(40)
             return False
         self.operationer.click_and_wait("X")
@@ -224,6 +229,7 @@ class QingBaoZhan(BaseTask):
             self.config.set_task_exe_prog(self.task_name, f"{num}活跃度奖励已领取", True)
         else:
             self.logger.warning(f"{num}活跃度奖励领取失败，活跃度未达到要求")
+        self.__setattr__(f"reward_{num}", True)
 
     def _get_execute_window(self,dt: datetime | None = None):
         if dt is None:
@@ -243,8 +249,13 @@ class QingBaoZhan(BaseTask):
             self.config.get_task_exe_prog(self.task_name, f"60活跃度奖励已领取", False),
             self.config.get_task_exe_prog(self.task_name, f"100活跃度奖励已领取", False)
         ])
+        if flag:
 
-        self.logger.debug("所有活跃度奖励已领取" if flag else "存在未领取的活跃度奖励")
+            self.logger.debug("所有活跃度奖励已领取!")
+        else:
+            for i in [40, 60, 100]:
+                if not self.config.get_task_exe_prog(self.task_name, f"{i}活跃度奖励已领取", False):
+                    self.logger.warning(f"{i}活跃度奖励未领取！！！")
 
         self.config.set_task_exe_prog(self.task_name, f"浏览卷轴", False)
         self.config.set_task_exe_prog(self.task_name, f"浏览村口", False)
