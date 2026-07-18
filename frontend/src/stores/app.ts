@@ -1,12 +1,17 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import { healthApi } from '@/api/client'
+import { ref, computed } from 'vue'
+import { healthApi, configApi } from '@/api/client'
 
 export const useAppStore = defineStore('app', () => {
   const backendConnected = ref(false)
   const backendVersion = ref('')
   const activeConfigId = ref<string | null>(null)
   const schedulerRunning = ref(false)
+  const configs = ref<any[]>([])
+
+  const activeConfig = computed(() =>
+    configs.value.find(c => c.id === activeConfigId.value) || null
+  )
 
   async function checkBackendHealth() {
     try {
@@ -18,6 +23,15 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
+  async function loadConfigs() {
+    try {
+      const res = await configApi.list()
+      configs.value = res.data
+    } catch {
+      configs.value = []
+    }
+  }
+
   function setActiveConfig(id: string | null) {
     activeConfigId.value = id
   }
@@ -26,8 +40,11 @@ export const useAppStore = defineStore('app', () => {
     backendConnected,
     backendVersion,
     activeConfigId,
+    activeConfig,
+    configs,
     schedulerRunning,
     checkBackendHealth,
+    loadConfigs,
     setActiveConfig,
   }
 })

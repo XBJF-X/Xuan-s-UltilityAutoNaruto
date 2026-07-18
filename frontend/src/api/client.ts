@@ -9,7 +9,6 @@ const client: AxiosInstance = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
-// 响应拦截器
 client.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -24,8 +23,15 @@ export default client
 export const configApi = {
   list: () => client.get('/configs'),
   get: (id: string) => client.get(`/configs/${id}`),
-  create: (data: any) => client.post('/configs', data),
-  update: (id: string, data: any) => client.put(`/configs/${id}`, data),
+  create: (username: string) => client.post('/configs', { username }),
+  updateSetting: (id: string, key: string, value: any) =>
+    client.put(`/configs/${id}/setting`, { key, value }),
+  updateTask: (id: string, taskName: string, key: string, value: any) =>
+    client.put(`/configs/${id}/task/${taskName}`, { key, value }),
+  updateTaskParam: (id: string, taskName: string, paramName: string, value: any) =>
+    client.put(`/configs/${id}/task/${taskName}/param/${paramName}`, { key: paramName, value }),
+  getDefaultTasks: () => client.get('/configs/default-tasks'),
+  delete: (id: string) => client.delete(`/configs/${id}`),
 }
 
 // ===== 场景管理 API =====
@@ -52,18 +58,27 @@ export const elementsApi = {
 
 // ===== 任务管理 API =====
 export const tasksApi = {
-  list: () => client.get('/tasks'),
-  get: (name: string) => client.get(`/tasks/${name}`),
-  execute: (name: string) => client.post(`/tasks/${name}/execute`),
-  toggleActivation: (name: string, enabled: boolean) =>
-    client.put(`/tasks/${name}/activation`, { enabled }),
+  getSchema: () => client.get('/tasks/schema'),
 }
 
 // ===== 调度器 API =====
 export const schedulerApi = {
-  start: () => client.post('/scheduler/start'),
-  stop: () => client.post('/scheduler/stop'),
-  status: () => client.get('/scheduler/status'),
+  start: (configId: string) => client.post(`/scheduler/start/${configId}`),
+  stop: (configId: string) => client.post(`/scheduler/stop/${configId}`),
+  status: (configId: string) => client.get(`/scheduler/status/${configId}`),
+  getTasks: (configId: string) => client.get(`/scheduler/tasks/${configId}`),
+  executeTask: (configId: string, taskName: string) =>
+    client.post(`/scheduler/tasks/${configId}/${taskName}/execute`),
+  toggleActivation: (configId: string, taskName: string, state: boolean) =>
+    client.put(`/scheduler/tasks/${configId}/${taskName}/activation?state=${state}`),
+}
+
+// ===== 全局设置 API =====
+export const settingsApi = {
+  getAll: () => client.get('/settings'),
+  get: (section: string, key: string) => client.get(`/settings/${section}/${key}`),
+  set: (section: string, key: string, value: string) =>
+    client.put('/settings', { section, key, value }),
 }
 
 // ===== 场景识别 API =====

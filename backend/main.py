@@ -15,7 +15,7 @@ sys.path.insert(0, str(_project_root))
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.api import config, scenes, elements, tasks, scheduler, recognize, ws
+from backend.api import config, scenes, elements, tasks, scheduler, settings as api_settings, recognize, ws
 
 app = FastAPI(
     title="Xuan Backend",
@@ -39,6 +39,7 @@ app.include_router(elements.router, prefix="/api/elements", tags=["元素管理"
 app.include_router(tasks.router, prefix="/api/tasks", tags=["任务管理"])
 app.include_router(scheduler.router, prefix="/api/scheduler", tags=["调度器"])
 app.include_router(recognize.router, prefix="/api", tags=["场景识别"])
+app.include_router(api_settings.router, prefix="/api/settings", tags=["全局设置"])
 app.include_router(ws.router, prefix="/ws", tags=["WebSocket"])
 
 

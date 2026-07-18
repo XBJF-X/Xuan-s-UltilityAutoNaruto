@@ -1,28 +1,12 @@
-"""任务管理 API 路由"""
-from fastapi import APIRouter, HTTPException
+"""任务 schema API 路由 - 提供 DefaultConfig 中的任务定义"""
+from fastapi import APIRouter
+from backend.services.config_service import ConfigService
 
 router = APIRouter()
+config_service = ConfigService()
 
 
-@router.get("/")
-async def list_tasks():
-    """获取所有任务列表及状态"""
-    raise HTTPException(status_code=501, detail="Not implemented yet")
-
-
-@router.get("/{task_name}")
-async def get_task(task_name: str):
-    """获取单个任务详情"""
-    raise HTTPException(status_code=501, detail="Not implemented yet")
-
-
-@router.post("/{task_name}/execute")
-async def execute_task(task_name: str):
-    """手动执行指定任务"""
-    raise HTTPException(status_code=501, detail="Not implemented yet")
-
-
-@router.put("/{task_name}/activation")
-async def toggle_task_activation(task_name: str):
-    """启用/禁用任务"""
-    raise HTTPException(status_code=501, detail="Not implemented yet")
+@router.get("/schema")
+async def get_task_schema():
+    """返回 DefaultConfig 中的完整任务定义（参数结构、枚举值等）"""
+    return config_service.get_task_schema()
