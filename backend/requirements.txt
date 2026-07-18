@@ -1,0 +1,10 @@
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+websockets>=12.0
+python-multipart>=0.0.9
+pydantic>=2.5.0
+sqlmodel>=0.0.16
+sqlalchemy>=2.0.0
+opencv-python>=4.9.0
+numpy>=1.26.0
+aiofiles>=23.2.0

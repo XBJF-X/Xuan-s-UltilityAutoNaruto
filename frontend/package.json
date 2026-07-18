@@ -1,0 +1,59 @@
+{
+  "name": "xuan-frontend",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview",
+    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
+    "electron:build": "vite build && electron-builder"
+  },
+  "dependencies": {
+    "vue": "^3.4.0",
+    "vue-router": "^4.3.0",
+    "pinia": "^2.1.0",
+    "axios": "^1.6.0",
+    "naive-ui": "^2.38.0",
+    "cytoscape": "^3.29.0",
+    "konva": "^9.3.0",
+    "vue-konva": "^3.0.2",
+    "vuedraggable": "^4.1.0",
+    "socket.io-client": "^4.7.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.0",
+    "typescript": "^5.3.0",
+    "vite": "^5.1.0",
+    "vue-tsc": "^2.0.0",
+    "electron": "^29.0.0",
+    "electron-builder": "^24.0.0",
+    "concurrently": "^8.2.0",
+    "wait-on": "^7.2.0",
+    "electron-devtools-installer": "^3.2.0",
+    "@types/cytoscape": "^3.21.0"
+  },
+  "build": {
+    "appId": "com.xuan.autonaruto",
+    "productName": "Xuan - 火影忍者日常助手",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../backend/",
+        "to": "backend",
+        "filter": ["**/*", "!__pycache__", "!.venv"]
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "../src/ASDS.ico"
+    }
+  }
+}
