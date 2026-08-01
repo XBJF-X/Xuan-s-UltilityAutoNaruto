@@ -1,84 +1,347 @@
 <template>
-  <div>
-    <n-h1>总览</n-h1>
-    <n-grid :cols="2" :x-gap="16" :y-gap="16">
-      <n-grid-item>
-        <n-card title="配置" size="small" hoverable>
-          <template #header-extra>
-            <n-button size="tiny" @click="appStore.loadConfigs()">刷新</n-button>
-          </template>
-          <n-list v-if="appStore.configs.length > 0">
-            <n-list-item v-for="cfg in appStore.configs" :key="cfg.id" clickable
-              @click="handleSelectConfig(cfg.id)">
-              <n-thing :title="cfg.username || cfg.id" :description="cfg.id" />
-            </n-list-item>
-          </n-list>
-          <n-empty v-else description="暂无配置" />
-          <n-button block style="margin-top: 12px" @click="showCreateDialog = true">
-            新建配置
-          </n-button>
-        </n-card>
-      </n-grid-item>
-      <n-grid-item>
-        <n-card title="后端状态" size="small" hoverable>
-          <n-space vertical>
-            <n-statistic label="版本" :value="appStore.backendVersion || '-'" />
-            <n-tag :type="appStore.backendConnected ? 'success' : 'error'" size="large">
-              {{ appStore.backendConnected ? '已连接' : '未连接' }}
-            </n-tag>
-            <n-button @click="appStore.checkBackendHealth()">检测连接</n-button>
-          </n-space>
-        </n-card>
-      </n-grid-item>
-    </n-grid>
-
-    <!-- 新建配置对话框 -->
-    <n-modal v-model:show="showCreateDialog" title="新建配置" preset="card" style="width: 400px">
-      <n-space vertical>
-        <n-input v-model:value="newUsername" placeholder="输入用户名" />
-        <n-button type="primary" block @click="handleCreateConfig" :loading="creating">
-          创建
-        </n-button>
-      </n-space>
-    </n-modal>
+  <div class="dashboard">
+    <div class="panel-left">
+      <div class="custom-card">
+        <div class="custom-card-header">
+          <span>任务状态</span>
+          <n-button
+            size="tiny"
+            @click="loadTaskStatus"
+            :loading="loadingTasks"
+            :disabled="!appStore.activeConfigId"
+            >刷新</n-button
+          >
+        </div>
+        <div class="custom-card-body">
+          <div v-if="!appStore.activeConfigId" class="card-empty">
+            <n-empty description="请先在左侧选择配置" />
+          </div>
+          <div v-else-if="sortedTaskList.length === 0" class="card-empty">
+            <n-empty description="无任务数据" />
+          </div>
+          <div v-else class="task-list">
+            <div
+              v-for="t in sortedTaskList"
+              :key="t.name"
+              class="task-item"
+              :class="'status-' + t.status"
+            >
+              <div class="task-left">
+                <div class="task-row1">
+                  <span class="task-priority-tag" :class="'tag-' + t.status">{{
+                    t.status === 0 ? "执行" : t.status === 1 ? "就绪" : "等待"
+                  }}</span>
+                  <span class="task-priority">{{
+                    padPriority(t.priority)
+                  }}</span>
+                  <span class="task-name">{{ t.name }}</span>
+                </div>
+                <div class="task-time">{{ formatNextExecute(t) }}</div>
+              </div>
+              <button
+                class="task-execute-btn"
+                @click="handleExecuteNow(t.name)"
+              >
+                执行
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel-right">
+      <LogPanel :config-id="appStore.activeConfigId" title="实时日志" />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAppStore } from '@/stores/app'
-import { configApi } from '@/api/client'
+import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { useAppStore } from "@/stores/app";
+import { schedulerApi } from "@/api/client";
+import LogPanel from "@/components/LogPanel.vue";
+import { useWebSocket } from "@/api/ws";
 
-const router = useRouter()
-const appStore = useAppStore()
+const appStore = useAppStore();
+const loadingTasks = ref(false);
+const taskList = ref<any[]>([]);
 
-const showCreateDialog = ref(false)
-const newUsername = ref('')
-const creating = ref(false)
+// 通过 WebSocket 监听任务状态变化，自动刷新
+const { onMessage } = useWebSocket();
+const unsubTaskState = onMessage((msg) => {
+  if (msg.type === "task_state" || msg.type === "status") {
+    loadTaskStatus();
+  }
+});
 
-async function handleSelectConfig(id: string) {
-  appStore.setActiveConfig(id)
-  router.push({ name: 'ConfigDetail' })
+// 定时轮询（即使没有 WebSocket 消息也能更新任务状态）
+let _pollTimer: ReturnType<typeof setInterval> | null = null;
+function startPolling() {
+  stopPolling();
+  if (appStore.activeConfigId) {
+    loadTaskStatus();
+    _pollTimer = setInterval(() => loadTaskStatus(), 2000);
+  }
 }
-
-async function handleCreateConfig() {
-  if (!newUsername.value) return
-  creating.value = true
-  try {
-    await configApi.create(newUsername.value)
-    await appStore.loadConfigs()
-    showCreateDialog.value = false
-    newUsername.value = ''
-  } catch (e) {
-    console.error(e)
-  } finally {
-    creating.value = false
+function stopPolling() {
+  if (_pollTimer) {
+    clearInterval(_pollTimer);
+    _pollTimer = null;
   }
 }
 
+watch(
+  () => appStore.activeConfigId,
+  () => {
+    startPolling();
+  },
+);
+
+function compareTasks(a: any, b: any) {
+  if (a.status !== b.status) return a.status - b.status;
+  if (a.next_execute !== b.next_execute) {
+    if (a.next_execute && b.next_execute)
+      return a.next_execute < b.next_execute ? -1 : 1;
+    if (a.next_execute) return -1;
+    if (b.next_execute) return 1;
+  }
+  if (a.priority !== b.priority) return a.priority - b.priority;
+  if (a.base_priority !== b.base_priority)
+    return a.base_priority - b.base_priority;
+  return 0;
+}
+
+const sortedTaskList = computed(() =>
+  [...taskList.value].filter((t) => t.activated !== false).sort(compareTasks),
+);
+
+/** 调试用：打印每次 API 返回的原始数据 */
+watch(taskList, (val) => {
+  if (val.length > 0) {
+    console.debug(
+      "[Dashboard] 任务列表原始数据:",
+      JSON.stringify(
+        val.map((t) => ({ name: t.name, activated: t.activated })),
+      ),
+    );
+  }
+});
+
+function padPriority(p: number | null | undefined): string {
+  const v = Math.max(-999, Math.min(999, p ?? 0));
+  return "[" + v.toString() + "]";
+}
+
+function formatNextExecute(t: any) {
+  if (!t.next_execute) return "下次执行：-";
+  const parts = t.next_execute.split(" ");
+  const dateStr = parts[0];
+  const timeStr = parts[1] || "";
+  if (!dateStr) return "下次执行：-";
+  return "下次执行：" + dateStr + " " + timeStr;
+}
+
+async function loadTaskStatus() {
+  if (!appStore.activeConfigId) {
+    taskList.value = [];
+    return;
+  }
+  loadingTasks.value = true;
+  try {
+    const res = await schedulerApi.getTasks(appStore.activeConfigId);
+    const raw = res.data || [];
+    taskList.value = raw;
+    // 调试日志
+    if (raw.length > 0) {
+      const summaries = raw.map((t: any) => ({
+        name: t.name,
+        activated: t.activated,
+        activatedType: typeof t.activated,
+      }));
+      console.debug(
+        "[Dashboard] 从后端获取任务列表:",
+        JSON.stringify(summaries),
+      );
+    }
+  } catch {
+    taskList.value = [];
+  } finally {
+    loadingTasks.value = false;
+  }
+}
+
+async function handleExecuteNow(taskName: string) {
+  if (!appStore.activeConfigId) return;
+  try {
+    await schedulerApi.executeTask(appStore.activeConfigId, taskName);
+  } catch {}
+}
+
 onMounted(() => {
-  appStore.checkBackendHealth()
-  appStore.loadConfigs()
-})
+  startPolling();
+});
+onUnmounted(() => {
+  unsubTaskState();
+  stopPolling();
+});
 </script>
+
+<style scoped>
+.dashboard {
+  height: 100%;
+  display: flex;
+  gap: 12px;
+  padding: 8px;
+  overflow: hidden;
+}
+.panel-left {
+  flex: 1;
+  min-width: 350px;
+  max-width: 350px;
+  display: flex;
+  flex-direction: column;
+}
+.panel-right {
+  flex: 2;
+  min-width: 0;
+}
+.custom-card {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.custom-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+  background: #fafafa;
+}
+.custom-card-body {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+  padding: 8px;
+}
+.card-empty {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.task-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 14px;
+  background: #f8f9fa;
+  border: 1px solid #e8e8e8;
+  border-left: 4px solid #bbb;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+.task-item:hover {
+  background: #f0f1f3;
+  border-color: #ddd;
+}
+.task-item.status-0 {
+  border-left-color: #52c41a;
+  background: #f6ffee;
+}
+.task-item.status-1 {
+  border-left-color: #faad14;
+  background: #fffbe6;
+}
+.task-item.status-2 {
+  border-left-color: #bbb;
+}
+.task-left {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+  flex: 1;
+  min-width: 0;
+}
+.task-row1 {
+  display: flex;
+  align-items: center;
+  gap: 0px;
+  min-width: 0;
+}
+.task-priority-tag {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 6px;
+  flex-shrink: 0;
+  color: #fff;
+}
+.tag-0 {
+  background: #52c41a;
+}
+.tag-1 {
+  background: #faad14;
+}
+.tag-2 {
+  background: #bbb;
+}
+.task-priority {
+  font-size: 12px;
+  color: #888;
+  font-weight: 700;
+  flex-shrink: 0;
+  font-family: "Consolas", monospace;
+  min-width: 3em;
+  text-align: right;
+}
+.task-name {
+  font-size: 17px;
+  color: #333;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.task-time {
+  font-size: 14px;
+  color: #999;
+  padding-left: 4px;
+}
+.task-execute-btn {
+  font-size: 17px;
+  font-weight: 700;
+  background: transparent;
+  border: none;
+  color: #999;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: all 0.15s;
+  align-self: center;
+}
+.task-execute-btn:hover {
+  color: #1677ff;
+  background: #e6f4ff;
+}
+.task-execute-btn:active {
+  background: #bae0ff;
+}
+</style>

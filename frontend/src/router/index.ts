@@ -1,6 +1,9 @@
 import { createRouter, createWebHashHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
 
+// 开发中占位组件
+const UnderConstruction = () => import('@/views/UnderConstruction.vue')
+
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
@@ -22,19 +25,19 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'scenes',
         name: 'Scenes',
-        component: () => import('@/views/SceneGraph.vue'),
+        component: UnderConstruction,
         meta: { title: '场景管理' },
       },
       {
         path: 'scenes/:id',
         name: 'SceneEditor',
-        component: () => import('@/views/SceneEditor.vue'),
+        component: UnderConstruction,
         meta: { title: '场景编辑器' },
       },
       {
         path: 'tools/task-priority',
         name: 'TaskPriority',
-        component: () => import('@/views/TaskPriorityEditor.vue'),
+        component: UnderConstruction,
         meta: { title: '任务优先级' },
       },
       {

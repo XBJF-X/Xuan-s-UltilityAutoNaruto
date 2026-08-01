@@ -1,0 +1,21 @@
+from datetime import timedelta
+
+from backend.core.legacy.Exceptions import TaskCompleted
+from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
+
+
+class MeiYueQianDao(BaseTask):
+    source_scene = "每月签到"
+    task_max_duration = timedelta(minutes=3)
+
+    @TransitionOn()
+    def _(self):
+        self.logger.info("开始每月签到")
+        remedy_times = 0
+        while not (self.operationer.detect_element("已签到") or self.operationer.detect_element("可补签一次")):
+            self.operationer.click_and_wait("签到")
+            remedy_times += 1
+            self.logger.info(f"每月签到{remedy_times}次")
+        self.operationer.click_and_wait("持之以恒")
+        self.operationer.click_and_wait("X")
+        raise TaskCompleted("任务执行完成")

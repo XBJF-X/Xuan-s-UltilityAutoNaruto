@@ -23,35 +23,59 @@ class ScreenManager:
         return (self.current_screen is not None) and self.current_screen.ready
 
     def create_screen_instance(self):
-        """根据模式创建对应的截图实例"""
+        """根据模式创建对应的截图实例（含自动回退）"""
         try:
-            # 根据模式创建子类实例
-            if self.control_mode == ScreenMode.DroidCastRaw:
-                screen = DroidCastRaw(self.config, self.logger)
-            elif self.control_mode == ScreenMode.MuMu:
-                screen = MuMu(self.config, self.logger)
-            elif self.control_mode == ScreenMode.LD:
-                screen = LD(self.config, self.logger)
-            elif self.control_mode == ScreenMode.WindowCapture:
-                screen = WindowCapture(self.config, self.logger)
-            elif self.control_mode == ScreenMode.U2:
-                screen = U2(self.config, self.logger)
-            else:
-                screen = U2(self.config, self.logger)
-            # 初始化新实例
-            screen.init()
-            # 初始化提示
-            if screen.ready:
-                self.logger.info(f"[{self.control_mode.name}] 截图实例创建并初始化完成")
+            screen = self._try_create(self.control_mode)
+            if screen and screen.ready:
+                return screen
+
+            # 配置的模式初始化失败，自动回退到 U2
+            self.logger.warning(
+                f"[{self.control_mode.name}] 初始化失败，自动回退到 U2 截图模式"
+            )
+            self.control_mode = ScreenMode.U2
+            screen = self._try_create(ScreenMode.U2)
             return screen
         except Exception as e:
+            self.logger.error(f"创建截图实例失败: {e}")
             return None
 
+    def _try_create(self, mode: ScreenMode):
+        """尝试创建指定模式的截图实例"""
+        if mode == ScreenMode.DroidCastRaw:
+            screen = DroidCastRaw(self.config, self.logger)
+        elif mode == ScreenMode.MuMu:
+            screen = MuMu(self.config, self.logger)
+        elif mode == ScreenMode.LD:
+            screen = LD(self.config, self.logger)
+        elif mode == ScreenMode.WindowCapture:
+            screen = WindowCapture(self.config, self.logger)
+        elif mode == ScreenMode.U2:
+            screen = U2(self.config, self.logger)
+        else:
+            screen = U2(self.config, self.logger)
+        screen.init()
+        if screen.ready:
+            self.logger.info(f"[{mode.name}] 截图实例创建并初始化完成")
+        else:
+            self.logger.warning(f"[{mode.name}] 初始化失败（ready=False）")
+        return screen
+
     def screencap(self):
-        """统一对外提供截图接口"""
-        if self.ready:
+        """统一对外提供截图接口（含自动回退）"""
+        if self.current_screen and self.current_screen.ready:
+            try:
+                return self.current_screen.screencap()
+            except Exception as e:
+                self.logger.warning(f"当前截图实例执行失败，尝试创建新实例: {e}")
+                self.current_screen = self.create_screen_instance()
+                if self.current_screen and self.current_screen.ready:
+                    return self.current_screen.screencap()
+                return None
+        self.logger.warning("截图实例未初始化或未就绪，尝试重新创建")
+        self.current_screen = self.create_screen_instance()
+        if self.current_screen and self.current_screen.ready:
             return self.current_screen.screencap()
-        self.logger.warning("截图实例未初始化或未就绪")
         return None
 
     def release(self):

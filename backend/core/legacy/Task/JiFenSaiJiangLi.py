@@ -1,0 +1,28 @@
+from datetime import timedelta
+
+from backend.core.legacy.Exceptions import TaskCompleted
+from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
+
+
+class JiFenSaiJiangLi(BaseTask):
+    source_scene = "积分赛"
+    task_max_duration = timedelta(minutes=2)
+
+    @TransitionOn()
+    def _(self):
+        self.operationer.click_and_wait("X")
+        raise TaskCompleted("任务执行完成")
+    @TransitionOn("积分赛-段位奖励")
+    def _(self):
+        self.operationer.click_and_wait("X")
+        return False
+
+    @TransitionOn("积分赛-排名奖励")
+    def _(self):
+        self.operationer.click_and_wait("X")
+        return False
+
+    @TransitionOn("恭喜你获得")
+    def _(self):
+        self.operationer.click_and_wait("X")
+        return False

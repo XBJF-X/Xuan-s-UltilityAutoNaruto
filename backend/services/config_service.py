@@ -1,11 +1,11 @@
-"""配置管理服务 - 封装 Config 类"""
+"""配置管理服务 - 封装 Config 类（模块级单例）"""
 import json
 import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from backend.utils import get_real_path
-from utils.Base.Config import Config
+from backend.core.config_model import Config
 
 
 class ConfigService:
@@ -121,9 +121,38 @@ class ConfigService:
         self._instances[config_id] = Config(parent_logger=self.logger, config_path=cfg_path)
         return config_id
 
+    def set_task_priorities(self, config_id: str, ordered_task_names: list[str]) -> bool:
+        """按传入顺序设置任务优先级（存储任务名列表到配置中）"""
+        cfg = self.get_config(config_id)
+        if not cfg:
+            return False
+        cfg.setting_dics["任务优先级顺序"] = ordered_task_names
+        cfg.save_config_to_file()
+        self.logger.debug(f"已更新配置 {config_id} 的任务优先级顺序: {ordered_task_names}")
+        return True
+
+    def get_task_priorities(self, config_id: str) -> list[str]:
+        """获取任务优先级顺序列表"""
+        cfg = self.get_config(config_id)
+        if not cfg:
+            return []
+        return cfg.setting_dics.get("任务优先级顺序", [])
+
+    def rename_config(self, config_id: str, new_username: str) -> bool:
+        cfg = self.get_config(config_id)
+        if not cfg:
+            return False
+        cfg.set_config("用户名", new_username)
+        return True
+
     def delete_config(self, config_id: str) -> bool:
         cfg_path = self._config_path(config_id)
         if cfg_path.exists():
             cfg_path.unlink()
         self._instances.pop(config_id, None)
         return True
+
+
+# ===== 模块级单例 =====
+# 所有 API 模块共享同一个 ConfigService 实例，确保 Config 对象在内存中唯一
+shared_config_service = ConfigService()

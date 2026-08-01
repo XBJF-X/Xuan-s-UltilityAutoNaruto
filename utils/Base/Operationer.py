@@ -2,7 +2,18 @@ import threading
 import time
 from typing import Tuple, Any
 
-from PySide6.QtCore import Signal
+# Signal 为可选依赖：Vue3 前端模式下不需要 PySide6
+try:
+    from PySide6.QtCore import Signal
+except ImportError:
+    class Signal:
+        """PySide6 Signal 的 Mock 实现，供无 GUI 环境使用"""
+        def __init__(self, *args):
+            pass
+        def emit(self, *args, **kwargs):
+            pass
+        def connect(self, func):
+            pass
 
 from tool.ResourceManager.model import Scene, Element
 from utils.Base.Clicker import Clicker

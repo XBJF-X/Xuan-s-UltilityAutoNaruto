@@ -30,8 +30,12 @@ export const configApi = {
     client.put(`/configs/${id}/task/${taskName}`, { key, value }),
   updateTaskParam: (id: string, taskName: string, paramName: string, value: any) =>
     client.put(`/configs/${id}/task/${taskName}/param/${paramName}`, { key: paramName, value }),
+  updateTaskPriorities: (id: string, orderedTaskNames: string[]) =>
+    client.put(`/configs/${id}/task-priorities`, { tasks: orderedTaskNames }),
   getDefaultTasks: () => client.get('/configs/default-tasks'),
   delete: (id: string) => client.delete(`/configs/${id}`),
+  rename: (id: string, newUsername: string) =>
+    client.put(`/configs/${id}/rename`, { key: '用户名', value: newUsername }),
 }
 
 // ===== 场景管理 API =====
@@ -42,6 +46,9 @@ export const scenesApi = {
   update: (id: string, data: any) => client.put(`/scenes/${id}`, data),
   delete: (id: string) => client.delete(`/scenes/${id}`),
   getImage: (id: string) => client.get(`/scenes/${id}/image`, { responseType: 'blob' }),
+  addEdge: (source: string, target: string) => client.post('/scenes/edges', { source, target }),
+  deleteEdge: (source: string, target: string) =>
+    client.delete('/scenes/edges', { data: { source, target } }),
 }
 
 // ===== 元素管理 API =====
@@ -90,6 +97,16 @@ export const recognizeApi = {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
   },
+}
+
+// ===== 设备 API =====
+export const deviceApi = {
+  // 获取模拟器截图（用于键位配置），返回 { image: 'data:image/png;base64,...' }
+  screenshot: (configId: string) => client.get(`/device/${configId}/screenshot`),
+  // 获取 ADB 设备串口列表，返回 { serials: string[] }
+  serialList: (configId: string) => client.get(`/device/${configId}/serial-list`),
+  // 重启 ADB 服务并重新枚举设备，返回 { ok: boolean, serials: string[] }
+  restartAdb: (configId: string) => client.post(`/device/${configId}/adb-restart`),
 }
 
 // ===== 健康检查 =====

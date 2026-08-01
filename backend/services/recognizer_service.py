@@ -4,9 +4,9 @@ from pathlib import Path
 from typing import Optional
 
 from backend.utils import get_real_path
-from tool.ResourceManager.ResourceDBManager import ResourceDBManager
-from utils.Base.Scene.SceneGraph import SceneGraph
-from utils.Base.Recognizer import Recognizer
+from backend.tools.resource_db import ResourceDBManager
+from backend.core.scene_graph import SceneGraph
+from backend.core.recognizer_engine import Recognizer
 
 
 class RecognizerService:

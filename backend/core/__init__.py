@@ -1,2 +1,1 @@
-# 核心业务逻辑（引用自 utils/Base/）
-# 开发阶段通过 sys.path 直接引用现有代码
+"""后端核心模块 - 从原项目 utils/Base 迁移并剥离 PySide6 依赖"""

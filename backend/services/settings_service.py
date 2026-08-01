@@ -3,8 +3,8 @@ import logging
 from pathlib import Path
 from typing import Any, Optional
 
-from StaticFunctions import get_real_path
-from utils.Base.Setting import Setting
+from backend.utils import get_real_path
+from backend.core.setting_model import Setting
 
 
 class SettingsService:

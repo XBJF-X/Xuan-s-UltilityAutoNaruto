@@ -1,0 +1,55 @@
+from datetime import timedelta
+
+from backend.core.legacy.Exceptions import TaskCompleted, StepFailedError, TaskCompleted
+from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
+
+
+class JinBiZhaoCai(BaseTask):
+    source_scene = "招财"
+    task_max_duration = timedelta(minutes=3)
+
+    @TransitionOn()
+    def _(self):
+        if (self.config.get_task_exe_prog("金币招财", "已招财次数") >=
+                self.config.get_task_exe_param("金币招财", "招财次数", 2)):
+            raise TaskCompleted("已招满金币招财")
+
+        if self.operationer.click_and_wait("免费一次", wait_time=2):
+            self.logger.info("免费招财一次")
+            times = self.config.get_task_exe_prog("金币招财", "已招财次数")
+            times += 1
+            self.config.set_task_exe_prog("金币招财", "已招财次数", times)
+            return False
+
+        times = self.config.get_task_exe_prog("金币招财", "已招财次数")
+        if times < self.config.get_task_exe_param("金币招财", "招财次数"):
+            self.operationer.click_and_wait("金币招财")
+            times += 1
+            self.config.set_task_exe_prog("金币招财", "已招财次数", times)
+            self.logger.info(f"已招财 {times} 次")
+            return False
+        self.operationer.click_and_wait("X")
+        raise TaskCompleted("任务执行完成")
+    @TransitionOn("二级密码")
+    def _(self):
+        self.logger.debug("出现二级密码窗口")
+        passward = self.config.get_config("二级密码")
+        if len(passward) != 6:
+            raise StepFailedError("请检查二级密码是否留空或漏位！")
+        # 输入操作
+        self.operationer.click_and_input(
+            self.operationer.get_element("输入框"),
+            passward
+        )
+        # 点击二级密码-确定
+        if not self.operationer.click_and_wait(self.operationer.get_element("确定")):
+            raise StepFailedError("二级密码验证失败")
+        times = self.config.get_task_exe_prog("金币招财", "已招财次数")
+        times -= 1
+        self.config.set_task_exe_prog("金币招财", "已招财次数", times)
+        self.logger.info(f"招财次数回退，已招财 {times} 次")
+        return False
+
+    def reset_task_exe_prog(self) -> bool:
+        self.config.set_task_exe_prog("金币招财", "已招财次数", 0)
+        return True

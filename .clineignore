@@ -1,0 +1,8 @@
+test_scene
+release
+__pycache__
+log
+image
+
+build
+.venv

@@ -3,10 +3,9 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from backend.services.config_service import ConfigService
+from backend.services.config_service import shared_config_service as config_service
 
 router = APIRouter()
-config_service = ConfigService()
 
 
 class ConfigSummary(BaseModel):
@@ -29,6 +28,10 @@ class CreateConfigRequest(BaseModel):
 class UpdateConfigRequest(BaseModel):
     key: str
     value: Any
+
+
+class UpdateTaskPrioritiesRequest(BaseModel):
+    tasks: list[str]
 
 
 @router.get("/", response_model=list[ConfigSummary])
@@ -81,6 +84,24 @@ async def update_task_param(config_id: str, task_name: str, param_name: str, req
 async def get_default_tasks():
     """获取 DefaultConfig 中的任务schema"""
     return config_service.get_task_schema()
+
+
+@router.put("/{config_id}/task-priorities")
+async def update_task_priorities(config_id: str, req: UpdateTaskPrioritiesRequest):
+    """批量更新任务优先级（按传入顺序分配优先级值）"""
+    ok = config_service.set_task_priorities(config_id, req.tasks)
+    if not ok:
+        raise HTTPException(status_code=400, detail="更新失败")
+    return {"ok": True}
+
+
+@router.put("/{config_id}/rename")
+async def rename_config(config_id: str, req: UpdateConfigRequest):
+    """重命名配置（修改用户名）"""
+    ok = config_service.rename_config(config_id, str(req.value))
+    if not ok:
+        raise HTTPException(status_code=400, detail="重命名失败")
+    return {"ok": True}
 
 
 @router.delete("/{config_id}")
