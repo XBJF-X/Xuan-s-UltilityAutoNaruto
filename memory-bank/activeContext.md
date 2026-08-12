@@ -14,6 +14,22 @@
 
 ## 近期变更
 
+- **自动更新开关迁移至 [助手设置] 并接入前端（2026-08）**：`src/DefaultSetting.ini` 删除 `[Update]` 段，`自动更新 = False` 移入 `[助手设置]` 段（与模拟器路径、错误自动截图同段统一）。**接入代码**：`Layout.vue` 的 `checkUpdateOnStart` 此前无条件启动检查，现改为先读全局设置 `settingsApi.getAll()['助手设置']['自动更新']`（默认 False），为 true 才调用 check-update 并在有更新时弹窗；`settingsApi` 已加入 Layout import。Settings.vue 全局设置页自动显示该开关。前端已重新 build（frontend/dist 更新，将随提交供热更新拉取）。注：旧根 setting.ini 的 `[Update]` 段与 config JSON 中的"自动更新"键为历史数据，代码不再读取，无害。
+
+- **错误自动截图全局化 + nsi 版本同步（2026-08）**：`错误自动截图` 从 DefaultConfig/config JSON 迁移至 setting.ini `[助手设置]` 段（全局生效，不按配置隔离）。①`config_model.py` 与 `legacy/Config.py` 新增 `_GLOBAL_BOOL_KEYS = ("错误自动截图",)`：`get_config` 用 `SettingsService.getboolean("助手设置", key)` 读取（默认 True），`set_config` 只写 setting.ini（不落 config JSON）。②`config_service.get_config_full` 从返回的 setting_dics 移除全局键，避免前端在配置详情展示/回写。③`src/DefaultSetting.ini` 增 `错误自动截图 = True`，根 setting.ini 由 Setting 合并自动获得。④调用方（`BaseTask._auto_screenshot`、`scheduler_service._save_screenshot`）走 get_config 无需改动；前端 Settings.vue 全局设置页自动显示为开关。**build_release.py 新增 `_sync_nsi_version`**：构建时自动把 `installer.nsi` 的 `!define PRODUCT_VERSION` 替换为 `_version.py` 当前版本（已验证 0.16.0 同步）。注：用户 config/Config_N.json 中残留的"错误自动截图"键无害（读取忽略、配置详情过滤），如需清理可另行处理。
+
+- **Release 打包流程（2026-08）**：按"PyInstaller 只打包环境、项目代码外置可热更新"思路完成整套打包链路。
+  - `launcher.py`（引导器）：PyInstaller onedir 仅含 Python 环境 + WebView 链；启动时以隐藏子进程用内置 venv python 运行 `backend.main:app`（源码，可热更新），等端口就绪后用 **pywebview（WebView2）** 打开桌面窗口加载后端托管的 SPA；关窗杀后端。内置 `--selftest`（无窗自检）与 `--autoclose N`（测试用自动关窗）参数。
+  - `build/build_release.py`：一键流程 frontend(pnpm build)→launcher(pyinstaller)→assemble(组装 build/release)→nsis(makensis)；版本号读 `_version.py`。
+  - `build/launcher.spec`：collect webview/pythonnet 链，exclude 后端依赖与旧 UI 库（PySide6/PyAutoGUI 等）。
+  - `build/installer.nsi`（纯 ASCII）：安装 `build/release/*` 到 `$LOCALAPPDATA\Xuan`，卸载默认保留用户数据（config/log/setting.ini/src）。
+  - 安装目录：`Xuan.exe + _internal + venv/（内置 Python 环境）+ backend/ + frontend/dist/ + src/ + config/log`。**不含** test_scene 与 version.json（version.json 由热更新时创建）。
+  - 构建环境：`.venv-build`（仅装 `backend/requirements.txt` 收敛依赖，体积 ~328MB；minidevice 不在 PyPI 且 GitHub 不可达，从 `.venv` 本地复制）。
+  - 热更新改造：`_UPDATE_EXCLUDE_DIRS` 加 `del`、`.update_tmp`；`src/database.db` 覆盖前自动备份 `.db.bak`；`check-update` 已支持无 version.json（视为有更新）。
+  - `.gitignore`：放行 `frontend/dist`（构建产物提交供热更新拉取）、`src/database.db`、`build` 内构建脚本与 `launcher.py`；忽略 build 产物（release/dist/work/out/log）与 `/dist/`（锚定根级，避免误伤 frontend/dist）。
+  - 验证：安装包 `build/out/XuanInstaller_V0.16.0.exe`（~100MB，lzma 压缩 373MB release）；静默安装到临时目录内容完整、安装后 `Xuan.exe --selftest` 后端正常、静默卸载保留 config/log/src 用户数据；注册表/快捷方式残留已清理。
+  - **注意**：release/venv 体积主要来自 onnxruntime/opencv/numpy（后端必需）；日常前端补丁流程 = 改源码 → `pnpm build` → 提交 `frontend/dist` → 用户热更新拉取；后端代码补丁走 Release 重打包。
+
 - **gitignore/clineignore 整理（2026-08）**：`.gitignore` 重写适配 V2 结构——移除旧版几十条无用条目（已移入 `del/` 的脚本/图片/构建产物）；修正被错误忽略的 `requirements.txt`、`.cz.toml`、`_version.py`、`*.bat`（新 `start_backend.bat`/`start_frontend.bat` 需提交）、`Todo.txt`、`.github/*`、`.gitignore` 自身；新增 `/del/`、`frontend/dist/`、`frontend/dist-electron/`、`.vite/`、OCR 模型 `/utils/Base/OnnxOcr/` 忽略；运行数据 `config/`、`log/`、`setting.ini`、`test_scene/`、`src/database.db` 忽略。**注意：gitignore 不支持行尾注释（`#` 仅行首生效），行内注释会使规则失效**（已踩坑并修正）。`.clineignore` 精简适配——新增 `config`、`del`、`utils`、`frontend/dist`、`.vite`，移除已入 `del/` 的 `release`/`image`/`build`。已用 `git rm --cached` 将历史误跟踪的 `.vite/deps/*` 与 `src/database.db` 移出 index（磁盘文件保留），验证 `git check-ignore` 全部生效、tracked 文件无 `config/log/setting.ini/test_scene/del/frontend/dist` 残留。
 
 - **安装路径误报修复（2026-08）**：打开预设设置（PresetEditor 内 AssistantSettingsPanel）误报"雷电安装路径未设置"的根因——安装路径键已迁移到根目录 `setting.ini [助手设置]`（`Config.get_config` 已实现 JSON→setting.ini 兜底），但 `config_service.get_config_full` 直接返回原始 `setting_dics`（config JSON 数据），预设 `Config_7` 无路径键 → 前端读到空而误报。已修复：`get_config_full` 对 `("MuMu安装路径","雷电安装路径")` 用 `cfg.get_config(key)` 兜底（deepcopy 后补值），前端（AssistantSettingsPanel 的 load / screenMode 切换提示、ConfigDetail 等）读到的是实际生效路径，不再误报。

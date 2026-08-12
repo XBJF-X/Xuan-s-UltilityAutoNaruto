@@ -67,3 +67,16 @@ build/build_release.py
 build/installer.nsi
 build/launcher.spec
 /memory-bank/
+_version.py
+.clineignore
+.cz.toml
+.gitignore
+CHANGELOG.md
+launcher.py
+NewRun.bat
+package-lock.json
+package.json
+pnpm-lock.yaml
+V2-CHANGELOG.md
+version.json
+yarn.lock
