@@ -18,6 +18,13 @@
 # ---------- OCR 模型（大体积二进制，不纳入版本控制） ----------
 /utils/Base/OnnxOcr/
 
+# ---------- 本地工具 / 文档（不共享仓库，保留本地） ----------
+.clineignore
+.github/
+V2-CHANGELOG.md
+memory-bank/
+version.json
+
 # ---------- 前端构建产物（dist 提交仓库供热更新拉取；electron 产物忽略） ----------
 frontend/dist-electron/
 
