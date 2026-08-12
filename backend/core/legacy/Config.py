@@ -7,6 +7,8 @@ from typing import Dict, Any
 
 from backend.utils import get_real_path
 
+_settings_service = None
+
 
 class Config:
     def __init__(self, parent_logger, config_path):
@@ -22,13 +24,39 @@ class Config:
         self.save_config_to_file()  # 初始化后立即保存合并后的配置
         self.logger.debug(f"初始化完成...")
 
+    @property
+    def config_type(self) -> str:
+        """配置类型：持久（账号配置，跟踪进度）/ 临时（任务预设，只执行一遍不保存进度）"""
+        return self.setting_dics.get("配置类型", "持久")
+
     def get_config(self, key: str, empty=None) -> Any:
         if empty is None:
             empty = {}
+        if key in ("MuMu安装路径", "雷电安装路径"):
+            # 安装路径已迁移至 setting.ini [助手设置]，Config JSON 为空时兜底读取
+            value = self.setting_dics.get(key)
+            if value in (None, ""):
+                global _settings_service
+                if _settings_service is None:
+                    from backend.services.settings_service import SettingsService
+                    _settings_service = SettingsService()
+                fallback = _settings_service.get("助手设置", key)
+                if fallback:
+                    return fallback
         return self.setting_dics.get(key, empty)
+
+    # 安装路径相关键已迁移至 setting.ini [助手设置] 段
+    _PATH_KEYS = ("MuMu安装路径", "雷电安装路径")
 
     def set_config(self, key: str, value: Any):
         self.setting_dics[key] = value
+        if key in self._PATH_KEYS:
+            # 安装路径已迁移至 setting.ini [助手设置]，保存时同步写入
+            try:
+                from backend.services.settings_service import SettingsService
+                SettingsService().set("助手设置", key, value)
+            except Exception as e:
+                self.logger.warning(f"写入 setting.ini 中 {key} 失败: {e}")
         self.logger.debug(f"设置 {key} 为 {value}")
         self.save_config_to_file()
 

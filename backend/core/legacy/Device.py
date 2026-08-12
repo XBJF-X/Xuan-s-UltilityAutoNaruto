@@ -20,7 +20,7 @@ class Device:
 
     @property
     def device_ready(self):
-        print(self.control_manager.ready, self.screen_manager.ready)
+        # print(self.control_manager.ready, self.screen_manager.ready)
         return self.control_manager.ready and self.screen_manager.ready
 
     @property

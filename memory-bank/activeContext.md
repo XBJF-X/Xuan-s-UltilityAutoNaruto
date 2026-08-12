@@ -1,47 +1,65 @@
-# 活动上下文 (Active Context)
+# activeContext.md — 当前工作焦点
 
-## 当前工作焦点
+## 当前状态
 
-从纯 Python(PySide6/Qt)到 Vue3 + FastAPI 技术栈迁移的"还原任务"——还原原版应用功能到前端。
+- 项目处于 **V2 重构进行中**：FastAPI 后端（backend/）+ Vue3 前端（frontend/）已成形，与 V1 遗留桌面代码（Xuan.py、src/、utils/、tool/）共存。
+- 最近一次 version.json 记录的 GitHub master SHA：`525d733fac159a7b5fc79306eff0d9220c122283`（commit message: "fix:[好友体力]适配好友体力UI变化"）。
+- 本地 git 最新提交：`1f3c9dd1453822ee1598c454f737aafd95c09b92`。
+- 前端 `vite build` 与后端 `py_compile` 均已验证通过。
+- V2 旧场景/元素/识别 API（recognize.py/elements.py/scenes.py/recognizer_service.py）已清理删除，场景识别与资源管理收敛到 legacy Recognizer + resource.py。
+- 场景编辑器交互改造完成（按需渲染、场景节点属性面板、ROI 框选、Ratio 弹窗点选、坐标点选、OCR 识别、选图上传）；图片存储已简化为仅 bgra（gray/mask 运行时推导）。
+- 第2轮修正完成：symbol 语义明确为"标志"、树节点彩色角标、场景匹配改为 recognizer.scene()、新建元素按类型动态属性、修复 match_element 的 gray AttributeError。
+- 第3轮修正完成：树节点角标改右上角绝对定位、删除底图点击选中、修复图片上传 [object Object]、匹配/OCR 结果改弹窗展示、ResourceGraph 新增节点右键菜单与单击高亮关联。
+- 场景资源图交互优化：新建节点本地直插（不触发全量刷新）、删除仅在有相连边时刷新。
 
-本会话完成两个子任务:
+## 近期变更
 
-### 子任务1: 任务列表树"助手设置"节点 ✅
-- 前端任务树底部固定"助手设置"节点(对应原版 `task_index_dic["助手设置"] = 1`,位于树最下方)。
-- 新建 `frontend/src/components/AssistantSettingsPanel.vue`:还原原版 DQH_Settings_widget 全部设置项。
-- 数据来源: `configApi.get(id)` 的 `setting_dics`;写回: `configApi.updateSetting(id, key, value)`。
-- 还原的设置项(键名与原版一致):
-  - 调试模式(布尔 → n-switch)
-  - 控制模式(0=MiniTouch / 1=U2 → n-select)
-  - 串口(文本 → n-input + "串口列表"按钮弹窗)
-  - 截图模式(5 模式 n-select:DroidCastRaw/WindowCapture/U2/MuMu/LD),按所选模式动态显示子面板
-  - MuMu: 安装路径 + 实例索引; LD: 安装路径 + 实例索引
-  - 扫描间隔(n-input-number 50-9999, suffix " ms")
-  - 键位配置(n-modal 弹窗,说明文案 + 简短提示)
-  - 二级密码(n-input type=password maxlength=6, placeholder "必须为六位")
-- `Layout.vue` 修改:
-  - `currentView` 类型扩展 `'overview' | 'task' | 'globallog' | 'assistant'`
-  - 树底部追加"助手设置"节点(⚙ 图标),点击 → `switchToAssistant`
-  - 内容区 `v-else-if="currentView === 'assistant'"` 渲染 `AssistantSettingsPanel`,带 `activeConfigId` 空值守卫
-  - 任务分组修正: `typeGroupMap[5] = '每周任务'`(匹配原版 `task_type = 1 if 类型==5 else 类型`)
+- **gitignore/clineignore 整理（2026-08）**：`.gitignore` 重写适配 V2 结构——移除旧版几十条无用条目（已移入 `del/` 的脚本/图片/构建产物）；修正被错误忽略的 `requirements.txt`、`.cz.toml`、`_version.py`、`*.bat`（新 `start_backend.bat`/`start_frontend.bat` 需提交）、`Todo.txt`、`.github/*`、`.gitignore` 自身；新增 `/del/`、`frontend/dist/`、`frontend/dist-electron/`、`.vite/`、OCR 模型 `/utils/Base/OnnxOcr/` 忽略；运行数据 `config/`、`log/`、`setting.ini`、`test_scene/`、`src/database.db` 忽略。**注意：gitignore 不支持行尾注释（`#` 仅行首生效），行内注释会使规则失效**（已踩坑并修正）。`.clineignore` 精简适配——新增 `config`、`del`、`utils`、`frontend/dist`、`.vite`，移除已入 `del/` 的 `release`/`image`/`build`。已用 `git rm --cached` 将历史误跟踪的 `.vite/deps/*` 与 `src/database.db` 移出 index（磁盘文件保留），验证 `git check-ignore` 全部生效、tracked 文件无 `config/log/setting.ini/test_scene/del/frontend/dist` 残留。
 
-### 子任务2: 全局设置页 Settings.vue ✅
-- 重写 `frontend/src/views/Settings.vue`:反映 `setting.ini` 内容。
-- 读取 `settingsApi.getAll()` → 分节渲染;布尔(`true`/`false`)→ n-switch, 数字 → n-input-number, 字符串 → n-input。
-- 修改后调 `settingsApi.set(section, key, value)` 写回,失败回滚重新加载。
-- 样式调整为暗色主题,匹配全局 UI。
+- **安装路径误报修复（2026-08）**：打开预设设置（PresetEditor 内 AssistantSettingsPanel）误报"雷电安装路径未设置"的根因——安装路径键已迁移到根目录 `setting.ini [助手设置]`（`Config.get_config` 已实现 JSON→setting.ini 兜底），但 `config_service.get_config_full` 直接返回原始 `setting_dics`（config JSON 数据），预设 `Config_7` 无路径键 → 前端读到空而误报。已修复：`get_config_full` 对 `("MuMu安装路径","雷电安装路径")` 用 `cfg.get_config(key)` 兜底（deepcopy 后补值），前端（AssistantSettingsPanel 的 load / screenMode 切换提示、ConfigDetail 等）读到的是实际生效路径，不再误报。
 
-## 关键决策
+- **旧版本代码依赖解耦（2026-08）**：backend 唯一对 `utils.Base` 的代码引用（`backend/api/device.py` 截图接口的 `utils.Base.Device`）已迁移为 `backend.core.legacy.Device`（与 `scheduler_service._lazy_init` 一致）。随后将 `utils/Base/` 全部代码 + `StaticFunctions.py` 移入 `del/`，仅保留 OCR 模型文件 `utils/Base/OnnxOcr/models/ppocrv5/`（det.onnx/rec.onnx/ppocrv5_dict.txt，`backend/core/legacy/OnnxOcr` 按 `get_real_path` 路径读取，属文件依赖）。验证：compileall 通过、`.venv` 下 import `backend.main` / `backend.core.legacy.Device` / `OnnxOcr` 均 OK、backend 全量扫描无 `utils`/`StaticFunctions` 引用。**剩余保留项均为文件依赖**：`src/DefaultConfig.json`、`src/DefaultSetting.ini`（默认配置/设置）、`src/database.db`（resource_db 默认路径）、`src/ASDS.ico`（Electron 窗口图标）、`test_scene/`（resource.py 场景底图）、`version.json`（check-update）、`_version.py`（.cz.toml）。注：`.vscode/launch.json` 的 `utils.Base.Recognizer` 调试配置已随迁移失效（不影响运行）。
 
-- 助手设置项存于每个 config 的 `setting_dics`(经 `configApi.get(id)` 返回),不存 setting.ini(全局),与原版一致。
-- 键位配置(KeyMapConfiguration)与串口列表(SerialChoose)原为 Qt 模态窗口,前端以 n-modal 弹窗简化还原。
-- 前端无文件系统访问能力,MuMu/LD 安装路径以可编辑 n-input 代替 QFileDialog 浏览选择。
-- `setting.ini` 内容是 `[Update] 自动更新`;Settings.vue 通用按值类型渲染,随 setting.ini 扩展自动适配。
+- **预设交互修复（2026-08，终版）**：①中栏「助手设置」按配置类型分流——临时预设点击后**直接进入 `PresetEditor.vue` 整体界面**（不再单独开发 PresetSettingsPanel，该组件已删除；PresetEditor 顶部设置卡片复用 AssistantSettingsPanel），持久配置仍走 AssistantSettingsPanel。②点击左侧任务预设**默认进入总览**（Dashboard），由用户自行点击「助手设置」进入 PresetEditor。③预设任务执行参数改为在任务卡片下方内联展开（`<template v-for>` + 行内 `pe-params-inline`），不再统一沉底。④调度器自动停止后前端未同步的根因——`broadcast_status/broadcast_task_state` 把 config_id 包在 `msg.data` 内，前端用顶层 `msg.config_id` 永远匹配不上；ws.ts 在接收时归一化（status/task_state 的 `data.config_id` 提升到顶层），Layout 增加 ws 监听 status（`msg.data?.config_id === activeConfigId` 时同步 `schedulerRunning`，含预设跑完自动停止），PresetEditor/Dashboard 的 task_state 失败标记过滤随之生效。
+- **两套任务启动方式 + 五项优化（2026-08）**：①场景图返回不刷新——App.vue router-view 加 `<keep-alive :include="['ResourceGraph','ResourceSceneEditor']">`（key=route.fullPath），两页补 `defineOptions({name})`，从编辑器返回不再重新拉数据/重跑力导向/重探底图。②右键子菜单可滚动——全局 CSS `.n-dropdown .n-dropdown-menu-wrapper .n-dropdown-menu { max-height:min(50vh,420px); overflow-y:auto }`（n-dropdown teleport 到 body 故用 :global）。③元素类型标识重设计——树角标与属性面板头部统一 `getBadgeInfo()` 配色（标志★#d03050 / IMG #2080f0 / 坐标 #4a4a4a / OCR #e8820c，白字深底圆角+微投影），`.tree-label` padding-right 44px。④错误/超时自动截图——BaseTask `_auto_screenshot(reason)`（受"错误自动截图"开关控制，与"保存截图"独立），接入 StepFailedError/TimeOutDeadLine/MaxDuration/UnknownError 异常分支 + transition 未注册场景强制跳转；`_save_screenshot` 闭包扩为 `(task_name, reason="")` 并保存到 `self._save_screenshot`，`_process_freeze_event` 卡死告警时截图（reason=WatchdogFreeze）。⑤两种任务启动方式——DefaultConfig 增 `配置类型`(持久/临时) 与 `错误自动截图`；Config(config_model+legacy) 增 config_type property；ConfigService 支持按类型创建(list/get/create 返回 config_type)、`duplicate_config`(用户名+_副本)、`set/get_task_order`(任务执行顺序)；config API 增 task-order 与 duplicate；SchedulerService 增 once 模式（run_once 按任务执行顺序逐一执行、失败跳过并透传 error、跑完自动 stop、_reset_once_progress 重置进度/下次执行时间不污染预设、TEMP 任务不写回启用状态、未勾选任务拒绝启动）；BaseTask 增 last_execute_error 供失败标记；前端 Layout 侧栏"账号配置/任务预设"tab + 复制/按类型创建 + preset 视图；新增 PresetEditor.vue（复用 AssistantSettingsPanel + 任务勾选/拖拽排序/执行参数编辑/运行进度/失败标记）；Dashboard 加失败标记。
 
-## 下一步计划
+- **V2 场景/元素/识别旧 API 清理**：删除 `backend/api/recognize.py`、`backend/api/elements.py`、`backend/api/scenes.py`、`backend/services/recognizer_service.py`（工作区删除未提交）。main.py 路由导入已同步清理（仅 config/tasks/scheduler/settings/ws/utils/device/validate/resource），frontend/src/api/client.ts 无 scenesApi/elementsApi 残留。场景识别链路由 `backend/core/legacy/Recognizer.py`（经 recognizer_engine.py 导出）承担；场景/元素管理统一走 `backend/api/resource.py`（前缀 `/api/resource`）。
+- **OnnxOcr 接入（本次）**：新增 `OCR_AREA` 元素类别用于划定 OCR 识别区域。①枚举：`backend/core/enums.py` 与 `backend/core/legacy/Enums.py` 的 ElementType 均新增 `OCR_AREA = 2`；`backend/tools/models.py` 的 Element 模型新增 `ocr_min_score: float = Field(default=0.5)` 字段控制置信度过滤。②`backend/core/legacy/Recognizer.py` 新增 `area_ocr(self, scene_img, ocr_area, bool_debug=False)`：校验元素类型为 OCR_AREA、惰性初始化 OCR 识别器（首次使用才加载模型）、按 ROI 裁剪调用 `OnnxOcr.ocr(raw_json=True)`、按 `ocr_min_score` 过滤，返回 `List[Tuple[str, List[int]]]`（`[(文本, [x1, x2, y1, y2])]`，坐标为相对原图的文本框范围）。③`backend/core/legacy/Operationer.py` 新增 `area_ocr(self, ocr_area, **kwargs)` 转发调用。④`backend/api/resource.py` 新增资源管理器占位路由（`GET /api/resource/status` 返回 `{"ready": False}`），`backend/main.py` 已注册。⑤前端新增 `frontend/src/views/ResourceManager.vue` 空页面，`frontend/src/router/index.ts` 注册 `resourcemanager` 路由（title: 资源管理器）。⑥`tool/ResourceManager` 管理场景资源 UI 适配 OCR_AREA 类别按约定**暂缓**。**修复关键 Bug**：原实现把 `ocr_area.threshold`（0.8）误传给了 `OnnxOcr.ocr` 的 `box` 参数（第二个参数是裁剪框），会导致识别前做错误的坐标偏移复算；已改为传 `None` + `raw_json=True` 获取结构化结果并正确计算 ROI 偏移。`backend/core/legacy/OnnxOcr` 适配层复用 `utils/Base/OnnxOcr`（模型路径 `utils/Base/OnnxOcr/models/ppocrv5/`）。
+- **截图索引修复**：AssistantSettingsPanel.vue 的 MuMu/雷电实例索引 `n-input-number` 原通过 `v-model:value` 绑定 computed，且 `@update:value` 内联传 computed 旧值（异步 save 落地前 getter 读旧值），导致点击 + 后数字不变。已改为 `@update:value="save('MuMu实例索引', $event)"` 与 `@update:value="save('雷电实例索引', $event)"` 传事件新值。
+- **截图接口 500 修复**：backend/api/device.py `_capture_frame()` 在调度器未启动时原只新建 ScreenManager，MuMu/LD/ADB 类截图依赖 ControlManager 建立连接并初始化，单独 ScreenManager 时 screencap() 返回 None → 接口 500。已改为临时实例化 `utils.Base.Device.Device(cfg, logger)`（同时创建 control_manager + screen_manager 保证初始化顺序），经 `screen_manager.screencap()` 取帧，finally 统一 `release()` 释放两个管理器；Device 类型标注仍指向旧版 Config（V1 迁移前遗留），与 scheduler_service 中 `Device(self.config, ...)` 同款用法，加 `# type: ignore[arg-type]` 消除 Pylance 报错并附说明注释。
+- **日志恢复功能（任务1）**：后端新增 `GET /api/utils/log-history`（按 config_id 读当日日志含轮转文件）；前端 ws.ts 新增 `mergeHistory()`（按 ts+message 去重增量合并）+ `reconnected` 事件；LogPanel.vue 在挂载/configId 切换/WebSocket 重连成功时自动拉取历史日志补齐缺口。日志存于 ws.ts 模块级 `logMap`（按 config_id 分组），不随页面切换清理，后台搁置/刷新不再丢日志。
+- **检查更新新弹窗（任务2）**：新增 `frontend/src/components/UpdateDialog.vue`（版本对比卡片 本地→云端 + 云端提交历史列表标注"最新/本地"徽标 + 仅 has_update 时显示"立即更新"按钮 + `n-progress` 进度条含下载/解压/替换文件/写版本记录四阶段）；后端 `check-update` 返回 has_update/本地云端摘要/提交历史（sha、作者、日期、消息），`apply-update` 后台线程执行下载->解压->替换->写 version.json，`update-status` 轮询进度；Layout.vue 顶栏"检查更新"打开弹窗，启动时 `checkUpdateOnStart()` 仅在云端与本地提交不一致（has_update）时弹窗，网络异常静默。
+- **反馈功能（任务3）**："打开日志目录"顶栏按钮改为"反馈"，新增 `frontend/src/components/FeedbackDialog.vue`；后端 `GET /api/utils/feedback/options`（按 `log/<用户名>/` 目录生成日期选项 label 为 MM-DD；传 date 返回该日期 screenshot/ 下的任务列表）、`POST /feedback/package`（后台线程按 compresslevel=9 打包 `XuanFeedBook_{用户名}_{YYYYMMDD}.zip`，含 Main.log* + log/<用户名>/<日期>/Xuan.log* + screenshot/<任务名>/*）、`GET /feedback/package-status` 轮询、`POST /browse-folder`（pywin32 文件夹对话框）。前端两步询问：问题发生日期 → 出现问题的任务（仅当所选日期有 screenshot 时显示，单任务默认选中、多任务可多选、无截图跳过）；再选保存位置。
+- **超时监视器（任务4）**：新增 `backend/services/watchdog_service.py`（`TimeoutWatchdog` 超时监视器），三级检测：场景停滞（SCENE_STUCK，画面在动但长时间停留同一场景）、游戏卡死（GAME_FROZEN，画面静止超时 + 探针点击验证）、模拟器卡死（EMULATOR_FROZEN，连续截图失败或重启游戏后仍静止升级）。调度器 `_lazy_init` 创建并持有监视器，任务开始执行时 `attach_task` 交给任务、结束/被抢占时 `detach_task` 收回；BaseTask 每轮 `transition()` 场景识别后 `heartbeat(scene_name)` 上报。告警经 `on_freeze` 回调 → 调度器 `_process_freeze_event` 停止当前任务并按级别分发处理，处理完 `notify_recovery_done` 解除挂起。可配置项见 watchdog_service.py 头部（超时检测-* 系列，含探针坐标、静止阈值、升级窗口等）。
+- **卡死处理流程完善（任务4续）**：`_handle_scene_stuck` 点击 X 类元素（X-普通/X-广告-1/X-广告-2），未找到则兜底点击"X"与"返回"元素；`_handle_game_frozen` 重启游戏后轮询 `is_naruto_frontend()`（注意是方法需加括号）等待前台恢复（最多 120s）；`_handle_emulator_frozen` 按截图模式分发（0/1/2 → Screen 基类 adb reboot、3 → `MuMu.restart_emulator` 用 MuMuManager.exe shutdown/launch、4 → `LD.restart_emulator` 用 ldconsole.exe quit/launch），重启后 `_wait_device_ready` 轮询设备就绪（120s 超时）。重启命令整合到对应 Screen 派生类（`backend/core/legacy/Screen/__init__.py` 基类 `restart_emulator` 默认 adb 实现 + MuMu.py/LD.py 重载），通过 `device.screen_manager.current_screen` 调用，方便维护。
+- **全局规则 03-mcp.md**：新增 6.1 小节"工具调用格式错误（出现即停，先排查格式，严禁盲目重试）"——凡出现 `Missing value for required parameter 'xxx'`/参数解析为 `undefined` 等格式类错误，禁止立即原样重试，按清单排查 XML 标签闭合/必填参数/工具参数名/对照上次调用找根因，修正后仅重试一次，仍失败则暂停告知用户；优先级高于"连续失败 3 次暂停"。第 10 节速查表同步新增格式错误行。
+- **串口列表 404 修复**：曾误删 backend/api/device.py 的 serial-list 路由导致前端"串口列表"按钮 404，已恢复 `GET /{config_id}/serial-list`，实测返回 `['emulator-5560']`。
+- **环境检测与引导（任务7）**：新增后端 `POST /api/device/{config_id}/check-environment`（检测截图路径关键文件：LD 的 ldconsole.exe/ldopengl64.dll、MuMu 的 external_renderer_ipc.dll/MuMuManager.exe；实例存在与运行状态；分辨率 16:9；后台保活提示）。前端 AssistantSettingsPanel 增加"检查环境"按钮 + 弹窗提示（含 MuMu/LD 建议），浏览路径后自动 popup 检测；串口输入改为 blur/Enter 校验 `127.0.0.1:xxxxx` 或 `emulator-xxxx`（避免时刻校验强制还原）。调度器 `start()` 新增 `_pre_start_environment_check()`：不通过（路径缺文件/实例不存在/非16:9）则日志报错且不启动；通过则 info 记录检测结果。已用空载雷电（Config_1，实例索引3，1600x900）真实验证 API 返回 `resolution_ok=True/running=True/path_ok=True`。
+- **反馈前日志写回（任务6）**：点击反馈按键（`GET /api/utils/feedback/options`）时调用 `log_setup.py` 新增的 `flush_all_handlers()`，强制 flush 所有 logger 的 handler，确保内存缓冲的实时日志写回本地硬盘；`_do_feedback_package` 打包前也兜底 flush 一次，避免打包遗漏未落盘日志。`flush_all_handlers` 遍历 root 与所有已注册 logger 的 handler 逐个 `flush()`。
+- **历史日志来源修复（任务5）**：`backend/api/utils.py` 的 `parse_log_lines` 解析历史日志时把 logger 名仅用于提取 config_id，未写入 entry；前端 LogPanel 用 `logger_name` 字段渲染来源列（`[xxx]`），导致历史日志无来源、与实时日志显示不一致。已修复：entry 增加 `logger_name` 字段，历史日志恢复后与实时日志展示格式统一。
+- **助手设置 5 步改造（任务8）**：①前端串口输入栏即时回显（onMounted 读取已存串口变量，配置加载完成后 syncdSerial 二次同步，首次进入无需点击即可显示）；②控制模式选择框与说明水平排列、去掉"控制模式"小标题；③DefaultConfig.json 的"MuMu安装路径/雷电安装路径"废除，迁移到 src/DefaultSetting.ini [助手设置] 段——V1/V2 Config 均定义 `_PATH_KEYS = ("MuMu安装路径","雷电安装路径")`，get_config 中 JSON 路径为空时兜底读 setting.ini，set_config 保存时同步写 setting.ini（try/except 包裹仅告警不阻断），所有读取方统一走 get_config 故无需逐个改动；若助手设置选 MuMu/LD 截图模式但未设路径，AssistantSettingsPanel load() 时 message.warning 提示；④串口格式前端直接校验（`127.0.0.1:xxxxx` 或 `emulator-xxxx`，blur/Enter 触发，非法还原并提示），新增 `POST /api/utils/install-path`（backend/api/validate.py）browse-folder 后校验安装路径下关键文件存在性（仅文件存在，不含实例/分辨率），前端 Settings.vue 选中后自动 checkInstallPath 并展示缺失文件提示；⑤模拟器后台保活/16:9 检测——scheduler_service.start() 预检失败（路径缺文件/实例不存在/非16:9）则报错不启动，keep_alive_hint 提示。分层原则已落实：设置/配置阶段只查存在性+格式，调度器启动时才查 16:9/保活等运行时约束。
+- **MuMuManager 候选路径收敛（任务8续）**：发现 4 处 MuMuManager.exe 校验点（validate.py / scheduler_service.py / device.py / MuMu.py restart_emulator）均只认根目录或 shell/，缺少 nx_main/ 候选。已统一为 `('MuMuManager.exe', 'shell/MuMuManager.exe', 'nx_main/MuMuManager.exe')`，dll 校验同步补 nx_main/sdk/external_renderer_ipc.dll；validate.py 抽出 `MUMU_MANAGER_CANDIDATES` 常量。mock 目录复测通过（NX_MAIN_FOUND=True），py_compile 通过，路由注册确认（POST /api/utils/install-path）。
+- **删除新前端场景管理器与任务优先级编辑器（2026-08）**：用户明确放弃在新前端使用这两项功能，仅保留旧前端（`tool/ResourceManager`、`tool/TaskPriorityEditor.py`）。已删除 `frontend/src/views/SceneGraph.vue`、`frontend/src/views/SceneEditor.vue`、`frontend/src/views/TaskPriorityEditor.vue`，清理 `frontend/src/router/index.ts`（移除 `/scenes`、`/scenes/:name`、`/task-priority-editor` 路由）、`frontend/src/views/Layout.vue`（移除"场景管理"、"任务优先级编辑器"入口）、`frontend/src/api/client.ts`（移除 `scenesApi`/`elementsApi` 相关封装）。后端 `backend/tools/resource_db.py`、`backend/services/*_service.py` 等与场景/优先级编辑器相关代码当时保留未动；`backend/api/elements.py` 等旧场景/元素/识别 API 已于后续清理中一并删除（见上方"V2 场景/元素/识别旧 API 清理"）。前端 `vite build` 验证通过（v5.4.21，13444 模块），全量搜索 `scenes|SceneGraph|SceneEditor|PriorityEditor|场景管理|任务优先级` 无残留引用。另外顶栏"截图"按钮此前缺失，已恢复（`deviceApi.saveScreenshot` → `POST /api/device/{config_id}/save-screenshot`）。
+- **场景资源管理器新前端化（2026-08）**：①后端 `backend/tools/resource_db.py` 重写为 `ResourceDBManager`（SQLAlchemy 2.0 ORM + `relationship` 外键），`join_model` 多态加载（joinedload 批量取场景+元素一次查完）、`get_scene_tree/get_scene_edges` 边批量读取、全部按 id 的 CRUD（不再按 name/元素字符串匹配），新增 `_migrate_schema` 增量迁移（旧库 ALTER TABLE 补 `ocr_min_score` 列，修正 186 场景全量读取空结果问题）；②`backend/api/resource.py` 改为 `util_router` + `scenes` 路由注册（main.py 前缀 `/api/resource`），提供全量场景列表（含元素数）、场景内元素列表、场景树、边增删、场景/元素按 id 增删改查、元素迁移目标场景；③旧 `tool/ResourceManager` 停用（保留代码，外部无引用）；④前端新增 `frontend/src/api/resource.ts`（批量全量读取封装），`ResourceManager.vue` 完整实现（Naive UI）：场景树/CD 卡片/元素表格增删改查、边管理、元素迁移、批量刷新（单请求全量重建），模板+脚本全部重写；⑤验证（2026-08-07 晚全流程）：HTTP 端到端 CRUD 全通过（create scene/rename/create elem/upd elem/list elems/del elem/del scene 均 200）；批量读取 `GET /api/resource/full` 单请求返回 **191 场景 / 846 元素**（一次全量，不再分发场景数/元素数次请求），`/edges` 返回 301 条边；前端 `frontend/node_modules/.bin/vite build` 通过（v5.4.21，13448 modules，ResourceManager 页面正常产出）。注意：`npx vite build` 会拉取全局缓存的 vite v8（rolldown 版）与项目 v5 不兼容且报 UNRESOLVED_ENTRY，验证前端必须用本地 `node_modules/.bin/vite build`（正斜杠路径）。全量读取由"场景数/元素数次请求"降为"3 次请求（场景+元素+边）"。
+- WebSocket 日志推送（ConnectionManager + WebSocketLogHandler，30ms 批量）已就绪，日志按 config_id（`Config_N`）隔离。
+- 配置管理已抽为 ConfigService（backend/services/config_service.py），提供模块级单例 `shared_config_service`；Config 模型类迁移至 backend/core/config_model.py（V3 配置递归合并）。
 
-- 运行时验证: 需真实模拟器在线,点击"助手设置"节点检查渲染、串口列表枚举、截图键位配置、各项写回 setting_dics。
-- 键位配置截图依赖后端 `/device/{config_id}/screenshot`(ScreenManager.screencap + cv2 PNG base64);模拟器离线时显示空态提示。
-- MuMu/LD 安装路径为手动输入;若需浏览器选目录,可引入 electron 的 dialog 或拖拽上传。
-- 前端大 chunk(1.47MB)后续可用 dynamic import 分包。
-- 更新模块文档(frontend README 等)。
+## 下一步 / 待办
+
+- 前端 `ResourceManager.vue` 的"添加元素"弹窗暂用属性选择器（场景参照列表）；图形化元素编辑器已由 `ResourceSceneEditor.vue`（/resource-scene/:sceneId，场景底图 + 元素框 + 属性面板）承担，可评估是否将两者体验统一。
+- ResourceSceneEditor 的 ROI 框选/坐标点选已完成；可评估是否将"新建元素"对话框也改为交互式（底图框选 ROI / 点击定坐标）。当前新建对话框按类型展示属性，ROI/坐标仍为数字输入。
+- 确认 V2 各 API 与前端面板的完整联动（AssistantSettingsPanel、TaskConfigPanel、Dashboard、Settings 等）。
+- V2 自动更新能力已实现（check-update/apply-update/update-status + UpdateDialog.vue），但尚未评估与 V1 utils/Base/Updater.py 的差异与合并策略。
+- 关注游戏 UI 变化（如好友体力），通过场景/元素识别 + 可配置参数适配。
+- 反馈打包接口仅收集日志与截图，后续可评估是否加入更多诊断信息。
+
+## 重要模式与约定
+
+- 修改 backend 需注意 SPA 中间件依赖 frontend/dist；若 dist 缺失，访问非 API 路径可能失败。
+- 日志 logger 命名需包含 `Config_N` 才能被 WebSocketLogHandler 正确归类到对应配置。
+- 多账号（配置）间数据完全隔离：独立账密、任务开关/参数、调度状态、日志目录。
+
+## 学习与洞察
+
+- V1（PySide6）与 V2（Web+Electron）共存的时期，改动需明确目标代码（backend/frontend 或 V1 遗留），避免误改。
+- WebSocket 批量推送（数组 `["log", batch]`）设计用于高频日志场景，前端需兼容单条对象与批量数组两种格式。

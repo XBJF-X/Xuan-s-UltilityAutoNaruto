@@ -33,30 +33,21 @@ class SceneGraph:
                             bgra = cv2.imdecode(bgra_buf, cv2.IMREAD_UNCHANGED)
                             if bgra is not None:
                                 element.bgra = np.ascontiguousarray(bgra)
+                                # 从 bgra 推导 gray/mask（原 gray/mask 列已废弃删除）
+                                # 注：SQLModel extra="allow" 下 __pydantic_extra__ 可能为 None，
+                                # 直接赋值会触发 item assignment 错误，用 object.__setattr__ 绕过
+                                gray = cv2.cvtColor(
+                                    element.bgra[:, :, :3], cv2.COLOR_BGR2GRAY).astype(np.uint8)
+                                object.__setattr__(element, "gray", gray)
+                                if element.bgra.shape[-1] == 4:
+                                    mask = (element.bgra[:, :, 3] > 0).astype(np.uint8) * 255
+                                else:
+                                    mask = np.ones_like(gray, dtype=np.uint8) * 255
+                                object.__setattr__(element, "mask", mask)
                             else:
                                 self.logger.warning(f"场景{scene.name}的元素{element.name} BGRA图像解码失败")
                         except Exception as e:
                             self.logger.error(f"处理BGRA出错: {str(e)}")
-                    if element.mask:
-                        try:
-                            mask_buf = np.frombuffer(element.mask, dtype=np.uint8)
-                            mask = cv2.imdecode(mask_buf, cv2.IMREAD_GRAYSCALE)
-                            if mask is not None:
-                                element.mask = np.ascontiguousarray(mask)
-                            else:
-                                self.logger.warning(f"场景{scene.name}的元素{element.name} MASK图像解码失败")
-                        except Exception as e:
-                            self.logger.error(f"处理MASK出错: {str(e)}")
-                    if element.gray:
-                        try:
-                            gray_buf = np.frombuffer(element.gray, dtype=np.uint8)
-                            gray = cv2.imdecode(gray_buf, cv2.IMREAD_GRAYSCALE)
-                            if gray is not None:
-                                element.gray = np.ascontiguousarray(gray)
-                            else:
-                                self.logger.warning(f"场景{scene.name}的元素{element.name} GRAY图像解码失败")
-                        except Exception as e:
-                            self.logger.error(f"处理GRAY出错: {str(e)}")
 
             self.scenes[scene.name] = scene
         self.logger.debug(

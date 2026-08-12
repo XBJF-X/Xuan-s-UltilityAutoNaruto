@@ -10,7 +10,8 @@ from backend.utils import cv_imread
 from backend.utils import setup_logging
 from backend.tools.resource_db import ResourceDBManager
 from backend.tools.resource_model import Element, Scene
-from backend.core.legacy.Enums import MatchType
+from backend.core.legacy.Enums import ElementType, MatchType
+from backend.core.legacy.OnnxOcr import OnnxOcr
 from backend.core.legacy.Scene.SceneGraph import SceneGraph
 
 
@@ -230,6 +231,8 @@ class Recognizer:
         self._debug_match_records = {}
         # 最近一次成功匹配的场景详情（在 bool_debug=True 时填充）
         self._last_successful_scene_details = None
+        # OCR 识别器（惰性初始化，仅在首次使用 OCR 时加载模型）
+        self._onnx_ocr = None
 
     def scene(self, scene_img, bool_debug=False) -> Union[str, Scene]:
         """
@@ -609,6 +612,69 @@ class Recognizer:
                 if matches:
                     return "未知含X场景"
         return "未知场景"
+
+    def area_ocr(self, scene_img, ocr_area: Element, bool_debug=False) -> List:
+        """
+        对指定 OcrArea 区域执行 OCR 识别
+
+        Args:
+            scene_img(np.ndarray): 场景图像（BGR格式的numpy数组，如截图）
+            ocr_area(Element): OcrArea 类型的元素（type == ElementType.OCR_AREA）
+            bool_debug(bool): 是否回报日志
+
+        Returns:
+            List[Tuple[str, List[int]]]
+            识别结果列表，每个元素为 (识别文本, [x1, x2, y1, y2])，
+            其中坐标为识别文本在区域内的具体位置（已叠加 ROI 偏移，相对于原图）
+        """
+        if ocr_area.type != ElementType.OCR_AREA:
+            self.logger.warning(f"[{ocr_area.name}] 不是 OcrArea 类型，跳过 OCR 识别")
+            return []
+
+        # 惰性初始化 OCR 识别器（仅首次使用时加载模型）
+        if self._onnx_ocr is None:
+            self._onnx_ocr = OnnxOcr()
+
+        # 裁剪识别区域
+        x, y = ocr_area.roi_x, ocr_area.roi_y
+        w, h = ocr_area.roi_width, ocr_area.roi_height
+        scene_h, scene_w = scene_img.shape[:2]
+        x_end = min(x + w, scene_w)
+        y_end = min(y + h, scene_h)
+        x_start = max(x, 0)
+        y_start = max(y, 0)
+        if x_end <= x_start or y_end <= y_start:
+            self.logger.warning(f"[{ocr_area.name}] ROI 区域非法，跳过 OCR 识别")
+            return []
+        roi_img = scene_img[y_start:y_end, x_start:x_end]
+
+        try:
+            # 注意：OnnxOcr.ocr 第二个参数是裁剪框 box，而非阈值。
+            # 此处 roi_img 已是裁剪后的区域，传 None 表示无需坐标偏移复原；
+            # raw_json=True 获取结构化列表 [{"text", "score", "box"}, ...]。
+            results = self._onnx_ocr.ocr(
+                roi_img, None, (scene_w, scene_h), raw_json=True) or []
+        except Exception as e:
+            self.logger.error(f"[{ocr_area.name}] OCR 识别失败：{e}")
+            return []
+
+        # 将区域内的文本框坐标叠加 ROI 偏移，转换为相对原图的坐标
+        min_score = getattr(ocr_area, "ocr_min_score", 0.5)
+        area_results = []
+        for item in results:
+            text = item.get("text", "")
+            score = float(item.get("score", 0.0))
+            if score < min_score:
+                continue
+            box = item.get("box", [])  # 框格式遵循项目惯例：[[x1, y1], [x2, y2], [x3, y3], [x4, y4]]
+            xs = [float(p[0]) for p in box]
+            ys = [float(p[1]) for p in box]
+            area_results.append((text, [x_start + int(min(xs)), x_start + int(max(xs)),
+                                        y_start + int(min(ys)), y_start + int(max(ys))]))
+
+        if bool_debug:
+            self.logger.debug(f"[{ocr_area.name}] OCR 识别到 {len(area_results)} 条文本")
+        return area_results
 
     def scene_match(self, scene_img, template, bool_debug=True):
         """
@@ -991,7 +1057,7 @@ if __name__ == "__main__":
     rg = Recognizer(SceneGraph(ResourceDBManager()))
 
     # 图片目录路径
-    image_dir = r"F:\PyProject\Xuan\test_scene"
+    image_dir = r"E:\PyProject\Xuan\test_scene"
 
     # 获取目录下所有图片文件
     image_extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.gif']

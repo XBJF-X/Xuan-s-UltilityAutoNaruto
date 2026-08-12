@@ -13,6 +13,10 @@ export type WSMessage = {
   message?: string
   config_id?: string
   logger_name?: string
+  name?: string
+  status?: number
+  action?: string
+  error?: string
   data?: any
 }
 
@@ -95,6 +99,30 @@ export function clearLogsByConfig(configId?: string) {
   syncGlobalLogs()
 }
 
+/**
+ * 合并历史日志到指定 config（刷新/重连后恢复展示用）。
+ * 按 (ts + message) 去重，合并后按时间排序，不覆盖已有实时日志。
+ */
+export function mergeHistory(configId: string, entries: LogEntry[]) {
+  if (!entries || entries.length === 0) return
+  const cid = configId || ''
+  const existing = logMap.value[cid] || []
+  const seen = new Set(existing.map(e => `${e.ts}:${e.message}`))
+  const added: LogEntry[] = []
+  for (const e of entries) {
+    const key = `${e.ts}:${e.message}`
+    if (!seen.has(key)) {
+      seen.add(key)
+      added.push(e)
+    }
+  }
+  if (added.length === 0) return
+  const merged = [...existing, ...added]
+  merged.sort((a, b) => a.ts - b.ts)
+  logMap.value[cid] = merged
+  syncGlobalLogs()
+}
+
 export function useWebSocket() {
   function connect() {
     if (_ws && (_ws.readyState === WebSocket.OPEN || _ws.readyState === WebSocket.CONNECTING)) return
@@ -108,6 +136,8 @@ export function useWebSocket() {
       _pingTimer = setInterval(() => {
         if (_ws?.readyState === WebSocket.OPEN) _ws.send('ping')
       }, 30000)
+      // 通知各订阅者连接（含重连）成功，便于重新拉取历史日志补齐缺口
+      for (const h of _handlers) h({ type: 'reconnected' })
     }
 
     _ws.onmessage = (event) => {
@@ -126,6 +156,12 @@ export function useWebSocket() {
           const msg = data as WSMessage
           if (msg.type === 'log') {
             pushLog(msg.level || 'INFO', msg.message || '', msg.config_id, msg.logger_name)
+          } else if (msg.type === 'status' || msg.type === 'task_state') {
+            // broadcast_status/broadcast_task_state 把 config_id 包在 data 内，
+            // 归一化到顶层，各监听者统一用 msg.config_id 过滤
+            if (!msg.config_id && msg.data && typeof msg.data === 'object') {
+              msg.config_id = msg.data.config_id
+            }
           }
           for (const h of _handlers) h(msg)
         }

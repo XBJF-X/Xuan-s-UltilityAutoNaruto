@@ -16,10 +16,36 @@ class Setting:
             self.logger = parent_logger.getChild(self.__class__.__name__)
         self.setting_path = setting_path
         self.default_setting_path = Path(get_real_path("src/DefaultSetting.ini"))
-        self.config = configparser.ConfigParser()
+        self.config = self._new_parser()
         self.load_and_merge_config()
+        self._normalize_legacy_keys()
         self.save_to_file()
         self.logger.debug("初始化完成...")
+
+    # 历史遗留 key 别名：旧版 configparser 会把 MuMu安装路径 小写化为 mumu安装路径
+    _LEGACY_ALIASES = {"mumu安装路径": "MuMu安装路径"}
+
+    def _normalize_legacy_keys(self):
+        """迁移历史遗留的小写 option key 为标准 key（一次性）"""
+        for section in self.config.sections():
+            for old_key, new_key in self._LEGACY_ALIASES.items():
+                has_old = self.config.has_option(section, old_key)
+                has_new = self.config.has_option(section, new_key)
+                if has_old and not has_new:
+                    self.config.set(section, new_key, self.config.get(section, old_key))
+                    self.config.remove_option(section, old_key)
+                    self.logger.info(f"迁移历史遗留配置键 [{section}] {old_key} -> {new_key}")
+                elif has_old and has_new:
+                    # 已有新键时删除冗余的小写键
+                    self.config.remove_option(section, old_key)
+
+    @staticmethod
+    def _new_parser() -> "configparser.ConfigParser":
+        """创建保留 option 原始大小写的 ConfigParser（configparser 默认会把 option key 小写化，
+        导致 MuMu安装路径 被存成 mumu安装路径）"""
+        parser = configparser.ConfigParser()
+        parser.optionxform = str  # type: ignore[assignment]
+        return parser
 
     def get(self, section: str, key: str, default: Optional[Any] = None) -> Any:
         if self.config.has_section(section) and self.config.has_option(section, key):
@@ -50,7 +76,7 @@ class Setting:
         self.save_to_file()
 
     def _load_default_config(self) -> configparser.ConfigParser:
-        default_config = configparser.ConfigParser()
+        default_config = self._new_parser()
         try:
             if default_config.read(self.default_setting_path, encoding='utf-8'):
                 self.logger.info(f"成功加载默认配置: {self.default_setting_path}")
@@ -61,7 +87,7 @@ class Setting:
         return default_config
 
     def _load_user_config(self) -> configparser.ConfigParser:
-        user_config = configparser.ConfigParser()
+        user_config = self._new_parser()
         if os.path.exists(self.setting_path):
             try:
                 if user_config.read(self.setting_path, encoding='utf-8'):
@@ -73,7 +99,7 @@ class Setting:
         return user_config
 
     def _merge_configs(self, user_config: configparser.ConfigParser, default_config: configparser.ConfigParser) -> configparser.ConfigParser:
-        merged = configparser.ConfigParser()
+        merged = self._new_parser()
 
         for section in default_config.sections():
             merged.add_section(section)

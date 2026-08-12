@@ -342,6 +342,35 @@ class LD(Screen):
 
         return emu_list
 
+    def restart_emulator(self):
+        """
+        重启雷电模拟器：通过安装目录下的 ldconsole.exe 命令行实现。
+        命令格式参考 https://www.ldmnq.com/forum/30.html
+        使用实例索引序号（雷电实例索引）定位目标实例。
+        """
+        ld_path = self.config.get_config('雷电安装路径', '')
+        inst_index = self.config.get_config('雷电实例索引', 0)
+        if not ld_path:
+            self.logger.warning("未配置 雷电安装路径，无法重启模拟器")
+            return False
+        ldconsole_path = os.path.join(ld_path, "ldconsole.exe")
+        if not os.path.exists(ldconsole_path):
+            self.logger.warning(f"未找到 ldconsole.exe: {ldconsole_path}")
+            return False
+        try:
+            self.logger.info(f"通过 ldconsole 重启模拟器: 实例索引={inst_index}")
+            # 先关闭再启动，实现重启（兼容 ldconsole reboot 命令不可用的情况）
+            self._execute_command(
+                f'"{ldconsole_path}" quit --index {inst_index}')
+            import time
+            time.sleep(3)
+            self._execute_command(
+                f'"{ldconsole_path}" launch --index {inst_index}')
+            return True
+        except Exception as e:
+            self.logger.error(f"ldconsole 重启模拟器失败: {e}")
+            return False
+
     def screencap(self) -> Optional[np.ndarray]:
         """捕获当前模拟器屏幕截图"""
         if not self.screenshot_instance:

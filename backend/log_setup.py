@@ -58,6 +58,22 @@ def setup_backend_logging():
     return root_logger
 
 
+def flush_all_handlers():
+    """
+    手动 flush 所有 logger 的文件 handler，确保缓冲中的日志写回磁盘。
+    在反馈打包等需要完整落盘日志的场景前调用，避免实时日志遗漏。
+    """
+    # 遍历 root 与所有已注册 logger
+    names = ["root"] + list(logging.root.manager.loggerDict.keys())
+    for name in names:
+        logger = logging.getLogger(name if name != "root" else "")
+        for handler in logger.handlers:
+            try:
+                handler.flush()
+            except Exception:
+                pass
+
+
 def get_config_file_handler(username: str) -> RotatingFileHandler:
     """
     获取/创建 config 专属的文件处理器。

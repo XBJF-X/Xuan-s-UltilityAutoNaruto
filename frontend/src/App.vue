@@ -3,7 +3,12 @@
     <n-message-provider>
       <n-dialog-provider>
         <n-notification-provider>
-          <router-view />
+          <!-- 缓存场景资源图/编辑器：从编辑器返回场景图时不重新拉取数据、不重跑布局 -->
+          <router-view v-slot="{ Component, route }">
+            <keep-alive :include="['ResourceGraph', 'ResourceSceneEditor']">
+              <component :is="Component" :key="route.fullPath" />
+            </keep-alive>
+          </router-view>
         </n-notification-provider>
       </n-dialog-provider>
     </n-message-provider>

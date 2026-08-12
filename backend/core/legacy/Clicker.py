@@ -6,7 +6,6 @@ from typing import List, Tuple
 import uiautomator2
 
 from backend.core.legacy.Control import Control, ControlMode
-from backend.core.legacy.Control.MiniTouch import MiniTouch
 from backend.core.legacy.Control.U2 import U2
 
 MINITOUCH_MAX_LIFETIME = 180
@@ -47,11 +46,14 @@ class Clicker:
         :raises: 如果创建失败则抛出异常
         """
         if self.control_mode == ControlMode.MiniTouch:
+            # 懒导入：避免未安装 minidevice 时阻塞 Operationer/Clicker 导入链
+            from backend.core.legacy.Control.MiniTouch import MiniTouch
             return MiniTouch(self.config, self.logger, self.device_serial)
         elif self.control_mode == ControlMode.U2:
             return U2(self.config, self.logger, self.device_serial)
         else:
             # 默认使用 MiniTouch
+            from backend.core.legacy.Control.MiniTouch import MiniTouch
             return MiniTouch(self.config, self.logger, self.device_serial)
 
     def start(self):

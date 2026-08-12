@@ -99,6 +99,7 @@ def handle_task_exceptions(func):
         old_trace = sys.gettrace()
         sys.settrace(self.trace_callback)
         self.logger.info("开始执行")
+        self.last_execute_error = None
         before_next_execute_ts = self.config.get_task_base_config(
             self.task_name, "下次执行时间")
         try:
@@ -111,26 +112,36 @@ def handle_task_exceptions(func):
             if after_next_execute_ts == before_next_execute_ts:
                 self.schedule_next_on_complete()
             if self.task_type == TaskType.TEMP:
-                self.config.set_task_base_config(self.task_name, "是否启用", False)
+                # 临时预设（任务预设）不持久化启用状态，避免污染预设文件
+                if self.config.config_type != "临时":
+                    self.config.set_task_base_config(self.task_name, "是否启用", False)
         except TooEarlyToRun as e:
             self.logger.info(str(e) if str(e) else "任务执行时间过早，推迟执行")
             self._cleanup_on_too_early()
             self.schedule_next_on_too_early()
         except StepFailedError as e:
             self.logger.error(e)
+            self.last_execute_error = str(e)
+            self._auto_screenshot("StepFailedError")
         except Stop as e:
             self.logger.warning("线程被要求停止")
             self._cleanup_on_stop()
         except TimeOutDeadLineError as e:
             self.logger.error(f"任务超时：已到达可执行窗口DeadLine")
+            self.last_execute_error = str(e)
+            self._auto_screenshot("TimeOutDeadLineError")
             self._cleanup_on_timeout()
             self.schedule_next_on_timeout_deadline()
         except  TimeOutMaxDurationError as e:
             self.logger.error(f"任务超时：超过任务最大执行时长")
+            self.last_execute_error = str(e)
+            self._auto_screenshot("TimeOutMaxDurationError")
             self._cleanup_on_timeout()
             self.schedule_next_on_timeout_max_duration()
         except Exception as e:
             self.logger.error(f"未知错误：{e}")
+            self.last_execute_error = str(e)
+            self._auto_screenshot("UnknownError")
         finally:
             sys.settrace(old_trace)
             try:
@@ -197,6 +208,11 @@ class BaseTask:
 
         self.bool_click = False
         self.last_unregistered_scene_time = None
+        # 最后一次执行是否出错（供调度器向前端透传失败标记）
+        self.last_execute_error = None
+
+        # 超时监视器（由调度器在任务开始执行前注入，任务结束后收回）
+        self.watchdog = None
 
         self.schedule_next_on_initialization()
         self.transition_func = {}
@@ -238,6 +254,14 @@ class BaseTask:
                      f"任务状态:{self.current_status},"
                      f"下次执行时间:{self.next_execute_time}")
         return info_text
+
+    def attach_watchdog(self, watchdog):
+        """由调度器在任务开始执行前注入超时监视器"""
+        self.watchdog = watchdog
+
+    def detach_watchdog(self):
+        """任务结束/被停止后由调度器收回超时监视器"""
+        self.watchdog = None
 
     @property
     def is_activated(self):
@@ -380,6 +404,12 @@ class BaseTask:
             self.logger.info(f"识别到场景: [Scene] {scene.name}")
             self.operationer.current_scene = scene
             scene_name = scene.name
+        # 向超时监视器上报当前场景（心跳），用于场景停滞/卡死检测
+        if self.watchdog is not None:
+            try:
+                self.watchdog.heartbeat(scene_name)
+            except Exception:
+                pass
         # 如果设置了next_scene，优先跳转
         if self.operationer.next_scene:
             if self.operationer.next_scene == scene_name:
@@ -406,6 +436,7 @@ class BaseTask:
             else:
                 if self.last_unregistered_scene_time and time.perf_counter() - self.last_unregistered_scene_time > self.UNREGISTER_SCENE_MAX_TIME:
                     self.logger.warning(f"长时间未识别到注册场景，强制跳转回 source_scene: {self.source_scene}")
+                    self._auto_screenshot("UnregisteredSceneForceReturn")
                     self.operationer.next_scene = self.source_scene
                     shortest_path = self.transition_manager.bfs_shortest_path(
                         scene_name, self.source_scene)
@@ -458,6 +489,44 @@ class BaseTask:
         """停止请求时的清理"""
         self.operationer.clicker.stop()
         self.reset_task_exe_prog()
+
+    def _auto_screenshot(self, reason: str):
+        """错误/超时/异常场景自动截图一次，保存到 log/<用户名>/<日期>/screenshot/<任务名>/，
+        便于用户打包反馈后开发者排查。可通过配置"错误自动截图"关闭，任何异常不阻断任务流程。
+        """
+        try:
+            if not self.config.get_config("错误自动截图", True):
+                return
+            op = self.operationer
+            if op is None:
+                return
+            save_func = getattr(op, "screen_save_func", None)
+            if callable(save_func):
+                save_func(self.task_name)
+                self.logger.warning(f"已自动保存错误截图（原因: {reason}）")
+                return
+            # 兜底：直接截图保存
+            frame = op.screen_cap()
+            if frame is None:
+                return
+            import os
+            import cv2
+            from datetime import datetime
+            from backend.utils import get_real_path
+            username = self.config.get_config("用户名", "unknown") or "unknown"
+            safe_name = str(username).replace("/", "_").replace("\\", "_")
+            date_str = datetime.now().strftime("%Y-%m-%d")
+            save_dir = os.path.join(get_real_path("log"), safe_name, date_str,
+                                    "screenshot", self.task_name)
+            os.makedirs(save_dir, exist_ok=True)
+            ts = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:-3]
+            filepath = os.path.join(save_dir, f"{ts}_{reason}.png")
+            ok, buf = cv2.imencode(".png", frame)
+            if ok:
+                buf.tofile(filepath)
+                self.logger.warning(f"已自动保存错误截图: {filepath}")
+        except Exception as e:
+            self.logger.warning(f"错误截图保存失败: {e}")
 
     def _cleanup_on_timeout(self):
         """超时时的清理"""

@@ -6,6 +6,7 @@ class ElementType(enum.IntEnum):
     """元素类型"""
     IMG = 0
     COORDINATE = 1
+    OCR_AREA = 2
 
 
 class MatchType(enum.IntEnum):

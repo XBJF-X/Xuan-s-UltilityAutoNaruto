@@ -23,13 +23,39 @@ class Config:
         self.save_config_to_file()
         self.logger.debug("初始化完成...")
 
+    @property
+    def config_type(self) -> str:
+        """配置类型：持久（账号配置，跟踪进度）/ 临时（任务预设，只执行一遍不保存进度）"""
+        return self.setting_dics.get("配置类型", "持久")
+
+    # 安装路径相关键已迁移至 setting.ini [助手设置] 段
+    _PATH_KEYS = ("MuMu安装路径", "雷电安装路径")
+
     def get_config(self, key: str, empty=None) -> Any:
         if empty is None:
             empty = {}
+        if key in self._PATH_KEYS:
+            value = self.setting_dics.get(key)
+            if value in (None, ""):
+                # JSON 中为空时兜底读取 setting.ini [助手设置]
+                try:
+                    from backend.services.settings_service import SettingsService
+                    fallback = SettingsService().get("助手设置", key)
+                    if fallback:
+                        return fallback
+                except Exception as e:
+                    self.logger.warning(f"读取 setting.ini 中 {key} 失败: {e}")
         return self.setting_dics.get(key, empty)
 
     def set_config(self, key: str, value: Any):
         self.setting_dics[key] = value
+        if key in self._PATH_KEYS:
+            # 安装路径已迁移至 setting.ini [助手设置]，保存时同步写入
+            try:
+                from backend.services.settings_service import SettingsService
+                SettingsService().set("助手设置", key, value)
+            except Exception as e:
+                self.logger.warning(f"写入 setting.ini 中 {key} 失败: {e}")
         self.logger.debug(f"设置 {key} 为 {value}")
         self.save_config_to_file()
 

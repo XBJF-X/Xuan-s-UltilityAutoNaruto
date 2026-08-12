@@ -12,17 +12,20 @@ class ConfigSummary(BaseModel):
     id: str
     username: str
     path: str
+    config_type: str = "持久"
 
 
 class ConfigDetail(BaseModel):
     id: str
     username: str
+    config_type: str = "持久"
     setting_dics: dict
     tasks: dict
 
 
 class CreateConfigRequest(BaseModel):
     username: str
+    config_type: str = "持久"  # 持久（账号配置）/ 临时（任务预设）
 
 
 class UpdateConfigRequest(BaseModel):
@@ -31,6 +34,10 @@ class UpdateConfigRequest(BaseModel):
 
 
 class UpdateTaskPrioritiesRequest(BaseModel):
+    tasks: list[str]
+
+
+class UpdateTaskOrderRequest(BaseModel):
     tasks: list[str]
 
 
@@ -49,11 +56,13 @@ async def get_config(config_id: str):
 
 @router.post("/", response_model=ConfigSummary)
 async def create_config(req: CreateConfigRequest):
-    config_id = config_service.create_config(req.username)
+    if req.config_type not in ("持久", "临时"):
+        raise HTTPException(status_code=400, detail="config_type 只能为 持久/临时")
+    config_id = config_service.create_config(req.username, req.config_type)
     if not config_id:
         raise HTTPException(status_code=500, detail="创建配置失败")
     data = config_service.get_config_full(config_id)
-    return ConfigSummary(id=config_id, username=data["username"], path=str(config_service._config_path(config_id)))
+    return ConfigSummary(id=config_id, username=data["username"], path=str(config_service._config_path(config_id)), config_type=data["config_type"])
 
 
 @router.put("/{config_id}/setting")
@@ -93,6 +102,25 @@ async def update_task_priorities(config_id: str, req: UpdateTaskPrioritiesReques
     if not ok:
         raise HTTPException(status_code=400, detail="更新失败")
     return {"ok": True}
+
+
+@router.put("/{config_id}/task-order")
+async def update_task_order(config_id: str, req: UpdateTaskOrderRequest):
+    """保存任务执行顺序（临时预设的拖拽排序结果）"""
+    ok = config_service.set_task_order(config_id, req.tasks)
+    if not ok:
+        raise HTTPException(status_code=400, detail="保存任务执行顺序失败")
+    return {"ok": True}
+
+
+@router.post("/{config_id}/duplicate")
+async def duplicate_config(config_id: str):
+    """复制配置：用户名加 _副本 后缀，其余参数全部照抄"""
+    new_id = config_service.duplicate_config(config_id)
+    if not new_id:
+        raise HTTPException(status_code=400, detail="复制配置失败")
+    data = config_service.get_config_full(new_id)
+    return ConfigSummary(id=new_id, username=data["username"], path=str(config_service._config_path(new_id)), config_type=data["config_type"])
 
 
 @router.put("/{config_id}/rename")

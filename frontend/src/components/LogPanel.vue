@@ -37,9 +37,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onMounted } from 'vue'
-import { useWebSocket, type LogEntry } from '@/api/ws'
-import { configApi } from '@/api/client'
+import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { mergeHistory, useWebSocket, type LogEntry } from '@/api/ws'
+import { configApi, utilsApi } from '@/api/client'
 
 const props = withDefaults(defineProps<{
   maxLines?: number
@@ -51,11 +51,38 @@ const props = withDefaults(defineProps<{
   title: '实时日志',
 })
 
-const { logMap, clearLogsByConfig } = useWebSocket()
+const { logMap, clearLogsByConfig, onMessage } = useWebSocket()
 const autoScroll = ref(true)
 const bodyRef = ref<HTMLElement | null>(null)
 const saveScreenshotEnabled = ref(false)
 const debugModeEnabled = ref(false)
+
+let historyFetching = false
+let stopReconnectListener: (() => void) | null = null
+
+/** 拉取历史日志并合并（刷新/重连/切换配置后恢复展示） */
+async function fetchHistory() {
+  if (historyFetching) return
+  historyFetching = true
+  try {
+    const cid = props.configId ?? ''
+    const res = await utilsApi.logHistory(cid === '__global__' ? '' : cid, 1000)
+    const data = res.data
+    if (data?.ok) {
+      mergeHistory(data.config_id || cid, (data.entries || []).map((e: any) => ({
+        level: e.level || 'INFO',
+        message: e.message || '',
+        ts: e.ts ?? Date.now(),
+        config_id: e.config_id,
+        logger_name: e.logger_name || '',
+      })))
+    }
+  } catch {
+    // 历史日志拉取失败静默处理，不影响实时日志
+  } finally {
+    historyFetching = false
+  }
+}
 
 /** 日志级别数值（DEBUG=0, INFO=1, WARNING=2, ERROR=3） */
 const logLevelRank: Record<string, number> = {
@@ -141,6 +168,7 @@ function clear() {
 
 watch(() => props.configId, () => {
   loadSettings()
+  fetchHistory()
 })
 
 watch(filteredLogs, async () => {
@@ -154,6 +182,17 @@ watch(filteredLogs, async () => {
 
 onMounted(() => {
   loadSettings()
+  fetchHistory()
+  // 后台搁置后 WebSocket 重连成功时，拉取历史日志补齐缺口
+  stopReconnectListener = onMessage((msg) => {
+    if ((msg as any).type === 'reconnected') {
+      fetchHistory()
+    }
+  })
+})
+
+onBeforeUnmount(() => {
+  stopReconnectListener?.()
 })
 </script>
 

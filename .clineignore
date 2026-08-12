@@ -1,8 +1,24 @@
-test_scene
-release
-__pycache__
-log
-image
+# =========================================================
+# Xuan 项目 .clineignore（Cline 工具搜索/读取时屏蔽，节约 token）
+# =========================================================
 
-build
+# 运行数据 / 用户配置（避免污染上下文）
+config
+log
+setting.ini
+test_scene
+
+# 待删除旧资源暂存
+del
+
+# 依赖 / 缓存 / 构建产物
+node_modules
 .venv
+.vite
+.idea
+__pycache__
+frontend/dist
+
+# 旧版残留（仅剩 OCR 模型二进制，Cline 无需读取）
+utils
+

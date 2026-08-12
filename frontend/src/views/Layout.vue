@@ -3,36 +3,130 @@
     <!-- 顶部栏 -->
     <div class="topbar">
       <div class="topbar-left">
-        <n-gradient-text
-          type="info" :size="18" style="font-weight: bold; cursor: pointer;"
+        <div
+          class="topbar-brand"
           @click="switchToGlobalLog"
+          style="cursor: pointer; display: flex; align-items: center;"
         >
-          ☯ Xuan
-        </n-gradient-text>
-        <n-tag :type="appStore.backendConnected ? 'success' : 'error'" size="small" style="margin-left: 10px">
+          <img :src="asdsIcon" alt="logo" class="topbar-logo-icon" />
+          <n-gradient-text type="info" :size="23" style="font-weight: bold;">
+            Xuan-s-UltilityAutoNaruto
+          </n-gradient-text>
+        </div>
+        <n-tag :type="appStore.backendConnected ? 'success' : 'error'" size="medium">
           {{ appStore.backendConnected ? '已连接' : '未连接' }}
         </n-tag>
       </div>
       <div class="topbar-right">
-        <n-button text size="small" @click="appStore.checkBackendHealth()">
-          <template #icon><n-icon><RefreshOutlined /></n-icon></template>
+        <!-- 刷新 -->
+        <n-tooltip trigger="hover">
+          <template #trigger>
+            <n-button text size="medium" @click="appStore.checkBackendHealth()">
+              <template #icon><n-icon size="32"><RefreshOutlined /></n-icon></template>
+            </n-button>
+          </template>
           刷新
-        </n-button>
-        <n-dropdown trigger="click" :options="menuOptions" @select="handleMenuSelect">
-          <n-button text size="small">
-            <template #icon><n-icon size="22"><MenuOutlined /></n-icon></template>
-          </n-button>
-        </n-dropdown>
+        </n-tooltip>
+
+        <!-- 截图 -->
+        <n-tooltip trigger="hover">
+          <template #trigger>
+            <n-button text size="medium" :disabled="!appStore.activeConfigId" @click="handleScreenshot">
+              <template #icon><n-icon size="30"><CameraOutlined /></n-icon></template>
+            </n-button>
+          </template>
+          截图
+        </n-tooltip>
+
+        <!-- 项目主页（GitHub） -->
+        <n-tooltip trigger="hover">
+          <template #trigger>
+            <a
+              class="topbar-icon-link"
+              href="https://github.com/XBJF-X/Xuan-s-UltilityAutoNaruto"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <img :src="githubIcon" alt="GitHub" class="github-icon" />
+            </a>
+          </template>
+          项目主页
+        </n-tooltip>
+
+        <!-- 反馈 -->
+        <n-tooltip trigger="hover">
+          <template #trigger>
+            <n-button text size="medium" @click="openFeedback">
+              <template #icon><n-icon size="30"><FolderOpenOutlined /></n-icon></template>
+            </n-button>
+          </template>
+          反馈
+        </n-tooltip>
+
+        <!-- Q&A -->
+        <n-tooltip trigger="hover">
+          <template #trigger>
+            <a
+              class="topbar-icon-link"
+              href="https://github.com/XBJF-X/Xuan-s-UltilityAutoNaruto#%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E5%92%8C%E6%B3%A8%E6%84%8F%E4%BA%8B%E9%A1%B9"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <n-icon size="30" color="#333"><HelpOutlineOutlined /></n-icon>
+            </a>
+          </template>
+          Q&A
+        </n-tooltip>
+
+        <!-- 场景资源（独立页面，新标签页打开） -->
+        <n-tooltip trigger="hover">
+          <template #trigger>
+            <n-button text size="medium" @click="openResourceGraph">
+              <template #icon><n-icon size="30"><HubOutlined /></n-icon></template>
+            </n-button>
+          </template>
+          场景资源
+        </n-tooltip>
+
+        <!-- 检查更新 -->
+        <n-tooltip trigger="hover">
+          <template #trigger>
+            <n-button text size="medium" @click="showUpdateDialog = true">
+              <template #icon><n-icon size="30"><SystemUpdateOutlined /></n-icon></template>
+            </n-button>
+          </template>
+          检查更新
+        </n-tooltip>
+        <!-- 设置 -->
+        <n-tooltip trigger="hover">
+          <template #trigger>
+            <n-button text size="medium" @click="switchToSetting">
+              <template #icon><n-icon size="30"><SettingsOutlined /></n-icon></template>
+            </n-button>
+          </template>
+          设置
+        </n-tooltip>
       </div>
     </div>
 
     <!-- 主体三栏 -->
     <div class="main-body">
-      <!-- 左侧：配置切换列表 -->
+      <!-- 左侧：配置切换列表（账号配置 / 任务预设） -->
       <div class="col-configs">
-        <div class="config-list-title">配置</div>
+        <div class="config-type-tabs">
+          <div
+            class="config-type-tab"
+            :class="{ active: configTab === 'persist' }"
+            @click="switchConfigTab('persist')"
+          >账号配置</div>
+          <div
+            class="config-type-tab"
+            :class="{ active: configTab === 'preset' }"
+            @click="switchConfigTab('preset')"
+          >任务预设</div>
+        </div>
         <div
-          v-for="cfg in appStore.configs"
+          v-for="cfg in filteredConfigs"
           :key="cfg.id"
           class="config-btn"
           :class="{ active: cfg.id === appStore.activeConfigId }"
@@ -42,8 +136,8 @@
           <div class="config-btn-name">{{ cfg.username || cfg.id }}</div>
           <div class="config-btn-id">{{ cfg.id }}</div>
         </div>
-        <div class="config-btn config-btn-add" @click="showCreateDialog = true">
-          <div class="config-btn-name">+ 新建</div>
+        <div class="config-btn config-btn-add" @click="openCreateDialog">
+          <div class="config-btn-name">+ 新建{{ configTab === 'preset' ? '任务预设' : '账号配置' }}</div>
         </div>
       </div>
 
@@ -117,8 +211,9 @@
           </div>
         </div>
         <div
+            v-if="appStore.activeConfigId"
             class="tree-node"
-            :class="{ active: currentView === 'assistant' }"
+            :class="{ active: currentView === 'assistant' || currentView === 'preset' }"
             @click="switchToAssistant"
           >
             <span class="tree-title">助手设置</span>
@@ -139,9 +234,11 @@
             @task-enabled-changed="onTaskEnabledChanged"
           />
         </template>
-        <template v-else-if="currentView === 'assistant'">
-          <AssistantSettingsPanel v-if="appStore.activeConfigId" :config-id="appStore.activeConfigId" />
-          <n-empty v-else description="请先选择配置" style="margin-top: 80px" />
+        <template v-else-if="currentView === 'assistant' && appStore.activeConfigId">
+          <AssistantSettingsPanel :config-id="appStore.activeConfigId" />
+        </template>
+        <template v-else-if="currentView === 'preset' && appStore.activeConfigId">
+          <PresetEditor :config-id="appStore.activeConfigId" />
         </template>
         <template v-else>
           <router-view />
@@ -149,29 +246,44 @@
       </div>
     </div>
 
-    <!-- 新建配置对话框 -->
-    <n-modal v-model:show="showCreateDialog" title="新建配置" preset="card" style="width: 400px">
+    <!-- 新建配置对话框（账号配置/任务预设） -->
+    <n-modal v-model:show="showCreateDialog" :title="createDialogTitle" preset="card" style="width: 400px">
       <n-space vertical>
-        <n-input v-model:value="newUsername" placeholder="输入用户名" />
+        <n-input
+          v-model:value="newUsername"
+          :placeholder="`输入${createDialogType === 'preset' ? '预设名称' : '用户名'}`"
+        />
         <n-button type="primary" block @click="handleCreateConfig" :loading="creating">创建</n-button>
       </n-space>
     </n-modal>
+
+    <!-- 检查更新 -->
+    <UpdateDialog v-model:show="showUpdateDialog" />
+
+    <!-- 反馈 -->
+    <FeedbackDialog v-model:show="showFeedbackDialog" :config-id="appStore.activeConfigId" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, h } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { NIcon, useMessage } from 'naive-ui'
+import { useMessage } from 'naive-ui'
 import {
-  RefreshOutlined, MenuOutlined, SettingsOutlined,
-  AccountTreeOutlined, TaskOutlined
+  RefreshOutlined, SettingsOutlined, SystemUpdateOutlined,
+  FolderOpenOutlined, HelpOutlineOutlined, CameraOutlined, HubOutlined,
 } from '@vicons/material'
+import githubIcon from '@/assets/GithubIcon.png'
+import asdsIcon from '@/assets/ASDS.ico'
 import { useAppStore } from '@/stores/app'
-import { configApi, schedulerApi } from '@/api/client'
+import { configApi, schedulerApi, utilsApi, deviceApi } from '@/api/client'
 import TaskConfigPanel from '@/components/TaskConfigPanel.vue'
 import LogPanel from '@/components/LogPanel.vue'
 import AssistantSettingsPanel from '@/components/AssistantSettingsPanel.vue'
+import UpdateDialog from '@/components/UpdateDialog.vue'
+import FeedbackDialog from '@/components/FeedbackDialog.vue'
+import PresetEditor from '@/views/PresetEditor.vue'
+import { useWebSocket } from '@/api/ws'
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -182,9 +294,22 @@ const newUsername = ref('')
 const creating = ref(false)
 const schedulerRunning = ref(false)
 const schedulerStarting = ref(false)
+const showUpdateDialog = ref(false)
+const showFeedbackDialog = ref(false)
 
-const currentView = ref<'overview' | 'task' | 'globallog' | 'assistant'>('overview')
+const currentView = ref<'overview' | 'task' | 'globallog' | 'assistant' | 'preset'>('overview')
 const currentTaskName = ref<string | null>(null)
+
+// 配置列表类型切换：账号配置（持久）/ 任务预设（临时）
+const configTab = ref<'persist' | 'preset'>('persist')
+const filteredConfigs = computed(() =>
+  appStore.configs.filter((c: any) =>
+    configTab.value === 'preset'
+      ? c.config_type === '临时'
+      : c.config_type !== '临时')
+)
+const createDialogType = ref<'persist' | 'preset'>('persist')
+const createDialogTitle = computed(() => createDialogType.value === 'preset' ? '新建任务预设' : '新建账号配置')
 
 // 任务数据
 const rawTasks = ref<Record<string, any>>({})
@@ -196,6 +321,10 @@ const showDisabledTasks = ref(false)
 // 配置右键菜单
 const configContextMenu = ref({ show: false, x: 0, y: 0, configId: '', configName: '' })
 const configContextOptions = computed(() => [
+  {
+    label: `复制 "${configContextMenu.value.configName || configContextMenu.value.configId}"`,
+    key: 'copy',
+  },
   {
     label: `重命名 "${configContextMenu.value.configName || configContextMenu.value.configId}"`,
     key: 'rename',
@@ -221,7 +350,9 @@ function showConfigContextMenu(e: MouseEvent, configId: string, configName: stri
 
 function handleConfigContextSelect(key: string) {
   configContextMenu.value.show = false
-  if (key === 'rename') {
+  if (key === 'copy') {
+    handleDuplicateConfig(configContextMenu.value.configId, configContextMenu.value.configName)
+  } else if (key === 'rename') {
     handleRenameConfig(configContextMenu.value.configId, configContextMenu.value.configName)
   } else if (key === 'delete') {
     handleDeleteConfig(configContextMenu.value.configId, configContextMenu.value.configName)
@@ -310,39 +441,27 @@ function switchToTask(taskName: string) {
 }
 
 function switchToAssistant() {
-  currentView.value = 'assistant'
   currentTaskName.value = null
-}
-
-// ---- 右上角菜单 ----
-const menuOptions = [
-  { label: '场景管理', key: 'Scenes', icon: () => h(NIcon, null, { default: () => h(AccountTreeOutlined) }) },
-  { label: '任务优先级', key: 'TaskPriority', icon: () => h(NIcon, null, { default: () => h(TaskOutlined) }) },
-  { type: 'divider' as const },
-  { label: '设置', key: 'Settings', icon: () => h(NIcon, null, { default: () => h(SettingsOutlined) }) },
-]
-
-function handleMenuSelect(key: string) {
-  router.push({ name: key })
-}
-
-// 独立页面路由（总览/设置/场景管理等）时，切回 overview 让 router-view 接管内容区
-// 否则 currentView 停留在 task/assistant/globallog 时，内容区会被对应组件独占，设置页无法显示
-const STANDALONE_ROUTES = ['Dashboard', 'Settings', 'Scenes', 'SceneEditor', 'TaskPriority', 'ConfigDetail']
-watch(
-  () => router.currentRoute.value.name,
-  (name) => {
-    if (name && (STANDALONE_ROUTES as string[]).includes(name as string)) {
-      currentView.value = 'overview'
-      currentTaskName.value = null
-    }
+  const cfg = appStore.configs.find((c: any) => c.id === appStore.activeConfigId)
+  if (cfg?.config_type === '临时') {
+    // 临时预设 → 直接进入 PresetEditor（预设设置 + 任务流程整体界面）
+    currentView.value = 'preset'
+  } else {
+    currentView.value = 'assistant'
   }
-)
+}
+
+function switchToSetting() {
+  currentView.value = 'overview'
+  currentTaskName.value = null
+  router.push({ name: 'Settings' })
+}
 
 // ---- 配置选择 ----
 async function selectConfig(id: string) {
   appStore.setActiveConfig(id)
   loadTaskData()
+  // 点击左侧配置统一进入总览；预设的助手设置/任务流程通过中栏「助手设置」入口进入
   switchToOverview()
   // 查询该配置的调度器状态，确保按钮同步
   try {
@@ -351,6 +470,20 @@ async function selectConfig(id: string) {
   } catch {
     schedulerRunning.value = false
   }
+}
+
+function switchConfigTab(tab: 'persist' | 'preset') {
+  if (configTab.value === tab) return
+  configTab.value = tab
+  appStore.setActiveConfig(null)
+  schedulerRunning.value = false
+  switchToOverview()
+}
+
+function openCreateDialog() {
+  createDialogType.value = configTab.value
+  newUsername.value = ''
+  showCreateDialog.value = true
 }
 
 // ---- 调度器 ----
@@ -379,17 +512,47 @@ async function stopScheduler() {
   catch { /* ignore */ }
 }
 
-// ---- 新建配置 ----
+// 监听调度器运行状态（含预设任务跑完自动停止），同步中栏启停按钮
+const { onMessage } = useWebSocket()
+const unsubSchedulerStatus = onMessage((msg) => {
+  if (msg.type === 'status' && msg.data?.config_id === appStore.activeConfigId) {
+    schedulerRunning.value = !!msg.data?.running
+  }
+})
+
+// ---- 新建配置（账号配置/任务预设） ----
 async function handleCreateConfig() {
   if (!newUsername.value) return
   creating.value = true
   try {
-    await configApi.create(newUsername.value)
+    const type = createDialogType.value === 'preset' ? '临时' : '持久'
+    const res = await configApi.create(newUsername.value, type)
     await appStore.loadConfigs()
     showCreateDialog.value = false
     newUsername.value = ''
+    configTab.value = type === '临时' ? 'preset' : 'persist'
+    const newId = res.data?.id
+    if (newId) {
+      await selectConfig(newId)
+    }
   } catch { /* ignore */ }
   finally { creating.value = false }
+}
+
+// ---- 复制配置 ----
+function handleDuplicateConfig(configId: string, configName: string) {
+  configApi.duplicate(configId).then(async (res) => {
+    await appStore.loadConfigs()
+    const newId = res.data?.id
+    if (newId) {
+      const newCfg = appStore.configs.find((c: any) => c.id === newId)
+      configTab.value = newCfg?.config_type === '临时' ? 'preset' : 'persist'
+      await selectConfig(newId)
+    }
+    message.success(`已复制 "${configName}"`)
+  }).catch(() => {
+    message.error('复制失败')
+  })
 }
 
 // ---- 配置右键菜单操作 ----
@@ -432,10 +595,52 @@ watch(() => appStore.activeConfigId, async (id) => {
     schedulerRunning.value = false
   }
 })
+async function handleScreenshot() {
+  if (!appStore.activeConfigId) {
+    message.warning('请先选择一个配置')
+    return
+  }
+  try {
+    const res = await deviceApi.saveScreenshot(appStore.activeConfigId)
+    message.success(`截图已保存：${res.data?.path || ''}`)
+  } catch (e: any) {
+    message.error(e?.response?.data?.detail || '截图失败')
+  }
+}
+
+function openFeedback() {
+  if (!appStore.activeConfigId) {
+    message.warning('请先选择一个配置')
+    return
+  }
+  showFeedbackDialog.value = true
+}
+
+function openResourceGraph() {
+  // hash 路由下，新标签页打开需带上当前 hash 前缀
+  const href = router.resolve({ name: 'ResourceGraph' }).href
+  window.open(href, '_blank')
+}
 
 onMounted(() => {
   appStore.checkBackendHealth()
   appStore.loadConfigs()
+  checkUpdateOnStart()
+})
+
+// 程序启动时自动检查更新：仅在云端最新提交与本地最新提交不一致时弹出更新窗口
+async function checkUpdateOnStart() {
+  try {
+    const res = await utilsApi.checkUpdate()
+    if (res.data?.ok && res.data.has_update) {
+      showUpdateDialog.value = true
+    }
+  } catch {
+    // 网络异常时静默忽略，用户可随时通过顶部按钮手动检查
+  }
+}
+onBeforeUnmount(() => {
+  unsubSchedulerStatus()
 })
 </script>
 
@@ -450,14 +655,30 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 44px;
-  padding: 0 12px;
+  height: 52px;
+  padding: 0 16px;
   border-bottom: 1px solid #e8e8e8;
   flex-shrink: 0;
   background: #fff;
 }
-.topbar-left { display: flex; align-items: center; }
-.topbar-right { display: flex; align-items: center; gap: 4px; }
+.topbar-left { display: flex; align-items: center; gap: 10px; }
+.topbar-right { display: flex; align-items: center; gap: 20px; }
+.topbar-logo-icon {
+  width: 44px;
+  height: 44px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.topbar-brand {
+  display: flex;
+  align-items: center;
+}
+.github-icon {
+  width: 26px;
+  height: 26px;
+  display: block;
+  border-radius: 4px;
+}
 .main-body {
   display: flex;
   flex: 1;
@@ -481,6 +702,28 @@ onMounted(() => {
   border-bottom: 1px solid #eee;
   margin-bottom: 6px;
 }
+/* 账号配置 / 任务预设 切换 */
+.config-type-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #eee;
+}
+.config-type-tab {
+  flex: 1;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #888;
+  padding: 5px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none;
+}
+.config-type-tab:hover { background: #eef1f4; }
+.config-type-tab.active { color: #1677ff; background: #e6f4ff; }
 .config-btn {
   padding: 6px 4px;
   margin-bottom: 4px;
@@ -649,5 +892,22 @@ onMounted(() => {
   flex: 1;
   min-width: 0;
   overflow: hidden;
+}
+/* 让 <a> 链接也变成弹性容器，方便居中图标 */
+.topbar-icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+/* 保证 n-icon 垂直居中（避免基线偏移） */
+.topbar-right :deep(.n-icon) {
+  vertical-align: middle;
+}
+
+/* 保证 img 垂直居中（GitHub 图标） */
+.topbar-right img {
+  vertical-align: middle;
 }
 </style>

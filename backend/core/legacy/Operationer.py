@@ -199,6 +199,34 @@ class Operationer:
 
         return success
 
+    def area_ocr(self, ocr_area, **kwargs):
+        """
+        对指定 OcrArea 区域执行 OCR 识别
+
+        Args:
+            ocr_area(str|Element): OcrArea 元素（可传元素名或 Element 对象）
+            **kwargs: 可选参数：
+                - bool_debug(bool): 是否回报日志，默认为 False
+
+        Returns:
+            List[Tuple[str, List[int]]]
+            识别结果列表，每个元素为 (识别文本, [x1, x2, y1, y2])
+        """
+        if isinstance(ocr_area, str):
+            element = self.get_element(ocr_area)
+            if element is None:
+                self.logger.warning(f"元素 [{ocr_area}] 不存在，无法执行 OCR 识别")
+                return []
+            ocr_area = element
+
+        bool_debug: bool = kwargs.get("bool_debug", False)
+        try:
+            return self.recognizer.area_ocr(
+                self.device.screen_cap(), ocr_area, bool_debug)
+        except Exception as e:
+            self.logger.error(f"[{ocr_area.name}] OCR 识别异常：{e}")
+            return []
+
     def click_and_wait(self, element, **kwargs):
         """
         点击并等待一段时间  

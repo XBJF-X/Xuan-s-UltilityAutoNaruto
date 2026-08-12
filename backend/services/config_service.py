@@ -1,4 +1,5 @@
 """配置管理服务 - 封装 Config 类（模块级单例）"""
+import copy
 import json
 import logging
 from pathlib import Path
@@ -34,6 +35,7 @@ class ConfigService:
                         "id": item.stem,
                         "username": cfg.get_config("用户名", item.stem),
                         "path": str(item),
+                        "config_type": cfg.config_type,
                     })
                 except Exception as e:
                     self.logger.warning(f"加载配置 {item.name} 失败: {e}")
@@ -59,9 +61,17 @@ class ConfigService:
         cfg = self.get_config(config_id)
         if not cfg:
             return None
+        # 安装路径键在 config JSON 中可能为空（已迁移至 setting.ini [助手设置]），
+        # 用 get_config 兜底读取实际生效值，供前端展示与判断（避免误报"未设置"）
+        setting_dics = copy.deepcopy(cfg.setting_dics)
+        for key in ("MuMu安装路径", "雷电安装路径"):
+            value = cfg.get_config(key)
+            if value:
+                setting_dics[key] = value
         return {
             "id": config_id,
-            "setting_dics": cfg.setting_dics,
+            "config_type": cfg.config_type,
+            "setting_dics": setting_dics,
             "tasks": cfg.tasks,
             "username": cfg.get_config("用户名", config_id),
         }
@@ -94,7 +104,7 @@ class ConfigService:
         cfg.set_task_exe_param(task_name, key, value)
         return True
 
-    def create_config(self, username: str) -> Optional[str]:
+    def create_config(self, username: str, config_type: str = "持久") -> Optional[str]:
         existing = []
         for item in self.config_dir.iterdir():
             if item.is_file() and item.suffix.lower() == ".json":
@@ -116,10 +126,52 @@ class ConfigService:
         except Exception:
             config_data = {"配置文件版本": "V3", "用户名": username, "任务": {}}
         config_data["用户名"] = username
+        config_data["配置类型"] = config_type
+        if config_type == "临时":
+            # 任务预设：默认所有任务不启用、执行顺序为空，由前端勾选并拖拽排序后写入
+            config_data["任务执行顺序"] = []
+            for task in config_data.get("任务", {}).values():
+                task["是否启用"] = False
         with open(cfg_path, "w", encoding="utf-8") as f:
             json.dump(config_data, f, ensure_ascii=False, indent=2)
         self._instances[config_id] = Config(parent_logger=self.logger, config_path=cfg_path)
         return config_id
+
+    def duplicate_config(self, config_id: str) -> Optional[str]:
+        """复制配置：用户名加 _副本 后缀，其余（配置类型/任务勾选/执行参数/执行顺序）全部照抄"""
+        cfg_path = self._config_path(config_id)
+        if not cfg_path.exists():
+            return None
+        try:
+            with open(cfg_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception as e:
+            self.logger.error(f"读取源配置 {config_id} 失败: {e}")
+            return None
+
+        # 生成不重名的副本配置 id（Config_N_副本 / Config_N_副本2 / ...）
+        existing = set()
+        for item in self.config_dir.iterdir():
+            if item.is_file() and item.suffix.lower() == ".json":
+                existing.add(item.stem)
+        new_id = f"{config_id}_副本"
+        n = 2
+        while new_id in existing:
+            new_id = f"{config_id}_副本{n}"
+            n += 1
+
+        username = str(data.get("用户名") or config_id)
+        data["用户名"] = f"{username}_副本"
+        new_path = self._config_path(new_id)
+        try:
+            with open(new_path, "w", encoding="utf-8") as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+        except Exception as e:
+            self.logger.error(f"写入副本配置失败: {e}")
+            return None
+        self._instances[new_id] = Config(parent_logger=self.logger, config_path=new_path)
+        self.logger.info(f"已复制配置 {config_id} → {new_id}")
+        return new_id
 
     def set_task_priorities(self, config_id: str, ordered_task_names: list[str]) -> bool:
         """按传入顺序设置任务优先级（存储任务名列表到配置中）"""
@@ -137,6 +189,23 @@ class ConfigService:
         if not cfg:
             return []
         return cfg.setting_dics.get("任务优先级顺序", [])
+
+    def set_task_order(self, config_id: str, ordered_task_names: list[str]) -> bool:
+        """按顺序保存任务执行顺序（临时预设使用）"""
+        cfg = self.get_config(config_id)
+        if not cfg:
+            return False
+        cfg.setting_dics["任务执行顺序"] = ordered_task_names
+        cfg.save_config_to_file()
+        self.logger.debug(f"已更新配置 {config_id} 的任务执行顺序: {ordered_task_names}")
+        return True
+
+    def get_task_order(self, config_id: str) -> list[str]:
+        """获取任务执行顺序列表"""
+        cfg = self.get_config(config_id)
+        if not cfg:
+            return []
+        return cfg.setting_dics.get("任务执行顺序", [])
 
     def rename_config(self, config_id: str, new_username: str) -> bool:
         cfg = self.get_config(config_id)

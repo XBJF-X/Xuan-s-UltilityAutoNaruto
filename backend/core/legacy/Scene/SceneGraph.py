@@ -26,7 +26,7 @@ class SceneGraph:
             for element in scene.elements:
                 if element.type == ElementType.IMG:
                     template_sum += 1
-                    # 处理BGRA图像
+                    # 处理BGRA图像（数据库仅存 4 通道 BGRA 原始字节，gray/mask 在运行时推导）
                     if element.bgra:
                         try:
                             bgra_buf = np.frombuffer(element.bgra, dtype=np.uint8)
@@ -35,32 +35,19 @@ class SceneGraph:
                                 self.logger.warning(f"场景{scene.name}的元素{element.name} BGRA图像解码失败")
                             else:
                                 element.bgra = np.ascontiguousarray(bgra)
+                                # 从 BGRA 推导灰度图/掩码（gray/mask 已不入库，作为运行时附加属性）
+                                # 注意：SQLModel extra="allow" 下 __pydantic_extra__ 可能为 None，
+                                # 直接赋值会触发 item assignment 错误，故用 object.__setattr__ 绕过
+                                gray = cv2.cvtColor(
+                                    element.bgra[:, :, :3], cv2.COLOR_BGR2GRAY).astype(np.uint8)
+                                object.__setattr__(element, "gray", gray)
+                                if element.bgra.shape[-1] == 4:
+                                    mask = (element.bgra[:, :, 3] > 0).astype(np.uint8) * 255
+                                else:
+                                    mask = np.ones_like(gray, dtype=np.uint8) * 255
+                                object.__setattr__(element, "mask", mask)
                         except Exception as e:
                             self.logger.error(f"处理场景{scene.name}的元素{element.name} BGRA时出错: {str(e)}")
-
-                    # 处理mask图像
-                    if element.mask:
-                        try:
-                            mask_buf = np.frombuffer(element.mask, dtype=np.uint8)
-                            mask = cv2.imdecode(mask_buf, cv2.IMREAD_GRAYSCALE)
-                            if mask is None:
-                                self.logger.warning(f"场景{scene.name}的元素{element.name} MASK图像解码失败")
-                            else:
-                                element.mask = np.ascontiguousarray(mask)
-                        except Exception as e:
-                            self.logger.error(f"处理场景{scene.name}的元素{element.name} MASK时出错: {str(e)}")
-
-                    # 处理gray图像
-                    if element.gray:
-                        try:
-                            gray_buf = np.frombuffer(element.gray, dtype=np.uint8)
-                            gray = cv2.imdecode(gray_buf, cv2.IMREAD_GRAYSCALE)
-                            if gray is None:
-                                self.logger.warning(f"场景{scene.name}的元素{element.name} GRAY图像解码失败")
-                            else:
-                                element.gray = np.ascontiguousarray(gray)
-                        except Exception as e:
-                            self.logger.error(f"处理场景{scene.name}的元素{element.name} GRAY时出错: {str(e)}")
 
             # 将场景添加到场景字典中，键为场景名称
             self.scenes[scene.name] = scene

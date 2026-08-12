@@ -14,10 +14,7 @@
         "pinia": "^2.1.0",
         "axios": "^1.6.0",
         "naive-ui": "^2.38.0",
-        "@vicons/material": "^0.12.0",
-        "konva": "^9.3.0",
-        "vue-konva": "^3.0.2",
-        "cytoscape": "^3.28.0"
+        "@vicons/material": "^0.12.0"
     },
     "devDependencies": {
         "@vitejs/plugin-vue": "^5.0.0",

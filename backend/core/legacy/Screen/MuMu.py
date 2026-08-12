@@ -86,7 +86,7 @@ class MuMu(Screen):
         lib_paths=[
             os.path.join(self.current_mumu_path, "nx_device/12.0/shell/sdk/external_renderer_ipc.dll"),
             os.path.join(self.current_mumu_path, "nx_device/15.0/shell/sdk/external_renderer_ipc.dll"),
-            os.path.join(self.current_mumu_path, "shell/sdk/external_renderer_ipc.dll")
+            os.path.join(self.current_mumu_path, "shell/sdk/external_renderer_ipc.dll"),
             os.path.join(self.current_mumu_path, "nx_main/sdk/external_renderer_ipc.dll")
         ]
         no_exist_lib_paths=[]
@@ -258,6 +258,44 @@ class MuMu(Screen):
         if self.mumu_handle:
             self.disconnect_func(self.mumu_handle)
             self.mumu_handle = 0
+
+    def restart_emulator(self):
+        """
+        重启 MuMu 模拟器：通过安装目录下的 MuMuManager.exe 命令行实现。
+        命令格式参考 https://mumu.163.com/help/20240726/35047_1170006.html#a1
+        使用实例索引序号（MuMu实例索引）定位目标实例。
+        """
+        import subprocess
+        import time
+        mumu_path = self.config.get_config("MuMu安装路径", "")
+        inst_index = self.config.get_config("MuMu实例索引", 0)
+        if not mumu_path:
+            self.logger.warning("未配置 MuMu安装路径，无法重启模拟器")
+            return False
+        # MuMuManager.exe 可能位于安装根目录 / shell/ / nx_main/ 子目录
+        manager = None
+        for rel in ("MuMuManager.exe", "shell/MuMuManager.exe", "nx_main/MuMuManager.exe"):
+            candidate = os.path.join(mumu_path, rel)
+            if os.path.exists(candidate):
+                manager = candidate
+                break
+        if not manager:
+            self.logger.warning(f"未找到 MuMuManager.exe: {mumu_path}")
+            return False
+        try:
+            self.logger.info(f"通过 MuMuManager 重启模拟器: 实例索引={inst_index}")
+            # 先关闭再启动，实现重启
+            subprocess.run(
+                [manager, "shutdown", "-v", str(inst_index)],
+                capture_output=True, timeout=30)
+            time.sleep(3)
+            subprocess.run(
+                [manager, "launch", "-v", str(inst_index)],
+                capture_output=True, timeout=30)
+            return True
+        except Exception as e:
+            self.logger.error(f"MuMuManager 重启模拟器失败: {e}")
+            return False
 
     def release(self):
         """释放资源并断开连接"""

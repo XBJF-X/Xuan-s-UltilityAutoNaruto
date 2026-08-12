@@ -24,7 +24,7 @@
               v-for="t in sortedTaskList"
               :key="t.name"
               class="task-item"
-              :class="'status-' + t.status"
+              :class="['status-' + t.status, { failed: !!failedTasks[t.name] }]"
             >
               <div class="task-left">
                 <div class="task-row1">
@@ -35,6 +35,7 @@
                     padPriority(t.priority)
                   }}</span>
                   <span class="task-name">{{ t.name }}</span>
+                  <span v-if="failedTasks[t.name]" class="task-failed-tag" :title="failedTasks[t.name]">失败</span>
                 </div>
                 <div class="task-time">{{ formatNextExecute(t) }}</div>
               </div>
@@ -65,10 +66,20 @@ import { useWebSocket } from "@/api/ws";
 const appStore = useAppStore();
 const loadingTasks = ref(false);
 const taskList = ref<any[]>([]);
+const failedTasks = ref<Record<string, string>>({});
 
 // 通过 WebSocket 监听任务状态变化，自动刷新
 const { onMessage } = useWebSocket();
 const unsubTaskState = onMessage((msg) => {
+  if (msg.type === "task_state" && msg.config_id === appStore.activeConfigId) {
+    if (msg.action === "complete" && msg.name) {
+      if (msg.error) {
+        failedTasks.value[msg.name] = msg.error;
+      } else {
+        delete failedTasks.value[msg.name];
+      }
+    }
+  }
   if (msg.type === "task_state" || msg.type === "status") {
     loadTaskStatus();
   }
@@ -269,6 +280,21 @@ onUnmounted(() => {
 }
 .task-item.status-2 {
   border-left-color: #bbb;
+}
+.task-item.failed {
+  border-left-color: #e53935;
+  background: #fff1f0;
+}
+.task-failed-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: #e53935;
+  padding: 1px 6px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  cursor: help;
+  margin-left: 6px;
 }
 .task-left {
   display: flex;

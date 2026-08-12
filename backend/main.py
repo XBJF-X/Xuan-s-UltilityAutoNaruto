@@ -22,7 +22,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from backend.api import config, scenes, elements, tasks, scheduler, settings as api_settings, recognize, ws, utils as api_utils, device as api_device
+from backend.api import config, tasks, scheduler, settings as api_settings, ws, utils as api_utils, device as api_device, validate, resource
 
 # ===== 全局崩溃捕获 =====
 # 将未捕获的异常也通过 logging 发送到 WebSocket（而不只是 stderr）
@@ -136,14 +136,13 @@ app.add_middleware(
 
 # 注册路由
 app.include_router(config.router, prefix="/api/configs", tags=["配置管理"])
-app.include_router(scenes.router, prefix="/api/scenes", tags=["场景管理"])
-app.include_router(elements.router, prefix="/api/elements", tags=["元素管理"])
 app.include_router(tasks.router, prefix="/api/tasks", tags=["任务管理"])
 app.include_router(scheduler.router, prefix="/api/scheduler", tags=["调度器"])
-app.include_router(recognize.router, prefix="/api", tags=["场景识别"])
 app.include_router(api_settings.router, prefix="/api/settings", tags=["全局设置"])
 app.include_router(api_utils.router, prefix="/api/utils", tags=["工具"])
+app.include_router(validate.router, prefix="/api/utils", tags=["工具"])
 app.include_router(api_device.router, prefix="/api/device", tags=["设备"])
+app.include_router(resource.router, prefix="/api/resource", tags=["资源管理"])
 app.include_router(ws.router, prefix="/ws", tags=["WebSocket"])
 
 # 生产环境：托管前端静态文件（使用中间件处理 SPA 回退，不拦截 API）

@@ -36,7 +36,9 @@ class SceneEdge(SQLModel, table=True):
 
 
 class Element(SQLModel, table=True):
-    model_config = {"arbitrary_types_allowed": True}
+    # extra="allow" 允许运行时附加 gray/mask 推导属性（不入库），
+    # 以便 SceneGraph 从 bgra 推导灰度图/掩码后挂载到元素对象上供 Recognizer 使用
+    model_config = {"arbitrary_types_allowed": True, "extra": "allow"}
 
     id: str = Field(
         default_factory=lambda: str(uuid.uuid4()),
@@ -54,11 +56,11 @@ class Element(SQLModel, table=True):
     roi_y: int = Field(default=0)
     roi_width: int = Field(default=1600)
     roi_height: int = Field(default=900)
+    ocr_min_score: float = Field(default=0.5)
     coordinate_x: int = Field(default=0)
     coordinate_y: int = Field(default=0)
+    # 仅存储 4 通道 BGRA 原始字节（PNG 压缩），灰度图/掩码在 SceneGraph 初始化时从 bgra 推导
     bgra: Optional[bytes] = Field(sa_column=Column(LargeBinary))
-    gray: Optional[bytes] = Field(sa_column=Column(LargeBinary))
-    mask: Optional[bytes] = Field(sa_column=Column(LargeBinary))
 
     scene: "Scene" = Relationship(back_populates="elements")
 
