@@ -9,9 +9,10 @@ from backend.core.legacy.OnnxOcr.onnx_paddleocr import ONNXPaddleOcr
 class OnnxOcr:
     """基于ONNX的OCR识别器，使用PaddleOCR模型进行文本检测和识别"""
 
-    det_model=get_real_path("utils/Base/OnnxOcr/models/ppocrv5/det.onnx")
-    rec_model=get_real_path("utils/Base/OnnxOcr/models/ppocrv5/rec.onnx")
-    rec_dict=get_real_path("utils/Base/OnnxOcr/models/ppocrv5/ppocrv5_dict.txt")
+    # OCR 模型已从 utils/ 迁移至 bin/ppocrv5（随 Release 包分发，避免热更新重复下载）
+    det_model=get_real_path("bin/ppocrv5/det.onnx")
+    rec_model=get_real_path("bin/ppocrv5/rec.onnx")
+    rec_dict=get_real_path("bin/ppocrv5/ppocrv5_dict.txt")
 
     def __init__(self,parent_logger=None,use_gpu=False):
         self.logger = parent_logger.getChild(self.__class__.__name__) if parent_logger else logging.getLogger(self.__class__.__name__)
