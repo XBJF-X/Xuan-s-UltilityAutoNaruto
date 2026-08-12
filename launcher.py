@@ -140,9 +140,9 @@ def _run(show_window: bool, autoclose: int = 0) -> int:
     window = webview.create_window(
         "Xuan 火影忍者日常助手",
         f"http://127.0.0.1:{BACKEND_PORT}",
-        width=1400,
-        height=900,
-        min_size=(1100, 700),
+        width=1300,
+        height=600,
+        min_size=(900, 500),
     )
     _schedule_autoclose(window, autoclose)
     webview.start()
