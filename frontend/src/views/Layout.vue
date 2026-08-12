@@ -276,7 +276,7 @@ import {
 import githubIcon from '@/assets/GithubIcon.png'
 import asdsIcon from '@/assets/ASDS.ico'
 import { useAppStore } from '@/stores/app'
-import { configApi, schedulerApi, utilsApi, deviceApi } from '@/api/client'
+import { configApi, schedulerApi, utilsApi, deviceApi, settingsApi } from '@/api/client'
 import TaskConfigPanel from '@/components/TaskConfigPanel.vue'
 import LogPanel from '@/components/LogPanel.vue'
 import AssistantSettingsPanel from '@/components/AssistantSettingsPanel.vue'
@@ -628,9 +628,15 @@ onMounted(() => {
   checkUpdateOnStart()
 })
 
-// 程序启动时自动检查更新：仅在云端最新提交与本地最新提交不一致时弹出更新窗口
+// 程序启动时自动检查更新：仅当全局设置"自动更新"开启且云端有新版本时弹出更新窗口
 async function checkUpdateOnStart() {
   try {
+    // 读取全局设置 [助手设置] 段的"自动更新"开关（默认关闭）
+    const settingsRes = await settingsApi.getAll()
+    const autoUpdate = settingsRes.data?.['助手设置']?.['自动更新']
+    if (String(autoUpdate ?? '').trim().toLowerCase() !== 'true') {
+      return
+    }
     const res = await utilsApi.checkUpdate()
     if (res.data?.ok && res.data.has_update) {
       showUpdateDialog.value = true

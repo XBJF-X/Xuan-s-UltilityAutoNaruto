@@ -11,8 +11,6 @@
 /setting.ini
 # 场景识别底图（运行时资源，图片量大）
 /test_scene/
-# 场景资源 SQLite 数据库（本地数据）
-/src/database.db
 
 # ---------- 旧版本资源暂存（V1 遗留，测试稳定后手动删除） ----------
 /del/
@@ -20,12 +18,11 @@
 # ---------- OCR 模型（大体积二进制，不纳入版本控制） ----------
 /utils/Base/OnnxOcr/
 
-# ---------- 前端构建产物（由 pnpm build 生成，SPA 托管依赖） ----------
-frontend/dist/
+# ---------- 前端构建产物（dist 提交仓库供热更新拉取；electron 产物忽略） ----------
 frontend/dist-electron/
 
 # ---------- 环境 / 依赖 / 缓存 ----------
-.venv/
+.venv*/
 node_modules/
 .vite/
 .idea/
@@ -56,14 +53,17 @@ pnpm-debug.log*
 # ---------- 日志 ----------
 *.log
 
-# ---------- 构建产物 / 打包 ----------
-build/
-dist/
-*.spec
-
-
-
-# 一些命令之类的
+# ---------- 构建产物 / 打包（构建脚本提交，产物忽略） ----------
+/build/release/
+/build/dist/
+/build/work/
+/build/out/
+build/*.log
+/dist/
 start_backend.bat
 start_frontend.bat
 Todo.txt
+build/build_release.py
+build/installer.nsi
+build/launcher.spec
+/memory-bank/

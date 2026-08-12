@@ -319,6 +319,7 @@ async def check_update():
 _UPDATE_EXCLUDE_DIRS = {
     ".git", "log", "config", "frontend_node_modules", ".venv", "__pycache__",
     "release", "test_scene", "image", ".idea", "node_modules",
+    "del", ".update_tmp",
 }
 _UPDATE_EXCLUDE_FILES = {".clineignore"}
 
@@ -391,6 +392,12 @@ def _do_apply_update():
             if rel.name in _UPDATE_EXCLUDE_FILES:
                 continue
             dst = project_root / rel
+            # 场景资源数据库覆盖前自动备份（保护用户本地编辑；同名 .bak 保留多份仅最新）
+            if rel.as_posix() == "src/database.db" and dst.exists():
+                try:
+                    shutil.copy2(dst, dst.with_name("database.db.bak"))
+                except Exception:
+                    pass
             try:
                 dst.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(src_file, dst)

@@ -29,9 +29,22 @@ class Config:
         """配置类型：持久（账号配置，跟踪进度）/ 临时（任务预设，只执行一遍不保存进度）"""
         return self.setting_dics.get("配置类型", "持久")
 
+    # 安装路径相关键已迁移至 setting.ini [助手设置] 段
+    _PATH_KEYS = ("MuMu安装路径", "雷电安装路径")
+    # 全局布尔键：已迁移至 setting.ini [助手设置]，全局生效（不按配置隔离）
+    _GLOBAL_BOOL_KEYS = ("错误自动截图",)
+
     def get_config(self, key: str, empty=None) -> Any:
         if empty is None:
             empty = {}
+        if key in self._GLOBAL_BOOL_KEYS:
+            # 全局键统一从 setting.ini [助手设置] 读取，不读 config JSON
+            try:
+                from backend.services.settings_service import SettingsService
+                return SettingsService().getboolean("助手设置", key, default=bool(empty))
+            except Exception as e:
+                self.logger.warning(f"读取 setting.ini 中 {key} 失败: {e}")
+                return empty
         if key in ("MuMu安装路径", "雷电安装路径"):
             # 安装路径已迁移至 setting.ini [助手设置]，Config JSON 为空时兜底读取
             value = self.setting_dics.get(key)
@@ -45,10 +58,16 @@ class Config:
                     return fallback
         return self.setting_dics.get(key, empty)
 
-    # 安装路径相关键已迁移至 setting.ini [助手设置] 段
-    _PATH_KEYS = ("MuMu安装路径", "雷电安装路径")
-
     def set_config(self, key: str, value: Any):
+        if key in self._GLOBAL_BOOL_KEYS:
+            # 全局布尔键：只写 setting.ini，不落 config JSON
+            try:
+                from backend.services.settings_service import SettingsService
+                SettingsService().set("助手设置", key, bool(value))
+            except Exception as e:
+                self.logger.warning(f"写入 setting.ini 中 {key} 失败: {e}")
+            self.logger.debug(f"设置全局 {key} 为 {bool(value)}")
+            return
         self.setting_dics[key] = value
         if key in self._PATH_KEYS:
             # 安装路径已迁移至 setting.ini [助手设置]，保存时同步写入

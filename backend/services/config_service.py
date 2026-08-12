@@ -68,6 +68,9 @@ class ConfigService:
             value = cfg.get_config(key)
             if value:
                 setting_dics[key] = value
+        # 全局键（错误自动截图等已迁移至 setting.ini）：不显示在单配置中，避免前端在配置详情回写
+        for key in ("错误自动截图",):
+            setting_dics.pop(key, None)
         return {
             "id": config_id,
             "config_type": cfg.config_type,
