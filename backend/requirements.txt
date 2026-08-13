@@ -18,6 +18,9 @@ pyminitouch==0.3.3
 pywin32==311
 comtypes==1.4.11
 onnxruntime==1.24.4
+shapely==2.1.2
+pyclipper==1.4.0
+Pillow==11.3.0
 requests==2.32.4
 pywebview==6.2.1
 pythonnet==3.1.0

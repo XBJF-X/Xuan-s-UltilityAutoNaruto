@@ -165,3 +165,20 @@ async def websocket_status(websocket: WebSocket):
                 await websocket.send_text("pong")
     except WebSocketDisconnect:
         manager.disconnect(websocket)
+
+
+# 全局共享的 WebSocket 日志推送 handler（单例）
+_ws_log_handler = None
+
+
+def get_ws_log_handler() -> WebSocketLogHandler:
+    """获取全局共享的 WebSocket 日志推送 handler（单例）。
+
+    root logger 与各 config 专属 logger 共用同一实例：
+    - 避免每次创建 SchedulerService 时重复创建批处理协程/缓冲队列
+    - 前端 LogPanel 依赖该 handler 接收实时日志（内部按 logger name 提取 config_id 隔离）
+    """
+    global _ws_log_handler
+    if _ws_log_handler is None:
+        _ws_log_handler = WebSocketLogHandler()
+    return _ws_log_handler

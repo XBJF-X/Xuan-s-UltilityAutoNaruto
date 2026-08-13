@@ -99,6 +99,11 @@ class Setting:
         return user_config
 
     def _merge_configs(self, user_config: configparser.ConfigParser, default_config: configparser.ConfigParser) -> configparser.ConfigParser:
+        """合并：仅保留 DefaultSetting.ini 中定义的 section/key。
+
+        用户 setting.ini 的值覆盖默认值；DefaultSetting 中不存在而用户文件里
+        多余的段/键一律剔除（用于清理迁移后的旧配置残留，如已废弃的 [Update] 段）。
+        """
         merged = self._new_parser()
 
         for section in default_config.sections():
@@ -106,11 +111,12 @@ class Setting:
             for key, value in default_config.items(section):
                 merged.set(section, key, value)
 
-        for section in user_config.sections():
-            if not merged.has_section(section):
-                merged.add_section(section)
-            for key, value in user_config.items(section):
-                merged.set(section, key, value)
+        # 用户覆盖仅对默认存在的键生效；默认中不存在的 section/key 不进入 merged
+        for section in default_config.sections():
+            if user_config.has_section(section):
+                for key in default_config.options(section):
+                    if user_config.has_option(section, key):
+                        merged.set(section, key, user_config.get(section, key))
 
         return merged
 

@@ -2,10 +2,11 @@
 Xuan 引导器（Release 打包入口）
 
 职责：
-  1. 以后台隐藏进程方式启动 Python 后端（uvicorn，127.0.0.1:4199）
-  2. 等待端口就绪
-  3. 用 pywebview（Windows 走 WebView2）打开桌面窗口加载后端托管的 SPA
-  4. 关闭窗口时结束后端进程
+  1. 单实例检查，杀死旧进程
+  2. 以后台隐藏进程方式启动 Python 后端（uvicorn，自动选择空闲端口）
+  3. 等待端口就绪
+  4. 用 pywebview（Windows 走 WebView2）打开桌面窗口加载后端托管的 SPA
+  5. 关闭窗口时结束后端进程
 
 打包说明：
   - PyInstaller onedir 仅打包本文件 + Python 解释器 + 运行时依赖（不打包项目代码）
@@ -23,9 +24,11 @@ import subprocess
 import sys
 import threading
 import time
+import signal
 
-BACKEND_PORT = 4199
+DEFAULT_PORT = 4199
 BACKEND_TIMEOUT = 60
+MAX_PORT_ATTEMPTS = 10
 
 LOG = logging.getLogger("Launcher")
 
@@ -49,21 +52,27 @@ def get_base_dir() -> str:
 def get_python_and_internal(base_dir: str):
     """返回 (python 可执行文件, site-packages 路径)。
 
-    打包模式：使用随安装包分发的内置 Python 环境（base_dir/venv）；
+    打包模式：使用 PyInstaller 打进 _internal/venv 的可移植 Python 环境
+    （python.exe 与 python312.dll、Lib、DLLs 同目录，python312._pth 以相对
+    路径指定 sys.path，无构建机硬编码，换电脑仍可运行）；
     兜底：冻结环境自身（仅打包错误时，无法运行外部源码）。
     """
     if getattr(sys, "frozen", False):
-        venv_py = os.path.join(base_dir, "venv", "Scripts", "python.exe")
+        internal = getattr(sys, "_MEIPASS", None) or os.path.join(base_dir, "_internal")
+        venv_py = os.path.join(internal, "venv", "python.exe")
         if os.path.exists(venv_py):
-            return venv_py, os.path.join(base_dir, "venv", "Lib", "site-packages")
-        internal = os.path.join(base_dir, "_internal")
+            return venv_py, os.path.join(internal, "venv", "Lib", "site-packages")
         return sys.executable, internal
     return sys.executable, os.path.dirname(sys.executable)
 
 
-def wait_port(port: int, timeout: float = BACKEND_TIMEOUT) -> bool:
+def wait_port(port: int, timeout: float = BACKEND_TIMEOUT, proc: subprocess.Popen | None = None) -> bool:
+    """等待端口就绪；若传入后端进程 proc，其提前退出时立即返回失败，避免干等满超时。"""
     deadline = time.time() + timeout
     while time.time() < deadline:
+        if proc is not None and proc.poll() is not None:
+            LOG.error("后端进程提前退出 (returncode=%s)", proc.poll())
+            return False
         try:
             with socket.create_connection(("127.0.0.1", port), timeout=0.5):
                 return True
@@ -72,26 +81,212 @@ def wait_port(port: int, timeout: float = BACKEND_TIMEOUT) -> bool:
     return False
 
 
-def start_backend(base_dir: str, py_exe: str, internal: str):
-    """隐藏窗口启动后端子进程（外部 python 解释器运行源码，代码可热更新）。"""
+def find_available_port(start_port: int, max_attempts: int = MAX_PORT_ATTEMPTS) -> int | None:
+    """从 start_port 开始查找第一个未被占用的端口，最多尝试 max_attempts 个。"""
+    for port in range(start_port, start_port + max_attempts):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            if s.connect_ex(("127.0.0.1", port)) != 0:  # 端口空闲
+                return port
+    return None
+
+
+def check_dependencies(py_exe: str, base_dir: str, internal: str) -> bool:
+    """检查 Python 环境中是否包含运行后端所需的依赖。"""
     env = dict(os.environ)
     paths = [base_dir]
     if internal and os.path.isdir(internal):
         paths.append(internal)
     env["PYTHONPATH"] = os.pathsep.join(paths)
+
+    check_cmd = [
+        py_exe, "-c",
+        "import uvicorn, fastapi; print('OK')"
+    ]
+    try:
+        result = subprocess.run(
+            check_cmd,
+            env=env,
+            capture_output=True,
+            text=True,
+            timeout=10,
+            creationflags=subprocess.CREATE_NO_WINDOW if hasattr(subprocess, "CREATE_NO_WINDOW") else 0
+        )
+        if result.returncode == 0 and "OK" in result.stdout:
+            LOG.info("依赖检查通过 (uvicorn + fastapi)")
+            return True
+        else:
+            LOG.error("依赖检查失败，返回码=%d, stderr=%s", result.returncode, result.stderr.strip())
+            return False
+    except Exception as e:
+        LOG.error("依赖检查异常: %s", e)
+        return False
+
+
+def kill_process(pid: int):
+    """强制终止指定 PID 的进程树（Windows 用 /T 连带子进程，避免 uvicorn 残留）。"""
+    try:
+        if sys.platform == "win32":
+            # /T 结束整个进程树：旧实例启动的 uvicorn 后端子进程一并终止
+            subprocess.run(["taskkill", "/F", "/T", "/PID", str(pid)],
+                           check=False, capture_output=True)
+        else:
+            os.kill(pid, signal.SIGTERM)
+            time.sleep(0.3)
+            # 如果还在，强制 kill
+            try:
+                os.kill(pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+    except Exception as e:
+        LOG.warning("终止进程 %d 失败: %s", pid, e)
+
+
+def _tasklist_image(pid: int) -> str | None:
+    """返回 Windows 下 PID 对应的进程映像名；进程不存在或查询失败返回 None。"""
+    if sys.platform != "win32" or pid <= 0:
+        return None
+    try:
+        flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+        r = subprocess.run(
+            ["tasklist", "/FI", f"PID eq {pid}", "/FO", "CSV", "/NH"],
+            capture_output=True, text=True, timeout=10, creationflags=flags,
+        )
+        for line in r.stdout.splitlines():
+            parts = line.strip().strip('"').split('","')
+            if len(parts) >= 2 and parts[1].strip() == str(pid):
+                return parts[0].strip()
+        return None
+    except Exception:
+        return None
+
+
+def _pid_is_alive(pid: int) -> bool:
+    """判断进程是否存在（跨平台）。"""
+    if pid <= 0:
+        return False
+    if sys.platform == "win32":
+        return _tasklist_image(pid) is not None
+    try:
+        os.kill(pid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+
+
+def _find_listener_pid(port: int) -> int | None:
+    """返回监听 127.0.0.1:<port> 的进程 PID；无监听或出错返回 None。"""
+    try:
+        flags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+        r = subprocess.run(
+            ["netstat", "-ano", "-p", "tcp"],
+            capture_output=True, text=True, timeout=15, creationflags=flags,
+        )
+        needle = f"127.0.0.1:{port}"
+        for line in r.stdout.splitlines():
+            if "LISTENING" in line and needle in line:
+                parts = line.split()
+                if parts:
+                    try:
+                        return int(parts[-1])
+                    except ValueError:
+                        return None
+        return None
+    except Exception:
+        return None
+
+
+def _ensure_default_port_free():
+    """清理占用默认端口的残留后端进程（launcher 崩溃后 uvicorn 孤儿），避免新实例端口漂移。"""
+    listener = _find_listener_pid(DEFAULT_PORT)
+    if listener is None:
+        return
+    image = _tasklist_image(listener) if sys.platform == "win32" else None
+    if image is not None and image.lower() in ("python.exe", "pythonw.exe"):
+        LOG.info("端口 %d 被残留后端占用 (PID=%d, %s)，正在终止...", DEFAULT_PORT, listener, image)
+        kill_process(listener)
+        time.sleep(0.5)
+    else:
+        LOG.warning("端口 %d 被其他程序占用 (PID=%d, %s)，本实例将改用空闲端口",
+                    DEFAULT_PORT, listener, image or "?")
+
+
+def _remove_pid_file(base_dir: str):
+    """尽力删除 pid 文件（失败不报错，例如目录只读）。"""
+    try:
+        os.remove(os.path.join(base_dir, "xuan.pid"))
+    except OSError:
+        pass
+
+
+def ensure_single_instance(base_dir: str):
+    """检查并清理旧的 XUAN 进程，保证单实例运行。
+
+    两条防线：
+      1. pid 文件记录的旧启动器进程（校验映像名，避免 PID 复用误杀其他程序）
+      2. 默认端口被残留后端（python 进程）占用时清理，保证端口不漂移
+    """
+    pid_file = os.path.join(base_dir, "xuan.pid")
+    if os.path.exists(pid_file):
+        old_pid = None
+        try:
+            with open(pid_file, "r") as f:
+                old_pid = int(f.read().strip())
+        except (ValueError, OSError) as e:
+            LOG.warning("pid 文件内容无效，将忽略: %s", e)
+        if old_pid is not None and _pid_is_alive(old_pid):
+            image = _tasklist_image(old_pid) if sys.platform == "win32" else None
+            if image is None or "xuan" in image.lower():
+                LOG.info("发现旧的 XUAN 进程 (PID=%d%s)，正在终止...",
+                         old_pid, f", {image}" if image else "")
+                kill_process(old_pid)
+                time.sleep(0.5)  # 等待进程完全退出
+            else:
+                LOG.warning("PID %d 已被其他程序占用（%s），跳过终止", old_pid, image)
+        _remove_pid_file(base_dir)
+    # 端口占用兜底：清理残留的 uvicorn 孤儿进程（launcher 崩溃时 pid 文件无法记录）
+    _ensure_default_port_free()
+    # 写入当前进程 PID（失败不阻塞启动，例如安装在只读目录）
+    try:
+        with open(pid_file, "w") as f:
+            f.write(str(os.getpid()))
+    except OSError as e:
+        LOG.warning("无法写入 pid 文件 %s: %s", pid_file, e)
+    LOG.info("当前进程 PID=%d", os.getpid())
+
+
+def start_backend(base_dir: str, py_exe: str, internal: str, log_dir: str):
+    """隐藏窗口启动后端子进程，自动选择空闲端口，将 stdout/stderr 重定向到日志文件。"""
+    used_port = find_available_port(DEFAULT_PORT)
+    if used_port is None:
+        LOG.error("无法找到可用端口 (从 %d 起尝试了 %d 个)", DEFAULT_PORT, MAX_PORT_ATTEMPTS)
+        return None, None, None
+
+    env = dict(os.environ)
+    paths = [base_dir]
+    if internal and os.path.isdir(internal):
+        paths.append(internal)
+    env["PYTHONPATH"] = os.pathsep.join(paths)
+
     flags = 0
     if hasattr(subprocess, "CREATE_NO_WINDOW"):
         flags |= getattr(subprocess, "CREATE_NO_WINDOW")
-    LOG.info("启动后端: %s -m uvicorn backend.main:app (cwd=%s)", py_exe, base_dir)
-    return subprocess.Popen(
+
+    backend_log = os.path.join(log_dir, "backend.log")
+    log_file = open(backend_log, "w", encoding="utf-8", buffering=1)
+
+    LOG.info("启动后端: %s -m uvicorn backend.main:app --port %d (cwd=%s)", py_exe, used_port, base_dir)
+    proc = subprocess.Popen(
         [py_exe, "-m", "uvicorn", "backend.main:app",
-         "--host", "127.0.0.1", "--port", str(BACKEND_PORT)],
+         "--host", "127.0.0.1", "--port", str(used_port)],
         cwd=base_dir,
         env=env,
         creationflags=flags,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stdout=log_file,
+        stderr=log_file,
     )
+    return proc, log_file, used_port
 
 
 def _schedule_autoclose(window, seconds: int):
@@ -112,19 +307,38 @@ def _run(show_window: bool, autoclose: int = 0) -> int:
     os.makedirs(log_dir, exist_ok=True)
     _setup_logging(os.path.join(log_dir, "launcher.log"))
 
+    # 单实例检测（必须在日志初始化之后，但要在其他操作之前）
+    ensure_single_instance(base_dir)
+
     py_exe, internal = get_python_and_internal(base_dir)
     LOG.info("base_dir=%s python=%s", base_dir, py_exe)
 
-    proc = start_backend(base_dir, py_exe, internal)
-    if not wait_port(BACKEND_PORT, timeout=BACKEND_TIMEOUT):
-        LOG.error("后端在 %s 秒内未能就绪", BACKEND_TIMEOUT)
+    # 依赖检查
+    if not check_dependencies(py_exe, base_dir, internal):
+        LOG.error("Python 环境缺少必要依赖 (uvicorn / fastapi)，请确保已安装或打包正确。")
+        _remove_pid_file(base_dir)
+        return 1
+
+    # 启动后端
+    proc, log_file, used_port = start_backend(base_dir, py_exe, internal, log_dir)
+    if proc is None:
+        _remove_pid_file(base_dir)
+        return 1
+
+    # 等待端口就绪（后端进程提前退出时立即失败，避免干等满超时）
+    if not wait_port(used_port, timeout=BACKEND_TIMEOUT, proc=proc):
+        LOG.error("后端在 %s 秒内未能就绪 (端口 %d)，请查看 %s 获取详细错误",
+                  BACKEND_TIMEOUT, used_port, os.path.join(log_dir, "backend.log"))
         proc.terminate()
         try:
             proc.wait(timeout=5)
         except subprocess.TimeoutExpired:
             proc.kill()
+        log_file.close()
+        _remove_pid_file(base_dir)
         return 1
-    LOG.info("后端已就绪 http://127.0.0.1:%d", BACKEND_PORT)
+
+    LOG.info("后端已就绪 http://127.0.0.1:%d", used_port)
 
     if not show_window:
         proc.terminate()
@@ -132,14 +346,17 @@ def _run(show_window: bool, autoclose: int = 0) -> int:
             proc.wait(timeout=5)
         except subprocess.TimeoutExpired:
             proc.kill()
+        log_file.close()
+        _remove_pid_file(base_dir)
         LOG.info("自检完成")
         return 0
 
+    # 正常模式：启动 WebView 窗口
     import webview
 
     window = webview.create_window(
         "Xuan 火影忍者日常助手",
-        f"http://127.0.0.1:{BACKEND_PORT}",
+        f"http://127.0.0.1:{used_port}",
         width=1300,
         height=600,
         min_size=(900, 500),
@@ -147,11 +364,15 @@ def _run(show_window: bool, autoclose: int = 0) -> int:
     _schedule_autoclose(window, autoclose)
     webview.start()
 
+    # 窗口关闭后清理后端
     proc.terminate()
     try:
         proc.wait(timeout=5)
     except subprocess.TimeoutExpired:
         proc.kill()
+    log_file.close()
+
+    _remove_pid_file(base_dir)
     LOG.info("已退出")
     return 0
 

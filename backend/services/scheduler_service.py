@@ -116,8 +116,16 @@ class SchedulerService:
         username = config.get_config("用户名", "unknown")
         from backend.log_setup import get_config_file_handler
         self._config_file_handler = get_config_file_handler(username)
-        self.logger.addHandler(self._config_file_handler)
-        self.logger.propagate = True  # 继续传播到 root logger（Main.log）
+        if self._config_file_handler not in self.logger.handlers:
+            self.logger.addHandler(self._config_file_handler)
+        # 前端实时日志推送（全局共享 handler，与 root logger 共用，避免重复创建）
+        from backend.api.ws import get_ws_log_handler
+        self._ws_handler = get_ws_log_handler()
+        if self._ws_handler not in self.logger.handlers:
+            self.logger.addHandler(self._ws_handler)
+        # config 专属日志只写入专属文件（log/<用户>/<日期>/Xuan.log）并推送前端，
+        # 不再传播到 root logger，避免大量 config 日志混入 Main.log（Main.log 只留主程序级日志）
+        self.logger.propagate = False
 
         self.logger.info("SchedulerService 初始化完成")
 

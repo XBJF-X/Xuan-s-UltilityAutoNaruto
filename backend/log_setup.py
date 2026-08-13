@@ -26,6 +26,9 @@ SILENT_LOGGERS = ["comtypes", "uiautomator2", "adbutils", "urllib3", "requests"]
 DEFAULT_FORMAT = "%(asctime)s [%(levelname)s] %(name)s | %(message)s"
 DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
 
+# config 专属文件处理器缓存（log/<用户>/<日期>/Xuan.log -> handler）
+_config_file_handler_cache: dict[str, RotatingFileHandler] = {}
+
 
 def setup_backend_logging():
     """
@@ -75,9 +78,10 @@ def flush_all_handlers():
 
 
 def get_config_file_handler(username: str) -> RotatingFileHandler:
-    """
-    获取/创建 config 专属的文件处理器。
+    """获取/创建 config 专属的文件处理器（按日期缓存，同日同文件复用同一实例）。
+
     路径: log/<用户名>/<日期>/Xuan.log，100MB 轮转。
+    缓存可避免 SchedulerService 重复实例化时向同一 logger 重复挂接 handler。
     """
     log_root = Path(get_real_path("log"))
     user_dir = log_root / (username or "unknown")
@@ -85,12 +89,16 @@ def get_config_file_handler(username: str) -> RotatingFileHandler:
     date_dir = user_dir / date_str
     date_dir.mkdir(parents=True, exist_ok=True)
 
-    handler = RotatingFileHandler(
-        filename=str(date_dir / "Xuan.log"),
-        maxBytes=100 * 1024 * 1024,  # 100MB
-        backupCount=10,
-        encoding="utf-8",
-    )
-    handler.setFormatter(logging.Formatter(DEFAULT_FORMAT, DATE_FORMAT))
-    handler.setLevel(logging.DEBUG)
+    key = str(date_dir / "Xuan.log")
+    handler = _config_file_handler_cache.get(key)
+    if handler is None:
+        handler = RotatingFileHandler(
+            filename=key,
+            maxBytes=100 * 1024 * 1024,  # 100MB
+            backupCount=10,
+            encoding="utf-8",
+        )
+        handler.setFormatter(logging.Formatter(DEFAULT_FORMAT, DATE_FORMAT))
+        handler.setLevel(logging.DEBUG)
+        _config_file_handler_cache[key] = handler
     return handler

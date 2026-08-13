@@ -7,7 +7,7 @@
 /config/
 # 运行日志（Main.log 与按配置分目录）
 /log/
-# 全局设置（串口、模拟器安装路径等，含环境信息）
+# 全局设置（模拟器安装路径等，含环境信息）
 /setting.ini
 # 场景识别底图（运行时资源，图片量大）
 /test_scene/
@@ -24,9 +24,21 @@
 V2-CHANGELOG.md
 memory-bank/
 version.json
+NewRun.bat
+Todo.txt
+start_backend.bat
+start_frontend.bat
 
 # ---------- 前端构建产物（dist 提交仓库供热更新拉取；electron 产物忽略） ----------
 frontend/dist-electron/
+
+# ---------- Release 构建产物（构建脚本提交入库，产物一律忽略） ----------
+/build/release/
+/build/dist/
+/build/work/
+/build/out/
+/build/runtime/
+build/*.log
 
 # ---------- 环境 / 依赖 / 缓存 ----------
 .venv*/
@@ -59,31 +71,3 @@ pnpm-debug.log*
 
 # ---------- 日志 ----------
 *.log
-
-# ---------- 构建产物 / 打包（构建脚本提交，产物忽略） ----------
-/build/release/
-/build/dist/
-/build/work/
-/build/out/
-build/*.log
-/dist/
-start_backend.bat
-start_frontend.bat
-Todo.txt
-build/build_release.py
-build/installer.nsi
-build/launcher.spec
-/memory-bank/
-_version.py
-.clineignore
-.cz.toml
-.gitignore
-CHANGELOG.md
-launcher.py
-NewRun.bat
-package-lock.json
-package.json
-pnpm-lock.yaml
-V2-CHANGELOG.md
-version.json
-yarn.lock

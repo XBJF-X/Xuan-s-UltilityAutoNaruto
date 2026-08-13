@@ -60,19 +60,21 @@ from contextlib import asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用生命周期：启动时初始化，关闭时清理"""
     import asyncio
-    from backend.api.ws import WebSocketLogHandler
+    from backend.api.ws import get_ws_log_handler
     from backend.log_setup import setup_backend_logging
 
     # ---- 启动逻辑 ----
     # 1. 初始化文件日志系统（Main.log 10MB 轮转）
     setup_backend_logging()
 
-    # 2. 添加 WebSocket 日志推送
-    ws_handler = WebSocketLogHandler()
+    # 2. 添加 WebSocket 日志推送（全局共享实例，root 与 config logger 共用）
+    ws_handler = get_ws_log_handler()
     ws_handler.setFormatter(logging.Formatter("%(message)s"))
     ws_handler.set_loop(asyncio.get_event_loop())
     ws_handler.setLevel(logging.DEBUG)
-    logging.getLogger().addHandler(ws_handler)
+    root_logger = logging.getLogger()
+    if ws_handler not in root_logger.handlers:
+        root_logger.addHandler(ws_handler)
 
     logging.getLogger("WebSocket").info("WebSocket 日志推送已启动")
 
