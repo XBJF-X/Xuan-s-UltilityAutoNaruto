@@ -127,6 +127,25 @@ def _clean_old_logs():
     if removed:
         logging.getLogger("WebSocket").info(f"已清理 {removed} 个过期日志目录")
 
+class JsSafeStaticFiles(StaticFiles):
+    """StaticFiles 子类：强制 .js/.mjs/.cjs 返回 JavaScript MIME。
+
+    背景：Windows 上 Python mimetypes 依赖注册表（HKCR\\.js 的 Content Type），
+    部分机器将 .js 映射为 text/plain 或缺失，导致 starlette 返回 text/plain；
+    而浏览器对 ES module（<script type="module">）强制要求 JavaScript MIME，
+    否则拒绝执行，表现为页面白屏且不发起任何 JS/API 请求。
+    """
+
+    _JS_SUFFIXES = (".js", ".mjs", ".cjs")
+
+    def file_response(self, full_path, stat_result, scope, status_code=200):
+        response = super().file_response(full_path, stat_result, scope, status_code)
+        path = str(full_path)
+        if status_code == 200 and path.lower().endswith(self._JS_SUFFIXES):
+            response.headers["content-type"] = "application/javascript; charset=utf-8"
+        return response
+
+
 # CORS - 允许前端 localhost 开发服务器
 app.add_middleware(
     CORSMiddleware,
@@ -150,7 +169,7 @@ app.include_router(ws.router, prefix="/ws", tags=["WebSocket"])
 # 生产环境：托管前端静态文件（使用中间件处理 SPA 回退，不拦截 API）
 frontend_dist = _project_root / "frontend" / "dist"
 if frontend_dist.exists():
-    app.mount("/assets", StaticFiles(directory=frontend_dist / "assets"), name="assets")
+    app.mount("/assets", JsSafeStaticFiles(directory=frontend_dist / "assets"), name="assets")
 
     class SPAMiddleware(BaseHTTPMiddleware):
         """SPA 回退中间件 - 仅在无路由匹配时返回 index.html。
