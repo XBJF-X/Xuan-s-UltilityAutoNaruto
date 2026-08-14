@@ -57,8 +57,11 @@ ShowUnInstDetails show
 
 ; ============ Install ============
 Section "Xuan" SEC_MAIN
-  ; 1. Kill running instance
-  nsExec::ExecToLog 'taskkill /f /im Xuan.exe'
+  ; 1. Kill running instance (launcher + its backend python child processes)
+  ;    /T kills the whole process tree; otherwise the backend python.exe (which holds
+  ;    _internal\venv\Lib\site-packages\*.pyd/*.dll) survives and blocks file overwrite,
+  ;    causing the NSIS "cannot write file" retry dialog during upgrade install.
+  nsExec::ExecToLog 'taskkill /f /t /im Xuan.exe'
   Sleep 1000
 
   ; 2. WebView2 Runtime check (missing -> warn, allow continue)
@@ -152,7 +155,7 @@ Function un.LeaveKeepDataPage
 FunctionEnd
 
 Section "Uninstall"
-  nsExec::ExecToLog 'taskkill /f /im Xuan.exe'
+  nsExec::ExecToLog 'taskkill /f /t /im Xuan.exe'
   Sleep 1000
 
   ; Shortcuts

@@ -12,6 +12,14 @@ from backend.core.config_model import Config
 class ConfigService:
     """管理多个配置实例"""
 
+    # 旧版（V1/早期 V2）遗留的"默认配置"文件名：新版不再自动创建，
+    # 启动时清理历史残留（config/ 目录随安装/热更新保留），避免前端出现无用的"默认配置"
+    _LEGACY_DEFAULT_CONFIG_NAMES = (
+        "default-tasks.json",
+        "config_defaults.json",
+        "Config_defaults.json",
+    )
+
     def __init__(self, config_dir: str | None = None):
         self.logger = logging.getLogger("ConfigService")
         if config_dir:
@@ -19,8 +27,20 @@ class ConfigService:
         else:
             self.config_dir = Path(get_real_path("config"))
         self.config_dir.mkdir(exist_ok=True)
+        self._clean_legacy_default_configs()
         self._instances: Dict[str, Config] = {}
         self._default_config_path = Path(get_real_path("src/DefaultConfig.json"))
+
+    def _clean_legacy_default_configs(self):
+        """清理旧版遗留的默认配置残留文件（default-tasks.json 等），新版不再自动创建。"""
+        for name in self._LEGACY_DEFAULT_CONFIG_NAMES:
+            p = self.config_dir / name
+            if p.exists() and p.is_file():
+                try:
+                    p.unlink()
+                    self.logger.info(f"已清理旧版默认配置残留: {p}")
+                except OSError as e:
+                    self.logger.warning(f"清理旧版默认配置残留失败 {p}: {e}")
 
     def _config_path(self, name: str) -> Path:
         return self.config_dir / f"{name}.json"

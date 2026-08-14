@@ -221,8 +221,67 @@ def _remove_pid_file(base_dir: str):
         pass
 
 
-def ensure_single_instance(base_dir: str):
+def _ask_close_old_instance(old_pid: int, image: str | None) -> bool:
+    """tk 弹窗询问：软件已在运行，是否关闭上一个进程后继续启动。
+
+    返回 True = 关闭旧进程并继续；False = 用户选择退出（非交互环境默认关闭旧进程继续）。
+    """
+    try:
+        import tkinter as tk
+    except Exception:
+        LOG.warning("无法创建提示窗口（缺少 tkinter），默认关闭旧进程继续")
+        return True
+
+    root = tk.Tk()
+    root.title("Xuan - 软件已在运行")
+    root.resizable(False, False)
+    # 屏幕居中
+    root.update_idletasks()
+    w, h = 460, 180
+    sw, sh = root.winfo_screenwidth(), root.winfo_screenheight()
+    root.geometry(f"{w}x{h}+{(sw - w) // 2}+{(sh - h) // 2}")
+
+    result = {"kill": False}
+    extra = f"，进程 PID={old_pid}" + (f"（{image}）" if image else "")
+
+    tk.Label(
+        root,
+        text="软件已在运行" + extra,
+        wraplength=420, justify="left",
+        font=("Microsoft YaHei", 11, "bold"),
+    ).pack(pady=(18, 4))
+    tk.Label(
+        root,
+        text="如需重新启动，请先关闭上一个进程，或点击下方按钮关闭。",
+        wraplength=420, justify="left",
+        font=("Microsoft YaHei", 9),
+    ).pack(pady=(0, 12))
+
+    def _do_kill():
+        result["kill"] = True
+        root.destroy()
+
+    def _do_exit():
+        result["kill"] = False
+        root.destroy()
+
+    btn_frame = tk.Frame(root)
+    btn_frame.pack(pady=12)
+    tk.Button(btn_frame, text="关闭上一个进程", width=18, font=("Microsoft YaHei", 10),
+              command=_do_kill).pack(side="left", padx=10)
+    tk.Button(btn_frame, text="退出", width=10, font=("Microsoft YaHei", 10),
+              command=_do_exit).pack(side="left", padx=10)
+
+    root.protocol("WM_DELETE_WINDOW", _do_exit)  # 点窗口关闭视为退出
+    root.mainloop()
+    return result["kill"]
+
+
+def ensure_single_instance(base_dir: str, interactive: bool = True):
     """检查并清理旧的 XUAN 进程，保证单实例运行。
+
+    interactive=True：发现旧进程时用 tk 弹窗询问用户——关闭上一个进程后继续 / 退出；
+    interactive=False（如 --selftest）：保持原有自动清理行为，不弹窗。
 
     两条防线：
       1. pid 文件记录的旧启动器进程（校验映像名，避免 PID 复用误杀其他程序）
@@ -239,10 +298,20 @@ def ensure_single_instance(base_dir: str):
         if old_pid is not None and _pid_is_alive(old_pid):
             image = _tasklist_image(old_pid) if sys.platform == "win32" else None
             if image is None or "xuan" in image.lower():
-                LOG.info("发现旧的 XUAN 进程 (PID=%d%s)，正在终止...",
+                LOG.info("发现旧的 XUAN 进程 (PID=%d%s)...",
                          old_pid, f", {image}" if image else "")
-                kill_process(old_pid)
-                time.sleep(0.5)  # 等待进程完全退出
+                kill = True
+                if interactive:
+                    LOG.info("等待用户确认是否关闭旧进程 ...")
+                    kill = _ask_close_old_instance(old_pid, image)
+                if kill:
+                    LOG.info("正在终止旧进程 (PID=%d) ...", old_pid)
+                    kill_process(old_pid)
+                    time.sleep(0.5)  # 等待进程完全退出
+                else:
+                    LOG.info("用户选择退出，程序退出")
+                    _remove_pid_file(base_dir)
+                    sys.exit(0)
             else:
                 LOG.warning("PID %d 已被其他程序占用（%s），跳过终止", old_pid, image)
         _remove_pid_file(base_dir)
@@ -348,7 +417,8 @@ def _run(show_window: bool, autoclose: int = 0) -> int:
     _setup_logging(os.path.join(log_dir, "launcher.log"))
 
     # 单实例检测（必须在日志初始化之后，但要在其他操作之前）
-    ensure_single_instance(base_dir)
+    # 交互模式（有窗口）检测到旧进程时弹窗询问；--selftest 不弹窗，自动清理旧进程
+    ensure_single_instance(base_dir, interactive=show_window)
 
     py_exe, internal = get_python_and_internal(base_dir)
     LOG.info("base_dir=%s python=%s", base_dir, py_exe)
