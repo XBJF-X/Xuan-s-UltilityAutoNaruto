@@ -389,6 +389,32 @@ def _relaunch_cmd(base_dir: str) -> list:
     return [sys.executable, os.path.join(base_dir, "launcher.py")]
 
 
+def stop_adb_server():
+    """程序退出时停止全局 adb server，避免退出后残留 adb 进程（issue #4）。
+
+    仅在程序使用过 adb（uiautomator2 / adb devices 等）时才有意义；
+    清理失败不影响程序退出，但会记录日志供排查。
+    """
+    try:
+        result = subprocess.run(
+            ["adb", "kill-server"], capture_output=True, text=True, timeout=15,
+            encoding="utf-8", errors="ignore",
+        )
+        if result.returncode == 0:
+            LOG.info("adb server 已停止（adb kill-server）")
+        else:
+            LOG.warning(
+                "adb kill-server 返回非零（%s）：%s", result.returncode,
+                (result.stdout + result.stderr).strip()[:300],
+            )
+    except FileNotFoundError:
+        LOG.info("未找到 adb，跳过 adb server 清理")
+    except subprocess.TimeoutExpired:
+        LOG.warning("adb kill-server 执行超时，可能仍有 adb 进程残留")
+    except Exception as e:
+        LOG.warning("adb kill-server 执行异常: %s", e)
+
+
 def _poll_restart_request(window, base_dir: str, pending_restart: dict):
     """后台线程轮询 log/restart_request.json，检测到更新重启请求后关闭窗口。"""
     req_path = os.path.join(base_dir, "log", "restart_request.json")
@@ -458,6 +484,8 @@ def _run(show_window: bool, autoclose: int = 0) -> int:
             proc.kill()
         log_file.close()
         _remove_pid_file(base_dir)
+        # 自检也可能触发 adb server 启动（如 /serial-list），退出前统一清理
+        stop_adb_server()
         LOG.info("自检完成")
         return 0
 
@@ -488,6 +516,9 @@ def _run(show_window: bool, autoclose: int = 0) -> int:
         proc.kill()
     log_file.close()
     _remove_pid_file(base_dir)
+
+    # 程序退出时清理 adb server（issue #4：避免退出后残留 adb 进程）
+    stop_adb_server()
 
     # 处理更新后的自动重启
     mode = pending_restart.get("mode")

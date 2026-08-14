@@ -1,3 +1,9 @@
+## v0.17.1 (2026-08-14)
+
+### Fix
+
+- **Launcher / 后端**: 程序退出时执行 `adb kill-server`，清理退出后残留的 adb server 进程（感谢 diobaland-droid 反馈该问题并提供修复方案）
+
 ## v0.17.0 (2026-08-13)
 
 ### Feat

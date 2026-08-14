@@ -4,7 +4,9 @@ Xuan Backend - FastAPI 服务入口
 以子进程方式启动，由 Electron 主进程管理生命周期。
 开发阶段可直接通过 `uvicorn backend.main:app` 运行。
 """
+import atexit
 import os
+import subprocess
 import sys
 import threading
 import traceback
@@ -85,6 +87,37 @@ async def lifespan(app: FastAPI):
 
     # ---- 关闭逻辑 ----
     logging.getLogger("WebSocket").info("应用关闭")
+    # 程序退出时清理 adb server（issue #4：避免退出后残留 adb 进程）
+    _shutdown_adb_server()
+
+
+def _shutdown_adb_server():
+    """程序退出时停止全局 adb server，避免退出后残留 adb 进程（issue #4）。
+
+    兜底逻辑：launcher 关闭窗口时用 terminate 强杀后端，atexit/lifespan
+    仅在优雅退出时触发；主清理已由 launcher.stop_adb_server() 承担。
+    清理失败不阻塞退出，但记录日志供排查。
+    """
+    try:
+        result = subprocess.run(
+            ["adb", "kill-server"], capture_output=True, text=True, timeout=15,
+            encoding="utf-8", errors="ignore",
+        )
+        if result.returncode == 0:
+            logging.getLogger("Shutdown").info("adb server 已停止（adb kill-server）")
+        else:
+            logging.getLogger("Shutdown").warning(
+                "adb kill-server 返回非零（%s）：%s", result.returncode,
+                (result.stdout + result.stderr).strip()[:300],
+            )
+    except FileNotFoundError:
+        logging.getLogger("Shutdown").info("未找到 adb，跳过 adb server 清理")
+    except Exception as e:
+        logging.getLogger("Shutdown").warning("adb kill-server 执行异常: %s", e)
+
+
+# 进程退出兜底清理（覆盖开发模式等 launcher 不参与的场景）
+atexit.register(_shutdown_adb_server)
 
 
 app = FastAPI(
