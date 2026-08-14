@@ -18,16 +18,32 @@ class Updater(QObject):
     repo_owner = "XBJF-X"
     repo_name = "Xuan-s-UltilityAutoNaruto"
     branch_name = "master"
+    # 本地当前版本号（16.0），用于与 GitHub 最新 Release 版本号比较
+    local_version = "0.16.0"
+    # 升级通知标记文件名：存在时表示已通知用户手动升级，不再执行自动热更新
+    upgrade_notice_flag = "upgrade_notice_shown.flag"
 
     def __init__(self, parent_logger):
         super().__init__()  # 调用父类初始化
         self.logger = parent_logger.getChild(self.__class__.__name__)
         self.master_url = f"https://api.github.com/repos/{self.repo_owner}/{self.repo_name}/branches/{self.branch_name}"
         self.zip_url = f"https://github.com/{self.repo_owner}/{self.repo_name}/archive/refs/heads/{self.branch_name}.zip"
+        self.release_url = f"https://api.github.com/repos/{self.repo_owner}/{self.repo_name}/releases/latest"
         self.version_file_path = Path(get_real_path("version.json"))
         self.update_thread = None
 
     def check_update(self):
+        # ==================== Release 检测：停止自动更新逻辑 ====================
+        # 若已通知过升级（存在标记文件），跳过所有更新检查，避免重复通知或误拉取
+        upgrade_notice_flag_path = Path(get_real_path(self.upgrade_notice_flag))
+        if upgrade_notice_flag_path.exists():
+            self.logger.info(f"检测到 {self.upgrade_notice_flag} 标记文件，本版本已停止自动热更新，跳过本次更新检查")
+            return False, {}
+        # 请求 GitHub 最新 Release 信息，若存在比本地更高的 Release，则通知手动升级并停止自动更新
+        if self.check_upgrade_notice():
+            return False, {}
+        # =======================================================================
+
         current_version = None
         # 尝试读取本地版本文件，若不存在则视为需要更新
         try:
@@ -67,6 +83,77 @@ class Updater(QObject):
             self.update_message.emit("检查更新出错", f"{e}")
             self.logger.error(f"检查更新出错：{e}")
             return False, {}
+
+    @staticmethod
+    def _parse_version(version_str):
+        """
+        解析版本号字符串为整数元组，便于比较。
+
+        兼容 'v0.17.0'、'0.17.0'、'17.0' 等格式，忽略非数字字符。
+        例如 'v0.17.0' -> (0, 17, 0)
+        """
+        parts = []
+        for part in str(version_str).split('.'):
+            digits = ''.join(ch for ch in part if ch.isdigit())
+            if digits:
+                parts.append(int(digits))
+        return tuple(parts)
+
+    @staticmethod
+    def _version_gt(latest, local):
+        """
+        比较两个版本元组，latest 是否严格大于 local。
+
+        段数不足时按 0 补齐，例如 (17, 0) > (0, 16, 0) 为 True。
+        """
+        max_len = max(len(latest), len(local))
+        latest_padded = latest + (0,) * (max_len - len(latest))
+        local_padded = local + (0,) * (max_len - len(local))
+        return latest_padded > local_padded
+
+    def check_upgrade_notice(self):
+        """
+        检查 GitHub 最新 Release 版本号。
+
+        若最新 Release 版本号大于本地版本（16.0），则弹窗通知用户前往 GitHub Release
+        手动下载安装包升级，写入升级通知标记文件，并停止自动热更新（返回 True）。
+        否则返回 False，继续执行原有热更新逻辑。
+
+        当获取 Release 信息失败时，为保证原有更新流程可用，降级为继续热更新（返回 False）。
+        """
+        try:
+            response = requests.get(self.release_url, verify=False)
+            self.logger.debug(f"Release Response Status Code：{response.status_code}")
+            if response.status_code != 200:
+                self.logger.warning(
+                    f"获取 GitHub 最新 Release 信息失败，HTTP状态码：{response.status_code}，继续执行原有热更新逻辑")
+                return False
+            release_info = json.loads(response.content.decode("utf-8"))
+            tag_name = release_info.get("tag_name", "")
+            latest_version = self._parse_version(tag_name)
+            local_version = self._parse_version(self.local_version)
+            self.logger.info(f"GitHub 最新 Release：{tag_name}，本地版本：{self.local_version}")
+            if self._version_gt(latest_version, local_version):
+                # 展示用版本号，如 v0.17.0 -> 0.17.0
+                display_version = ".".join(str(x) for x in latest_version)
+                self.update_message.emit(
+                    "检测到新版本",
+                    f"检测到新版本 {display_version}，请前往 GitHub Release 下载安装包手动升级。\n"
+                    f"本版本已停止自动热更新。")
+                self.logger.info(
+                    f"检测到新版本 {display_version}，本版本已停止自动热更新，请前往 GitHub Release 下载安装包手动升级")
+                # 写入本地标记文件，记录已通知；之后不再执行任何自动拉取代码的操作
+                try:
+                    with open(str(Path(get_real_path(self.upgrade_notice_flag))), "w", encoding="utf-8") as f:
+                        f.write(tag_name)
+                    self.logger.info(f"已写入升级通知标记文件：{self.upgrade_notice_flag}")
+                except Exception as e:
+                    self.logger.error(f"写入升级通知标记文件失败：{e}")
+                return True
+            return False
+        except Exception as e:
+            self.logger.error(f"检查 GitHub 最新 Release 信息出错：{e}，继续执行原有热更新逻辑")
+            return False
 
     def update_implement(self, new_version):
         try:
