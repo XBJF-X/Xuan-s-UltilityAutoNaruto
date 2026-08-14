@@ -282,6 +282,19 @@ def _version_gt(a: str, b: str) -> bool:
     return _pre_key(pa[3]) > _pre_key(pb[3])
 
 
+def _is_major_minor_update(remote_version: str, local_version: str) -> bool:
+    """大更新判定：仅当 major/minor 有提升时才走 Release 安装包。
+
+    同 minor 内的 PATCH 级差异默认走热更新（v17 系列内修复不打扰用户下载安装包）；
+    版本无法解析时兜底用完整版本比较。
+    """
+    pr = _parse_version(remote_version)
+    pl = _parse_version(local_version)
+    if pr is None or pl is None:
+        return _version_gt(remote_version, local_version)
+    return (pr[0], pr[1]) > (pl[0], pl[1])
+
+
 def _check_full_update(local_version: str) -> dict:
     """查询 GitHub 最新 Release，判断是否存在需要走安装包的大更新。"""
     try:
@@ -301,7 +314,13 @@ def _check_full_update(local_version: str) -> dict:
             if name.lower().startswith(_INSTALLER_ASSET_PREFIX.lower()) and name.lower().endswith(".exe"):
                 asset = a
                 break
-        has_update = bool(asset) and bool(local_version) and _version_gt(version, local_version)
+        # 仅 major/minor 提升才触发大更新；同 minor 的 PATCH 级 Release 走热更新
+        has_update = (
+            bool(asset)
+            and bool(local_version)
+            and _version_gt(version, local_version)
+            and _is_major_minor_update(version, local_version)
+        )
         return {
             "ok": True,
             "has_update": has_update,
