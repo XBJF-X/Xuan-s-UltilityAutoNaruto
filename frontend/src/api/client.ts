@@ -91,6 +91,8 @@ export const utilsApi = {
   checkUpdate: () => client.get('/utils/check-update'),
   // 应用更新（后台执行，进度通过 updateStatus 轮询）
   applyUpdate: () => client.post('/utils/apply-update'),
+  // 应用大更新：下载最新 GitHub Release 安装包并自动重启安装（进度通过 updateStatus 轮询）
+  applyReleaseUpdate: () => client.post('/utils/apply-release-update'),
   // 查询更新任务进度
   updateStatus: () => client.get('/utils/update-status'),
   // 反馈打包：根据当前配置日志目录生成选择项（日期、任务）

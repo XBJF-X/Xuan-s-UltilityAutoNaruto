@@ -17,6 +17,7 @@ Xuan 引导器（Release 打包入口）
   python launcher.py            # 正常启动（后端 + WebView 窗口）
   python launcher.py --selftest # 无窗口自检：启动后端 → 等端口 → 退出（构建验证用）
 """
+import json
 import logging
 import os
 import socket
@@ -301,6 +302,45 @@ def _schedule_autoclose(window, seconds: int):
         threading.Thread(target=_closer, daemon=True).start()
 
 
+def _remove_restart_request(base_dir: str):
+    """删除重启请求文件（log/restart_request.json）。"""
+    try:
+        req_path = os.path.join(base_dir, "log", "restart_request.json")
+        if os.path.exists(req_path):
+            os.remove(req_path)
+            LOG.info("已移除重启请求文件")
+    except Exception as e:
+        LOG.warning("移除重启请求文件失败: %s", e)
+
+
+def _relaunch_cmd(base_dir: str) -> list:
+    """返回重启当前程序的命令：打包模式启动 Xuan.exe；开发模式重新运行 launcher.py。"""
+    if getattr(sys, "frozen", False):
+        return [os.path.join(base_dir, "Xuan.exe")]
+    return [sys.executable, os.path.join(base_dir, "launcher.py")]
+
+
+def _poll_restart_request(window, base_dir: str, pending_restart: dict):
+    """后台线程轮询 log/restart_request.json，检测到更新重启请求后关闭窗口。"""
+    req_path = os.path.join(base_dir, "log", "restart_request.json")
+    while True:
+        try:
+            if os.path.exists(req_path):
+                with open(req_path, "r", encoding="utf-8") as f:
+                    req = json.load(f)
+                if req and req.get("mode") in ("hot", "full"):
+                    LOG.info("检测到更新重启请求: %s", req)
+                    pending_restart.update(req)
+                    try:
+                        window.destroy()
+                    except Exception as e:
+                        LOG.warning("关闭窗口失败: %s", e)
+                    return
+        except Exception:
+            pass
+        time.sleep(1)
+
+
 def _run(show_window: bool, autoclose: int = 0) -> int:
     base_dir = get_base_dir()
     log_dir = os.path.join(base_dir, "log")
@@ -362,6 +402,12 @@ def _run(show_window: bool, autoclose: int = 0) -> int:
         min_size=(900, 500),
     )
     _schedule_autoclose(window, autoclose)
+
+    # 后台轮询重启请求（更新完成后程序自动重启，无需用户手动操作）
+    pending_restart: dict = {}
+    threading.Thread(
+        target=_poll_restart_request, args=(window, base_dir, pending_restart), daemon=True
+    ).start()
     webview.start()
 
     # 窗口关闭后清理后端
@@ -371,8 +417,22 @@ def _run(show_window: bool, autoclose: int = 0) -> int:
     except subprocess.TimeoutExpired:
         proc.kill()
     log_file.close()
-
     _remove_pid_file(base_dir)
+
+    # 处理更新后的自动重启
+    mode = pending_restart.get("mode")
+    if mode:
+        _remove_restart_request(base_dir)
+        if mode == "hot":
+            LOG.info("热更新完成，自动重启程序 ...")
+            subprocess.Popen(_relaunch_cmd(base_dir))
+        elif mode == "full":
+            installer = pending_restart.get("installer")
+            if installer and os.path.exists(installer):
+                LOG.info("大更新：启动安装器静默安装并重启：%s", installer)
+                subprocess.Popen([installer, "/S", "/AUTOSTART"])
+            else:
+                LOG.error("大更新安装包缺失，跳过自动重启（%s）", installer)
     LOG.info("已退出")
     return 0
 

@@ -638,7 +638,8 @@ async function checkUpdateOnStart() {
       return
     }
     const res = await utilsApi.checkUpdate()
-    if (res.data?.ok && res.data.has_update) {
+    // 有大更新（正式版/依赖库）或热更新时均弹出更新窗口（update_type: full/hot/none）
+    if (res.data?.ok && res.data.update_type && res.data.update_type !== 'none') {
       showUpdateDialog.value = true
     }
   } catch {

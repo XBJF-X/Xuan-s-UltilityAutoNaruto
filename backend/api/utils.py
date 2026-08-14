@@ -232,6 +232,141 @@ _GITHUB_OWNER = "XBJF-X"
 _GITHUB_REPO = "Xuan-s-UltilityAutoNaruto"
 _BRANCH = "v17"
 
+# 大更新：GitHub Release 安装包资产名前缀
+_INSTALLER_ASSET_PREFIX = "XuanInstaller_V"
+
+
+def _read_local_version() -> str:
+    """读取随包分发的 _version.py 中的版本号（如 0.17.0）；读取失败返回空串。"""
+    try:
+        vf = Path(get_real_path("_version.py"))
+        if vf.exists():
+            text = vf.read_text(encoding="utf-8", errors="ignore")
+            m = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', text)
+            if m:
+                return m.group(1).strip()
+    except Exception:
+        pass
+    return ""
+
+
+def _parse_version(v: str):
+    """解析语义化版本号 -> (major, minor, patch, prerelease)；无法解析返回 None。"""
+    if not v:
+        return None
+    m = re.match(r"^[vV]?(\d+)\.(\d+)\.(\d+)(?:[-.]([0-9A-Za-z.-]+))?$", v.strip())
+    if not m:
+        return None
+    return (int(m.group(1)), int(m.group(2)), int(m.group(3)), m.group(4) or "")
+
+
+def _version_gt(a: str, b: str) -> bool:
+    """判断版本 a > b（语义化版本）；任一方无法解析时退化为字符串比较。"""
+    pa, pb = _parse_version(a), _parse_version(b)
+    if pa is None or pb is None:
+        return a > b
+    # 主版本段
+    if pa[:3] != pb[:3]:
+        return pa[:3] > pb[:3]
+    # 预发布段：正式版（空）最大；两者非空时按 "." / "-" 分隔的标识符逐段比较
+    if pa[3] == pb[3]:
+        return False
+    if not pa[3]:
+        return True   # a 为正式版，b 为预发布 → a 新
+    if not pb[3]:
+        return False  # a 为预发布，b 为正式版 → a 旧
+
+    def _pre_key(pre: str):
+        return [int(seg) if seg.isdigit() else seg for seg in re.split(r"[.-]", pre)]
+
+    return _pre_key(pa[3]) > _pre_key(pb[3])
+
+
+def _check_full_update(local_version: str) -> dict:
+    """查询 GitHub 最新 Release，判断是否存在需要走安装包的大更新。"""
+    try:
+        headers = {"Accept": "application/vnd.github+json"}
+        resp = requests.get(
+            f"https://api.github.com/repos/{_GITHUB_OWNER}/{_GITHUB_REPO}/releases/latest",
+            headers=headers, verify=False, timeout=15,
+        )
+        if resp.status_code != 200:
+            return {"ok": False, "message": f"GitHub Release 请求失败（{resp.status_code}）"}
+        rel = json.loads(resp.content.decode("utf-8"))
+        tag = str(rel.get("tag_name", ""))
+        version = tag.lstrip("vV")
+        asset = None
+        for a in rel.get("assets", []):
+            name = str(a.get("name", ""))
+            if name.lower().startswith(_INSTALLER_ASSET_PREFIX.lower()) and name.lower().endswith(".exe"):
+                asset = a
+                break
+        has_update = bool(asset) and bool(local_version) and _version_gt(version, local_version)
+        return {
+            "ok": True,
+            "has_update": has_update,
+            "tag": tag,
+            "version": version,
+            "name": str(rel.get("name") or tag),
+            "published_at": rel.get("published_at"),
+            "body": (rel.get("body") or "").strip(),
+            "local_version": local_version,
+            "asset": {
+                "name": str(asset.get("name")),
+                "size": int(asset.get("size") or 0),
+                "download_url": str(asset.get("browser_download_url")),
+                "digest": str(asset.get("digest") or ""),
+            } if asset else None,
+        }
+    except Exception as e:
+        return {"ok": False, "message": f"检查大更新出错：{e}"}
+
+
+def _write_restart_request(mode: str, installer: str = "") -> bool:
+    """写重启请求文件（launcher 轮询识别），用于更新完成后程序自动重启。
+
+    mode: hot  = 热更新完成，重启当前程序
+          full = 大更新，使用安装包静默安装后重启
+    """
+    try:
+        req = {
+            "mode": mode,
+            "installer": installer,
+            "ts": datetime.now().isoformat(timespec="seconds"),
+        }
+        log_dir = Path(get_real_path("log"))
+        log_dir.mkdir(parents=True, exist_ok=True)
+        with open(log_dir / "restart_request.json", "w", encoding="utf-8") as f:
+            json.dump(req, f, ensure_ascii=False, indent=2)
+        logger.info("已写入重启请求: %s", req)
+        return True
+    except Exception as e:
+        logger.warning("写入重启请求失败: %s", e)
+        return False
+
+
+def _backup_for_hot_update(project_root: Path):
+    """热更新替换前备份 backend + frontend/dist 到 .update_backup（失败可回滚）。"""
+    try:
+        backup_dir = project_root / ".update_backup"
+        if backup_dir.exists():
+            shutil.rmtree(backup_dir, ignore_errors=True)
+        backup_dir.mkdir(parents=True, exist_ok=True)
+        for rel in ("backend", "frontend/dist"):
+            src = project_root / rel
+            if src.exists():
+                dst = backup_dir / rel
+                if src.is_dir():
+                    shutil.copytree(src, dst)
+                else:
+                    dst.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(src, dst)
+        logger.info("热更新前已备份 backend / frontend/dist 到 .update_backup")
+        return backup_dir
+    except Exception as e:
+        logger.warning("热更新备份失败（继续更新，无回滚保护）: %s", e)
+        return None
+
 
 def _read_local_sha() -> Optional[str]:
     try:
@@ -302,15 +437,28 @@ async def check_update():
                     pass
 
         has_update = current_sha is None or current_sha != latest_sha
+
+        # 大更新检查：GitHub Releases/latest 版本对比（依赖库/正式版本走安装包）
+        local_version = _read_local_version()
+        full = _check_full_update(local_version)
+        full_update = bool(full.get("ok") and full.get("has_update"))
+        # 有大更新时优先大更新（Release 包含全部变更）；否则走热更新
+        update_type = "full" if full_update else ("hot" if has_update else "none")
         return {
             "ok": True,
-            "has_update": has_update,
+            "has_update": has_update or full_update,
+            "update_type": update_type,
             "current_sha": current_sha,
             "latest_sha": latest_sha,
             "latest_message": latest_message,
             "current_commit": current_commit,
             "commits": commits,
-            "message": f"检测到新版本：{latest_message}" if has_update else "当前已是最新版本",
+            "full": full,
+            "message": (
+                f"检测到新版本 {full.get('version')}（正式版更新，需安装新版本）"
+                if full_update
+                else (f"检测到新版本：{latest_message}" if has_update else "当前已是最新版本")
+            ),
         }
     except Exception as e:
         return {"ok": False, "message": f"检查更新出错：{e}"}
@@ -322,7 +470,7 @@ async def check_update():
 _UPDATE_EXCLUDE_DIRS = {
     ".git", "log", "config", "frontend_node_modules", ".venv", "__pycache__",
     "release", "test_scene", "image", ".idea", "node_modules",
-    "del", ".update_tmp",
+    "del", ".update_tmp", ".update_backup",
 }
 _UPDATE_EXCLUDE_FILES = {".clineignore"}
 
@@ -382,6 +530,9 @@ def _do_apply_update():
             raise RuntimeError("更新包结构异常：未找到源码目录")
         src_dir = top_dirs[0]
 
+        # ---- 2.4 热更新前备份 backend + frontend/dist（失败可回滚）----
+        _backup_for_hot_update(project_root)
+
         # ---- 2.5 释放数据库文件占用（Windows 下 SQLite 连接会锁定文件，覆盖前必须释放）----
         # 更新完成后提示用户重启程序；重启后 ResourceDBManager 会自动重建连接读取新库
         try:
@@ -431,13 +582,101 @@ def _do_apply_update():
 
         # ---- 5. 清理 ----
         shutil.rmtree(tmp_root, ignore_errors=True)
+
+        # ---- 6. 请求程序自动重启（launcher 检测到 restart_request.json 后自动重启）----
+        _write_restart_request(mode="hot")
         _set_update_status(
             phase="done", percent=100, running=False,
-            message=f"更新完成，共更新 {copied} 个文件，请重启程序生效。",
+            message=f"更新完成，共更新 {copied} 个文件，程序即将自动重启生效。",
             output=str(project_root),
         )
     except Exception as e:
         _set_update_status(phase="error", percent=0, running=False, message=f"更新失败：{e}", error=str(e))
+
+
+@router.post("/apply-release-update")
+async def apply_release_update():
+    """大更新：下载最新 GitHub Release 安装包并请求程序自动重启安装（后台执行）。"""
+    with _STATUS_LOCK:
+        if _UPDATE_STATUS["running"]:
+            return {"ok": False, "message": "更新已在执行中"}
+        _UPDATE_STATUS.update({
+            "running": True, "phase": "", "percent": 0,
+            "message": "", "error": "", "output": None,
+        })
+    threading.Thread(target=_do_apply_release_update, daemon=True).start()
+    return {"ok": True, "message": "大更新任务已启动"}
+
+
+def _do_apply_release_update():
+    try:
+        project_root = Path(get_real_path(""))
+        local_version = _read_local_version()
+        info = _check_full_update(local_version)
+        if not info.get("ok"):
+            _set_update_status(phase="error", percent=0, running=False,
+                               message=info.get("message", "检查大更新失败"), error="check_failed")
+            return
+        if not info.get("has_update") or not info.get("asset"):
+            _set_update_status(phase="error", percent=0, running=False,
+                               message="当前已是最新正式版本，无需安装更新", error="no_update")
+            return
+
+        asset = info["asset"]
+        download_url = asset["download_url"]
+        expected_digest = asset.get("digest") or ""
+        pending = project_root / "log" / "pending_update"
+        pending.mkdir(parents=True, exist_ok=True)
+        installer_path = pending / asset["name"]
+        tmp_path = pending / (asset["name"] + ".part")
+
+        # ---- 1. 下载安装包（stream + 进度）----
+        _set_update_status(phase="downloading-installer", percent=2, message="正在下载新版本安装包...")
+        with requests.get(download_url, verify=False, timeout=60, stream=True) as r:
+            r.raise_for_status()
+            total = int(r.headers.get("Content-Length", 0))
+            downloaded = 0
+            with open(tmp_path, "wb") as f:
+                for chunk in r.iter_content(chunk_size=1024 * 256):
+                    if not chunk:
+                        continue
+                    f.write(chunk)
+                    downloaded += len(chunk)
+                    if total:
+                        pct = 2 + int(downloaded / total * 90)
+                        _set_update_status(
+                            phase="downloading-installer", percent=pct,
+                            message=f"下载安装包中 {downloaded // 1024 // 1024}MB / {total // 1024 // 1024}MB",
+                        )
+
+        # ---- 2. 校验 sha256（GitHub asset digest 格式 sha256:<hex>）----
+        _set_update_status(phase="verifying", percent=94, message="正在校验安装包完整性...")
+        if expected_digest and ":" in expected_digest:
+            import hashlib
+            h = hashlib.sha256()
+            with open(tmp_path, "rb") as f:
+                for chunk in iter(lambda: f.read(1024 * 1024), b""):
+                    h.update(chunk)
+            actual = f"sha256:{h.hexdigest()}"
+            if actual.lower() != expected_digest.lower():
+                tmp_path.unlink(missing_ok=True)
+                _set_update_status(phase="error", percent=0, running=False,
+                                   message="安装包完整性校验失败，已中止", error="digest_mismatch")
+                return
+        tmp_path.replace(installer_path)
+
+        # ---- 3. 请求程序退出并由 launcher 静默安装重启（full 模式）----
+        if not _write_restart_request(mode="full", installer=str(installer_path)):
+            _set_update_status(phase="error", percent=0, running=False,
+                               message="无法写入重启请求", error="write_request")
+            return
+        _set_update_status(
+            phase="done", percent=100, running=False,
+            message=f"安装包已就绪（{asset['name']}），程序即将自动重启完成升级。",
+            output=str(installer_path),
+        )
+    except Exception as e:
+        _set_update_status(phase="error", percent=0, running=False, message=f"大更新失败：{e}", error=str(e))
 
 
 def _read_local_sha_from_github() -> Optional[str]:

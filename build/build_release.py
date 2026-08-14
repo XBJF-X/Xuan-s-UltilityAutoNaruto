@@ -172,7 +172,13 @@ def step_assemble():
         shutil.copytree(ocr_src, RELEASE / "bin" / "ppocrv5")
         log("  复制 OCR 模型")
 
-    # 6. 用户数据目录（首次为空，运行后生成）
+    # 6. 版本号随包分发（大更新/版本对比用，后端读取 _version.py）
+    src_version = ROOT / "_version.py"
+    if src_version.exists():
+        shutil.copy2(src_version, RELEASE / "_version.py")
+        log("  复制 _version.py（版本号）")
+
+    # 7. 用户数据目录（首次为空，运行后生成）
     (RELEASE / "config").mkdir(exist_ok=True)
     (RELEASE / "log").mkdir(exist_ok=True)
     log("组装完成 -> build/release")

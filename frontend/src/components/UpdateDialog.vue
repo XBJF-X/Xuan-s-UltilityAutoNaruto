@@ -28,7 +28,11 @@
         <div class="vc-item">
           <div class="vc-label">本地版本</div>
           <div class="vc-value">
-            <template v-if="info.current_commit">
+            <template v-if="info.update_type === 'full'">
+              <span class="sha">{{ info.full.local_version || '未知' }}</span>
+              <span class="msg">正式版</span>
+            </template>
+            <template v-else-if="info.current_commit">
               <span class="sha">{{ info.current_commit.short_sha }}</span>
               <span class="msg">{{ info.current_commit.message }}</span>
             </template>
@@ -42,18 +46,35 @@
         <div class="vc-item">
           <div class="vc-label">云端最新</div>
           <div class="vc-value">
-            <span class="sha">{{ info.latest_sha.slice(0, 7) }}</span>
-            <span class="msg">{{ info.latest_message }}</span>
+            <template v-if="info.update_type === 'full'">
+              <span class="sha">{{ info.full.tag }}</span>
+              <span class="msg">{{ info.full.name }}</span>
+            </template>
+            <template v-else>
+              <span class="sha">{{ info.latest_sha.slice(0, 7) }}</span>
+              <span class="msg">{{ info.latest_message }}</span>
+            </template>
           </div>
         </div>
       </div>
 
-      <n-alert v-if="info.has_update" type="warning" :show-icon="true" style="margin-bottom: 12px;">
-        检测到新版本，点击下方按钮可立即更新（更新后请重启程序生效）。
+      <n-alert v-if="info.update_type === 'full'" type="warning" :show-icon="true" style="margin-bottom: 12px;">
+        检测到新正式版本 {{ info.full.version }}，包含依赖库等完整更新。点击下方按钮下载安装包，程序将自动完成升级并重启。
+      </n-alert>
+      <n-alert v-else-if="info.update_type === 'hot'" type="warning" :show-icon="true" style="margin-bottom: 12px;">
+        检测到新的修复/功能更新，点击下方按钮可立即更新，程序将自动重启生效。
       </n-alert>
       <n-alert v-else type="success" :show-icon="true" style="margin-bottom: 12px;">
         当前已是最新版本。
       </n-alert>
+
+      <!-- 大更新：Release 更新说明 -->
+      <template v-if="info.update_type === 'full'">
+        <div class="release-section">
+          <div class="section-title">更新内容（{{ formatDate(info.full.published_at) }}）</div>
+          <div class="release-body">{{ info.full.body || '暂无说明' }}</div>
+        </div>
+      </template>
 
       <!-- 更新进度 -->
       <template v-if="isUpdating">
@@ -76,8 +97,8 @@
         </n-card>
       </template>
 
-      <!-- 提交历史 -->
-      <div class="commit-section">
+      <!-- 提交历史（仅热更新展示） -->
+      <div v-if="info.update_type !== 'full'" class="commit-section">
         <div class="section-title">云端提交历史</div>
         <div class="commit-list">
           <div
@@ -106,12 +127,12 @@
       <n-space justify="end">
         <n-button @click="close" :disabled="isUpdating">关闭</n-button>
         <n-button
-          v-if="info && info.has_update && !isUpdating"
+          v-if="info && info.update_type !== 'none' && !isUpdating"
           type="primary"
           @click="apply"
           :loading="startingUpdate"
         >
-          立即更新
+          {{ info && info.update_type === 'full' ? '下载并升级' : '立即更新' }}
         </n-button>
       </n-space>
     </template>
@@ -149,6 +170,8 @@ const phaseLabel = computed(() => {
     extracting: '解压更新包',
     replacing: '替换文件',
     'writing-version': '更新版本记录',
+    'downloading-installer': '下载安装包',
+    verifying: '校验安装包',
     done: '更新完成',
     error: '更新失败',
   }
@@ -190,7 +213,10 @@ async function apply() {
   isUpdating.value = true
   startingUpdate.value = true
   try {
-    const res = await utilsApi.applyUpdate()
+    // 大更新走 Release 安装包；热更新走分支 zipball
+    const res = info.value?.update_type === 'full'
+      ? await utilsApi.applyReleaseUpdate()
+      : await utilsApi.applyUpdate()
     if (!res.data?.ok) {
       message.error(res.data?.message || '启动更新失败')
       isUpdating.value = false
@@ -310,6 +336,19 @@ onBeforeUnmount(stopPolling)
   word-break: break-all;
 }
 .commit-section { margin-top: 4px; }
+.release-section { margin-top: 4px; margin-bottom: 12px; }
+.release-body {
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #555;
+  white-space: pre-wrap;
+  word-break: break-word;
+  background: #fafafa;
+}
 .section-title {
   font-size: 13px;
   font-weight: 600;

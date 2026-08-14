@@ -22,6 +22,10 @@ SetCompressor /SOLID lzma
 !include "MUI2.nsh"
 !include "LogicLib.nsh"
 !include "nsDialogs.nsh"
+!include "FileFunc.nsh"
+
+!insertmacro GetParameters
+!insertmacro GetOptions
 
 !define MUI_ABORTWARNING
 !define MUI_ICON "${ICON}"
@@ -111,6 +115,16 @@ Section "Xuan" SEC_MAIN
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninst.exe"
+
+  ; 8. Silent upgrade auto-restart: launcher passes /AUTOSTART after downloading the installer
+  ${If} ${Silent}
+    ${GetParameters} $R1
+    ClearErrors
+    ${GetOptions} $R1 "/AUTOSTART" $R2
+    ${IfNot} ${Errors}
+      Exec '"$INSTDIR\Xuan.exe"'
+    ${EndIf}
+  ${EndIf}
 SectionEnd
 
 ; ============ Uninstall ============
