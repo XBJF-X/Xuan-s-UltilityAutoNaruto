@@ -1,5 +1,6 @@
 """工具类 API 路由 - 历史日志 / 检查更新 / 应用更新 / 反馈打包"""
 import json
+import logging
 import os
 import re
 import shutil
@@ -19,6 +20,8 @@ from backend.utils import get_real_path
 from backend.services.config_service import shared_config_service
 
 router = APIRouter()
+
+logger = logging.getLogger(__name__)
 
 # ============================================================
 # 模块级后台任务状态（供前端轮询）
@@ -227,7 +230,7 @@ async def get_log_history(config_id: str = "", limit: int = 500):
 # ============================================================
 _GITHUB_OWNER = "XBJF-X"
 _GITHUB_REPO = "Xuan-s-UltilityAutoNaruto"
-_BRANCH = "master"
+_BRANCH = "v17"
 
 
 def _read_local_sha() -> Optional[str]:
@@ -243,7 +246,7 @@ def _read_local_sha() -> Optional[str]:
 
 @router.get("/check-update")
 async def check_update():
-    """检查更新：对比本地 version.json 与 GitHub master，返回云端提交历史"""
+    """检查更新：对比本地 version.json 与 GitHub v17 分支，返回云端提交历史"""
     current_sha = _read_local_sha()
     try:
         headers = {"Accept": "application/vnd.github+json"}
@@ -378,6 +381,17 @@ def _do_apply_update():
         if not top_dirs:
             raise RuntimeError("更新包结构异常：未找到源码目录")
         src_dir = top_dirs[0]
+
+        # ---- 2.5 释放数据库文件占用（Windows 下 SQLite 连接会锁定文件，覆盖前必须释放）----
+        # 更新完成后提示用户重启程序；重启后 ResourceDBManager 会自动重建连接读取新库
+        try:
+            from backend.tools.resource_db import ResourceDBManager
+            _db_inst = ResourceDBManager._instance
+            if _db_inst is not None and getattr(_db_inst, "engine", None) is not None:
+                _db_inst.engine.dispose()
+                logger.info("已释放 ResourceDBManager 数据库连接，准备覆盖 src/database.db")
+        except Exception as e:
+            logger.warning(f"释放数据库连接失败（继续执行更新）：{e}")
 
         # ---- 3. 替换文件 ----
         all_files = sorted(p for p in src_dir.rglob("*") if p.is_file())

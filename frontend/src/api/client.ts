@@ -87,7 +87,7 @@ export const utilsApi = {
   // 读取历史日志文件，供刷新/重连后恢复展示（config_id 为空或 '__global__' 表示程序全局日志）
   logHistory: (configId: string, limit = 500) =>
     client.get('/utils/log-history', { params: { config_id: configId, limit } }),
-  // 检查更新：对比本地 version.json 与 GitHub master，返回提交历史
+  // 检查更新：对比本地 version.json 与 GitHub v17 分支，返回提交历史
   checkUpdate: () => client.get('/utils/check-update'),
   // 应用更新（后台执行，进度通过 updateStatus 轮询）
   applyUpdate: () => client.post('/utils/apply-update'),
