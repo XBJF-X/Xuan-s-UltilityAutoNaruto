@@ -84,6 +84,13 @@ class ConfigService:
             return None
         if config_id not in self._instances:
             cfg_path = self._config_path(config_id)
+            # 配置文件不存在：返回 None（上层报 404），绝不创建。
+            # 否则任何对不存在配置 id 的请求（如旧会话残留的轮询）都会
+            # 通过 Config.__init__ 的 save_config_to_file() 生成一个
+            # 用户名为「默认配置」的残留文件。
+            if not cfg_path.exists():
+                self.logger.warning(f"配置 {config_id} 不存在（{cfg_path}），拒绝加载")
+                return None
             self._instances[config_id] = Config(
                 parent_logger=self.logger,
                 config_path=cfg_path,

@@ -8,6 +8,7 @@
 - **调度器**: 新增启动/键位配置前预检（串口已配置/格式/占用/在线、MuMu/LD 截图路径环境），避免参数错误时进入耗时的设备连接导致界面长时间无响应
 - **任务预设**: 修复可拖拽任务项 COMBOX 参数只显示枚举索引（如「0」）而无法显示枚举文本（如「火之要塞」）的问题
 - **任务树**: 修复切换配置后中栏「任务配置」列表消失的问题（`/configs/default-tasks` 路由被 `/{config_id}` 吞掉返回 404，前端加载任务 schema 失败时误清空任务列表；已调整路由顺序并让 schema 加载失败不再影响任务列表）
+- **配置管理**: 修复「默认配置」幽灵文件反复出现的问题——`_load_or_create` 在配置文件不存在时经 `Config.__init__→save_config_to_file()` 生成「默认配置」文件（用户名为「默认配置」），任何对不存在配置 id 的请求（旧会话残留的轮询等）都会触发，进而污染配置列表、干扰任务树加载；现改为文件不存在时返回 None（请求方报 404），绝不创建残留文件
 - **文件夹选择**: 修复 `browse-folder` 不支持中文路径的问题（`SHGetPathFromIDList` 返回 ANSI/GBK 编码 bytes 却按 utf-8 解码导致 `UnicodeDecodeError`；改用 Unicode 版 `SHGetPathFromIDListW`，回退时按系统 ANSI 代码页 `mbcs` 解码），MuMu/雷电等安装路径含中文时选择与校验恢复正常
 - **前端构建**: vite 增加 `manualChunks` 将 vue/pinia/vue-router 固定为共享 `vue-vendor` chunk，避免 pinia 被重复打包导致 `useStore` 报 `Cannot read properties of undefined (reading '_s')`
 
