@@ -1,3 +1,12 @@
+## v0.17.5 (2026-08-16)
+
+### Fix
+
+- **调度器**: 修复[要塞争夺战/天地战场]结束后未激活叛忍来袭——`execute_task_now` 增加 `enable_if_needed` 参数，任务激活时同步启用目标任务（对齐 V1 原版 `activate_another_task_implement`），此前仅设置下次执行时间、`is_activated` 仍为 False，扫描循环直接跳过导致不执行
+- **日志**: config 专属日志不再混入 Main.log——Config 实例 logger 改含 `Config_N`（`ConfigService.Config_1`）并挂载 config 专属文件 handler + WebSocket handler、`propagate=False`，配置加载/保存/设置日志归入对应 config 的 Xuan.log；ConfigService 涉及具体 config 的操作日志改经 `cfg.logger` 输出
+- **设备**: `device.py` 独立 `ConfigService()` 改统一使用 `shared_config_service` 单例，恢复 Config 对象内存唯一（消除重复加载/合并/写盘副作用与潜在写覆盖竞态）
+- **日志级别**: 优化冗余日志定级——配置加载/合并 info→debug、`save_config_to_file` 成功 debug 移除（避免与 set 系列重复）、自动错误截图 warning→info、watchdog 探针点击 info→debug
+
 ## v0.17.3 (2026-08-15)
 
 ### Fix
