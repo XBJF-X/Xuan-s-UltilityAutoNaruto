@@ -46,6 +46,13 @@ async def list_configs():
     return config_service.list_configs()
 
 
+# 注意：此路由必须注册在 /{config_id} 之前，否则会被动态段吞掉（/default-tasks 匹配成 config_id）
+@router.get("/default-tasks")
+async def get_default_tasks():
+    """获取 DefaultConfig 中的任务schema"""
+    return config_service.get_task_schema()
+
+
 @router.get("/{config_id}", response_model=ConfigDetail)
 async def get_config(config_id: str):
     data = config_service.get_config_full(config_id)
@@ -89,12 +96,6 @@ async def update_task_param(config_id: str, task_name: str, param_name: str, req
     return {"ok": True}
 
 
-@router.get("/default-tasks")
-async def get_default_tasks():
-    """获取 DefaultConfig 中的任务schema"""
-    return config_service.get_task_schema()
-
-
 @router.put("/{config_id}/task-priorities")
 async def update_task_priorities(config_id: str, req: UpdateTaskPrioritiesRequest):
     """批量更新任务优先级（按传入顺序分配优先级值）"""
@@ -134,5 +135,9 @@ async def rename_config(config_id: str, req: UpdateConfigRequest):
 
 @router.delete("/{config_id}")
 async def delete_config(config_id: str):
+    # 删除配置前先停止并销毁对应调度器，释放设备/串口占用，
+    # 否则残留的调度器会继续占用串口，导致下一个配置无法连接
+    from backend.api.scheduler import destroy_scheduler
+    destroy_scheduler(config_id)
     config_service.delete_config(config_id)
     return {"ok": True}

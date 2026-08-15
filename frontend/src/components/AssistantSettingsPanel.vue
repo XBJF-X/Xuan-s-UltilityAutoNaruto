@@ -14,7 +14,7 @@ import {
   NSpin,
   useMessage,
 } from "naive-ui";
-import { configApi, deviceApi, utilsApi } from "../api/client";
+import { configApi, deviceApi, schedulerApi, utilsApi } from "../api/client";
 
 const props = defineProps<{ configId: string }>();
 const message = useMessage();
@@ -131,9 +131,26 @@ const scanInterval = computed({
   get: () => gv("扫描间隔", 1000),
   set: (v: number | null) => save("扫描间隔", v ?? 1000),
 });
+// 二级密码：本地缓冲，失焦时校验并保存。
+// 注意：不要在输入过程中触发保存/禁用（saving 置位会禁用输入框导致失焦无法继续输入）
+const passwordText = ref("");
+function syncPassword() {
+  passwordText.value = gv("二级密码", "") || "";
+}
+function commitPassword() {
+  const v = (passwordText.value || "").trim();
+  if (v && v.length !== 6) {
+    message.warning("二级密码必须为六位");
+    syncPassword();
+    return;
+  }
+  if (v !== gv("二级密码", "")) save("二级密码", v);
+}
 const secondaryPassword = computed({
-  get: () => gv("二级密码", ""),
-  set: (v: string) => save("二级密码", v),
+  get: () => passwordText.value,
+  set: (v: string) => {
+    passwordText.value = v || "";
+  },
 });
 
 async function load() {
@@ -147,6 +164,7 @@ async function load() {
     keymapSaved.value = Array.isArray(dic["键位"]) ? dic["键位"] : null;
     // 配置加载完成后同步串口输入框（此前 setup 阶段 syncdSerial 时配置尚未加载）
     syncdSerial();
+    syncPassword();
     // 若当前已选 MuMu/LD 截图模式但未配置安装路径，进入时给出提示
     const sm = gv("截图模式", 0);
     if (sm === 3 && !gv("MuMu安装路径", "")) {
@@ -235,6 +253,23 @@ function jitterKeymap() {
   }
 }
 async function openKeymap() {
+  // 打开键位配置前先做参数预检（串口/截图路径），
+  // 避免参数错误时进入耗时的设备连接导致界面长时间无响应
+  try {
+    const pre = await schedulerApi.precheck(props.configId);
+    if (pre.data?.errors?.length) {
+      message.error(`键位配置前检查未通过：\n${pre.data.errors.join("\n")}`);
+      return;
+    }
+    if (pre.data?.warnings?.length) {
+      message.warning(pre.data.warnings.join("\n"));
+    }
+  } catch (e: any) {
+    message.error(
+      `键位配置前检查失败：${e?.response?.data?.detail || e?.message || e}`,
+    );
+    return;
+  }
   keymapModalShow.value = true;
   keymapLoading.value = true;
   try {
@@ -451,8 +486,8 @@ function confirmKeymap() {
             :maxlength="6"
             placeholder="必须为六位"
             style="width: 120px"
-            :disabled="saving === '二级密码'"
-            @blur="save('二级密码', secondaryPassword)"
+            @blur="commitPassword"
+            @keyup.enter="commitPassword"
           />
           <span class="field-desc" style="margin-left: 16px"
             >用来自动执行一些需要二级密码的任务，只在本地存储</span

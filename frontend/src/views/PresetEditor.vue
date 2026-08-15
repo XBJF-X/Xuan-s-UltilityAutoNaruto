@@ -72,9 +72,9 @@
                   />
                   <n-select
                     v-else-if="paramDetail.类型 === 'COMBOX'"
-                    :value="paramDetail.当前值"
+                    :value="comboValue(paramDetail)"
                     @update:value="(v: any) => onParamChange(name, paramName, v)"
-                    :options="(paramDetail.枚举列表 || []).map((s: string) => ({ label: String(s), value: s }))"
+                    :options="comboOptions(paramDetail)"
                     style="width: 200px"
                   />
                   <n-switch
@@ -225,6 +225,21 @@ function toggleExpand(name: string) {
 }
 
 // ---- 执行参数编辑 ----
+// COMBOX 参数：枚举列表以整数索引存储（当前值 = 索引），显示需将枚举定义映射为下拉选项。
+// 兼容历史数据里可能被误存为枚举文本字符串的『当前值』。
+function comboOptions(detail: any) {
+  return (detail.枚举列表 || []).map((s: string, idx: number) => ({
+    label: String(s),
+    value: idx,
+  }));
+}
+function comboValue(detail: any) {
+  const list = detail.枚举列表 || [];
+  const v = detail.当前值;
+  if (typeof v === "number" && list[v] !== undefined) return v;
+  const idx = list.indexOf(String(v));
+  return idx >= 0 ? idx : 0;
+}
 function onParamChange(taskName: string, paramName: string, value: any) {
   if (tasks.value[taskName]?.['执行参数']?.[paramName]) {
     tasks.value[taskName]['执行参数'][paramName]['当前值'] = value
@@ -241,6 +256,16 @@ async function toggleScheduler() {
       schedulerRunning.value = false
       runningTasks.value = []
     } else {
+      // 启动前快速预检：串口（已配置/格式/占用/在线）与 MuMu/LD 截图路径环境，
+      // 避免参数错误时进入耗时的设备连接导致界面长时间无响应
+      const pre = await schedulerApi.precheck(props.configId)
+      if (pre.data?.errors?.length) {
+        message.error(`启动前检查未通过：\n${pre.data.errors.join('\n')}`)
+        return
+      }
+      if (pre.data?.warnings?.length) {
+        message.warning(pre.data.warnings.join('\n'))
+      }
       await schedulerApi.start(props.configId)
       schedulerRunning.value = true
     }

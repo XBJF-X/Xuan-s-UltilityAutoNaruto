@@ -62,8 +62,12 @@ const fieldSchema = computed(() => {
   }
   // 尝试从 taskSchema 中获取
   if (props.taskSchema) {
-    // 遍历所有任务的 schema
-    const allTasks = props.taskSchema?.tasks || props.taskSchema?.setting_dics?.tasks || {}
+    // 兼容两种结构：旧版 config-detail（{tasks: {...}}）与新版原始 tasks schema dict（{任务名: {...}}）
+    const allTasks =
+      props.taskSchema?.tasks ||
+      props.taskSchema?.setting_dics?.tasks ||
+      props.taskSchema ||
+      {}
     for (const task of Object.values(allTasks) as any[]) {
       for (const [k, v] of Object.entries(task?.['执行参数'] || {}) as any[]) {
         if (k === props.configKey) return v

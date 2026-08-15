@@ -45,10 +45,27 @@ class ConfigService:
     def _config_path(self, name: str) -> Path:
         return self.config_dir / f"{name}.json"
 
+    def _is_legacy_default_name(self, name: str) -> bool:
+        """判断是否为旧版遗留的『默认配置』文件名（新版不再创建，仅用于过滤/清理残留）。
+
+        name 可能来自 item.stem（如 default-tasks）或完整文件名（如 default-tasks.json），
+        两者都需命中，否则 Config 初始化时会把残留文件重新写回。
+        """
+        return (name in self._LEGACY_DEFAULT_CONFIG_NAMES
+                or f"{name}.json" in self._LEGACY_DEFAULT_CONFIG_NAMES)
+
     def list_configs(self) -> List[dict]:
         results = []
         for item in sorted(self.config_dir.iterdir()):
             if item.is_file() and item.suffix.lower() == ".json" and item.name != "DefaultConfig.json":
+                # 旧版遗留的默认配置（用户名=默认配置）：不展示，并顺带清理，避免误当普通配置加载
+                if self._is_legacy_default_name(item.stem):
+                    try:
+                        item.unlink()
+                        self.logger.info(f"已清理旧版默认配置残留: {item}")
+                    except OSError as e:
+                        self.logger.warning(f"清理旧版默认配置残留失败 {item}: {e}")
+                    continue
                 try:
                     cfg = self._load_or_create(item.stem)
                     results.append({
@@ -62,6 +79,9 @@ class ConfigService:
         return results
 
     def _load_or_create(self, config_id: str) -> Config:
+        # 拒绝加载旧版遗留默认配置名，防止 Config 初始化时把残留文件重新写回
+        if self._is_legacy_default_name(config_id):
+            return None
         if config_id not in self._instances:
             cfg_path = self._config_path(config_id)
             self._instances[config_id] = Config(

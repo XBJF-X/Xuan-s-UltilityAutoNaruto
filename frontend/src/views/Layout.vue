@@ -403,16 +403,21 @@ async function loadTaskData() {
     rawTasks.value = {}
     return
   }
+  // 1. 加载任务数据（失败时清空，避免显示上一个配置的脏数据）
   try {
     const res = await configApi.get(appStore.activeConfigId)
     rawTasks.value = res.data.tasks || {}
-    // 加载 schema（仅一次）
-    if (Object.keys(taskSchema.value).length === 0) {
-      const schemaRes = await configApi.getDefaultTasks()
-      taskSchema.value = schemaRes.data
-    }
   } catch {
     rawTasks.value = {}
+  }
+  // 2. 加载任务 schema（仅首次；加载失败不影响已加载的任务列表）
+  if (Object.keys(taskSchema.value).length === 0) {
+    try {
+      const schemaRes = await configApi.getDefaultTasks()
+      taskSchema.value = schemaRes.data || {}
+    } catch (e) {
+      console.error('加载任务 schema 失败:', e)
+    }
   }
 }
 
@@ -497,6 +502,16 @@ async function startScheduler() {
   if (!appStore.activeConfigId) return
   schedulerStarting.value = true
   try {
+    // 启动前快速预检：串口（已配置/格式/占用/在线）与 MuMu/LD 截图路径环境，
+    // 避免参数错误时进入耗时的设备连接导致界面长时间无响应
+    const pre = await schedulerApi.precheck(appStore.activeConfigId)
+    if (pre.data?.errors?.length) {
+      message.error(`启动前检查未通过：\n${pre.data.errors.join('\n')}`)
+      return
+    }
+    if (pre.data?.warnings?.length) {
+      message.warning(pre.data.warnings.join('\n'))
+    }
     await schedulerApi.start(appStore.activeConfigId)
     schedulerRunning.value = true
   } catch (e: any) {

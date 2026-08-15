@@ -1,5 +1,8 @@
 """调度器管理 API 路由 - 延迟初始化，接入 WebSocket 状态推送"""
 import asyncio
+import logging
+import os
+import re
 from fastapi import APIRouter, HTTPException
 from backend.services.config_service import shared_config_service as _config_service
 
@@ -8,6 +11,11 @@ _schedulers: dict[str, object] = {}
 
 # 存储主线程事件循环引用（用于后台线程安全地推送异步事件）
 _main_loop: asyncio.AbstractEventLoop | None = None
+
+_logger = logging.getLogger("SchedulerAPI")
+
+# 串口格式：127.0.0.1:xxxxx 或 emulator-xxxx
+_SERIAL_RE = re.compile(r"^(\d{1,3}\.){3}\d{1,3}:\d+$|^emulator-\d+$", re.IGNORECASE)
 
 
 def _get_main_loop() -> asyncio.AbstractEventLoop:
@@ -59,6 +67,119 @@ def _get_scheduler(config_id: str):
             on_task_state_change=sync_on_task,
         )
     return _schedulers[config_id]
+
+
+def destroy_scheduler(config_id: str):
+    """停止并销毁指定配置的调度器实例（删除配置时调用）。
+
+    调度器持有设备/控制/截图连接（含串口占用），若只删配置文件不销毁调度器，
+    旧连接不会被释放，导致后续使用同一串口的配置无法连接。
+    """
+    sched = _schedulers.pop(config_id, None)
+    if sched is None:
+        return
+    try:
+        if getattr(sched, "running", False):
+            sched.stop()
+        _logger.info(f"已销毁配置 {config_id} 的调度器实例")
+    except Exception as e:
+        _logger.error(f"销毁配置 {config_id} 的调度器实例失败: {e}")
+
+
+def _precheck_serial(cfg) -> tuple[list[str], list[str]]:
+    """串口预检：已配置 / 格式 / 是否被其他运行中的调度器占用 / adb 设备在线。"""
+    errors: list[str] = []
+    warnings: list[str] = []
+
+    serial = str(cfg.get_config("串口", "") or "").strip().replace("：", ":")
+    if not serial:
+        errors.append("未配置串口（请在助手设置中填写或选择串口）")
+        return errors, warnings
+
+    if not _SERIAL_RE.match(serial):
+        errors.append(
+            f"串口格式不正确：{serial}（应为 127.0.0.1:5555 或 emulator-5554 形式）")
+        return errors, warnings
+
+    # 同一个串口只能被一个调度器连接：检查其他运行中调度器是否占用同一串口
+    for other_id, other in _schedulers.items():
+        if other_id == cfg.config_path.stem or not getattr(other, "running", False):
+            continue
+        other_serial = str(
+            other.config.get_config("串口", "") or "").strip().replace("：", ":")
+        if other_serial and other_serial.lower() == serial.lower():
+            errors.append(
+                f"串口 {serial} 已被配置「{other_id}」的调度器占用，"
+                f"请先停止对应调度器或改用其他串口")
+            break
+
+    if errors:
+        return errors, warnings
+
+    # 设备在线检查：仅当 adb 能枚举到该串口才算在线（MuMu/雷电 可能不出现，降级为警告）
+    try:
+        from backend.api.device import get_adb_serials
+        serials = get_adb_serials()
+        if serial not in serials:
+            msg = f"串口 {serial} 未在 adb 设备列表中发现（当前已连接：{', '.join(serials) or '无'}）"
+            mode = cfg.get_config("截图模式", 2)
+            if mode in (3, 4):
+                warnings.append(msg + "（MuMu/雷电 设备可能不会出现在 adb devices 中，将继续尝试连接）")
+            else:
+                errors.append(msg)
+    except Exception as e:
+        warnings.append(f"adb 设备列表查询失败（不影响本次连接尝试）: {e}")
+
+    return errors, warnings
+
+
+def _precheck_screenshot_path(cfg) -> list[str]:
+    """截图路径环境预检：MuMu/LD 安装路径下关键文件存在性（参照 validate.py / device.py check-environment）。"""
+    mode = cfg.get_config("截图模式", 2)
+    errors: list[str] = []
+    if mode == 3:  # MuMu
+        base = str(cfg.get_config("MuMu安装路径", "") or "").strip()
+        if not base:
+            errors.append("未配置 MuMu 安装路径（截图模式为 MuMu 时需要，请在全局设置中配置）")
+            return errors
+        from backend.api.validate import MUMU_MANAGER_CANDIDATES, MUMU_DLL_CANDIDATES
+        manager_ok = any(os.path.exists(os.path.join(base, rel)) for rel in MUMU_MANAGER_CANDIDATES)
+        dll_ok = any(os.path.exists(os.path.join(base, rel)) for rel in MUMU_DLL_CANDIDATES)
+        if not dll_ok:
+            errors.append("MuMu 安装路径下未找到 external_renderer_ipc.dll（截图动态库）")
+        if not manager_ok:
+            errors.append("MuMu 安装路径下未找到 MuMuManager.exe")
+    elif mode == 4:  # LD 雷电
+        base = str(cfg.get_config("雷电安装路径", "") or "").strip()
+        if not base:
+            errors.append("未配置 雷电安装路径（截图模式为 LD 时需要，请在全局设置中配置）")
+            return errors
+        if not os.path.exists(os.path.join(base, "ldconsole.exe")):
+            errors.append("雷电安装路径下未找到 ldconsole.exe")
+        if not os.path.exists(os.path.join(base, "ldopengl64.dll")):
+            errors.append("雷电安装路径下未找到 ldopengl64.dll")
+    return errors
+
+
+@router.post("/precheck/{config_id}")
+async def precheck_scheduler(config_id: str):
+    """启动/键位配置前的快速预检：串口与 MuMu/LD 截图路径环境。
+
+    目的：在进入耗时的设备连接前把常见参数问题暴露给用户，避免长时间阻塞界面。
+    串口同一时刻只能被一个调度器连接（占用检查）。
+    """
+    cfg = _config_service.get_config(config_id)
+    if not cfg:
+        raise HTTPException(status_code=404, detail="配置不存在")
+
+    serial_errors, warnings = _precheck_serial(cfg)
+    path_errors = _precheck_screenshot_path(cfg)
+    errors = serial_errors + path_errors
+    return {
+        "ok": not errors,
+        "errors": errors,
+        "warnings": warnings,
+    }
 
 
 @router.post("/start/{config_id}")

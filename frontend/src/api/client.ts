@@ -53,6 +53,8 @@ export const schedulerApi = {
   stop: (configId: string) => client.post(`/scheduler/stop/${configId}`),
   status: (configId: string) => client.get(`/scheduler/status/${configId}`),
   getTasks: (configId: string) => client.get(`/scheduler/tasks/${configId}`),
+  // 启动前快速预检（串口/截图路径），返回 { ok, errors: string[], warnings: string[] }
+  precheck: (configId: string) => client.post(`/scheduler/precheck/${configId}`),
   executeTask: (configId: string, taskName: string) =>
     client.post(`/scheduler/tasks/${configId}/${taskName}/execute`),
   toggleActivation: (configId: string, taskName: string, state: boolean) =>

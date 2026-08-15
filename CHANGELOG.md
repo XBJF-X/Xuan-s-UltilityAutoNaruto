@@ -1,3 +1,16 @@
+## v0.17.3 (2026-08-15)
+
+### Fix
+
+- **配置管理**: 移除旧版遗留「默认配置」（config_defaults.json / default-tasks.json）的创建与展示，新建配置不再出现多余的默认配置残留
+- **助手设置**: 修复二级密码输入框点击后无法输入、输入即消失的问题（改为本地缓冲，失焦时统一校验保存）
+- **调度器**: 删除配置时自动停止并销毁对应调度器实例，释放设备/串口占用，避免后续配置无法连接
+- **调度器**: 新增启动/键位配置前预检（串口已配置/格式/占用/在线、MuMu/LD 截图路径环境），避免参数错误时进入耗时的设备连接导致界面长时间无响应
+- **任务预设**: 修复可拖拽任务项 COMBOX 参数只显示枚举索引（如「0」）而无法显示枚举文本（如「火之要塞」）的问题
+- **任务树**: 修复切换配置后中栏「任务配置」列表消失的问题（`/configs/default-tasks` 路由被 `/{config_id}` 吞掉返回 404，前端加载任务 schema 失败时误清空任务列表；已调整路由顺序并让 schema 加载失败不再影响任务列表）
+- **文件夹选择**: 修复 `browse-folder` 不支持中文路径的问题（`SHGetPathFromIDList` 返回 ANSI/GBK 编码 bytes 却按 utf-8 解码导致 `UnicodeDecodeError`；改用 Unicode 版 `SHGetPathFromIDListW`，回退时按系统 ANSI 代码页 `mbcs` 解码），MuMu/雷电等安装路径含中文时选择与校验恢复正常
+- **前端构建**: vite 增加 `manualChunks` 将 vue/pinia/vue-router 固定为共享 `vue-vendor` chunk，避免 pinia 被重复打包导致 `useStore` 报 `Cannot read properties of undefined (reading '_s')`
+
 ## v0.17.1 (2026-08-14)
 
 ### Fix

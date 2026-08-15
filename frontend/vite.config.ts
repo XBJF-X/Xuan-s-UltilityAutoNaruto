@@ -24,4 +24,25 @@ export default defineConfig({
     },
   },
   base: './',
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id: string) {
+          // vue/pinia 等运行时单例库必须保持单实例：
+          // 若被重复打包（如 pinia 同时被入口与 store 异步 chunk 各自内联一份），
+          // 会因 piniaSymbol 不一致导致 useStore 拿不到 activePinia，报
+          // "Cannot read properties of undefined (reading '_s')"。
+          if (
+            id.includes('node_modules/pinia') ||
+            id.includes('node_modules/vue') ||
+            id.includes('node_modules/vue-router') ||
+            id.includes('node_modules/@vue')
+          ) {
+            return 'vue-vendor'
+          }
+          return undefined
+        },
+      },
+    },
+  },
 })

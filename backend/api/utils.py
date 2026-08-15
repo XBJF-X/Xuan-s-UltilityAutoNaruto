@@ -54,9 +54,17 @@ def _browse_folder(title: str):
     import win32com.shell.shell as shell
     folder_selected = shell.SHBrowseForFolder()
     if folder_selected:
-        # 将返回的 PIDL (项目标识符列表) 转换为实际的文件系统路径
-        path = shell.SHGetPathFromIDList(folder_selected[0])
-        return path.decode("utf-8")
+        # 将返回的 PIDL (项目标识符列表) 转换为实际的文件系统路径。
+        # 优先使用 Unicode 版本（SHGetPathFromIDListW），直接返回 str，天然支持中文路径；
+        # 回退到 ANSI 版本（SHGetPathFromIDList）时返回的是系统 ANSI 代码页
+        # （中文系统为 GBK/cp936）编码的 bytes，必须按 mbcs（系统 ANSI 代码页）解码，
+        # 不能按 utf-8 解码——否则含中文的路径（如 MuMu/雷电安装目录）会抛 UnicodeDecodeError。
+        pidl = folder_selected[0]
+        get_path = getattr(shell, "SHGetPathFromIDListW", None) or shell.SHGetPathFromIDList
+        path = get_path(pidl)
+        if isinstance(path, bytes):
+            path = path.decode("mbcs")
+        return path
     return None
 
 
