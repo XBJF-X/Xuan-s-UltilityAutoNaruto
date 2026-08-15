@@ -89,6 +89,7 @@ class TimeoutWatchdog:
         self.logger = logger.getChild("Watchdog")
         self.on_freeze = on_freeze
 
+
         self._running = False
         self._thread: Optional[threading.Thread] = None
         self._lock = threading.Lock()
@@ -346,13 +347,17 @@ class TimeoutWatchdog:
         探针验证：点击设计好的坐标，等待后再次截图，判断画面是否依旧静止。
         未配置探针坐标时直接按静止判定。
         """
-        probe = self._cfg("超时检测-探针坐标", None)
-        if not probe or len(probe) != 2:
-            self.logger.warning("未配置[超时检测-探针坐标]，跳过探针验证直接判定")
-            return True
+        # probe = self._cfg("超时检测-探针坐标", None)
+        # if not probe or len(probe) != 2:
+        #     self.logger.warning("未配置[超时检测-探针坐标]，跳过探针验证直接判定")
+        #     return True
         try:
-            self.logger.info(f"探针点击坐标: {probe}")
-            self.device.click(int(probe[0]), int(probe[1]))
+            for probe_name in ["X_探针1","X_探针2","返回"]:
+                probe_element=self.operationer.scene_graph.get_element("主场景",probe_name)
+                if probe_element is not None:
+                    x,y=probe_element.coordinate_x,probe_element.coordinate_y
+                    self.logger.info(f"探针点击坐标: ({x},{y})")
+                    self.device.click(int(x), int(y))
         except Exception as e:
             self.logger.error(f"探针点击失败: {e}")
             return True

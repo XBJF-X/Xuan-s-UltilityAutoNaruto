@@ -71,3 +71,4 @@ pnpm-debug.log*
 
 # ---------- 日志 ----------
 *.log
+xuan.pid

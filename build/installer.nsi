@@ -9,7 +9,7 @@
 Unicode true
 
 !define PRODUCT_NAME "Xuan"
-!define PRODUCT_VERSION "0.17.0"
+!define PRODUCT_VERSION "0.17.1"
 !define PRODUCT_PUBLISHER "Xuan"
 !define PRODUCT_WEB_SITE "https://github.com/XBJF-X/Xuan-s-UltilityAutoNaruto"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\Xuan.exe"
