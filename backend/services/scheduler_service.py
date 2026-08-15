@@ -445,13 +445,21 @@ class SchedulerService:
         if self.on_task_state_change:
             self.on_task_state_change({"name": task_name, "activated": state})
 
-    def execute_task_now(self, task_name: str):
-        """立即执行（与原版 request_task_execute_now 一致）"""
+    def execute_task_now(self, task_name: str, enable_if_needed: bool = False):
+        """立即执行（与原版 request_task_execute_now 一致）
+
+        enable_if_needed=True 时先启用任务（对齐 V1 原版 activate_another_task_implement
+        传 enable_if_needed=True 的语义）：用于【要塞争夺战/天地战场】结束后自动激活
+        叛忍来袭等临时任务——仅设置下次执行时间不足以让其执行，扫描循环会因
+        is_activated=False 而跳过。
+        """
         from backend.core.legacy.Task.BaseTask import TaskType
         task = self.task_queue.get_task(task_name)
         if not task:
             self.logger.error(f"任务 {task_name} 不存在")
             return
+        if enable_if_needed:
+            self.config.set_task_base_config(task_name, "是否启用", True)
         if not task.is_activated and task.task_type != TaskType.TEMP:
             self.logger.warning(f"任务 {task_name} 已禁用")
             return
@@ -673,7 +681,7 @@ class SchedulerService:
 
     def _on_task_activate_request(self, task_name: str):
         """其他任务请求激活指定任务"""
-        self.execute_task_now(task_name)
+        self.execute_task_now(task_name, enable_if_needed=True)
 
     # ================================================================
     # 超时监视器：告警信号处理
