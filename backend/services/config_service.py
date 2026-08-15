@@ -220,7 +220,7 @@ class ConfigService:
             self.logger.error(f"写入副本配置失败: {e}")
             return None
         self._instances[new_id] = Config(parent_logger=self.logger, config_path=new_path)
-        self.logger.info(f"已复制配置 {config_id} → {new_id}")
+        self._instances[new_id].logger.info(f"已复制配置 {config_id} → {new_id}")
         return new_id
 
     def set_task_priorities(self, config_id: str, ordered_task_names: list[str]) -> bool:
@@ -230,7 +230,7 @@ class ConfigService:
             return False
         cfg.setting_dics["任务优先级顺序"] = ordered_task_names
         cfg.save_config_to_file()
-        self.logger.debug(f"已更新配置 {config_id} 的任务优先级顺序: {ordered_task_names}")
+        cfg.logger.debug(f"已更新配置 {config_id} 的任务优先级顺序: {ordered_task_names}")
         return True
 
     def get_task_priorities(self, config_id: str) -> list[str]:
@@ -247,7 +247,7 @@ class ConfigService:
             return False
         cfg.setting_dics["任务执行顺序"] = ordered_task_names
         cfg.save_config_to_file()
-        self.logger.debug(f"已更新配置 {config_id} 的任务执行顺序: {ordered_task_names}")
+        cfg.logger.debug(f"已更新配置 {config_id} 的任务执行顺序: {ordered_task_names}")
         return True
 
     def get_task_order(self, config_id: str) -> list[str]:

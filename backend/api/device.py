@@ -4,11 +4,10 @@ import logging
 
 from fastapi import APIRouter, HTTPException
 
-from backend.services.config_service import ConfigService
+from backend.services.config_service import shared_config_service as config_service
 
 router = APIRouter()
 logger = logging.getLogger("DeviceAPI")
-config_service = ConfigService()
 
 
 def _capture_frame(config_id: str, cfg=None):

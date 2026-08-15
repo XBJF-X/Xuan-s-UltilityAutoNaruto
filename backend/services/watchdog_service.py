@@ -356,7 +356,7 @@ class TimeoutWatchdog:
                 probe_element=self.operationer.scene_graph.get_element("主场景",probe_name)
                 if probe_element is not None:
                     x,y=probe_element.coordinate_x,probe_element.coordinate_y
-                    self.logger.info(f"探针点击坐标: ({x},{y})")
+                    self.logger.debug(f"探针点击坐标: ({x},{y})")
                     self.device.click(int(x), int(y))
         except Exception as e:
             self.logger.error(f"探针点击失败: {e}")
@@ -373,7 +373,7 @@ class TimeoutWatchdog:
         with self._lock:
             self._last_frame = small
             self._static_since = time.monotonic()
-        self.logger.info("探针点击后画面恢复变化，解除卡死预警")
+        self.logger.debug("探针点击后画面恢复变化，解除卡死预警")
         return False
 
     # ================================================================

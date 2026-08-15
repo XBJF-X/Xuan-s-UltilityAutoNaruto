@@ -11,17 +11,42 @@ from backend.utils import get_real_path
 
 class Config:
     def __init__(self, parent_logger, config_path):
+        # logger 名必须包含 Config_N（如 ConfigService.Config_1），
+        # 供 WebSocketLogHandler 按 config_id 归类到前端对应配置
+        config_id = config_path.stem
         if isinstance(parent_logger, str):
-            self.logger = logging.getLogger(self.__class__.__name__)
+            self.logger = logging.getLogger(f"{self.__class__.__name__}.{config_id}")
         else:
-            self.logger = parent_logger.getChild(self.__class__.__name__)
+            self.logger = parent_logger.getChild(config_id)
         self.config_path: Path = config_path
         self.default_config_path = get_real_path("src/DefaultConfig.json")
         self.setting_dics: Dict[str, Any] = {}
         self.tasks: Dict[str, Any] = {}
         self.load_and_merge_config()
         self.save_config_to_file()
+        self._attach_config_log_handler()
         self.logger.debug("初始化完成...")
+
+    def _attach_config_log_handler(self):
+        """为 Config 挂载 config 专属文件 handler + WebSocket handler，并切断向 root 的传播。
+
+        配置对象的日志（加载/保存/设置参数等）应归入该配置专属日志
+        （log/<用户名>/<日期>/Xuan.log），而非写入 Main.log。
+        logger 名含 Config_N（parent_logger.getChild(config_id)），
+        供 WebSocketLogHandler 按 config_id 归类。
+        """
+        from backend.log_setup import get_config_file_handler
+        from backend.api.ws import get_ws_log_handler
+
+        username = self.setting_dics.get("用户名") or "unknown"
+        file_handler = get_config_file_handler(username)
+        if file_handler not in self.logger.handlers:
+            self.logger.addHandler(file_handler)
+        ws_handler = get_ws_log_handler()
+        if ws_handler not in self.logger.handlers:
+            self.logger.addHandler(ws_handler)
+        self.logger.setLevel(logging.DEBUG)
+        self.logger.propagate = False
 
     @property
     def config_type(self) -> str:
@@ -196,7 +221,7 @@ class Config:
             try:
                 with open(self.config_path, 'r', encoding='utf-8') as f:
                     user_config = json.load(f)
-                self.logger.info(f"成功加载用户配置文件: {self.config_path}")
+                self.logger.debug(f"成功加载用户配置文件: {self.config_path}")
 
                 if user_config.get("配置文件版本", None) == "V3":
                     self.setting_dics = self._merge_v3_configs(user_config, default_config)
@@ -209,13 +234,12 @@ class Config:
             self.setting_dics = default_config
 
         self.tasks = self.setting_dics.get("任务", {})
-        self.logger.info("配置合并完成")
+        self.logger.debug("配置合并完成")
 
     def save_config_to_file(self):
         try:
             config_data = copy.deepcopy(self.setting_dics)
             with open(self.config_path, 'w', encoding='utf-8') as f:
                 json.dump(config_data, f, ensure_ascii=False, indent=4)
-            self.logger.debug(f"配置已保存到 {self.config_path}")
         except Exception as e:
             self.logger.error(f"保存配置失败: {str(e)}")

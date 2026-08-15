@@ -503,7 +503,7 @@ class BaseTask:
             save_func = getattr(op, "screen_save_func", None)
             if callable(save_func):
                 save_func(self.task_name)
-                self.logger.warning(f"已自动保存错误截图（原因: {reason}）")
+                self.logger.info(f"已自动保存错误截图（原因: {reason}）")
                 return
             # 兜底：直接截图保存
             frame = op.screen_cap()
@@ -524,7 +524,7 @@ class BaseTask:
             ok, buf = cv2.imencode(".png", frame)
             if ok:
                 buf.tofile(filepath)
-                self.logger.warning(f"已自动保存错误截图: {filepath}")
+                self.logger.info(f"已自动保存错误截图: {filepath}")
         except Exception as e:
             self.logger.warning(f"错误截图保存失败: {e}")
 
