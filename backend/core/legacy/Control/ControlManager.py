@@ -32,34 +32,28 @@ class ControlManager:
     def create_control_instance(self):
         """初始化控制实例"""
         self.logger.info(f"当前控制模式：[{self.control_mode.name}]")
-        self._fallback_to_u2 = False  # 本次是否降级为 U2（不修改用户配置）
         try:
             # 根据模式创建对应子类（懒导入：避免未安装 minidevice 时阻塞调度器启动）
             if self.control_mode == ControlMode.U2:
                 from backend.core.legacy.Control.U2 import U2
                 control = U2(self.config, self.logger)
             else:
-                # MiniTouch 模式：懒导入，失败时仅本次实例降级到 U2（保留用户 MiniTouch 配置）
-                try:
-                    from backend.core.legacy.Control.MiniTouch import MiniTouch
-                    control = MiniTouch(self.config, self.logger)
-                except Exception as e:
-                    self.logger.warning(
-                        f"[MiniTouch] 初始化失败({e})，本次降级到 U2，用户配置保持 MiniTouch")
-                    self._fallback_to_u2 = True
-                    from backend.core.legacy.Control.U2 import U2
-                    control = U2(self.config, self.logger)
+                # MiniTouch 模式：初始化失败时直接抛出，不降级到 U2——
+                # 降级会导致"配置为 MiniTouch、实际实例为 U2"，Clicker 连点
+                # 按配置走 MiniTouch 分支却拿到 U2 实例调用 multi_tap 崩溃刷屏；
+                # 失败由上层 Device.device_ready / 调度器启动检测拦截，停止调度器。
+                from backend.core.legacy.Control.MiniTouch import MiniTouch
+                control = MiniTouch(self.config, self.logger)
 
-            # 初始化提示（降级时仍按配置模式名记录，方便日志识别）
             if control.ready:
                 self.logger.info(f"[{self.control_mode.name}]控制实例初始化完成")
-            # 只有未降级且模式与配置不同时才写回配置；降级是临时兜底，不改用户设置
-            if not self._fallback_to_u2:
-                self.config.set_config('控制模式', self.control_mode.value)
+            self.config.set_config('控制模式', self.control_mode.value)
             return control
 
         except Exception as e:
             self.logger.error(f"【{self.control_mode.name}】 初始化失败: {e}")
+            self.logger.error(
+                "控制实例初始化失败，调度器将停止。请检查[助手设置]中的串口连接与模拟器状态。")
             return None
 
     def switch_control_mode(self, new_mode: ControlMode):

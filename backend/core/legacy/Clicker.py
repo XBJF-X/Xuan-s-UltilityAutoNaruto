@@ -190,6 +190,12 @@ class Clicker:
                     if not control.ready:
                         self.logger.warning("MiniTouch 实例已失效，结束多点连点线程")
                         break
+                    # 防御：当前控制实例可能被替换为非 MiniTouch（如 U2），
+                    # 其不具备 multi_tap 方法，直接调用会抛 AttributeError 刷屏
+                    if not hasattr(control, "multi_tap"):
+                        self.logger.error(
+                            f"当前控制实例({type(control).__name__})不支持多点连点(multi_tap)，结束连点线程")
+                        break
 
                     control.multi_tap(points, pressure=100, duration=0.08)
                     time.sleep(0.15)
