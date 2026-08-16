@@ -207,6 +207,8 @@ class BaseTask:
             config.get_task_base_config(self.task_name, "类型"))
 
         self.bool_click = False
+        # 立即执行标记：被请求"立即执行"后置 True，扫描选择时就绪队列中优先执行
+        self.force_execute_now = False
         self.last_unregistered_scene_time = None
         # 最后一次执行是否出错（供调度器向前端透传失败标记）
         self.last_execute_error = None

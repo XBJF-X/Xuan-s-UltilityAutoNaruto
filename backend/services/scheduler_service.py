@@ -463,7 +463,9 @@ class SchedulerService:
         if not task.is_activated and task.task_type != TaskType.TEMP:
             self.logger.warning(f"任务 {task_name} 已禁用")
             return
-        task.schedule_execute_now()
+        ok, _ = task.schedule_execute_now()
+        if ok:
+            task.force_execute_now = True
         self.logger.info(f"任务 {task_name} 已请求立即执行")
 
     # ================================================================
@@ -529,13 +531,19 @@ class SchedulerService:
             # ---- 2. 就绪队列(1) → 执行(0) ----
             ready_tasks = self.task_queue.get_tasks_by_status(1)
             if ready_tasks:
-                next_task = min(ready_tasks)  # heapq 的 min 就是优先级最高的
+                # 优先执行被请求"立即执行"的任务（force_execute_now），
+                # 否则按优先级取最高（heapq 的 min 就是优先级最高的）
+                force_tasks = [t for t in ready_tasks
+                               if getattr(t, "force_execute_now", False)]
+                next_task = (min(force_tasks) if force_tasks
+                             else min(ready_tasks))
                 running_tasks = self.task_queue.get_tasks_by_status(0)
                 if not running_tasks:
                     # 没有正在执行的任务 → 直接执行
                     success = self.task_queue.update_task_status(
                         next_task.task_name, 0)
                     if success:
+                        next_task.force_execute_now = False
                         self.logger.info(
                             f"[{next_task.task_name}]-[{next_task.base_priority}] 进入执行队列"
                         )
@@ -598,6 +606,7 @@ class SchedulerService:
                 self.task_queue.update_task_status(task_name, 1)
             if task.current_status == 1:
                 self.task_queue.update_task_status(task_name, 0)
+                task.force_execute_now = False  # 预设顺序执行，无需立即执行标记
                 self.logger.info(f"[预设顺序执行] 开始任务: {task_name}")
                 if self.on_task_state_change:
                     self.on_task_state_change({
@@ -648,6 +657,8 @@ class SchedulerService:
 
     def _execute_done_callback(self, task):
         """任务完成回调（与原版 _on_task_finished 逻辑一致）"""
+        # 任务已执行过（无论结果），清除"立即执行"标记
+        task.force_execute_now = False
         # 任务结束（完成/停止/超时），交还超时监视器
         if self.watchdog:
             self.watchdog.detach_task(task)
