@@ -32,7 +32,21 @@ SetCompressor /SOLID lzma
 !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
 
 !insertmacro MUI_PAGE_WELCOME
+!define MUI_PAGE_CUSTOMFUNCTION_LEAVE "directory_leave"
 !insertmacro MUI_PAGE_DIRECTORY
+
+; Directory page leave callback: force $INSTDIR to end with Xuan.
+; NSIS InstallDir's last path component (Xuan) is "may be appended back on to the
+; string at install time" after the user browses a folder (per official docs), but
+; that behavior is NOT guaranteed - if it does not trigger, the cleanup logic would
+; run directly on the user-selected (parent) directory and delete its data.
+; Here we deterministically ensure the install dir is always <selected>\Xuan.
+Function directory_leave
+  ${GetFileName} "$INSTDIR" $0
+  StrCmp $0 "${PRODUCT_NAME}" dir_ok
+    StrCpy $INSTDIR "$INSTDIR\${PRODUCT_NAME}"
+  dir_ok:
+FunctionEnd
 !insertmacro MUI_PAGE_INSTFILES
 !define MUI_FINISHPAGE_RUN "$INSTDIR\Xuan.exe"
 !insertmacro MUI_PAGE_FINISH
@@ -75,6 +89,10 @@ Section "Xuan" SEC_MAIN
   wv2_ok:
 
   ; 3. Clean old-version leftovers, keep user data (config/log/setting.ini)
+  ;    Safety: only clean when $INSTDIR is really the Xuan app dir (Xuan.exe exists,
+  ;    i.e. upgrade install). Fresh install to a new dir / a dir with other data
+  ;    always skips cleanup, so user data can never be deleted by mistake.
+  IfFileExists "$INSTDIR\Xuan.exe" 0 skip_clean
   IfFileExists "$INSTDIR\*.*" 0 skip_clean
     FindFirst $0 $1 "$INSTDIR\*"
     clean_loop:
@@ -158,6 +176,10 @@ Section "Uninstall"
   nsExec::ExecToLog 'taskkill /f /t /im Xuan.exe'
   Sleep 1000
 
+  ; Safety: $INSTDIR is inferred from uninst.exe location, normally the Xuan app dir.
+  ; If abnormal (uninst.exe moved elsewhere), abort deletion to protect user data.
+  IfFileExists "$INSTDIR\Xuan.exe" 0 uninst_abort
+
   ; Shortcuts
   Delete "$SMPROGRAMS\Xuan\Xuan.lnk"
   Delete "$SMPROGRAMS\Xuan\Uninstall Xuan.lnk"
@@ -188,5 +210,6 @@ Section "Uninstall"
   DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_DIR_REGKEY}"
 
   RMDir "$INSTDIR"
+  uninst_abort:
 SectionEnd
 
