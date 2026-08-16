@@ -1,3 +1,9 @@
+## v0.17.9 (2026-08-16)
+
+### Feat
+
+- **安装器**: 安装/卸载过程支持明确的中断停止确认——新增 `MUI_INSTFILESPAGE_ABORTWARNING` / `MUI_UNINSTFILESPAGE_ABORTWARNING`，安装中点击 Cancel 显示确认后中止并回滚已安装文件（NSIS 默认已支持取消，大文件解压期间需等当前文件解压完成）
+
 ## v0.17.8 (2026-08-16)
 
 ### Fix
