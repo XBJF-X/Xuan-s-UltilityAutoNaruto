@@ -47,12 +47,18 @@ Function directory_leave
     StrCpy $INSTDIR "$INSTDIR\${PRODUCT_NAME}"
   dir_ok:
 FunctionEnd
+
+; Abort warning during install/uninstall: the Cancel button stays enabled while
+; files are being extracted; clicking it shows this confirmation before aborting
+; and rolling back the partially installed files.
+!define MUI_INSTFILESPAGE_ABORTWARNING "Are you sure you want to abort the installation?"
 !insertmacro MUI_PAGE_INSTFILES
 !define MUI_FINISHPAGE_RUN "$INSTDIR\Xuan.exe"
 !insertmacro MUI_PAGE_FINISH
 
 !insertmacro MUI_UNPAGE_CONFIRM
 UninstPage custom un.ShowKeepDataPage un.LeaveKeepDataPage
+!define MUI_UNINSTFILESPAGE_ABORTWARNING "Are you sure you want to abort the uninstallation?"
 !insertmacro MUI_UNPAGE_INSTFILES
 
 !insertmacro MUI_LANGUAGE "SimpChinese"
