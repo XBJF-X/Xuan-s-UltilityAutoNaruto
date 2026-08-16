@@ -531,7 +531,9 @@ def _run(show_window: bool, autoclose: int = 0) -> int:
             installer = pending_restart.get("installer")
             if installer and os.path.exists(installer):
                 LOG.info("大更新：启动安装器静默安装并重启：%s", installer)
-                subprocess.Popen([installer, "/S", "/AUTOSTART"])
+                # Inno Setup 静默参数（替代 NSIS /S）：/VERYSILENT 无界面、/SUPPRESSMSGBOXES
+                # 抑制对话框、/NORESTART 不重启；/AUTOSTART 为自定义参数，安装完成后自动启动 Xuan
+                subprocess.Popen([installer, "/VERYSILENT", "/SUPPRESSMSGBOXES", "/NORESTART", "/AUTOSTART"])
             else:
                 LOG.error("大更新安装包缺失，跳过自动重启（%s）", installer)
     LOG.info("已退出")

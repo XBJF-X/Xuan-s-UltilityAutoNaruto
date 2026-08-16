@@ -6,10 +6,10 @@ Xuan Release 构建脚本
   1. 前端构建   pnpm build -> frontend/dist
   2. 引导器打包 PyInstaller(launcher.spec) -> build/dist/Xuan（exe + _internal）
   3. 组装安装内容 -> build/release/（venv 内置环境 + backend + frontend/dist + src）
-  4. NSIS 安装包  build/installer.nsi -> build/out/XuanInstaller_<version>.exe
+  4. Inno Setup 安装包  build/installer.iss -> build/out/XuanInstaller_<version>.exe
 
 用法（在项目根执行）：
-  .venv-build\\Scripts\\python.exe build\\build_release.py [all|frontend|launcher|assemble|nsis]
+  .venv-build\\Scripts\\python.exe build\\build_release.py [all|frontend|launcher|assemble|inno]
 
 注意：long-running，建议以分离后台方式运行并轮询 build/release.log。
 """
@@ -197,58 +197,94 @@ def _read_version() -> str:
     return "2.0.0"
 
 
-def _sync_nsi_version(nsi: Path, version: str):
-    """构建前将 installer.nsi 内 PRODUCT_VERSION 自动替换为当前版本号（与 _version.py 保持一致）。"""
+def _sync_iss_version(iss: Path, version: str):
+    """构建前将 installer.iss 内 MyAppVersion 自动替换为当前版本号（与 _version.py 保持一致）。
+
+    以 UTF-8 BOM 读写：Inno Setup 6 编译器识别脚本中的中文需要 BOM。
+    """
     import re
     try:
-        text = nsi.read_text(encoding="utf-8", errors="ignore")
+        text = iss.read_text(encoding="utf-8-sig", errors="ignore")
     except Exception:
         return
     new_text = re.sub(
-        r'(!define\s+PRODUCT_VERSION\s+)"[^"]*"',
+        r'(#define\s+MyAppVersion\s+)"[^"]*"',
         rf'\1"{version}"',
         text,
     )
     if new_text != text:
-        nsi.write_text(new_text, encoding="utf-8")
-        log(f"installer.nsi PRODUCT_VERSION 已同步为 {version}")
+        iss.write_text(new_text, encoding="utf-8-sig")
+        log(f"installer.iss MyAppVersion 已同步为 {version}")
 
 
-def step_nsis():
-    log("[4/5] NSIS 打包安装程序 ...")
+def _find_iscc() -> str:
+    """定位 Inno Setup 编译器 ISCC.exe。
+
+    查找顺序：环境变量 ISCC → 项目内 del/bin/InnoSetup6 → 系统默认安装路径 → PATH。
+    """
+    candidates = []
+    env = os.environ.get("ISCC")
+    if env:
+        candidates.append(env)
+    candidates.extend([
+        str(ROOT / "del" / "bin" / "InnoSetup6" / "ISCC.exe"),
+        r"D:\Program Files (x86)\Inno Setup 6\ISCC.exe",
+        r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
+        r"C:\Program Files\Inno Setup 6\ISCC.exe",
+    ])
+    for c in candidates:
+        if os.path.isfile(c):
+            return c
+    found = shutil.which("ISCC")
+    if found:
+        return found
+    raise SystemExit(
+        "未找到 Inno Setup 编译器（ISCC.exe）。\n"
+        "请安装 Inno Setup 6（https://jrsoftware.org/isdl.php），\n"
+        "或设置环境变量 ISCC 指向 ISCC.exe，或将便携版放入 del/bin/InnoSetup6/。"
+    )
+
+
+def step_inno():
+    log("[4/5] Inno Setup 打包安装程序 ...")
     out_dir = BUILD / "out"
     out_dir.mkdir(parents=True, exist_ok=True)
-    nsi = BUILD / "installer.nsi"
-    if not nsi.exists():
-        raise SystemExit(f"缺少 NSIS 脚本: {nsi}")
+    iss = BUILD / "installer.iss"
+    if not iss.exists():
+        raise SystemExit(f"缺少 Inno Setup 脚本: {iss}")
     version = _read_version()
-    _sync_nsi_version(nsi, version)
-    out_file = out_dir / f"XuanInstaller_V{version}.exe"
+    _sync_iss_version(iss, version)
+    iscc = _find_iscc()
+    out_name = f"XuanInstaller_V{version}"
     run([
-        "makensis",
-        f"/DOUT_FILE={out_file}",
-        f"/DVERSION={version}",
-        f"/DICON={ROOT / 'src' / 'ASDS.ico'}",
-        f"/DRELEASE={BUILD / 'release'}",
-        str(nsi),
+        iscc,
+        f"/DMyAppVersion={version}",
+        f"/DReleaseDir={RELEASE}",
+        f"/DMyAppIcon={ROOT / 'src' / 'ASDS.ico'}",
+        f"/O{out_dir}",
+        f"/F{out_name}",
+        str(iss),
     ], ROOT)
-    log("NSIS 完成 -> " + str(out_file))
+    out_file = out_dir / f"{out_name}.exe"
+    if not out_file.exists():
+        raise SystemExit(f"Inno Setup 未生成安装包: {out_file}")
+    log("Inno Setup 完成 -> " + str(out_file))
 
 
 STEPS = {
-    "all": ["step_runtime", "step_frontend", "step_launcher", "step_assemble", "step_nsis"],
+    "all": ["step_runtime", "step_frontend", "step_launcher", "step_assemble", "step_inno"],
     "runtime": ["step_runtime"],
     "frontend": ["step_frontend"],
     "launcher": ["step_launcher"],
     "assemble": ["step_assemble"],
-    "nsis": ["step_nsis"],
+    "inno": ["step_inno"],
 }
 _FNS = {
     "step_runtime": step_runtime,
     "step_frontend": step_frontend,
     "step_launcher": step_launcher,
     "step_assemble": step_assemble,
-    "step_nsis": step_nsis,
+    "step_inno": step_inno,
 }
 
 USAGE = """\
@@ -259,11 +295,11 @@ steps:
   frontend  仅构建前端  pnpm build -> frontend/dist（热更新补丁用，不发 Release）
   launcher  PyInstaller 打包引导器 -> build/dist/Xuan（exe + _internal/venv）
   assemble  组装安装内容 -> build/release/
-  nsis      NSIS 打包安装程序 -> build/out/XuanInstaller_<version>.exe
+  inno      Inno Setup 打包安装程序 -> build/out/XuanInstaller_<version>.exe
   all       以上全部（默认）
 示例:
   python build_release.py frontend            # 只构建前端生成 dist
-  python build_release.py runtime launcher assemble nsis  # 增量重打（不改前端）
+  python build_release.py runtime launcher assemble inno  # 增量重打（不改前端）
   python build_release.py                     # 完整 Release
 """
 
