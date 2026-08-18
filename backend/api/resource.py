@@ -359,7 +359,8 @@ def ocr_element(element_id: str):
         return {
             "ok": True,
             "results": [
-                {"text": text, "box": [int(v) for v in box]} for text, box in results
+                {"text": text, "box": [int(v) for v in box]}
+                for text, box, _score in results
             ],
         }
     except Exception as e:

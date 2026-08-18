@@ -613,7 +613,11 @@ class Recognizer:
                     return "未知含X场景"
         return "未知场景"
 
-    def area_ocr(self, scene_img, ocr_area: Element, bool_debug=False) -> List:
+    def area_ocr(self,
+                 scene_img,
+                 ocr_area: Element,
+                 bool_debug=False,
+                 only_num=False) -> List:
         """
         对指定 OcrArea 区域执行 OCR 识别
 
@@ -622,9 +626,12 @@ class Recognizer:
             ocr_area(Element): OcrArea 类型的元素（type == ElementType.OCR_AREA）
             bool_debug(bool): 是否回报日志
 
+        Args:
+            only_num(bool): 是否仅保留纯数字文本（透传 OnnxOcr.ocr）
+
         Returns:
-            List[Tuple[str, List[int]]]
-            识别结果列表，每个元素为 (识别文本, [x1, x2, y1, y2])，
+            List[Tuple[str, List[int], float]]
+            识别结果列表，每个元素为 (识别文本, [x1, x2, y1, y2], 置信度)，
             其中坐标为识别文本在区域内的具体位置（已叠加 ROI 偏移，相对于原图）
         """
         if ocr_area.type != ElementType.OCR_AREA:
@@ -653,7 +660,8 @@ class Recognizer:
             # 此处 roi_img 已是裁剪后的区域，传 None 表示无需坐标偏移复原；
             # raw_json=True 获取结构化列表 [{"text", "score", "box"}, ...]。
             results = self._onnx_ocr.ocr(
-                roi_img, None, (scene_w, scene_h), raw_json=True) or []
+                roi_img, None, (scene_w, scene_h),
+                only_num=only_num, raw_json=True) or []
         except Exception as e:
             self.logger.error(f"[{ocr_area.name}] OCR 识别失败：{e}")
             return []
@@ -669,8 +677,10 @@ class Recognizer:
             box = item.get("box", [])  # 框格式遵循项目惯例：[[x1, y1], [x2, y2], [x3, y3], [x4, y4]]
             xs = [float(p[0]) for p in box]
             ys = [float(p[1]) for p in box]
-            area_results.append((text, [x_start + int(min(xs)), x_start + int(max(xs)),
-                                        y_start + int(min(ys)), y_start + int(max(ys))]))
+            area_results.append((text, [
+                x_start + int(min(xs)), x_start + int(max(xs)),
+                y_start + int(min(ys)), y_start + int(max(ys))
+            ], score))
 
         if bool_debug:
             self.logger.debug(f"[{ocr_area.name}] OCR 识别到 {len(area_results)} 条文本")
