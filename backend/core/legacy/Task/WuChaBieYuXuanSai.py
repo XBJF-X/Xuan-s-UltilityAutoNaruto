@@ -38,8 +38,15 @@ class WuChaBieYuXuanSai(BaseTask):
             self.operationer.click_and_wait("成就奖励")
             return False
         if self.config.get_task_exe_param(self.task_name, "选择刷取方式", 0) == 1:
-            if self.operationer.detect_element("场次-30"):
+            target=30
+        else:
+            target=7
+        cc=self.operationer.ocr_recognize("场次")
+        if cc:
+            if cc.extract_numbers()[0]>=target:
                 self.finished = True
+            # if self.operationer.detect_element("场次-30"):
+            #     self.finished = True
         if not self.finished:
             self.operationer.click_and_wait("出战")
             self.bool_click = True
