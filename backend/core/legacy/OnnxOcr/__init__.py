@@ -28,7 +28,6 @@ class OnnxOcr:
             image,
             box,
             image_size=(1600, 900),
-            only_num=False,
             raw_json=False,
         ) -> Union[List[Dict], str]:
         """对输入图像进行OCR识别，并按需要还原坐标/过滤文本/格式化返回结果。"""
@@ -49,10 +48,6 @@ class OnnxOcr:
 
             text = str(rec[0])
             score = float(rec[1])
-            if only_num:
-                text = self._extract_digits(text)
-                if not text:
-                    continue
 
             restored_box = self._restore_to_original(det_box, offset_x, offset_y)
             results.append({"text": text, "score": score, "box": restored_box})
@@ -94,7 +89,3 @@ class OnnxOcr:
             x, y = point[0], point[1]
             restored.append([int(round(x + offset_x)), int(round(y + offset_y))])
         return restored
-
-    def _extract_digits(self, text: str) -> str:
-        """仅保留数字字符。"""
-        return "".join(ch for ch in text if ch.isdigit())

@@ -116,12 +116,23 @@ class PanRenLaiXi(BaseTask):
         difficulty = ["低级叛忍", "中级叛忍", "高级叛忍"][
             self.config.get_task_exe_param(self.task_name, "挑战叛忍类型")]
         if not self.check:
-            if self.operationer.detect_element("自动参战-0金币"):
-                self.operationer.click_and_wait("自动参战")
-                self.logger.info("自动参战已开启")
-                self.auto = True
-            else:
-                self.logger.info("无法自动参战，将手动挑战")
+            zdcz_jbs=self.operationer.ocr_recognize("自动参战金币数")
+            if zdcz_jbs:
+                if zdcz_jbs.extract_numbers()==0:
+                    self.operationer.click_and_wait("自动参战")
+                    self.logger.info("自动参战已开启")
+                    self.auto = True
+                # if self.operationer.detect_element("自动参战-0金币"):
+                #     self.operationer.click_and_wait("自动参战")
+                #     self.logger.info("自动参战已开启")
+                #     self.auto = True
+                else:
+                    if self.config.get_task_exe_param(self.task_name, "是否使用50金币自动参战", True):
+                        self.operationer.click_and_wait("自动参战")
+                        self.logger.info("自动参战已开启")
+                        self.auto = True
+                    else:
+                        self.logger.info("无法自动参战，将手动挑战")
             self.check = True
         if not self.auto:
             if not self.operationer.click_and_wait(difficulty, wait_time=2):

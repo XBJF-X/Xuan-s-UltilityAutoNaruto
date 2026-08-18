@@ -6,13 +6,13 @@ class OcrText:
 
     Attributes:
         text (str): 识别文本
-        box (List[int]): 归一化边界框，格式 [x, y, w, h]
+        box (List[int]): 边界框，格式 [x1, y1, x2, y2]
         score (float): 置信度
     """
 
     def __init__(self, text: str, box: List[int], score: float = 0.0):
         self.text = text
-        self.box = list(box)  # [x, y, w, h]
+        self.box = list(box)  # [x1, y1, x2, y2]
         self.score = score
 
     def get_inner_point(self, ratio_x: float = 0.5,
@@ -26,10 +26,10 @@ class OcrText:
         Returns:
             (x, y) 绝对像素坐标
         """
-        x, y, w, h = self.box
+        x1, y1, x2, y2 = self.box
         rx = max(0.0, min(1.0, ratio_x))
         ry = max(0.0, min(1.0, ratio_y))
-        return int(x + w * rx), int(y + h * ry)
+        return int(x1 + (x2 - x1) * rx), int(y1 + (y2 - y1) * ry)
 
     def extract_numbers(self) -> List[int]:
         """提取文本中所有连续数字。"""

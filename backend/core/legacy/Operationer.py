@@ -53,14 +53,13 @@ class Operationer:
     def get_scene(self, scene_name):
         return self.scene_graph.get_scene(scene_name)
 
-    def detect_element(self, element, match_text='', only_num=False, **kwargs):
+    def detect_element(self, element, match_text='', **kwargs):
         """
         检测并等待一段时间
 
         Args:
             element(str|Element): 元素（元素名或 Element 对象）
             match_text(str): OCR 匹配文本，为空时默认用 element.name
-            only_num(bool): 是否仅匹配数字文本
             **kwargs: 可选参数：
             - wait_time: 检测到之后的等待时间
             - max_time: 最大尝试时间，默认为2.0
@@ -79,7 +78,7 @@ class Operationer:
 
         self.screen_save_func(self.task_name)
         return self._retry_until(
-            lambda: self._match_element_once(element, match_text, only_num),
+            lambda: self._match_element_once(element, match_text),
             wait_time=wait_time,
             max_time=max_time,
             max_attempts=max_attempts,
@@ -119,31 +118,29 @@ class Operationer:
             max_attempts=max_attempts,
             stable_kwargs=stable_kwargs)
 
-    def ocr_recognize(self, element, only_num=False, **kwargs) -> OcrText | None:
+    def ocr_recognize(self, element, **kwargs) -> OcrText | None:
         """
         对指定 OcrArea 区域执行 OCR 识别，返回置信度最高的结果
 
         Args:
             element(str|Element): OcrArea 元素（可传元素名或 Element 对象）
-            only_num(bool): 是否只识别数字文本
             **kwargs: 可选参数：
                 - bool_debug(bool): 是否回报日志，默认为 False
 
         Returns:
             OcrText | None: 置信度最高的识别结果，无结果返回 None
         """
-        results = self._ocr_results(element, only_num=only_num, **kwargs)
+        results = self._ocr_results(element, **kwargs)
         if not results:
             return None
         return max(results, key=lambda r: r.score)
 
-    def _ocr_results(self, element, only_num=False, **kwargs) -> List[OcrText]:
+    def _ocr_results(self, element, **kwargs) -> List[OcrText]:
         """
         对指定 OcrArea 区域执行 OCR 识别，返回全部结果
 
         Args:
             element(str|Element): OcrArea 元素（可传元素名或 Element 对象）
-            only_num(bool): 是否只识别数字文本
             **kwargs: 可选参数：
                 - bool_debug(bool): 是否回报日志，默认为 False
 
@@ -165,27 +162,23 @@ class Operationer:
         bool_debug: bool = kwargs.get("bool_debug", False)
         try:
             results = self.recognizer.area_ocr(
-                self.device.screen_cap(), element, bool_debug,
-                only_num=only_num)
+                self.device.screen_cap(), element, bool_debug)
         except Exception as e:
             self.logger.error(f"[{element.name}] OCR 识别异常：{e}")
             return []
 
         ocr_texts = []
         for text, box, score in results:
-            x1, x2, y1, y2 = box
-            ocr_texts.append(
-                OcrText(text, [x1, y1, x2 - x1, y2 - y1], score))
+            ocr_texts.append(OcrText(text, box, score))
         return ocr_texts
 
-    def click_and_wait(self, element, match_text='', only_num=False, **kwargs):
+    def click_and_wait(self, element, match_text='', **kwargs):
         """
         点击并等待一段时间
 
         Args:
             element(str|Element): 元素
             match_text(str): OCR 匹配文本，为空时默认用 element.name
-            only_num(bool): 是否仅匹配数字文本
             ** kwargs: 可选参数：
             - wait_time: 检测到之后的等待时间，默认为None,表示将等待画面稳定，支持自定义
             - max_time: 最大尝试时间，默认为2.0
@@ -212,7 +205,7 @@ class Operationer:
         self.screen_save_func(self.task_name)
         return self._retry_until(
             lambda: self._click_element_once(
-                element, click_times, match_text, only_num, ratio_x, ratio_y),
+                element, click_times, match_text, ratio_x, ratio_y),
             wait_time=wait_time,
             max_time=max_time,
             max_attempts=max_attempts,
@@ -257,7 +250,7 @@ class Operationer:
         return True
 
     def search_and_click(self, element_list, search_actions, match_text='',
-                         only_num=False, **kwargs):
+                         **kwargs):
         """
         循环执行元素点击搜索，支持多轮次、多位置尝试，并在过程中执行辅助操作（如点击或滑动）
 
@@ -267,7 +260,6 @@ class Operationer:
                     - {'click': 点击参数}：执行点击操作
                     - {'swipe': 滑动参数}：执行滑动操作
             match_text(str): OCR 匹配文本，为空时默认用 element.name
-            only_num(bool): 是否仅匹配数字文本
             **kwargs:
             - search_max_time: (float): 搜索尝试的最大时间，默认None，即不限时间
             - max_attempts: (int):尝试搜索的最大次数，默认None，即不限次数
@@ -289,15 +281,14 @@ class Operationer:
                 self.logger.info(f"[元素] {element_id}")
 
         def _check_once(item, **opt):
-            return self.click_and_wait(item, match_text=match_text,
-                                       only_num=only_num, **opt)
+            return self.click_and_wait(item, match_text=match_text, **opt)
 
         # 辅助 click 未指定 wait_time 时等待画面稳定（与原逻辑一致）
         return self._search_loop(element_list, search_actions, _check_once,
                                  **kwargs)
 
     def search_and_detect(self, item_list, search_actions, match_text='',
-                          only_num=False, **kwargs):
+                          **kwargs):
         """
         循环执行元素检测，支持多轮次、多位置尝试，并在过程中执行辅助操作（如点击或滑动）
 
@@ -307,7 +298,6 @@ class Operationer:
                     - {'click': 点击参数}：执行点击操作
                     - {'swipe': 滑动参数}：执行滑动操作
             match_text(str): OCR 匹配文本，为空时默认用 element.name
-            only_num(bool): 是否仅匹配数字文本
             **kwargs:
             - search_max_time: (float): 搜索尝试的最大时间，默认None，即不限时间
             - max_attempts: (int):尝试搜索的最大次数，默认None，即不限次数
@@ -338,8 +328,7 @@ class Operationer:
         def _check_once(item, **opt):
             if isinstance(item, Scene):
                 return self.detect_scene(item, **opt)
-            return self.detect_element(item, match_text=match_text,
-                                       only_num=only_num, **opt)
+            return self.detect_element(item, match_text=match_text, **opt)
 
         search_kwargs = dict(kwargs)
         search_kwargs.setdefault("wait_time", 1.0)
@@ -577,7 +566,7 @@ class Operationer:
                 time.sleep(sleep_time)
         return False
 
-    def _click_element_once(self, element, click_times, match_text, only_num,
+    def _click_element_once(self, element, click_times, match_text,
                             ratio_x, ratio_y) -> bool:
         """单次点击尝试：按 ElementType 分派 COORDINATE/IMG/OCR_AREA"""
         if element.type == ElementType.COORDINATE:
@@ -586,7 +575,7 @@ class Operationer:
                                      times=click_times)
 
         if element.type == ElementType.OCR_AREA:
-            results = self._ocr_results(element, only_num=only_num)
+            results = self._ocr_results(element)
             for r in results:
                 if match_text in r.text:
                     x, y = r.get_inner_point(ratio_x, ratio_y)
@@ -606,10 +595,10 @@ class Operationer:
             return self.device.click(x, y, times=click_times)
         return False
 
-    def _match_element_once(self, element, match_text, only_num) -> bool:
+    def _match_element_once(self, element, match_text) -> bool:
         """单次元素匹配：OCR_AREA 走 OCR 文本包含匹配，其余走模板匹配"""
         if element.type == ElementType.OCR_AREA:
-            results = self._ocr_results(element, only_num=only_num)
+            results = self._ocr_results(element)
             if not results:
                 return False
             return any(match_text in r.text for r in results)
