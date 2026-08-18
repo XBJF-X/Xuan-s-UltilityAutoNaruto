@@ -135,4 +135,13 @@ export const resourceApi = {
     client.get(`/resource/scenes/${sceneId}/base_image`, {
       responseType: 'blob',
     }),
+
+  /** 上传/替换场景底图（统一转 PNG 保存为 test_scene/{场景名}.png） */
+  uploadSceneBaseImage: (sceneId: string, file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    return client.post(`/resource/scenes/${sceneId}/base_image`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
 }

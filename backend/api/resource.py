@@ -12,6 +12,7 @@
 """
 import io
 import logging
+import re
 from pathlib import Path
 from typing import Any, Optional
 
@@ -27,6 +28,15 @@ router = APIRouter()
 logger = logging.getLogger("ResourceAPI")
 
 _TEST_SCENE_DIR = str(Path(__file__).resolve().parent.parent.parent / "test_scene")
+
+# Windows 文件名非法字符（含控制字符）
+_WINDOWS_INVALID_CHARS = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
+
+
+def _safe_scene_filename(name: str) -> str:
+    """将场景名转换为安全的 Windows 文件名（不含非法字符、去除首尾空格与点）。"""
+    safe = _WINDOWS_INVALID_CHARS.sub("_", str(name)).strip(" .")
+    return safe or "scene"
 
 # ===== 元素图片 / 场景底图 =====
 @router.get("/elements/{element_id}/image")
@@ -76,9 +86,9 @@ def get_scene_base_image(scene_id: str):
     if scene is None:
         raise HTTPException(status_code=404, detail="场景不存在")
     candidates = [
-        Path(_TEST_SCENE_DIR) / f"{scene.name}.png",
-        Path(_TEST_SCENE_DIR) / f"{scene.name}.jpg",
-        Path(_TEST_SCENE_DIR) / f"{scene.name}.jpeg",
+        Path(_TEST_SCENE_DIR) / f"{_safe_scene_filename(scene.name)}.png",
+        Path(_TEST_SCENE_DIR) / f"{_safe_scene_filename(scene.name)}.jpg",
+        Path(_TEST_SCENE_DIR) / f"{_safe_scene_filename(scene.name)}.jpeg",
     ]
     for p in candidates:
         if p.exists():
@@ -94,6 +104,39 @@ def get_scene_base_image(scene_id: str):
     except ImportError:
         pass
     raise HTTPException(status_code=404, detail="未找到场景底图")
+
+
+@router.post("/scenes/{scene_id}/base_image")
+async def upload_scene_base_image(scene_id: str, file: UploadFile = File(...)):
+    """上传/替换场景底图：统一转为 PNG 并保存为 test_scene/{场景名}.png"""
+    scene = _db.get_scene_by_id(scene_id)
+    if scene is None:
+        raise HTTPException(status_code=404, detail="场景不存在")
+    data = await file.read()
+    if not data:
+        raise HTTPException(status_code=400, detail="文件为空")
+    try:
+        import numpy as np
+        import cv2
+        buf = np.frombuffer(data, dtype=np.uint8)
+        img = cv2.imdecode(buf, cv2.IMREAD_UNCHANGED)
+        if img is None:
+            raise HTTPException(
+                status_code=400, detail="无法解码为图片，请上传 PNG/JPG 等图片文件")
+        ok, png = cv2.imencode(".png", img)
+        if not ok:
+            raise HTTPException(status_code=500, detail="PNG 编码失败")
+        data = png.tobytes()
+    except ImportError:
+        # 无 cv2 环境时降级：仅接受原始 PNG 字节原样保存（注明影响范围）
+        if not data[:8] == b"\x89PNG\r\n\x1a\n":
+            raise HTTPException(status_code=400, detail="缺少 cv2 环境，仅支持上传 PNG")
+    safe_name = _safe_scene_filename(scene.name)
+    dest_dir = Path(_TEST_SCENE_DIR)
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    dest = dest_dir / f"{safe_name}.png"
+    dest.write_bytes(data)
+    return {"ok": True, "path": f"test_scene/{safe_name}.png"}
 
 _db = ResourceDBManager()
 
@@ -257,9 +300,9 @@ def _load_scene_image(scene_id: str):
     if scene is None:
         raise HTTPException(status_code=404, detail="场景不存在")
     candidates = [
-        Path(_TEST_SCENE_DIR) / f"{scene.name}.png",
-        Path(_TEST_SCENE_DIR) / f"{scene.name}.jpg",
-        Path(_TEST_SCENE_DIR) / f"{scene.name}.jpeg",
+        Path(_TEST_SCENE_DIR) / f"{_safe_scene_filename(scene.name)}.png",
+        Path(_TEST_SCENE_DIR) / f"{_safe_scene_filename(scene.name)}.jpg",
+        Path(_TEST_SCENE_DIR) / f"{_safe_scene_filename(scene.name)}.jpeg",
     ]
     for p in candidates:
         if p.exists():

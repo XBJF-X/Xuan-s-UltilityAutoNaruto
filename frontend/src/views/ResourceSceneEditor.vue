@@ -21,6 +21,14 @@
           </n-tag>
         </n-space>
         <n-space>
+          <n-button size="small" @click="triggerBaseImageFile" :loading="uploadingBase">设置底图</n-button>
+          <input
+            ref="baseFileInput"
+            type="file"
+            accept="image/png"
+            style="display: none"
+            @change="onBaseImageFileSelected"
+          />
           <n-button size="small" @click="refreshBaseImage" :loading="baseLoading">刷新底图</n-button>
           <n-button size="small" @click="handleRefreshElements" :loading="loading">刷新场景</n-button>
           <n-button size="small" type="primary" @click="openCreateElement">新建元素</n-button>
@@ -30,10 +38,15 @@
       <!-- 主体：左3/4 底图 + 右1/4 树与属性 -->
       <div class="se-body">
         <!-- 左 3/4：底图绘制区 -->
-        <div ref="canvasWrap" class="se-canvas-wrap">
+        <div
+          ref="canvasWrap"
+          class="se-canvas-wrap"
+          @dragover.prevent="onBaseImageDragOver"
+          @drop.prevent="onBaseImageDrop"
+        >
           <canvas ref="canvasEl" class="se-canvas" @mousedown="onMouseDown" @mousemove="onMouseMove" @mouseup="onMouseUp" @wheel.prevent="onWheel"></canvas>
           <div class="se-hint">
-            {{ selectionMode === 'roi' ? '拖拽鼠标框选 ROI 区域' : selectionMode === 'coordinate' ? '点击底图设置坐标' : '滚轮缩放 · 拖拽平移 · 点击元素标注可选中' }}
+            {{ selectionMode === 'roi' ? '拖拽鼠标框选 ROI 区域' : selectionMode === 'coordinate' ? '点击底图设置坐标' : '滚轮缩放 · 拖拽平移 · 拖入 PNG 图片可设为底图' }}
           </div>
         </div>
 
@@ -465,6 +478,8 @@ const ratioDialog = reactive({ show: false, elementId: '' })
 
 // ===== 图片文件选择 =====
 const fileInput = ref<HTMLInputElement | null>(null)
+const baseFileInput = ref<HTMLInputElement | null>(null)
+const uploadingBase = ref(false)
 
 const elementTypeOptions = [
   { label: '图像匹配 (IMG)', value: 0 },
@@ -565,6 +580,48 @@ async function loadBaseImage() {
 
 function refreshBaseImage() {
   loadBaseImage()
+}
+
+// ===== 底图上传（拖入 / 选择本地 PNG）=====
+function triggerBaseImageFile() {
+  baseFileInput.value?.click()
+}
+
+async function onBaseImageFileSelected(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
+  if (!file) return
+  await uploadSceneBase(file)
+}
+
+function onBaseImageDragOver(e: DragEvent) {
+  if (e.dataTransfer?.types.includes('Files')) {
+    e.dataTransfer.dropEffect = 'copy'
+  }
+}
+
+async function onBaseImageDrop(e: DragEvent) {
+  const file = e.dataTransfer?.files?.[0]
+  if (!file) return
+  await uploadSceneBase(file)
+}
+
+async function uploadSceneBase(file: File) {
+  if (!/\.png$/i.test(file.name) && file.type !== 'image/png') {
+    message.warning('仅支持 PNG 图片作为底图')
+    return
+  }
+  uploadingBase.value = true
+  try {
+    await resourceApi.uploadSceneBaseImage(sceneId.value, file)
+    message.success('底图已更新，正在刷新…')
+    await loadBaseImage()
+  } catch (err: any) {
+    message.error(`底图上传失败: ${err?.response?.data?.detail ?? err.message}`)
+  } finally {
+    uploadingBase.value = false
+  }
 }
 
 function computeFit() {

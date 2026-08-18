@@ -703,7 +703,11 @@ class Recognizer:
             if bool_debug:
                 self._current_debug_scope = f"scene:{template.name}|element:{element.name}"
             try:
-                matches = self.element_match(scene_img, element, bool_debug)
+                if element.type == ElementType.OCR_AREA:
+                    # OCR 标志元素：识别 OCR 区域内文本，元素名作为子串出现即视为匹配
+                    matches = self._ocr_element_match(scene_img, element, bool_debug)
+                else:
+                    matches = self.element_match(scene_img, element, bool_debug)
             finally:
                 if bool_debug:
                     self._current_debug_scope = prev_scope
@@ -735,6 +739,29 @@ class Recognizer:
                 except Exception:
                     self._last_successful_scene_details = None
             return True
+
+    def _ocr_element_match(self, scene_img, element, bool_debug=False) -> List:
+        """OCR 标志元素匹配：识别 OCR 区域文本，元素名作为子串出现在任一识别文本中即匹配成功。
+
+        匹配机制与其他类型标志元素一致（全部标志元素须匹配成功场景才算匹配成功）：
+        - 返回匹配文本的文本框列表（`[x1, y1, x2, y2]`，相对原图）；
+        - 任一识别文本包含 `element.name` 即视为该元素匹配成功；
+        - 无匹配返回 []（等价于模板匹配失败，场景整体不匹配）。
+
+        Args:
+            scene_img(np.ndarray): 场景图像（BGR格式的numpy数组，如截图）
+            element(Element): OCR_AREA 类型的标志元素
+            bool_debug(bool): 是否回报日志
+
+        Returns:
+            List[List[int]]: 匹配文本框列表
+        """
+        results = self.area_ocr(scene_img, element, bool_debug)
+        boxes = []
+        for text, box, _score in results:
+            if element.name in text:
+                boxes.append(box)
+        return boxes
 
     def element_match(self, scene_img, template, bool_debug=True):
         """
