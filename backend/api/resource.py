@@ -92,7 +92,9 @@ def get_scene_base_image(scene_id: str):
     ]
     for p in candidates:
         if p.exists():
-            return Response(content=p.read_bytes(), media_type="image/png")
+            # 按实际扩展名返回正确的媒体类型（png → image/png，jpg/jpeg → image/jpeg）
+            media_type = "image/png" if p.suffix.lower() == ".png" else "image/jpeg"
+            return Response(content=p.read_bytes(), media_type=media_type)
     # 未找到底图：生成 1600x900 白色占位图
     try:
         import numpy as np

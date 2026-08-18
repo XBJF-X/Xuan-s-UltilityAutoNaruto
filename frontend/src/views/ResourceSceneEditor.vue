@@ -552,12 +552,6 @@ async function loadBaseImage() {
     const res = await resourceApi.getSceneBaseImage(sceneId.value)
     const url = URL.createObjectURL(res.data)
     baseObjectUrl = url
-    await new Promise<void>((resolve, reject) => {
-      const img = new Image()
-      img.onload = () => resolve()
-      img.onerror = () => reject(new Error('底图加载失败'))
-      img.src = url
-    })
     const img = new Image()
     await new Promise<void>((resolve, reject) => {
       img.onload = () => resolve()
