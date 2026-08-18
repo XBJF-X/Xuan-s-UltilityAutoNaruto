@@ -7,7 +7,7 @@ from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
 
 
 class MiJingTanXian(BaseTask):
-    source_scene = "秘境探险-匹配"
+    source_scene = "秘境探险-首页"
     task_max_duration = timedelta(hours=4)
 
     def __init__(self, *args, **kwargs):
@@ -16,6 +16,8 @@ class MiJingTanXian(BaseTask):
         self.reset_task_exe_prog()
 
     def run(self):
+        self.first_fight=False
+        self.bool_sd=False
         self.operationer.clicker.update_coordinates([
             self.config.get_config("键位")[KEY_INDEX.BasicAttack],
             self.config.get_config("键位")[KEY_INDEX.FirstSkill],
@@ -30,18 +32,40 @@ class MiJingTanXian(BaseTask):
         self.fighting = False
         self.operationer.clicker.stop()
         self.bool_click = False
+        if self.bool_sd:
+            sd_times= self.operationer.ocr_recognize("扫荡次数")
+            if sd_times and ("0/5" not in sd_times.text):
+                self.logger.info(f"{sd_times.text}，执行扫荡")
+                self.operationer.click_and_wait("扫荡",wait_time=0)
+                if self.operationer.detect_element("挑战券不足"):
+                    raise TaskCompleted("挑战券已扫荡完，任务执行完成")
+                return False
+            else:
+                self.logger.info(f"扫荡次数耗尽")
+                self.bool_sd=False
+        self.operationer.click_and_wait("创建房间")
+        self.operationer.next_scene="秘境探险-匹配"
+        return False
+    
+    @TransitionOn("秘境探险-匹配")
+    def _(self):
+        self.fighting = False
+        self.operationer.clicker.stop()
+        self.bool_click = False
         ##############测试代码##############
         # self.operationer.click_and_wait("出战")
         # self.bool_click = True
         # self.logger.info("测试代码，无视挑战券数量，继续执行")
         # return False
-        ######################################
-        if not self.operationer.detect_element(
-                "剩余挑战券-0", max_time=0.7, wait_time=3):
+        ###################################
+        num_of_tzq= self.operationer.ocr_recognize("剩余挑战券数量")
+        if num_of_tzq and num_of_tzq.extract_numbers()[0]!=0:
             self.operationer.click_and_wait("出战")
             self.bool_click = True
             self.logger.info("挑战券不为0，继续执行")
             return False
+        else:
+            self.logger.info("挑战券已耗尽，任务执行结束")
         raise TaskCompleted("任务执行完成")
 
     @TransitionOn("秘境奖励")
@@ -86,6 +110,10 @@ class MiJingTanXian(BaseTask):
         self.operationer.click_and_wait("返回")
         self.bool_click = False
         self.reset_task_exe_prog()
+        if not self.first_fight and not self.bool_sd:
+            self.first_fight =True
+            self.bool_sd=True
+        self.operationer.next_scene="秘境探险-首页" if self.bool_sd else "秘境探险-匹配"
         return False
 
     @TransitionOn("恭喜你获得")
