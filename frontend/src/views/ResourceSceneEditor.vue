@@ -194,6 +194,12 @@
 
                 <!-- OCR 元素专属属性 -->
                 <template v-else-if="propForm.element_type === 2">
+                  <n-form-item label="标志">
+                    <n-switch v-model:value="propForm.symbol" @update:value="onSymbolChange" />
+                    <n-text depth="3" style="font-size: 11px; margin-left: 6px">
+                      作为该场景的标志元素（优先级最高）
+                    </n-text>
+                  </n-form-item>
                   <n-form-item label="ROI">
                     <div class="roi-display">
                       <n-tag size="small" :type="hasRoi ? 'success' : 'default'">
@@ -300,6 +306,9 @@
 
           <!-- OCR 类型专属属性 -->
           <template v-else-if="createModal.form.element_type === 2">
+            <n-form-item label="标志">
+              <n-switch v-model:value="createModal.form.symbol" @update:value="onCreateSymbolChange" />
+            </n-form-item>
             <n-form-item label="ROI">
               <div class="roi-grid">
                 <n-input-number v-model:value="createModal.form.roi_x" placeholder="X" style="width: 100%" />
