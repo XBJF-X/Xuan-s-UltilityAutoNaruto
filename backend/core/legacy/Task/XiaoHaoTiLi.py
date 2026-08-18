@@ -47,6 +47,7 @@ class XiaoHaoTiLi(BaseTask):
         self.execute_order = []
 
     def run(self):
+        self.check=False
         self.execute_order = task_execute_order[self.config.get_task_exe_param(self.task_name, "体力消耗方式", 0)].split(">")
         return super().run()
 
@@ -56,10 +57,12 @@ class XiaoHaoTiLi(BaseTask):
     
     @TransitionOn("冒险-冒险副本")
     def _(self):
-        if not self.operationer.detect_element("修罗副本-标志"):
-            self.logger.warning("当前账号没有修罗副本选项，已自动调整任务执行顺序")
-            self.execute_progress["修罗副本"]["是否完成"] = True
-            self.execute_order = [task for task in self.execute_order if task != "修罗副本"]
+        if not self.check:
+            if not self.operationer.detect_element("修罗副本_OCR",match_text="修罗"):
+                self.logger.warning("当前账号没有修罗副本选项，已自动调整任务执行顺序")
+                self.execute_progress["修罗副本"]["是否完成"] = True
+                self.execute_order = [task for task in self.execute_order if task != "修罗副本"]
+            self.check=True
         return self.__set_next_scene()
 
     @TransitionOn("装备")
