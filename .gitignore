@@ -73,3 +73,4 @@ pnpm-debug.log*
 *.log
 xuan.pid
 常用命令.txt
+.aider*

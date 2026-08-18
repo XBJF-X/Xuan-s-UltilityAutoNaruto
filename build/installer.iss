@@ -39,6 +39,8 @@ DefaultDirName={localappdata}\Xuan
 DefaultGroupName={#MyAppName}
 ; 不显示程序组选择页，开始菜单固定为 Xuan
 DisableProgramGroupPage=yes
+; 无论是否已安装过，始终显示目录选择页（已安装时自动预填上次路径，用户仍可修改）
+DisableDirPage=no
 ; per-user 安装（注册表写 HKCU，与 NSIS 的 PRODUCT_UNINST_ROOT_KEY=HKCU 一致）
 PrivilegesRequired=lowest
 OutputDir=out
@@ -85,7 +87,80 @@ Type: filesandordirs; Name: "{app}\bin"
 Type: filesandordirs; Name: "{app}\src"
 Type: files; Name: "{app}\{#MyAppExeName}"
 
+; 取消/中止安装的中文确认消息（安装过程中 Cancel 按钮始终可用，允许用户中断）
+[Messages]
+ExitSetupTitle=退出安装
+ExitSetupMessage=安装尚未完成。如果现在退出，程序将不会被安装。%n%n您可以在之后随时重新运行安装程序以完成安装。%n%n是否退出安装？
+SetupAborted=安装未完成。%n%n请解决该问题后重新运行安装程序。
+
 [Code]
+type
+  // Win32 MSG 结构（供 PeekMessage 使用；pt 用两个 LongWord 表示 POINT 布局）
+  TMsg = record
+    hwnd: LongWord;
+    message: Cardinal;
+    wParam: LongWord;
+    lParam: LongWord;
+    time: LongWord;
+    ptX: LongWord;
+    ptY: LongWord;
+  end;
+
+  // SHFILEOPSTRUCT（移入回收站用；pFrom/pTo 为双 null 结尾的路径列表）
+  TSHFileOpStruct = record
+    hwnd: LongWord;
+    wFunc: LongWord;
+    pFrom: String;
+    pTo: String;
+    fFlags: LongWord;
+    fAnyOperationsAborted: Integer; // BOOL 为 4 字节，保持结构布局
+    hNameMappings: LongWord;
+    lpszProgressTitle: String;
+  end;
+
+function PeekMessage(var lpMsg: TMsg; hWnd, wMsgFilterMin, wMsgFilterMax, wRemoveMsg: LongWord): Integer;
+  external 'PeekMessageW@user32.dll stdcall';
+function TranslateMessage(const lpMsg: TMsg): Integer;
+  external 'TranslateMessage@user32.dll stdcall';
+function DispatchMessage(const lpMsg: TMsg): Integer;
+  external 'DispatchMessageW@user32.dll stdcall';
+function SHFileOperation(const lpFileOp: TSHFileOpStruct): Integer;
+  external 'SHFileOperationW@shell32.dll stdcall';
+
+// 处理待处理窗口消息（让 Cancel 按钮点击能被响应，从而支持中断清理/安装）
+procedure PumpMessages;
+var
+  Msg: TMsg;
+begin
+  while PeekMessage(Msg, 0, 0, 0, 1) > 0 do // PM_REMOVE = 1
+  begin
+    TranslateMessage(Msg);
+    DispatchMessage(Msg);
+  end;
+end;
+
+// 将单个文件/目录移入回收站（FO_DELETE + FOF_ALLOWUNDO）；成功返回 True，失败返回 False
+function RecyclePath(const Path: String): Boolean;
+var
+  FileOp: TSHFileOpStruct;
+begin
+  Result := False;
+  try
+    FileOp.hwnd := WizardForm.Handle;
+    FileOp.wFunc := 3;                        // FO_DELETE
+    FileOp.pFrom := Path + #0 + #0;           // 双 null 结尾
+    FileOp.pTo := '';
+    // FOF_ALLOWUNDO(回收站) | FOF_NOCONFIRMATION | FOF_SILENT | FOF_NOERRORUI
+    FileOp.fFlags := $40 or $10 or $4 or $400;
+    FileOp.fAnyOperationsAborted := 0;
+    FileOp.hNameMappings := 0;
+    FileOp.lpszProgressTitle := '';
+    Result := (SHFileOperation(FileOp) = 0);
+  except
+    Result := False;
+  end;
+end;
+
 const
   InstallRegKey = 'Software\Xuan\Xuan';
   InstallValueName = 'InstallLocation';
@@ -151,15 +226,27 @@ begin
   if not FindFirst(AddBackslash(Dir) + '*', FindRec) then Exit;
   try
     repeat
+      // 处理取消消息，允许用户在清理旧残留期间中断安装
+      PumpMessages;
+      // Inno 在用户确认取消后禁用 Cancel 按钮；据此中断清理循环
+      if not WizardForm.CancelButton.Enabled then
+        Break;
       if (FindRec.Name = '.') or (FindRec.Name = '..') or
          (FindRec.Name = 'config') or (FindRec.Name = 'log') or
          (FindRec.Name = 'setting.ini') then
         Continue;
       ItemPath := AddBackslash(Dir) + FindRec.Name;
       if (FindRec.Attributes and FILE_ATTRIBUTE_DIRECTORY) <> 0 then
-        DelTree(ItemPath, True, True, True)
+      begin
+        // 优先移入回收站（可恢复），失败则回退永久删除
+        if not RecyclePath(ItemPath) then
+          DelTree(ItemPath, True, True, True);
+      end
       else
-        DeleteFile(ItemPath);
+      begin
+        if not RecyclePath(ItemPath) then
+          DeleteFile(ItemPath);
+      end;
     until not FindNext(FindRec);
   finally
     FindClose(FindRec);
@@ -182,7 +269,7 @@ begin
 
   // 升级清理确认页（插在 wpReady 之后，仅升级安装时进入）
   CleanupPage := CreateCustomPage(wpReady, '升级清理确认',
-    '检测到旧版本文件，请核对将删除的内容。除用户数据（config、log、setting.ini）外，旧版本文件将被删除，确认后点击"下一步"继续。');
+    '检测到旧版本文件，请核对将清理的内容。除用户数据（config、log、setting.ini）外，旧版本文件将被移入回收站（可从回收站恢复），确认后点击"下一步"继续。');
   CleanupMemo := TNewMemo.Create(WizardForm);
   with CleanupMemo do
   begin
@@ -204,6 +291,13 @@ var
   FilesList: String;
 begin
   Result := True;
+
+  // 目录页下一步：用户选定路径末段不是 Xuan 时，追加 \Xuan 作为应用目录（确定性行为）
+  if CurPageID = wpSelectDir then
+  begin
+    if CompareText(ExtractFileName(WizardForm.DirEdit.Text), 'Xuan') <> 0 then
+      WizardForm.DirEdit.Text := AddBackslash(WizardForm.DirEdit.Text) + 'Xuan';
+  end;
 
   if CurPageID = wpReady then
   begin
