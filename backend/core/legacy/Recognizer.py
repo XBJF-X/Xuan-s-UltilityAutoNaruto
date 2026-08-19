@@ -8,6 +8,7 @@ import numpy as np
 
 from backend.utils import cv_imread
 from backend.utils import setup_logging
+from backend.utils import get_real_path
 from backend.tools.resource_db import ResourceDBManager
 from backend.tools.resource_model import Element, Scene
 from backend.core.legacy.Enums import ElementType, MatchType
@@ -1086,11 +1087,12 @@ class Recognizer:
 
 
 if __name__ == "__main__":
+    import sys
     logger = setup_logging()
     rg = Recognizer(SceneGraph(ResourceDBManager()))
 
-    # 图片目录路径
-    image_dir = r"E:\PyProject\Xuan\test_scene"
+    # 图片目录路径（基于项目根目录，兼容中文路径）
+    image_dir = get_real_path("test_scene")
 
     # 获取目录下所有图片文件
     image_extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.gif']
@@ -1099,34 +1101,45 @@ if __name__ == "__main__":
         if os.path.isfile(os.path.join(image_dir, f)) and
            os.path.splitext(f)[1].lower() in image_extensions
     ]
+    # 支持指定单张图片（可多个）：python -m backend.core.legacy.Recognizer "场景A.png" "场景B.png"
+    if len(sys.argv) > 1:
+        image_files = [a for a in sys.argv[1:] if a in image_files]
 
-    for img_file in image_files:
+    ok_count = mismatch_count = error_count = 0
+    total_time = 0.0
+    for img_file in sorted(image_files):
         # 提取场景名（不含扩展名）
         scene_name = os.path.splitext(img_file)[0]
-
-        if scene_name not in ["秘境探险-匹配-只获得忍具确认"]:
-            continue
         img_path = os.path.join(image_dir, img_file)
 
         try:
             # 读取图片
             img = cv_imread(img_path)
             if img is None:
-                print(f"无法读取图片: {img_file}")
+                print(f"[ERR] 无法读取图片: {img_file}", flush=True)
+                error_count += 1
                 continue
 
             # 执行识别并计时
             start_time = time.perf_counter()
-            result = rg.scene(img, False)  # 假设该方法返回识别出的场景名
+            result = rg.scene(img, False)
             if isinstance(result, Scene):
                 result = result.name
             elapsed_time = time.perf_counter() - start_time
+            total_time += elapsed_time
 
             # 比对结果
             if result != scene_name:
-                print(f"⚠️ 不一致 - 图片: {img_file} | 预期: {scene_name} | 实际: {result} | 耗时: {elapsed_time:.2f}秒")
+                mismatch_count += 1
+                print(f"[FAIL] 不一致 - 图片: {img_file} | 预期: {scene_name} | 实际: {result} | 耗时: {elapsed_time:.2f}秒", flush=True)
             else:
-                print(f"✅ 一致 - 图片: {img_file} | 场景: {scene_name} | 耗时: {elapsed_time:.2f}秒")
+                ok_count += 1
+                print(f"[OK] 一致 - 图片: {img_file} | 耗时: {elapsed_time:.2f}秒", flush=True)
 
         except Exception as e:
-            print(f"处理图片 {img_file} 时出错: {str(e)}")
+            error_count += 1
+            print(f"[ERR] 出错 - 图片: {img_file} | 错误: {str(e)}", flush=True)
+
+    print("=" * 60)
+    print(f"验证完成: 共 {len(image_files)} 张 | 一致 {ok_count} | 不一致 {mismatch_count} | 出错 {error_count}")
+    print(f"总耗时: {total_time:.2f}秒")
