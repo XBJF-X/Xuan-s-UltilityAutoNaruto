@@ -53,15 +53,21 @@ class XiaoHaoTiLi(BaseTask):
 
     @TransitionOn()
     def _(self):
+        if not self.check:
+            self.operationer.next_scene="冒险-冒险副本"
+            return False
         return self.__set_next_scene()
     
     @TransitionOn("冒险-冒险副本")
     def _(self):
         if not self.check:
-            if not self.operationer.detect_element("修罗副本_OCR",match_text="修罗"):
+            self.logger.debug("检查修罗副本是否解锁")
+            if not self.operationer.detect_element("修罗副本_OCR",match_text="修"):
                 self.logger.warning("当前账号没有修罗副本选项，已自动调整任务执行顺序")
                 self.execute_progress["修罗副本"]["是否完成"] = True
                 self.execute_order = [task for task in self.execute_order if task != "修罗副本"]
+            else:
+                self.logger.info("当前账号已解锁修罗副本选项，无需调整任务执行顺序")
             self.check=True
         return self.__set_next_scene()
 
