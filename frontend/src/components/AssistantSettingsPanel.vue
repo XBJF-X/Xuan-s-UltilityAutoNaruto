@@ -577,7 +577,7 @@ function confirmKeymap() {
             
               >
               1: 平A&nbsp;&nbsp;
-              2: 子技能&nbsp;&nbsp;
+              2: 一技能&nbsp;&nbsp;
               3: 二技能&nbsp;&nbsp;
               4:奥义&nbsp;&nbsp;
               5:左子技能&nbsp;&nbsp;
