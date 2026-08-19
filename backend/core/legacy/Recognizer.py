@@ -651,6 +651,11 @@ class Recognizer:
             self.logger.warning(f"[{ocr_area.name}] ROI 区域非法，跳过 OCR 识别")
             return []
         roi_img = scene_img[y_start:y_end, x_start:x_end]
+        # png 底图/截图可能带 alpha 通道（4 通道 BGRA），而 OCR 检测预处理
+        # NormalizeImage 仅支持 3 通道（mean/std 为 1x1x3），4 通道会触发
+        # numpy 广播错误（(H,W,4) - (1,1,3)）导致 OCR 识别失败，统一转 3 通道 BGR。
+        if roi_img.ndim == 3 and roi_img.shape[2] == 4:
+            roi_img = cv2.cvtColor(roi_img, cv2.COLOR_BGRA2BGR)
 
         try:
             # 注意：OnnxOcr.ocr 第二个参数是裁剪框 box，而非阈值。
