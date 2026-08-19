@@ -341,6 +341,7 @@ class SchedulerService:
             self.task_queue.enqueue(task_instance)
 
         self.logger.info(f"调度器启动完成，共 {len(self.task_queue.heap)} 个任务")
+        self.logger.debug(f"当前执行模式：[{"预设模式" if self.run_once else "持久模式"}]")
         # 临时预设：生成按序待执行任务列表；未勾选任何任务则不启动
         if self.run_once:
             self._init_once_pending()

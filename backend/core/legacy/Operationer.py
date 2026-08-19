@@ -599,6 +599,7 @@ class Operationer:
         """单次元素匹配：OCR_AREA 走 OCR 文本包含匹配，其余走模板匹配"""
         if element.type == ElementType.OCR_AREA:
             results = self._ocr_results(element)
+            self.logger.debug(f"[{element.name}] OCR结果：{results}")
             if not results:
                 return False
             return any(match_text in r.text for r in results)
