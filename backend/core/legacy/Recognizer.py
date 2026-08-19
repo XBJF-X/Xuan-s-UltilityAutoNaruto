@@ -44,6 +44,7 @@ class Recognizer:
             "登录授权过期",
             "任务奖励-一键领取",
             "公告",
+            "聊天",
         }
         self.coincident_scenes = {
             "活动": [
