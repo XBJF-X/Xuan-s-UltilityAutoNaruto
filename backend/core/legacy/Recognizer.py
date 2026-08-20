@@ -49,7 +49,9 @@ class Recognizer:
         self.coincident_scenes = {
             "活动": [
                 "每月签到",
-                "一乐外卖"
+                "一乐外卖",
+                "冬日烟花季",
+                "购物甜心"
             ],
             "主场景": [
                 "主场景-装备"

@@ -86,7 +86,7 @@ def debug_execute_window(func):
         sys.settrace(self.trace_callback)
         try:
             result = func(self, *args, **kwargs)
-            self.logger.debug(f"可执行时间窗口: {[f'{start_dt.strftime('%Y-%m-%d %H:%M:%S')} - {end_dt.strftime('%Y-%m-%d %H:%M:%S')}' for start_dt, end_dt in result]}")
+            # self.logger.debug(f"可执行时间窗口: {[f'{start_dt.strftime('%Y-%m-%d %H:%M:%S')} - {end_dt.strftime('%Y-%m-%d %H:%M:%S')}' for start_dt, end_dt in result]}")
             return result
         finally:
             sys.settrace(old_trace)

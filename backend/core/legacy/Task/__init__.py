@@ -35,6 +35,7 @@ from .YiLeWaiMai import YiLeWaiMai
 from .ZhuiJiXiaoZuZhi import ZhuiJiXiaoZuZhi
 from .ZuZhiQiFu import ZuZhiQiFu
 from .ZuZhiZhengBa import ZuZhiZhengBa
+from .GouWuTianXin import GouWuTianXin
 
 TASK_TYPE_MAP = {
     "排行榜点赞": PaiHangBangDianZan,
@@ -77,7 +78,8 @@ TASK_TYPE_MAP = {
     '高级忍者招募': GaoJiRenZheZhaoMu,
 
     '无差别预选赛': WuChaBieYuXuanSai,
-    '冬日烟花季': DongRiYanHuaJi
+    '冬日烟花季': DongRiYanHuaJi,
+    '购物甜心': GouWuTianXin
 }
 
 TASK_NAME_CN2EN_MAP = {
@@ -120,5 +122,6 @@ TASK_NAME_CN2EN_MAP = {
     '高级忍者招募': "GaoJiRenZheZhaoMu",
 
     '无差别预选赛': "WuChaBieYuXuanSai",
-    '冬日烟花季': "DongRiYanHuaJi"
+    '冬日烟花季': "DongRiYanHuaJi",
+    '购物甜心': "GouWuTianXin"
 }

@@ -172,6 +172,10 @@ class TransitionManager:
         @self.register("重返木叶", "主场景")
         @self.register("重返木叶-忍界指引", "主场景")
         @self.register("冒险-修罗副本", "主场景")
+        @self.register("购物甜心", "主场景")
+        @self.register("一乐外卖", "主场景")
+        @self.register("冬日烟花季", "主场景")
+        @self.register("每月签到", "主场景")
         @self.register("个人信息-分享", "个人信息")
         @self.register("精英副本-便捷扫荡", "冒险-精英副本")
         @self.register("忍术对战", "决斗场-首页")
@@ -487,9 +491,10 @@ class TransitionManager:
         @self.register("活动", "一乐外卖")
         @self.register("活动", "每月签到")
         @self.register("活动", "冬日烟花季")
+        @self.register("活动", "购物甜心")
         @self.register("一乐外卖", "每月签到")
         @self.register("一乐外卖", "冬日烟花季")
-        @self.register("每月签到", "一乐外卖")
+        @self.register("一乐外卖", "购物甜心")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.swipe_and_wait(
                 (107, 213),
@@ -500,7 +505,8 @@ class TransitionManager:
             )
             operationer.search_and_click(
                 [
-                    kwargs.get("target_id")
+                    # kwargs.get("target_id")
+                    "活动列表"
                 ],
                 [
                     {
@@ -511,6 +517,7 @@ class TransitionManager:
                         }
                     }
                 ],
+                match_text= kwargs.get("target_id") or "",
                 max_attempts=4
             )
 
