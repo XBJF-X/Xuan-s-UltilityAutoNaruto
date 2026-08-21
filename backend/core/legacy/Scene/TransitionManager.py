@@ -134,7 +134,7 @@ class TransitionManager:
         @self.register("活动", "主场景")
         @self.register("忍法帖", "主场景")
         @self.register("商城", "主场景")
-        @self.register("商城-商店", "主场景")
+        # @self.register("商城-商店", "主场景")
         @self.register("丰饶之间", "主场景")
         @self.register("决斗场-首页", "主场景")
         @self.register("忍者挑战", "主场景")
@@ -709,19 +709,19 @@ class TransitionManager:
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("后退", wait_time=3)
 
-        @self.register("商城", "商城-商店")
-        def _(operationer: Operationer, *args, **kwargs):
-            operationer.search_and_click(
-                    ["商店"],
-                    [{
-                        "swipe": {
-                            "start_coordinate": [137, 733],
-                            "end_coordinate": [137, 224],
-                            "duration": 0.5
-                        }
-                    }],
-                    max_attempts=3,
-            )   
+        # @self.register("商城", "商城-商店")
+        # def _(operationer: Operationer, *args, **kwargs):
+        #     operationer.search_and_click(
+        #             ["商店"],
+        #             [{
+        #                 "swipe": {
+        #                     "start_coordinate": [137, 733],
+        #                     "end_coordinate": [137, 224],
+        #                     "duration": 0.5
+        #                 }
+        #             }],
+        #             max_attempts=3,
+        #     )   
 
         @self.register("登录界面", "主场景")
         def _(operationer: Operationer, *args, **kwargs):

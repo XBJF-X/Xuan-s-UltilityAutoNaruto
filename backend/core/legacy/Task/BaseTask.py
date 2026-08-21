@@ -426,7 +426,7 @@ class BaseTask:
             if self.last_unregistered_scene_time:
                 self.last_unregistered_scene_time = None
             func = self.transition_func[scene_name]
-            self.logger.debug(f"场景{scene_name}绑定的函数：{func.__qualname__}")
+            # self.logger.debug(f"场景{scene_name}绑定的函数：{func.__qualname__}")
             result = self.transition_func[scene_name](self)
             return result
         else:
@@ -456,7 +456,7 @@ class BaseTask:
         # 正常执行注册函数
         # self.logger.debug(f"寻找注册函数: {scene_name}")
         func = self.transition_func[scene_name]
-        self.logger.debug(f"场景{scene_name}绑定的函数：{func.__qualname__}")
+        # self.logger.debug(f"场景{scene_name}绑定的函数：{func.__qualname__}")
         # 执行派生类的场景处理函数
         result = self.transition_func[scene_name](self)
         # self.logger.debug(f"[{scene_name}]注册函数执行完毕")

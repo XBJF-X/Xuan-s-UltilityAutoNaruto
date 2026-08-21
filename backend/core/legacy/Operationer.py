@@ -168,7 +168,9 @@ class Operationer:
             return []
 
         ocr_texts = []
+        self.logger.debug(f"{element.name}的识别结果：")
         for text, box, score in results:
+            self.logger.debug(f'文本：{text}， 置信度：{score}，位置：{box}')
             ocr_texts.append(OcrText(text, box, score))
         return ocr_texts
 
