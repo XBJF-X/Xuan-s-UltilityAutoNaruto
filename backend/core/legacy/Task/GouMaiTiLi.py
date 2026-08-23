@@ -1,25 +1,63 @@
+import re
 import time
 from datetime import timedelta
+from typing import List
 
+from backend.core.legacy.OcrText import OcrText
 from backend.core.legacy.Exceptions import StepFailedError, TaskCompleted
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
 
 
+
+
 class GouMaiTiLi(BaseTask):
-    source_scene = "购买体力"
+    source_scene = "主场景"
     task_max_duration = timedelta(minutes=3)
+
+    def run(self):
+        self.max_buy_times=0
+        self.target_buy_times=0
+        return super().run()
+
 
     @TransitionOn()
     def _(self):
-        times = self.config.get_task_exe_prog("购买体力", "已购买体力次数")
-        if times < self.config.get_task_exe_param("购买体力", "购买体力次数"):
+        self.operationer.next_scene="充值" if not self.max_buy_times else "购买体力"
+        return False
+    @TransitionOn("充值")
+    def _(self):
+        self.operationer.click_and_wait("V特权")
+        tqsm=self.operationer.ocr_recognize("特权说明区域")
+        if tqsm:
+            pattern = re.compile(r'体力每日可购买\s*(\d+)\s*次')
+            matched=False
+            for ocr in tqsm:
+                match = pattern.search(ocr.text)
+                if match:
+                    self.max_buy_times=int(match.group(1))
+                    matched=True
+                    break
+            if not matched:
+                self.max_buy_times=5
+            self.logger.info(f"每日最多可购买体力次数为 {self.max_buy_times} 次")
+            buy_times=self.config.get_task_exe_param("购买体力", "购买体力次数")
+            self.target_buy_times=max(0,self.max_buy_times-buy_times)
+            self.operationer.next_scene="购买体力"
+        else:
+            raise StepFailedError("识别特权说明内容失败，将退出执行")
+        return False
+
+    @TransitionOn("购买体力")
+    def _(self):
+        sygmcs=self.operationer.ocr_recognize("剩余购买次数")
+        if sygmcs and sygmcs[0].extract_numbers()[0]>self.target_buy_times:
+            self.logger.info(f"剩余购买次数为 {sygmcs[0].extract_numbers()[0]} 次")
             self.operationer.click_and_wait("购买", wait_time=1.5)
-            times += 1
-            self.config.set_task_exe_prog("购买体力", "已购买体力次数", times)
-            self.logger.info(f"已购买体力 {times} 次")
+            self.logger.info(f"还需要购买体力 {sygmcs[0].extract_numbers()[0]-self.target_buy_times} 次")
             return False
         self.operationer.click_and_wait("X")
         raise TaskCompleted("任务执行完成")
+    
     @TransitionOn("二级密码")
     def _(self):
         self.logger.debug("出现二级密码窗口")
@@ -34,12 +72,9 @@ class GouMaiTiLi(BaseTask):
         # 点击二级密码-确定
         if not self.operationer.click_and_wait(self.operationer.get_element("确定")):
             raise StepFailedError("二级密码验证失败")
-        times = self.config.get_task_exe_prog("购买体力", "已购买体力次数")
-        times -= 1
-        self.config.set_task_exe_prog("购买体力", "已购买体力次数", times)
+        self.target_buy_times+=1
         time.sleep(2)
         return False
 
     def reset_task_exe_prog(self) -> bool:
-        self.config.set_task_exe_prog("购买体力", "已购买体力次数", 0)
         return True
