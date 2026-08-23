@@ -118,7 +118,7 @@ class PanRenLaiXi(BaseTask):
         if not self.check:
             zdcz_jbs=self.operationer.ocr_recognize("自动参战金币数")
             if zdcz_jbs:
-                if zdcz_jbs.extract_numbers()[0]==0:
+                if zdcz_jbs[0].extract_numbers()[0]==0:
                     self.operationer.click_and_wait("自动参战")
                     self.logger.info("自动参战已开启")
                     self.auto = True

@@ -34,8 +34,8 @@ class MiJingTanXian(BaseTask):
         self.bool_click = False
         if self.bool_sd:
             sd_times= self.operationer.ocr_recognize("扫荡次数")
-            if sd_times and ("0/5" not in sd_times.text):
-                self.logger.info(f"{sd_times.text}，执行扫荡")
+            if sd_times and ("0/5" not in sd_times[0].text):
+                self.logger.info(f"{sd_times[0].text}，执行扫荡")
                 self.operationer.click_and_wait("扫荡",wait_time=0)
                 if self.operationer.detect_element("挑战券不足"):
                     raise TaskCompleted("挑战券已扫荡完，任务执行完成")
@@ -59,7 +59,7 @@ class MiJingTanXian(BaseTask):
         # return False
         ###################################
         num_of_tzq= self.operationer.ocr_recognize("剩余挑战券数量")
-        if num_of_tzq and num_of_tzq.extract_numbers()[0]!=0:
+        if num_of_tzq and num_of_tzq[0].extract_numbers()[0]!=0:
             self.operationer.click_and_wait("出战")
             self.bool_click = True
             self.logger.info("挑战券不为0，继续执行")

@@ -118,9 +118,9 @@ class Operationer:
             max_attempts=max_attempts,
             stable_kwargs=stable_kwargs)
 
-    def ocr_recognize(self, element, **kwargs) -> OcrText | None:
+    def ocr_recognize(self, element, **kwargs) -> List[OcrText]:
         """
-        对指定 OcrArea 区域执行 OCR 识别，返回置信度最高的结果
+        对指定 OcrArea 区域执行 OCR 识别，返回所有识别结果（按置信度降序排序）
 
         Args:
             element(str|Element): OcrArea 元素（可传元素名或 Element 对象）
@@ -128,12 +128,13 @@ class Operationer:
                 - bool_debug(bool): 是否回报日志，默认为 False
 
         Returns:
-            OcrText | None: 置信度最高的识别结果，无结果返回 None
+            List[OcrText]: 识别结果列表，按置信度从高到低排序；若无结果则返回空列表
         """
         results = self._ocr_results(element, **kwargs)
         if not results:
-            return None
-        return max(results, key=lambda r: r.score)
+            return []
+        # 按置信度降序排列
+        return sorted(results, key=lambda r: r.score, reverse=True)
 
     def _ocr_results(self, element, **kwargs) -> List[OcrText]:
         """

@@ -176,6 +176,7 @@ class TransitionManager:
         @self.register("一乐外卖", "主场景")
         @self.register("冬日烟花季", "主场景")
         @self.register("每月签到", "主场景")
+        @self.register("充值", "主场景")
         @self.register("个人信息-分享", "个人信息")
         @self.register("精英副本-便捷扫荡", "冒险-精英副本")
         @self.register("忍术对战", "决斗场-首页")
@@ -777,6 +778,9 @@ class TransitionManager:
         @self.register("冬日烟花季", "冬日烟花季-主页")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("立即前往")
+        @self.register("主场景", "充值")
+        def _(operationer: Operationer, *args, **kwargs):
+            operationer.click_and_wait("V特权入口")
 
 
 if __name__ == "__main__":
