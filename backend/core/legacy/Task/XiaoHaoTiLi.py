@@ -73,11 +73,16 @@ class XiaoHaoTiLi(BaseTask):
 
     @TransitionOn("装备")
     def _(self):
+
         # 点击配置设置中选中的装备
         self.operationer.click_and_wait(
             armor_coordinates[self.config.get_task_exe_param(self.task_name, "合成目标装备", 0)])
         if self.operationer.detect_element("已满阶"):
             self.logger.warning("当前装备已满阶，请在配置设置中选择其他装备")
+            self.__update_progress()
+            return self.__set_next_scene()
+        if self.operationer.click_and_wait("超影扫荡"):
+            self.logger.warning("装备")
             self.__update_progress()
             return self.__set_next_scene()
         # 先看看当前装备能不能进阶，毕竟进阶说明没有能扫荡的了
