@@ -3,11 +3,16 @@ import asyncio
 import logging
 import os
 import re
+import time
 from fastapi import APIRouter, HTTPException
 from backend.services.config_service import shared_config_service as _config_service
 
 router = APIRouter()
 _schedulers: dict[str, object] = {}
+
+# precheck 结果 TTL 缓存（秒）：避免短时间内重复启动触发多次 adb 查询
+_PRECheck_TTL = 5.0
+_precheck_cache: dict[str, tuple[float, dict]] = {}
 
 # 存储主线程事件循环引用（用于后台线程安全地推送异步事件）
 _main_loop: asyncio.AbstractEventLoop | None = None
@@ -28,17 +33,13 @@ def _get_main_loop() -> asyncio.AbstractEventLoop:
 def _get_scheduler(config_id: str):
     if config_id not in _schedulers:
         from backend.services.scheduler_service import SchedulerService
-        from backend.core.scene_graph import SceneGraph
-        from backend.tools.resource_db import ResourceDBManager
         from backend.api.ws import manager
-        from pathlib import Path
-        from backend.utils import get_real_path
 
         cfg = _config_service.get_config(config_id)
         if not cfg:
             raise HTTPException(status_code=404, detail="配置不存在")
-        db = ResourceDBManager(Path(get_real_path("src")))
-        sg = SceneGraph(db)
+        # 注意：不再在此构建 SceneGraph（解码全部元素图，秒级）。
+        # SceneGraph 延迟到调度器 start() 时构建，且为全局共享单例（跨配置复用）。
 
         # 状态变更回调：通过 WebSocket 推送（线程安全版）
         async def on_status_change(status: dict):
@@ -48,6 +49,11 @@ def _get_scheduler(config_id: str):
         async def on_task_state_change(task_data: dict):
             task_data["config_id"] = config_id
             await manager.broadcast_task_state(task_data)
+
+        async def on_snapshot(snapshot: dict):
+            msg = dict(snapshot)
+            msg["config_id"] = config_id
+            await manager.broadcast_snapshot(msg)
 
         def sync_on_status(status: dict):
             loop = _get_main_loop()
@@ -61,10 +67,17 @@ def _get_scheduler(config_id: str):
                 on_task_state_change(task_data), loop
             )
 
+        def sync_on_snapshot(snapshot: dict):
+            loop = _get_main_loop()
+            asyncio.run_coroutine_threadsafe(
+                on_snapshot(snapshot), loop
+            )
+
         _schedulers[config_id] = SchedulerService(
-            cfg, sg,
+            cfg,
             on_status_change=sync_on_status,
             on_task_state_change=sync_on_task,
+            on_snapshot=sync_on_snapshot,
         )
     return _schedulers[config_id]
 
@@ -167,7 +180,13 @@ async def precheck_scheduler(config_id: str):
 
     目的：在进入耗时的设备连接前把常见参数问题暴露给用户，避免长时间阻塞界面。
     串口同一时刻只能被一个调度器连接（占用检查）。
+    结果带 5s TTL 缓存，避免短时间内重复请求重复触发 adb 查询。
     """
+    now = time.monotonic()
+    cached = _precheck_cache.get(config_id)
+    if cached and now - cached[0] < _PRECheck_TTL:
+        return cached[1]
+
     cfg = _config_service.get_config(config_id)
     if not cfg:
         raise HTTPException(status_code=404, detail="配置不存在")
@@ -175,11 +194,13 @@ async def precheck_scheduler(config_id: str):
     serial_errors, warnings = _precheck_serial(cfg)
     path_errors = _precheck_screenshot_path(cfg)
     errors = serial_errors + path_errors
-    return {
+    result = {
         "ok": not errors,
         "errors": errors,
         "warnings": warnings,
     }
+    _precheck_cache[config_id] = (now, result)
+    return result
 
 
 @router.post("/start/{config_id}")

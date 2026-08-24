@@ -8,7 +8,7 @@
 import { ref } from 'vue'
 
 export type WSMessage = {
-  type: 'log' | 'status' | 'task_state'
+  type: 'log' | 'status' | 'task_state' | 'scheduler_snapshot'
   level?: string
   message?: string
   config_id?: string
@@ -156,9 +156,9 @@ export function useWebSocket() {
           const msg = data as WSMessage
           if (msg.type === 'log') {
             pushLog(msg.level || 'INFO', msg.message || '', msg.config_id, msg.logger_name)
-          } else if (msg.type === 'status' || msg.type === 'task_state') {
-            // broadcast_status/broadcast_task_state 把 config_id 包在 data 内，
-            // 归一化到顶层，各监听者统一用 msg.config_id 过滤
+          } else if (msg.type === 'status' || msg.type === 'task_state' || msg.type === 'scheduler_snapshot') {
+            // broadcast_status/broadcast_task_state/broadcast_snapshot 把 config_id
+            // 包在 data 内，归一化到顶层，各监听者统一用 msg.config_id 过滤
             if (!msg.config_id && msg.data && typeof msg.data === 'object') {
               msg.config_id = msg.data.config_id
             }

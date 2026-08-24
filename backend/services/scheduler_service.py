@@ -16,6 +16,23 @@ from backend.core.scene_graph import SceneGraph
 T = TypeVar('T')
 
 
+# ===== 全局共享 SceneGraph 单例 =====
+# 所有配置的调度器复用同一个 SceneGraph（构建后只读，场景/元素识别不写库），
+# 避免每个配置在首次访问调度器 API 时各自解码全部 ~845 张元素图（秒级成本）。
+_shared_scene_graph: Optional[SceneGraph] = None
+_shared_resource_db = None
+
+
+def get_shared_scene_graph() -> SceneGraph:
+    global _shared_scene_graph, _shared_resource_db
+    if _shared_scene_graph is None:
+        from pathlib import Path
+        from backend.tools.resource_db import ResourceDBManager
+        _shared_resource_db = ResourceDBManager(Path(get_real_path("src")))
+        _shared_scene_graph = SceneGraph(_shared_resource_db)
+    return _shared_scene_graph
+
+
 class PriorityQueue(Generic[T]):
     """基于 heapq 的优先级队列"""
 
@@ -81,23 +98,34 @@ class SchedulerService:
 
     def __init__(self,
                  config: Config,
-                 scene_graph: SceneGraph,
+                 scene_graph: Optional[SceneGraph] = None,
                  on_status_change: Optional[Callable] = None,
-                 on_task_state_change: Optional[Callable] = None):
+                 on_task_state_change: Optional[Callable] = None,
+                 on_snapshot: Optional[Callable] = None):
         self.logger = logging.getLogger(
             f"SchedulerService_{config.config_path.stem}")
         self.config = config
+        # 场景图：可传入或为 None（为 None 时 _lazy_init 使用全局共享单例，
+        # 避免每个配置重复解码全部元素图——场景图构建后只读，可安全共享）
         self.scene_graph = scene_graph
         self.running = False
 
         self.on_status_change = on_status_change
         self.on_task_state_change = on_task_state_change
+        # 完整状态快照回调（WS scheduler_snapshot 推送，前端据此零轮询）
+        self.on_snapshot = on_snapshot
 
         self.transition_manager = None
         self.operationer = None
         self.device = None
         # 超时监视器（_lazy_init 时创建，随调度器 start/stop 启停）
         self.watchdog = None
+
+        # 中间派重构组件：状态快照 / 纯逻辑决策 / 执行层
+        from backend.core.scheduler import SchedulerState, TaskPlanner, TaskExecutor
+        self.state = SchedulerState()
+        self.planner = TaskPlanner()
+        self.executor = TaskExecutor(logger=self.logger)
 
         # 原版 PriorityQueue + 三态管理
         self.task_queue: PriorityQueue = PriorityQueue()
@@ -217,6 +245,9 @@ class SchedulerService:
 
     def _lazy_init(self):
         """延迟导入重型依赖（与原版 Scheduler.start 中的初始化一致）"""
+        # 未显式注入 SceneGraph 时使用全局共享单例（避免每个配置重复解码元素图）
+        if self.scene_graph is None:
+            self.scene_graph = get_shared_scene_graph()
         from backend.core.legacy.Device import Device
         from backend.core.legacy.Operationer import Operationer
         from backend.core.legacy.Scene.TransitionManager import TransitionManager
@@ -282,6 +313,7 @@ class SchedulerService:
             self.logger,
             on_freeze=self._on_watchdog_freeze,
         )
+        self.executor.set_watchdog(self.watchdog)
         return TASK_TYPE_MAP, BaseTask, TaskType
 
     # ================================================================
@@ -332,16 +364,19 @@ class SchedulerService:
             if not task_class:
                 self.logger.warning(f"[{task_name}] 任务创建出错")
                 continue
-            task_instance = task_class(
-                task_name,
-                self.config,
-                self.transition_manager,
-                self.operationer,
-                self._on_task_activate_request,
-                self._execute_done_callback,
+            # 中间派重构：依赖注入收敛为单个 RuntimeContext
+            from backend.core.scheduler.runtime import RuntimeContext
+            task_instance = task_class(RuntimeContext(
+                task_name=task_name,
+                config=self.config,
+                transition_manager=self.transition_manager,
+                operationer=self.operationer,
+                activate_another_task_func=self._on_task_activate_request,
+                callback=self._execute_done_callback,
                 parent_logger=self.logger,
-            )
+            ))
             self.task_queue.enqueue(task_instance)
+            self._sync_task_state(task_instance)
 
         self.logger.info(f"调度器启动完成，共 {len(self.task_queue.heap)} 个任务")
         self.logger.debug(f"当前执行模式：[{"预设模式" if self.run_once else "持久模式"}]")
@@ -357,6 +392,11 @@ class SchedulerService:
                 "running": True,
                 "task_count": len(self.task_queue.heap)
             })
+        # 更新内存快照并推送（前端据此零轮询）
+        self.state.set_running(
+            True, len(self.task_queue.heap),
+            mode="once" if self.run_once else "persistent")
+        self._push_snapshot()
 
         # 启动超时监视器（后台检测线程）
         if self.watchdog:
@@ -376,12 +416,13 @@ class SchedulerService:
 
         # 停止所有正在运行的任务（与原版一致）
         for task in self.task_queue.get_tasks_by_status(0):
-            task.stop()
+            self.executor.stop_task(task)
 
         # 停止超时监视器
         if self.watchdog:
             self.watchdog.stop()
             self.watchdog = None
+            self.executor.set_watchdog(None)
 
         if self.device:
             if getattr(self.device, "control_manager", None):
@@ -407,35 +448,50 @@ class SchedulerService:
         self.logger.info("调度器已完全停止")
         if self.on_status_change:
             self.on_status_change({"running": False})
+        # 更新内存快照并推送
+        self.state.set_running(False)
+        self.state.reset_tasks()
+        self._push_snapshot()
         return True
 
     def get_status(self) -> dict:
-        return {
-            "running": self.running,
-            "task_count": len(self.task_queue.heap),
-            "mode": "once" if self.run_once else "persistent",
-        }
+        # 直接读内存快照（O(1)，不遍历队列/不读 config）
+        return self.state.get_status()
 
     def get_tasks_status(self) -> list[dict]:
-        results = []
-        for task in self.task_queue.heap:
-            results.append({
-                "name":
-                task.task_name,
-                "status":
-                getattr(task, 'current_status', 2),
-                "priority":
-                getattr(task, 'current_priority', 0),
-                "base_priority":
-                getattr(task, 'base_priority', 0),
-                "activated":
-                task.is_activated if hasattr(task, 'is_activated') else False,
-                "next_execute":
-                task.next_execute_time.strftime("%Y-%m-%d %H:%M:%S")
-                if hasattr(task, 'next_execute_time')
-                and task.next_execute_time else None,
-            })
-        return results
+        # 直接读内存快照（O(1)，不遍历 heap/不读 config）
+        return self.state.get_tasks()
+
+    # ================================================================
+    # 状态快照同步（中间派 SchedulerState）
+    # ================================================================
+
+    def _sync_task_state(self, task):
+        """把任务对象的关键字段写入内存快照。"""
+        next_execute = getattr(task, "next_execute_time", None)
+        self.state.upsert_task(
+            task.task_name,
+            status=getattr(task, "current_status", 2),
+            priority=getattr(task, "current_priority", 0),
+            base_priority=getattr(task, "base_priority", 0),
+            activated=bool(getattr(task, "is_activated", False)),
+            next_execute=next_execute.strftime("%Y-%m-%d %H:%M:%S")
+            if next_execute else None,
+        )
+
+    def _update_task_status(self, task_name: str, new_status: int) -> bool:
+        """更新队列中的任务状态并同步到内存快照。"""
+        ok = self.task_queue.update_task_status(task_name, new_status)
+        if ok:
+            task = self.task_queue.get_task(task_name)
+            if task:
+                self._sync_task_state(task)
+        return ok
+
+    def _push_snapshot(self):
+        """推送完整状态快照到前端（WS scheduler_snapshot，前端据此零轮询）。"""
+        if self.on_snapshot:
+            self.on_snapshot(self.state.get_snapshot())
 
     def toggle_task_activation(self, task_name: str, state: bool):
         """切换启用/禁用（与原版 toggle_task_activation 一致）"""
@@ -443,11 +499,13 @@ class SchedulerService:
         temp_task = self.task_queue.get_task(task_name)
         if temp_task:
             if not state and temp_task.current_status == 0:
-                temp_task.stop()
-                self.task_queue.update_task_status(task_name, 2)
+                self.executor.stop_task(temp_task)
+                self._update_task_status(task_name, 2)
             self.logger.info(f"任务 {task_name} {'已启用' if state else '已禁用'}")
+            self._sync_task_state(temp_task)
         if self.on_task_state_change:
             self.on_task_state_change({"name": task_name, "activated": state})
+        self._push_snapshot()
 
     def execute_task_now(self, task_name: str, enable_if_needed: bool = False):
         """立即执行（与原版 request_task_execute_now 一致）
@@ -470,6 +528,8 @@ class SchedulerService:
         if ok:
             task.force_execute_now = True
         self.logger.info(f"任务 {task_name} 已请求立即执行")
+        self._sync_task_state(task)
+        self._push_snapshot()
 
     # ================================================================
     # 内部：静态扫描线程（替代原版 TimerThread，更简单可靠）
@@ -519,33 +579,25 @@ class SchedulerService:
                 return
             # ---- 1. 扫描等待队列(2) → 就绪队列(1) ----
             waiting_tasks = self.task_queue.get_tasks_by_status(2)
+            now = datetime.now(ZoneInfo("Asia/Shanghai"))
             for task in waiting_tasks:
-                if not task.is_activated or task.current_status != 2:
+                # TaskPlanner 纯逻辑判断：已启用且下次执行时间已到
+                if not self.planner.is_due(task, now):
                     continue
-                if task.next_execute_time <= datetime.now(
-                        ZoneInfo("Asia/Shanghai")):
-                    success = self.task_queue.update_task_status(
-                        task.task_name, 1)
-                    if success:
-                        self.logger.info(
-                            f"[{task.task_name}]-[{task.base_priority}] 进入就绪队列"
-                        )
+                if self._update_task_status(task.task_name, 1):
+                    self.logger.info(
+                        f"[{task.task_name}]-[{task.base_priority}] 进入就绪队列"
+                    )
 
             # ---- 2. 就绪队列(1) → 执行(0) ----
             ready_tasks = self.task_queue.get_tasks_by_status(1)
-            if ready_tasks:
-                # 优先执行被请求"立即执行"的任务（force_execute_now），
-                # 否则按优先级取最高（heapq 的 min 就是优先级最高的）
-                force_tasks = [t for t in ready_tasks
-                               if getattr(t, "force_execute_now", False)]
-                next_task = (min(force_tasks) if force_tasks
-                             else min(ready_tasks))
+            # TaskPlanner 选择：优先立即执行标记，否则按优先级取最高
+            next_task = self.planner.pick_next(ready_tasks)
+            if next_task is not None:
                 running_tasks = self.task_queue.get_tasks_by_status(0)
                 if not running_tasks:
                     # 没有正在执行的任务 → 直接执行
-                    success = self.task_queue.update_task_status(
-                        next_task.task_name, 0)
-                    if success:
+                    if self._update_task_status(next_task.task_name, 0):
                         next_task.force_execute_now = False
                         self.logger.info(
                             f"[{next_task.task_name}]-[{next_task.base_priority}] 进入执行队列"
@@ -556,21 +608,18 @@ class SchedulerService:
                                 "status": 0,
                                 "action": "start",
                             })
-                        # 将超时监视器交给即将执行的任务
-                        if self.watchdog:
-                            self.watchdog.attach_task(next_task)
-                        next_task.run()
+                        # 通过执行层启动：接管超时监视器 + 开始执行线程
+                        self.executor.start_task(next_task)
+                        self._push_snapshot()
                 else:
                     # 有正在执行的任务 → 检查优先级抢占
                     running_task = running_tasks[0]
-                    if running_task > next_task:
+                    if self.planner.should_preempt(running_task, next_task):
                         self.logger.info(
                             f"[{running_task.task_name}] 被 [{next_task.task_name}] 抢占"
                         )
-                        # 被抢占的任务交还超时监视器
-                        if self.watchdog:
-                            self.watchdog.detach_task(running_task)
-                        running_task.stop()
+                        # 执行层停止被抢占任务（交还超时监视器 + 停止线程）
+                        self.executor.stop_task(running_task)
         finally:
             self._scanning = False
 
@@ -606,9 +655,9 @@ class SchedulerService:
             task.start_line = None
             task.dead_line = None
             if task.current_status == 2:
-                self.task_queue.update_task_status(task_name, 1)
+                self._update_task_status(task_name, 1)
             if task.current_status == 1:
-                self.task_queue.update_task_status(task_name, 0)
+                self._update_task_status(task_name, 0)
                 task.force_execute_now = False  # 预设顺序执行，无需立即执行标记
                 self.logger.info(f"[预设顺序执行] 开始任务: {task_name}")
                 if self.on_task_state_change:
@@ -617,9 +666,8 @@ class SchedulerService:
                         "status": 0,
                         "action": "start",
                     })
-                if self.watchdog:
-                    self.watchdog.attach_task(task)
-                task.run()
+                self.executor.start_task(task)
+                self._push_snapshot()
             return
 
         # 待执行列表耗尽 → 自动关闭调度器
@@ -663,15 +711,14 @@ class SchedulerService:
         # 任务已执行过（无论结果），清除"立即执行"标记
         task.force_execute_now = False
         # 任务结束（完成/停止/超时），交还超时监视器
-        if self.watchdog:
-            self.watchdog.detach_task(task)
+        self.executor.finish_task(task)
 
         if not self.running:
             self.logger.debug(f"调度器已停止，忽略任务 {task.task_name} 的完成信号")
             return
 
         # 更新队列状态回等待(2)
-        self.task_queue.update_task_status(task.task_name, 2)
+        self._update_task_status(task.task_name, 2)
 
         # 临时任务执行完自动关闭（临时预设不持久化启用状态，避免污染预设文件）
         if getattr(task, "is_temp", False):
@@ -692,6 +739,8 @@ class SchedulerService:
 
         # 标记最后运行时间
         task.last_run_time = datetime.now(ZoneInfo("Asia/Shanghai"))
+        # 推送完整状态快照（任务回到等待态）
+        self._push_snapshot()
 
     def _on_task_activate_request(self, task_name: str):
         """其他任务请求激活指定任务"""
@@ -733,7 +782,7 @@ class SchedulerService:
                 self.logger.warning(f"卡死告警截图失败: {_e}")
             # 1. 停止当前正在执行的任务
             for task in self.task_queue.get_tasks_by_status(0):
-                task.stop()
+                self.executor.stop_task(task)
             # 2. 按级别分发处理流程
             if event.level == FreezeLevel.SCENE_STUCK:
                 self._handle_scene_stuck(event)

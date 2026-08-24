@@ -24,6 +24,7 @@ from backend.core.legacy.Exceptions import (
 )
 from backend.core.legacy.Operationer import Operationer
 from backend.core.legacy.Scene.TransitionManager import TransitionManager
+from backend.core.scheduler.runtime import RuntimeContext
 
 
 class TaskType(IntEnum):
@@ -182,10 +183,20 @@ class BaseTask:
 
     UNREGISTER_SCENE_MAX_TIME = 15
 
-    def __init__(self, task_name: str, config: Config,
-                 transition_manager: TransitionManager,
-                 operationer: Operationer, activate_another_task_func: Any,
-                 callback: Callable, parent_logger):
+    def __init__(self, ctx: "RuntimeContext"):
+        """构造注入收敛为单个 RuntimeContext（中间派重构）。
+
+        任务派生类无需重写 __init__：调度器组装 RuntimeContext 后传入，
+        内部仍以 self.xxx 访问各依赖，保持与旧版任务代码兼容。
+        """
+        task_name = ctx.task_name
+        config = ctx.config
+        transition_manager = ctx.transition_manager
+        operationer = ctx.operationer
+        activate_another_task_func = ctx.activate_another_task_func
+        callback = ctx.callback
+        parent_logger = ctx.parent_logger
+
         # 任务信息
         self.create_time = datetime.datetime.now(self.tz_info)
         self.last_run_time = datetime.datetime.now(self.tz_info)

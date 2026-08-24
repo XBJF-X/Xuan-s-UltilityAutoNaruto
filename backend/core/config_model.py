@@ -239,7 +239,16 @@ class Config:
     def save_config_to_file(self):
         try:
             config_data = copy.deepcopy(self.setting_dics)
+            new_content = json.dumps(config_data, ensure_ascii=False, indent=4)
+            # 免写盘：内容与磁盘一致时不写文件，避免每次加载配置都触发磁盘 I/O
+            if self.config_path.exists():
+                try:
+                    with open(self.config_path, 'r', encoding='utf-8') as f:
+                        if f.read() == new_content:
+                            return
+                except Exception:
+                    pass
             with open(self.config_path, 'w', encoding='utf-8') as f:
-                json.dump(config_data, f, ensure_ascii=False, indent=4)
+                f.write(new_content)
         except Exception as e:
             self.logger.error(f"保存配置失败: {str(e)}")

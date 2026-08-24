@@ -127,7 +127,11 @@ const failedTasks = ref<Record<string, string>>({})
 
 const schedulerRunning = ref(false)
 const schedulerStarting = ref(false)
-const runningTasks = ref<any[]>([])
+// 运行中任务列表：直接读 AppStore 中由 WS scheduler_snapshot 维护的状态快照（零轮询）
+const runningTasks = computed(() => {
+  const snap = appStore.schedulerSnapshots[props.configId]
+  return snap?.tasks || []
+})
 /** 任务列表顺序：以保存的"任务执行顺序"为主，未收录的任务补到末尾 */
 const orderedTaskNames = computed(() => {
   const names = [...taskOrder.value]
@@ -185,12 +189,15 @@ async function refreshStatus() {
   if (schedulerRunning.value) {
     try {
       const t = await schedulerApi.getTasks(props.configId)
-      runningTasks.value = t.data || []
+      // 统一写入 AppStore 快照（ws scheduler_snapshot 持续覆盖，本轮询仅作兜底）
+      const prev = appStore.schedulerSnapshots[props.configId] || {
+        running: true,
+        mode: 'once',
+      }
+      appStore.schedulerSnapshots[props.configId] = { ...prev, tasks: t.data || [] }
     } catch {
-      runningTasks.value = []
+      // 拉取失败保留现有快照
     }
-  } else {
-    runningTasks.value = []
   }
 }
 
@@ -258,7 +265,7 @@ async function toggleScheduler() {
     if (schedulerRunning.value) {
       await schedulerApi.stop(props.configId)
       schedulerRunning.value = false
-      runningTasks.value = []
+      appStore.schedulerSnapshots[props.configId] = { running: false, mode: 'once', tasks: [] }
     } else {
       // 启动前快速预检：串口（已配置/格式/占用/在线）与 MuMu/LD 截图路径环境，
       // 避免参数错误时进入耗时的设备连接导致界面长时间无响应
@@ -284,6 +291,12 @@ async function toggleScheduler() {
 // ---- WebSocket：任务完成（失败标记）与运行状态 ----
 const { onMessage } = useWebSocket()
 const unsub = onMessage((msg) => {
+  // 完整状态快照已直接写入 AppStore（runningTasks 由 computed 读取），无需再拉取
+  if (msg.type === 'scheduler_snapshot' && msg.config_id === props.configId) {
+    appStore.schedulerSnapshots[props.configId] = msg.data
+    schedulerRunning.value = !!msg.data?.running
+    return
+  }
   if (msg.type === 'task_state' && msg.config_id === props.configId) {
     if (msg.action === 'complete' && msg.name) {
       if (msg.error) {

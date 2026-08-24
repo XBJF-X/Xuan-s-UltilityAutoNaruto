@@ -65,7 +65,11 @@ import { useWebSocket } from "@/api/ws";
 
 const appStore = useAppStore();
 const loadingTasks = ref(false);
-const taskList = ref<any[]>([]);
+// 任务列表直接读 AppStore 中由 WS scheduler_snapshot 维护的状态快照（零轮询）
+const taskList = computed(() => {
+  const snap = appStore.schedulerSnapshots[appStore.activeConfigId as string];
+  return snap?.tasks || [];
+});
 const failedTasks = ref<Record<string, string>>({});
 
 // 通过 WebSocket 监听任务状态变化，自动刷新
@@ -80,18 +84,20 @@ const unsubTaskState = onMessage((msg) => {
       }
     }
   }
+  // scheduler_snapshot 已直接写入 AppStore，无需再拉取；
+  // task_state / status 作为向后兼容（旧后端无 snapshot 推送）触发兜底刷新
   if (msg.type === "task_state" || msg.type === "status") {
     loadTaskStatus();
   }
 });
 
-// 定时轮询（即使没有 WebSocket 消息也能更新任务状态）
+// 低频兜底轮询（WS snapshot 推送为主，轮询仅防 ws 断连/漏消息）
 let _pollTimer: ReturnType<typeof setInterval> | null = null;
 function startPolling() {
   stopPolling();
   if (appStore.activeConfigId) {
     loadTaskStatus();
-    _pollTimer = setInterval(() => loadTaskStatus(), 2000);
+    _pollTimer = setInterval(() => loadTaskStatus(), 5000);
   }
 }
 function stopPolling() {
@@ -154,7 +160,6 @@ function formatNextExecute(t: any) {
 
 async function loadTaskStatus() {
   if (!appStore.activeConfigId) {
-    taskList.value = [];
     return;
   }
   // 切换配置中：Layout 正等待后端请求结束，跳过本次刷新，避免竞态/重复请求
@@ -163,21 +168,14 @@ async function loadTaskStatus() {
   try {
     const res = await schedulerApi.getTasks(appStore.activeConfigId);
     const raw = res.data || [];
-    taskList.value = raw;
-    // 调试日志
-    if (raw.length > 0) {
-      const summaries = raw.map((t: any) => ({
-        name: t.name,
-        activated: t.activated,
-        activatedType: typeof t.activated,
-      }));
-      console.debug(
-        "[Dashboard] 从后端获取任务列表:",
-        JSON.stringify(summaries),
-      );
-    }
+    // 统一写入 AppStore 快照（ws scheduler_snapshot 持续覆盖，本轮询仅作兜底）
+    const prev = appStore.schedulerSnapshots[appStore.activeConfigId] || {
+      running: false,
+      mode: "persistent",
+    };
+    appStore.schedulerSnapshots[appStore.activeConfigId] = { ...prev, tasks: raw };
   } catch {
-    taskList.value = [];
+    // 拉取失败保留现有快照，不覆盖
   } finally {
     loadingTasks.value = false;
   }

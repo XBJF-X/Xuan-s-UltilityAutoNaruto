@@ -59,6 +59,13 @@ class ConnectionManager:
             "data": task_data,
         })
 
+    async def broadcast_snapshot(self, snapshot: dict):
+        """广播调度器完整状态快照（合并 status + tasks，前端据此零轮询）"""
+        await self.broadcast({
+            "type": "scheduler_snapshot",
+            "data": snapshot,
+        })
+
 
 # 全局单例 - 其他模块通过 import 获取
 manager = ConnectionManager()

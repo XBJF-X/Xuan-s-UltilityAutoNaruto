@@ -11,6 +11,8 @@ export const useAppStore = defineStore('app', () => {
   // 切换配置中：右侧面板需等待从后端获取完调度器/任务状态等请求结束后才允许点击，
   // 避免上一个配置的慢响应与当前配置请求产生竞态
   const configSwitching = ref(false)
+  // 各配置的调度器完整状态快照（由 WS scheduler_snapshot 推送维护，前端据此零轮询）
+  const schedulerSnapshots = ref<Record<string, any>>({})
 
   const activeConfig = computed(() =>
     configs.value.find(c => c.id === activeConfigId.value) || null
@@ -47,6 +49,7 @@ export const useAppStore = defineStore('app', () => {
     configs,
     schedulerRunning,
     configSwitching,
+    schedulerSnapshots,
     checkBackendHealth,
     loadConfigs,
     setActiveConfig,

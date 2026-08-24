@@ -559,6 +559,13 @@ const unsubSchedulerStatus = onMessage((msg) => {
   if (msg.type === 'status' && msg.data?.config_id === appStore.activeConfigId) {
     schedulerRunning.value = !!msg.data?.running
   }
+  // 调度器完整状态快照：按 config_id 存到 AppStore（Dashboard/PresetEditor 据此零轮询）
+  if (msg.type === 'scheduler_snapshot' && msg.config_id) {
+    appStore.schedulerSnapshots[msg.config_id] = msg.data
+    if (msg.config_id === appStore.activeConfigId) {
+      schedulerRunning.value = !!msg.data?.running
+    }
+  }
 })
 
 // ---- 新建配置（账号配置/任务预设） ----
