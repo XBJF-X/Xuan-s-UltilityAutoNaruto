@@ -177,6 +177,11 @@ def step_assemble():
     if src_version.exists():
         shutil.copy2(src_version, RELEASE / "_version.py")
         log("  复制 _version.py（版本号）")
+    # 6-1. 最小依赖库随包分发（大更新/版本对比用，后端读取 MIN_RELEASE_TAG）
+    src_min_release_tag = ROOT / "MIN_RELEASE_TAG"
+    if src_min_release_tag.exists():
+        shutil.copy2(src_min_release_tag, RELEASE / "MIN_RELEASE_TAG")
+        log("  复制 MIN_RELEASE_TAG（最小依赖库ReleaseTag）")
 
     # 7. 用户数据目录（首次为空，运行后生成）
     (RELEASE / "config").mkdir(exist_ok=True)
