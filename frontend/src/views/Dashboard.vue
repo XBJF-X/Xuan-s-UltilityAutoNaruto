@@ -157,6 +157,8 @@ async function loadTaskStatus() {
     taskList.value = [];
     return;
   }
+  // 切换配置中：Layout 正等待后端请求结束，跳过本次刷新，避免竞态/重复请求
+  if (appStore.configSwitching) return;
   loadingTasks.value = true;
   try {
     const res = await schedulerApi.getTasks(appStore.activeConfigId);

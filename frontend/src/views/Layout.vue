@@ -222,6 +222,11 @@
 
       <!-- 右侧：内容区 -->
       <div class="col-content">
+        <!-- 切换配置加载遮罩：等待从后端获取完调度器/任务状态等请求后才允许点击，避免竞态 -->
+        <div v-if="appStore.configSwitching" class="col-content-mask">
+          <n-spin size="small" />
+          <span class="col-content-mask-text">正在加载配置...</span>
+        </div>
         <template v-if="currentView === 'overview'">
           <router-view />
         </template>
@@ -361,14 +366,13 @@ function handleConfigContextSelect(key: string) {
 
 // ---- 任务树分组 ----
 // 匹配原版 Servicer 映射：task_type = 1 if 类型==5 else 类型
-// 即类型 5（活动·APP类）与类型 1 同属“每周任务”组
+// 「临时」类别已取消（改为每个任务独立的「是否临时」属性），类型 5 不再使用
 const typeGroupMap: Record<number, string> = {
   0: '每日任务',
   1: '每周任务',
   2: '每周任务',
   3: '活动任务',
   4: '活动任务',
-  5: '每周任务',
 }
 
 const taskGroups = computed(() => {
@@ -463,17 +467,38 @@ function switchToSetting() {
 }
 
 // ---- 配置选择 ----
-async function selectConfig(id: string) {
-  appStore.setActiveConfig(id)
-  loadTaskData()
-  // 点击左侧配置统一进入总览；预设的助手设置/任务流程通过中栏「助手设置」入口进入
-  switchToOverview()
-  // 查询该配置的调度器状态，确保按钮同步
+// 切换配置时右侧面板需等待从后端获取完调度器状态与任务状态等请求结束后才允许点击，
+// 避免上一个配置的慢响应覆盖当前配置状态（竞态）。自增 seq 用于丢弃过期响应。
+let _switchSeq = 0
+
+async function _loadConfigAndStatus(id: string | null, seq: number) {
   try {
-    const res = await schedulerApi.status(id)
-    schedulerRunning.value = res.data?.running ?? false
+    if (id) {
+      await loadTaskData()
+      const res = await schedulerApi.status(id)
+      if (seq !== _switchSeq) return
+      schedulerRunning.value = res.data?.running ?? false
+    } else {
+      schedulerRunning.value = false
+    }
   } catch {
-    schedulerRunning.value = false
+    if (seq === _switchSeq) schedulerRunning.value = false
+  } finally {
+    if (seq === _switchSeq) appStore.configSwitching = false
+  }
+}
+
+async function selectConfig(id: string) {
+  const seq = ++_switchSeq
+  appStore.configSwitching = true
+  if (appStore.activeConfigId === id) {
+    // 重复点击同一配置：activeConfigId 不变，watch 不会触发，这里主动重新加载
+    switchToOverview()
+    await _loadConfigAndStatus(id, seq)
+  } else {
+    appStore.setActiveConfig(id)
+    // 点击左侧配置统一进入总览；预设的助手设置/任务流程通过中栏「助手设置」入口进入
+    switchToOverview()
   }
 }
 
@@ -596,18 +621,15 @@ function handleDeleteConfig(configId: string, configName: string) {
   })
 }
 
-// 切换配置时重新加载任务数据并同步调度器状态
-watch(() => appStore.activeConfigId, async (id) => {
-  loadTaskData()
+// 切换配置时重新加载任务数据并同步调度器状态（selectConfig 会触发本 watch）
+watch(() => appStore.activeConfigId, (id) => {
+  const seq = ++_switchSeq
   if (id) {
-    try {
-      const res = await schedulerApi.status(id)
-      schedulerRunning.value = res.data?.running ?? false
-    } catch {
-      schedulerRunning.value = false
-    }
+    appStore.configSwitching = true
+    _loadConfigAndStatus(id, seq)
   } else {
     schedulerRunning.value = false
+    appStore.configSwitching = false
   }
 })
 async function handleScreenshot() {
@@ -914,6 +936,25 @@ onBeforeUnmount(() => {
   flex: 1;
   min-width: 0;
   overflow: hidden;
+  position: relative;
+}
+/* 切换配置时的加载遮罩：拦截右侧面板点击，等待调度器/任务状态请求结束 */
+.col-content-mask {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(1px);
+  cursor: wait;
+}
+.col-content-mask-text {
+  font-size: 13px;
+  color: #666;
 }
 /* 让 <a> 链接也变成弹性容器，方便居中图标 */
 .topbar-icon-link {

@@ -27,13 +27,12 @@ from backend.core.legacy.Scene.TransitionManager import TransitionManager
 
 
 class TaskType(IntEnum):
-    """任务类型枚举"""
+    """任务类型枚举（「临时」类别已取消，改为每个任务独立的「是否临时」布尔属性）"""
     DAILY = 0
     WEEKLY = 1
     MONTHLY = 2
     PERIODIC = 3
     ACTIVITY = 4
-    TEMP = 5
 
 
 class TransitionOn:
@@ -111,8 +110,8 @@ def handle_task_exceptions(func):
                 self.task_name, "下次执行时间")
             if after_next_execute_ts == before_next_execute_ts:
                 self.schedule_next_on_complete()
-            if self.task_type == TaskType.TEMP:
-                # 临时预设（任务预设）不持久化启用状态，避免污染预设文件
+            if getattr(self, "is_temp", False):
+                # 临时任务不持久化启用状态，避免污染预设文件
                 if self.config.config_type != "临时":
                     self.config.set_task_base_config(self.task_name, "是否启用", False)
         except TooEarlyToRun as e:
@@ -205,6 +204,9 @@ class BaseTask:
 
         self.task_type = TaskType(
             config.get_task_base_config(self.task_name, "类型"))
+        # 是否临时任务：启动时被禁用不自动执行，执行完后自动关闭，只允许立即执行或被其他任务激活
+        self.is_temp = bool(
+            config.get_task_base_config(self.task_name, "是否临时", False))
 
         self.bool_click = False
         # 立即执行标记：被请求"立即执行"后置 True，扫描选择时就绪队列中优先执行

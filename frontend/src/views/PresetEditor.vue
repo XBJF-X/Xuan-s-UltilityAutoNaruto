@@ -112,10 +112,12 @@ import { ref, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { useMessage } from 'naive-ui'
 import { configApi, schedulerApi } from '@/api/client'
 import { useWebSocket } from '@/api/ws'
+import { useAppStore } from '@/stores/app'
 import AssistantSettingsPanel from '@/components/AssistantSettingsPanel.vue'
 
 const props = defineProps<{ configId: string }>()
 const message = useMessage()
+const appStore = useAppStore()
 
 const presetName = ref('')
 const tasks = ref<Record<string, any>>({})
@@ -172,6 +174,8 @@ async function loadPreset() {
 }
 
 async function refreshStatus() {
+  // 切换配置中：Layout 正等待后端请求结束，跳过本次刷新，避免竞态/重复请求
+  if (appStore.configSwitching) return
   try {
     const s = await schedulerApi.status(props.configId)
     schedulerRunning.value = s.data?.running ?? false

@@ -320,9 +320,12 @@ class SchedulerService:
         for msg in env_msgs:
             self.logger.info(msg)
 
-        # 与原版一致：将临时任务设置成禁用状态，避免无唤醒状态下被执行（临时预设除外，其由用户显式勾选）
+        # 临时任务启动时一律关闭不执行（临时预设除外，其由用户显式勾选），
+        # 只允许立即执行或被其他任务激活后执行
         if not self.run_once:
-            self.config.set_task_base_config("叛忍来袭", "是否启用", False)
+            for task_name, task_info in self.config.tasks.items():
+                if task_info.get("是否临时", False):
+                    self.config.set_task_base_config(task_name, "是否启用", False)
 
         for task_name, task_info in self.config.tasks.items():
             task_class = TASK_TYPE_MAP.get(task_name)
@@ -454,14 +457,13 @@ class SchedulerService:
         叛忍来袭等临时任务——仅设置下次执行时间不足以让其执行，扫描循环会因
         is_activated=False 而跳过。
         """
-        from backend.core.legacy.Task.BaseTask import TaskType
         task = self.task_queue.get_task(task_name)
         if not task:
             self.logger.error(f"任务 {task_name} 不存在")
             return
         if enable_if_needed:
             self.config.set_task_base_config(task_name, "是否启用", True)
-        if not task.is_activated and task.task_type != TaskType.TEMP:
+        if not task.is_activated and not getattr(task, "is_temp", False):
             self.logger.warning(f"任务 {task_name} 已禁用")
             return
         ok, _ = task.schedule_execute_now()
@@ -671,8 +673,8 @@ class SchedulerService:
         # 更新队列状态回等待(2)
         self.task_queue.update_task_status(task.task_name, 2)
 
-        # 处理 TEMP 类型任务（临时预设不持久化启用状态，避免污染预设文件）
-        if hasattr(task, 'task_type') and task.task_type == 5:  # TEMP
+        # 临时任务执行完自动关闭（临时预设不持久化启用状态，避免污染预设文件）
+        if getattr(task, "is_temp", False):
             if self.config.config_type != "临时":
                 self.config.set_task_base_config(task.task_name, "是否启用", False)
 
