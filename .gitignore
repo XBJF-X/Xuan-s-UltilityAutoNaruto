@@ -31,6 +31,7 @@ start_frontend.bat
 
 # ---------- 前端构建产物（dist 提交仓库供热更新拉取；electron 产物忽略） ----------
 frontend/dist-electron/
+_version.py
 
 # ---------- Release 构建产物（构建脚本提交入库，产物一律忽略） ----------
 /build/release/

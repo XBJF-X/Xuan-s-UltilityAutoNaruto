@@ -10,7 +10,7 @@
 ; - Version & release dir passed by build_release.py via /DMyAppVersion /DReleaseDir
 ; =========================================================
 #define MyAppName "Xuan"
-#define MyAppVersion "0.17.10"
+#define MyAppVersion "0.17.17"
 #define MyAppPublisher "Xuan"
 #define MyAppURL "https://github.com/XBJF-X/Xuan-s-UltilityAutoNaruto"
 #define MyAppExeName "Xuan.exe"
