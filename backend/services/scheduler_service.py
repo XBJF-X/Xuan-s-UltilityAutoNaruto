@@ -452,6 +452,13 @@ class SchedulerService:
         self.state.set_running(False)
         self.state.reset_tasks()
         self._push_snapshot()
+        # 内存优化：显式释放任务执行相关引用，便于 GC 回收任务对象与设备连接
+        # （共享 SceneGraph / OnnxOcr 为全局单例，保留复用；截图接口已判空 sched.device）
+        self.task_queue = PriorityQueue()
+        self.transition_manager = None
+        self.operationer = None
+        self.device = None
+        self.executor.set_watchdog(None)
         return True
 
     def get_status(self) -> dict:

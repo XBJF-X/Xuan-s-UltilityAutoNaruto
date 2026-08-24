@@ -36,6 +36,19 @@ const connected = ref(false)
 /** 所有日志按 config_id 分组存储，key="" 表示无归属的全局日志 */
 const logMap = ref<Record<string, LogEntry[]>>({})
 
+/** 单个配置的日志缓存上限，超出丢弃最旧日志，避免长时间运行内存无限增长 */
+const MAX_LOG_PER_CONFIG = 3000
+
+/** 追加日志到指定 config，超过上限时丢弃最旧日志 */
+function appendLog(cid: string, entry: LogEntry) {
+  if (!logMap.value[cid]) logMap.value[cid] = []
+  const arr = logMap.value[cid]
+  arr.push(entry)
+  if (arr.length > MAX_LOG_PER_CONFIG) {
+    arr.splice(0, arr.length - MAX_LOG_PER_CONFIG)
+  }
+}
+
 /** 便捷获取全局日志（兼容旧版调用） */
 const logMessages = ref<LogEntry[]>([])
 
@@ -68,11 +81,7 @@ function flushLogs() {
     _batchTimer = null
     if (_pendingLogs.length === 0) return
     for (const entry of _pendingLogs) {
-      const cid = entry.config_id || ''
-      if (!logMap.value[cid]) {
-        logMap.value[cid] = []
-      }
-      logMap.value[cid].push(entry)
+      appendLog(entry.config_id || '', entry)
     }
     _pendingLogs = []
     syncGlobalLogs()
@@ -173,9 +182,7 @@ export function useWebSocket() {
       if (_pingTimer) { clearInterval(_pingTimer); _pingTimer = null }
       if (_pendingLogs.length > 0) {
         for (const entry of _pendingLogs) {
-          const cid = entry.config_id || ''
-          if (!logMap.value[cid]) logMap.value[cid] = []
-          logMap.value[cid].push(entry)
+          appendLog(entry.config_id || '', entry)
         }
         _pendingLogs = []
         syncGlobalLogs()
@@ -192,9 +199,7 @@ export function useWebSocket() {
     if (_batchTimer) { clearTimeout(_batchTimer); _batchTimer = null }
     if (_pendingLogs.length > 0) {
       for (const entry of _pendingLogs) {
-        const cid = entry.config_id || ''
-        if (!logMap.value[cid]) logMap.value[cid] = []
-        logMap.value[cid].push(entry)
+        appendLog(entry.config_id || '', entry)
       }
       _pendingLogs = []
       syncGlobalLogs()

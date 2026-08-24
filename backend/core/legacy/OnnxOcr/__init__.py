@@ -1,4 +1,5 @@
 import logging
+import threading
 from typing import Dict, List, Tuple, Union
 
 from backend.utils import get_real_path
@@ -23,7 +24,9 @@ class OnnxOcr:
         rec_model_dir=str(self.rec_model),
         rec_char_dict_path=str(self.rec_dict),
     )
-        
+        # 共享单例并发安全：OCR 推理串行化
+        self._lock = threading.Lock()
+
     def ocr(self, 
             image,
             box,
@@ -31,7 +34,9 @@ class OnnxOcr:
             raw_json=False,
         ) -> Union[List[Dict], str]:
         """对输入图像进行OCR识别，并按需要还原坐标/过滤文本/格式化返回结果。"""
-        raw_result = self.engine.ocr(image)
+        # 共享实例可能被多配置/多任务线程并发调用，推理整体加锁串行化（调用频率低，可接受）
+        with self._lock:
+            raw_result = self.engine.ocr(image)
 
         # ONNXPaddleOcr 的返回结构通常为: [[ [box, [text, score]], ... ]]
         lines = raw_result[0] if isinstance(raw_result, list) and raw_result else []
@@ -89,3 +94,20 @@ class OnnxOcr:
             x, y = point[0], point[1]
             restored.append([int(round(x + offset_x)), int(round(y + offset_y))])
         return restored
+
+
+# ===== 全局共享 OnnxOcr 单例 =====
+# 每份 OnnxOcr 常驻 det(88MB) + rec(84MB) ONNX 模型（实测约 170-210MB）。
+# 所有配置/Recognizer 复用同一份，避免多配置多开时各自加载一份导致内存按配置数翻倍。
+_shared_onnx_ocr: "OnnxOcr | None" = None
+_shared_onnx_ocr_lock = threading.Lock()
+
+
+def get_shared_onnx_ocr() -> "OnnxOcr":
+    """获取全局共享 OnnxOcr 实例（惰性创建，线程安全）。"""
+    global _shared_onnx_ocr
+    if _shared_onnx_ocr is None:
+        with _shared_onnx_ocr_lock:
+            if _shared_onnx_ocr is None:
+                _shared_onnx_ocr = OnnxOcr()
+    return _shared_onnx_ocr

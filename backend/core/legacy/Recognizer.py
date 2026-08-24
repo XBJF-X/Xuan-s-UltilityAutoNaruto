@@ -12,7 +12,7 @@ from backend.utils import get_real_path
 from backend.tools.resource_db import ResourceDBManager
 from backend.tools.resource_model import Element, Scene
 from backend.core.legacy.Enums import ElementType, MatchType
-from backend.core.legacy.OnnxOcr import OnnxOcr
+from backend.core.legacy.OnnxOcr import get_shared_onnx_ocr
 from backend.core.legacy.Scene.SceneGraph import SceneGraph
 
 
@@ -637,9 +637,9 @@ class Recognizer:
             self.logger.warning(f"[{ocr_area.name}] 不是 OcrArea 类型，跳过 OCR 识别")
             return []
 
-        # 惰性初始化 OCR 识别器（仅首次使用时加载模型）
+        # 惰性获取全局共享 OCR 识别器（所有配置复用同一份 ONNX 模型，避免多开内存翻倍）
         if self._onnx_ocr is None:
-            self._onnx_ocr = OnnxOcr()
+            self._onnx_ocr = get_shared_onnx_ocr()
 
         # 裁剪识别区域
         x, y = ocr_area.roi_x, ocr_area.roi_y

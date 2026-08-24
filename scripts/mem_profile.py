@@ -79,17 +79,18 @@ for c in cfg_list[:4]:
 stage("4-多配置 SchedulerService 构造")
 print(f"    构造 {len(scheds)} 个 SchedulerService")
 
-# ---- 5. 首个 OnnxOcr 模型加载 ----
-from backend.core.legacy.OnnxOcr import OnnxOcr  # noqa: E402
+# ---- 5. 共享 OnnxOcr 首次加载（A：全局共享单例） ----
+from backend.core.legacy.OnnxOcr import get_shared_onnx_ocr  # noqa: E402
 t0 = time.perf_counter()
-ocr1 = OnnxOcr()
-stage("5-首个 OnnxOcr 模型加载")
+ocr1 = get_shared_onnx_ocr()
+stage("5-共享 OnnxOcr 首次加载")
 print(f"    加载耗时={time.perf_counter() - t0:.1f}s")
 
-# ---- 6. 第二份 OnnxOcr（模拟第二个配置也加载 OCR） ----
-ocr2 = OnnxOcr()
-stage("6-第二份 OnnxOcr 模型加载")
-print(f"    第二份增量 = {_stage_rss['6-第二份 OnnxOcr 模型加载'] - _stage_rss['5-首个 OnnxOcr 模型加载']:.1f} MB")
+# ---- 6. 再次获取共享 OnnxOcr（模拟第二个配置，验证共享复用） ----
+ocr2 = get_shared_onnx_ocr()
+stage("6-再次获取共享 OnnxOcr")
+print(f"    再次获取增量 = {_stage_rss['6-再次获取共享 OnnxOcr'] - _stage_rss['5-共享 OnnxOcr 首次加载']:.1f} MB  (共享后应为 ~0)")
+assert ocr1 is ocr2, "共享单例应返回同一实例"
 
 # ---- 7. 单次 OCR 推理（验证共享可行性/内存） ----
 import numpy as np  # noqa: E402

@@ -32,18 +32,21 @@ class SceneGraph:
                             bgra_buf = np.frombuffer(element.bgra, dtype=np.uint8)
                             bgra = cv2.imdecode(bgra_buf, cv2.IMREAD_UNCHANGED)
                             if bgra is not None:
-                                element.bgra = np.ascontiguousarray(bgra)
                                 # 从 bgra 推导 gray/mask（原 gray/mask 列已废弃删除）
                                 # 注：SQLModel extra="allow" 下 __pydantic_extra__ 可能为 None，
                                 # 直接赋值会触发 item assignment 错误，用 object.__setattr__ 绕过
                                 gray = cv2.cvtColor(
-                                    element.bgra[:, :, :3], cv2.COLOR_BGR2GRAY).astype(np.uint8)
+                                    bgra[:, :, :3], cv2.COLOR_BGR2GRAY).astype(np.uint8)
                                 object.__setattr__(element, "gray", gray)
-                                if element.bgra.shape[-1] == 4:
-                                    mask = (element.bgra[:, :, 3] > 0).astype(np.uint8) * 255
+                                if bgra.shape[-1] == 4:
+                                    mask = (bgra[:, :, 3] > 0).astype(np.uint8) * 255
                                 else:
                                     mask = np.ones_like(gray, dtype=np.uint8) * 255
                                 object.__setattr__(element, "mask", mask)
+                                # 内存优化：识别链（template_match/sift_match）仅用 gray/mask，
+                                # 解码后的 4 通道 bgra numpy 是最大的一块，立即释放（不持有）。
+                                # 前端绘制/元素图片走 API 从数据库重新读取原始 bytes，不依赖此对象。
+                                element.bgra = None
                             else:
                                 self.logger.warning(f"场景{scene.name}的元素{element.name} BGRA图像解码失败")
                         except Exception as e:

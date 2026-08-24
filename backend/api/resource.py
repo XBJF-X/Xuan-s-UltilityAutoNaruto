@@ -339,12 +339,20 @@ def _load_scene_image(scene_id: str):
     raise HTTPException(status_code=400, detail="场景不存在底图（test_scene/{场景名}.png），无法执行匹配/识别")
 
 
+# ===== 共享 Recognizer 单例 =====
+# 复用全局共享 SceneGraph + 共享 OnnxOcr，避免每次「执行匹配/OCR」请求
+# 重新解码全部元素图、重新加载 OCR 模型（峰值内存可达 ~200MB）。
+_recognizer_singleton = None
+
+
 def _get_recognizer():
-    """惰性构建 Recognizer（含 SceneGraph 图像预处理），避免每次请求重建"""
-    from backend.core.legacy.Recognizer import Recognizer
-    from backend.core.scene_graph import SceneGraph
-    graph = SceneGraph(_db)
-    return Recognizer(graph)
+    """获取模块级共享 Recognizer（惰性构建，线程安全由 GIL + 幂等赋值保证）。"""
+    global _recognizer_singleton
+    if _recognizer_singleton is None:
+        from backend.core.legacy.Recognizer import Recognizer
+        from backend.services.scheduler_service import get_shared_scene_graph
+        _recognizer_singleton = Recognizer(get_shared_scene_graph())
+    return _recognizer_singleton
 
 
 @router.post("/scenes/{scene_id}/match")
