@@ -59,7 +59,12 @@
       </div>
 
       <n-alert v-if="info.update_type === 'full'" type="warning" :show-icon="true" style="margin-bottom: 12px;">
-        检测到新正式版本 {{ info.full.version }}，包含依赖库等完整更新。点击下方按钮下载安装包，程序将自动完成升级并重启。
+        <template v-if="info.full.deprecated">
+          当前本地版本 {{ info.full.local_version }} 低于本版本要求的最低版本 {{ info.full.required_version }}，依赖库不完整，请前往 Release 下载完整安装包更新。
+        </template>
+        <template v-else>
+          检测到新正式版本 {{ info.full.version }}，包含依赖库等完整更新。点击下方按钮下载安装包，程序将自动完成升级并重启。
+        </template>
       </n-alert>
       <n-alert v-else-if="info.update_type === 'hot'" type="warning" :show-icon="true" style="margin-bottom: 12px;">
         检测到新的修复/功能更新，点击下方按钮可立即更新，程序将自动重启生效。
@@ -129,10 +134,10 @@
         <n-button
           v-if="info && info.update_type !== 'none' && !isUpdating"
           type="primary"
-          @click="apply"
+          @click="onFooterClick"
           :loading="startingUpdate"
         >
-          {{ info && info.update_type === 'full' ? '下载并升级' : '立即更新' }}
+          {{ footerButtonText }}
         </n-button>
       </n-space>
     </template>
@@ -184,6 +189,23 @@ function formatDate(iso: string) {
     const d = new Date(iso)
     return d.toLocaleString('zh-CN', { hour12: false })
   } catch { return iso }
+}
+
+// 依赖库过旧（deprecated）且云端无可用安装包资产时，引导用户前往 Release 页面手动下载
+const footerButtonText = computed(() => {
+  if (!info.value || info.value.update_type === 'none') return ''
+  const full = info.value.full
+  if (info.value.update_type === 'full' && full?.deprecated && !full?.asset) return '前往 Release 页面'
+  return info.value.update_type === 'full' ? '下载并升级' : '立即更新'
+})
+
+function onFooterClick() {
+  const full = info.value?.full
+  if (info.value?.update_type === 'full' && full?.deprecated && !full?.asset) {
+    window.open(full.release_url || 'https://github.com/XBJF-X/Xuan-s-UltilityAutoNaruto/releases', '_blank')
+    return
+  }
+  apply()
 }
 
 async function check() {

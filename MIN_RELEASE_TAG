@@ -1,0 +1,4 @@
+# 本 commit 需要的最旧依赖库 ReleaseTag
+# 依赖库（OCR 模型 / DLL 等）随 Release 安装包分发，热更新不会携带。
+# 当本地 _version.py 低于该版本时，检查更新将提示用户前往 Release 下载完整安装包。
+v0.17.17

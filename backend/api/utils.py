@@ -243,6 +243,14 @@ _BRANCH = "v17"
 # 大更新：GitHub Release 安装包资产名前缀
 _INSTALLER_ASSET_PREFIX = "XuanInstaller_V"
 
+# 本 commit 需要的最旧依赖库 ReleaseTag（根目录 MIN_RELEASE_TAG 文件，随 commit 提交）
+# 依赖库（OCR 模型/DLL 等）随 Release 安装包分发、热更新不携带；本地 _version.py
+# 低于该版本时，检查更新将提示用户前往 Release 下载完整安装包。
+_MIN_RELEASE_TAG_FILE = "MIN_RELEASE_TAG"
+
+# GitHub Releases 页面地址（依赖库过旧且无可用安装包资产时引导用户手动下载）
+_RELEASES_URL = f"https://github.com/{_GITHUB_OWNER}/{_GITHUB_REPO}/releases"
+
 
 def _read_local_version() -> str:
     """读取随包分发的 _version.py 中的版本号（如 0.17.0）；读取失败返回空串。"""
@@ -256,6 +264,26 @@ def _read_local_version() -> str:
     except Exception:
         pass
     return ""
+
+
+def _read_min_release_tag() -> tuple[str, str]:
+    """读取根目录 MIN_RELEASE_TAG（本 commit 需要的最旧依赖库 ReleaseTag）。
+
+    返回 (tag, version)，如 ("v0.17.17", "0.17.17")；文件缺失或无法解析返回 ("", "")。
+    该文件随 commit 提交，标识当前代码依赖的安装包资源（OCR 模型/DLL 等）的最低版本。
+    """
+    try:
+        f = Path(get_real_path(_MIN_RELEASE_TAG_FILE))
+        if not f.exists():
+            return "", ""
+        text = f.read_text(encoding="utf-8", errors="ignore")
+        m = re.search(r"[vV]?(\d+\.\d+\.\d+(?:[-.][0-9A-Za-z.-]+)?)", text)
+        if not m:
+            return "", ""
+        version = m.group(1)
+        return f"v{version}", version
+    except Exception:
+        return "", ""
 
 
 def _parse_version(v: str):
@@ -469,8 +497,50 @@ async def check_update():
         local_version = _read_local_version()
         full = _check_full_update(local_version)
         full_update = bool(full.get("ok") and full.get("has_update"))
+
+        # 依赖库版本检查：本 commit 需要的最旧 ReleaseTag（根目录 MIN_RELEASE_TAG）
+        # 热更新只替换代码、不替换 _version.py（随安装包分发）。若本地版本低于本 commit
+        # 所需版本，说明缺少对应安装包中的依赖库（OCR 模型/DLL 等），必须走 Release 更新。
+        required_tag, required_version = _read_min_release_tag()
+        deprecate = (
+            bool(required_version)
+            and bool(local_version)
+            and _version_gt(required_version, local_version)
+        )
+        if deprecate:
+            full_update = True
+            if full.get("ok"):
+                full["has_update"] = True
+                # 云端最新 Release 仍低于本 commit 所需版本时（所需 Release 尚未发布），
+                # 置空 asset，前端改为引导用户前往 Release 页面手动下载
+                if full.get("version") and _version_gt(required_version, full["version"]):
+                    full["asset"] = None
+            else:
+                full = {
+                    "ok": True, "has_update": True, "tag": required_tag,
+                    "version": required_version, "name": required_tag,
+                    "published_at": "", "body": "", "local_version": local_version,
+                    "asset": None,
+                }
+            full["deprecated"] = True
+            full["required_tag"] = required_tag
+            full["required_version"] = required_version
+            full["release_url"] = _RELEASES_URL
+
         # 有大更新时优先大更新（Release 包含全部变更）；否则走热更新
         update_type = "full" if full_update else ("hot" if has_update else "none")
+        if full_update:
+            if deprecate:
+                message = (
+                    f"当前版本 {local_version} 过低，本版本需要 {required_tag} 及以上的"
+                    f"完整安装包（含依赖库），请前往 Release 更新"
+                )
+            else:
+                message = f"检测到新版本 {full.get('version')}（正式版更新，需安装新版本）"
+        elif has_update:
+            message = f"检测到新版本：{latest_message}"
+        else:
+            message = "当前已是最新版本"
         return {
             "ok": True,
             "has_update": has_update or full_update,
@@ -481,11 +551,7 @@ async def check_update():
             "current_commit": current_commit,
             "commits": commits,
             "full": full,
-            "message": (
-                f"检测到新版本 {full.get('version')}（正式版更新，需安装新版本）"
-                if full_update
-                else (f"检测到新版本：{latest_message}" if has_update else "当前已是最新版本")
-            ),
+            "message": message,
         }
     except Exception as e:
         return {"ok": False, "message": f"检查更新出错：{e}"}
