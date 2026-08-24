@@ -28,6 +28,9 @@ NewRun.bat
 Todo.txt
 start_backend.bat
 start_frontend.bat
+scripts/mem_profile.py
+docs/scheduler-architecture-review.md
+
 
 # ---------- 前端构建产物（dist 提交仓库供热更新拉取；electron 产物忽略） ----------
 frontend/dist-electron/
