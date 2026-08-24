@@ -222,11 +222,6 @@
 
       <!-- 右侧：内容区 -->
       <div class="col-content">
-        <!-- 切换配置加载遮罩：等待从后端获取完调度器/任务状态等请求后才允许点击，避免竞态 -->
-        <div v-if="appStore.configSwitching" class="col-content-mask">
-          <n-spin size="small" />
-          <span class="col-content-mask-text">正在加载配置...</span>
-        </div>
         <template v-if="currentView === 'overview'">
           <router-view />
         </template>
@@ -249,6 +244,12 @@
           <router-view />
         </template>
       </div>
+    </div>
+
+    <!-- 切换配置加载遮罩：除左侧配置切换面板（col-configs）外，其余部分全部拦截点击，避免竞态 -->
+    <div v-if="appStore.configSwitching" class="config-switching-mask">
+      <n-spin size="small" />
+      <span class="config-switching-mask-text">正在加载配置...</span>
     </div>
 
     <!-- 新建配置对话框（账号配置/任务预设） -->
@@ -704,6 +705,7 @@ onBeforeUnmount(() => {
   border-bottom: 1px solid #e8e8e8;
   flex-shrink: 0;
   background: #fff;
+  z-index: 51;
 }
 .topbar-left { display: flex; align-items: center; gap: 10px; }
 .topbar-right { display: flex; align-items: center; gap: 20px; }
@@ -736,6 +738,9 @@ onBeforeUnmount(() => {
   padding: 8px 4px;
   overflow-y: auto;
   background: #fafafa;
+  /* 切换配置期间置于全屏遮罩之上，保持可点击（其余区域全部被遮罩拦截） */
+  position: relative;
+  z-index: 51;
 }
 .config-list-title {
   font-size: 13px;
@@ -936,11 +941,10 @@ onBeforeUnmount(() => {
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  position: relative;
 }
-/* 切换配置时的加载遮罩：拦截右侧面板点击，等待调度器/任务状态请求结束 */
-.col-content-mask {
-  position: absolute;
+/* 切换配置时的全屏加载遮罩：覆盖顶部栏/中栏/右侧内容区，仅左侧配置切换面板（z-index 51）可点击 */
+.config-switching-mask {
+  position: fixed;
   inset: 0;
   z-index: 50;
   display: flex;
@@ -952,7 +956,7 @@ onBeforeUnmount(() => {
   backdrop-filter: blur(1px);
   cursor: wait;
 }
-.col-content-mask-text {
+.config-switching-mask-text {
   font-size: 13px;
   color: #666;
 }
