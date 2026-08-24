@@ -58,23 +58,23 @@ class GouMaiTiLi(BaseTask):
         self.operationer.click_and_wait("X")
         raise TaskCompleted("任务执行完成")
     
-    @TransitionOn("二级密码")
-    def _(self):
-        self.logger.debug("出现二级密码窗口")
-        passward = self.config.get_config("二级密码")
-        if len(passward) != 6:
-            raise StepFailedError("请检查二级密码！")
-        # 输入操作
-        self.operationer.click_and_input(
-            self.operationer.get_element("输入框"),
-            passward
-        )
-        # 点击二级密码-确定
-        if not self.operationer.click_and_wait(self.operationer.get_element("确定")):
-            raise StepFailedError("二级密码验证失败")
-        self.target_buy_times+=1
-        time.sleep(2)
-        return False
+    # @TransitionOn("二级密码")
+    # def _(self):
+    #     self.logger.debug("出现二级密码窗口")
+    #     passward = self.config.get_config("二级密码")
+    #     if len(passward) != 6:
+    #         raise StepFailedError("请检查二级密码！")
+    #     # 输入操作
+    #     self.operationer.click_and_input(
+    #         self.operationer.get_element("输入框"),
+    #         passward
+    #     )
+    #     # 点击二级密码-确定
+    #     if not self.operationer.click_and_wait(self.operationer.get_element("确定")):
+    #         raise StepFailedError("二级密码验证失败")
+    #     self.target_buy_times+=1
+    #     time.sleep(2)
+    #     return False
 
-    def reset_task_exe_prog(self) -> bool:
-        return True
+    # def reset_task_exe_prog(self) -> bool:
+    #     return True

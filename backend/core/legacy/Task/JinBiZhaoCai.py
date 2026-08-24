@@ -32,33 +32,33 @@ class JinBiZhaoCai(BaseTask):
 
         if self.process_times < self.target_times:
             self.operationer.click_and_wait("金币招财")
-            self.process_times += 1
-            self.logger.info(f"已招财 {self.process_times} 次")
+            # self.process_times += 1
+            self.logger.info(f"已招财 {self.process_times+1} 次")
             return False
 
         self.operationer.click_and_wait("X")
         raise TaskCompleted("任务执行完成")
     
 
-    @TransitionOn("二级密码")
-    def _(self):
-        self.logger.debug("出现二级密码窗口")
-        passward = self.config.get_config("二级密码")
-        if len(passward) != 6:
-            raise StepFailedError("请检查二级密码是否留空或漏位！")
-        # 输入操作
-        self.operationer.click_and_input(
-            self.operationer.get_element("输入框"),
-            passward
-        )
-        # 点击二级密码-确定
-        if not self.operationer.click_and_wait(self.operationer.get_element("确定")):
-            raise StepFailedError("二级密码验证失败")
+    # @TransitionOn("二级密码")
+    # def _(self):
+    #     self.logger.debug("出现二级密码窗口")
+    #     passward = self.config.get_config("二级密码")
+    #     if len(passward) != 6:
+    #         raise StepFailedError("请检查二级密码是否留空或漏位！")
+    #     # 输入操作
+    #     self.operationer.click_and_input(
+    #         self.operationer.get_element("输入框"),
+    #         passward
+    #     )
+    #     # 点击二级密码-确定
+    #     if not self.operationer.click_and_wait(self.operationer.get_element("确定")):
+    #         raise StepFailedError("二级密码验证失败")
 
-        self.process_times -= 1
-        self.logger.info(f"招财次数回退，已招财 {self.process_times} 次")
-        return False
+    #     self.process_times -= 1
+    #     self.logger.info(f"招财次数回退，已招财 {self.process_times} 次")
+    #     return False
 
-    def reset_task_exe_prog(self) -> bool:
-        self.config.set_task_exe_prog("金币招财", "已招财次数", 0)
-        return True
+    # def reset_task_exe_prog(self) -> bool:
+    #     self.config.set_task_exe_prog("金币招财", "已招财次数", 0)
+    #     return True
