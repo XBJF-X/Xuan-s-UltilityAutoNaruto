@@ -104,10 +104,21 @@ _shared_onnx_ocr_lock = threading.Lock()
 
 
 def get_shared_onnx_ocr() -> "OnnxOcr":
-    """获取全局共享 OnnxOcr 实例（惰性创建，线程安全）。"""
+    """获取全局共享 OnnxOcr 实例（惰性创建，线程安全）。
+
+    默认启用 GPU（DirectML）加速，可通过 [助手设置] OCR加速 关闭；
+    GPU 不可用（无 DX12/驱动问题）时 onnxruntime 自动回退 CPU。
+    """
     global _shared_onnx_ocr
     if _shared_onnx_ocr is None:
         with _shared_onnx_ocr_lock:
             if _shared_onnx_ocr is None:
-                _shared_onnx_ocr = OnnxOcr()
+                use_gpu = True
+                try:
+                    from backend.services.settings_service import SettingsService
+                    use_gpu = SettingsService().getboolean(
+                        "助手设置", "OCR加速", default=True)
+                except Exception:
+                    use_gpu = True
+                _shared_onnx_ocr = OnnxOcr(use_gpu=use_gpu)
     return _shared_onnx_ocr
