@@ -433,6 +433,24 @@
         style="display: none"
         @change="onImageFileSelected"
       />
+
+      <!-- 元素图片预览弹窗（IMG 类型点击「查看图片」弹出展示，而非新开标签页） -->
+      <n-modal
+        v-model:show="imgPreview.show"
+        preset="card"
+        :title="`元素图片：${imgPreview.elementName || ''}`"
+        style="width: 560px"
+        @after-leave="closeImgPreview"
+      >
+        <div class="img-preview-wrap">
+          <img v-if="imgPreview.url" :src="imgPreview.url" alt="元素图片" />
+        </div>
+        <template #footer>
+          <n-space justify="end">
+            <n-button type="primary" @click="closeImgPreview">关闭</n-button>
+          </n-space>
+        </template>
+      </n-modal>
     </div>
   </n-message-provider>
 </template>
@@ -840,16 +858,28 @@ function onRatioConfirm(ratio: { x: number; y: number }) {
 }
 
 // ===== 元素图片查看/选择 =====
+// 图片预览弹窗状态（弹窗展示而非新开标签页）
+const imgPreview = reactive({ show: false, url: '', elementName: '' })
+
 async function previewElementImage() {
   const e = selectedElement.value
   if (!e) return
   try {
     const res = await resourceApi.getElementImage(e.id)
-    const url = URL.createObjectURL(res.data)
-    window.open(url, '_blank')
-    setTimeout(() => URL.revokeObjectURL(url), 60000)
+    if (imgPreview.url) URL.revokeObjectURL(imgPreview.url)
+    imgPreview.url = URL.createObjectURL(res.data)
+    imgPreview.elementName = e.name
+    imgPreview.show = true
   } catch (err: any) {
     message.error(`加载图片失败: ${err?.response?.data?.detail ?? err.message}`)
+  }
+}
+
+function closeImgPreview() {
+  imgPreview.show = false
+  if (imgPreview.url) {
+    URL.revokeObjectURL(imgPreview.url)
+    imgPreview.url = ''
   }
 }
 
@@ -1491,5 +1521,24 @@ onBeforeUnmount(() => {
   position: absolute;
   top: -4px;
   right: 0;
+}
+/* IMG 元素图片预览弹窗：居中展示、自适应缩放 */
+.img-preview-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 120px;
+  max-height: 60vh;
+  overflow: auto;
+  background: #f7f9fc;
+  border: 1px solid #eee;
+  border-radius: 6px;
+  padding: 8px;
+}
+.img-preview-wrap img {
+  max-width: 100%;
+  max-height: 56vh;
+  object-fit: contain;
+  image-rendering: pixelated;
 }
 </style>

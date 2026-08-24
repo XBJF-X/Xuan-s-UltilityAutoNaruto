@@ -246,6 +246,27 @@ def delete_edge(payload: dict):
     return {"ok": True}
 
 
+# ===== TransitionManager 已实现跳转（供前端场景有向图判断边是否实现，未实现的单向边标红） =====
+_transitions_cache: list[dict] | None = None
+
+
+@router.get("/transitions")
+def get_implemented_transitions():
+    """返回 backend/core/legacy/Scene/TransitionManager.py 中已注册的所有场景跳转 (source, target)。
+
+    仅构建注册表（TransitionManager(None) 只执行 _register_transitions 注册装饰器，
+    不依赖 Config/Operationer），返回后可判断 DB 中的每条边是否在 TransitionManager 中实现。
+    """
+    global _transitions_cache
+    if _transitions_cache is None:
+        from backend.core.legacy.Scene.TransitionManager import TransitionManager
+        tm = TransitionManager(None)
+        _transitions_cache = [
+            {"source": s, "target": t} for s, t in tm.transition_map.keys()
+        ]
+    return {"transitions": _transitions_cache}
+
+
 # ===== 场景内元素批量读取 =====
 @router.get("/scenes/{scene_id}/elements")
 def list_scene_elements(scene_id: str):

@@ -79,6 +79,9 @@ export const resourceApi = {
   /** 全部场景跳转边 */
   listEdges: () => client.get('/resource/edges'),
 
+  /** TransitionManager 中已实现的场景跳转（source→target 场景名对），用于判断 DB 边是否已实现 */
+  getTransitions: () => client.get('/resource/transitions'),
+
   /** 新增场景跳转边 */
   createEdge: (sourceSceneId: string, targetSceneId: string) =>
     client.post('/resource/edges', {

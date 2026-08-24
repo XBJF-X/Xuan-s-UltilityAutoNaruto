@@ -124,6 +124,7 @@ const nodeColors = {
 }
 const edgeColors = {
   implemented: '#696969',
+  missing: '#e53935', // TransitionManager 中不存在的单向边（红色）
   selected: '#f5c518', // 选中节点关联边（黄色）
 }
 
@@ -132,9 +133,10 @@ const ctxMenuOptions = computed(() => {
   if (!ctxMenu.nodeId) return []
   const node = nodes[ctxMenu.nodeId]
   if (!node) return []
+  // 断开连接只展示该节点的「出边」（source=本节点），不包含入边
   const connected = new Set<string>()
   for (const e of node.edges) {
-    connected.add(e.source === node.id ? e.target : e.source)
+    if (e.source === node.id) connected.add(e.target)
   }
   // 未连接场景列表
   ctxConnectTargets.value = Object.values(nodes)
@@ -200,9 +202,10 @@ async function loadData() {
   await new Promise(resolve => requestAnimationFrame(resolve))
 
   try {
-    const [fullRes, edgeRes] = await Promise.all([
+    const [fullRes, edgeRes, transRes] = await Promise.all([
       resourceApi.getFull(),
       resourceApi.listEdges(),
+      resourceApi.getTransitions().catch(() => null),
     ])
 
     const sceneList = fullRes.data?.scenes
@@ -233,12 +236,19 @@ async function loadData() {
       }
     }
 
-    // 重建边
-    edgeList.value = edges.map(e => ({
-      source: e.source_scene_id,
-      target: e.target_scene_id,
-      implemented: true,
-    }))
+    // TransitionManager 中已实现的跳转集合（source名->target名），
+    // 用于判断 DB 中的边是否已实现（未实现的单向边标红）
+    const transList = transRes?.data?.transitions ?? []
+    const transSet = new Set<string>(
+      transList.map((t: any) => `${t.source}->${t.target}`),
+    )
+    // 重建边：implemented 表示 TransitionManager 中是否存在该 source->target 跳转
+    edgeList.value = edges.map(e => {
+      const sn = nodes[e.source_scene_id]
+      const tn = nodes[e.target_scene_id]
+      const implemented = !!(sn && tn && transSet.has(`${sn.name}->${tn.name}`))
+      return { source: e.source_scene_id, target: e.target_scene_id, implemented }
+    })
     for (const n of Object.values(nodes)) n.edges = []
     for (const e of edgeList.value) {
       const sn = nodes[e.source]
@@ -421,7 +431,7 @@ function render() {
     const sn = nodes[e.source]
     const tn = nodes[e.target]
     if (!sn || !tn) continue
-    drawEdge(ctx, sn, tn)
+    drawEdge(ctx, sn, tn, e)
   }
 
   // 节点
@@ -438,8 +448,9 @@ function drawNode(ctx: CanvasRenderingContext2D, n: GNode) {
   const r = 2
   // 高亮判定：选中节点本身或与选中节点直接相连的节点
   const isSelected = selectedNodeId.value === n.id
+  // 仅高亮选中节点的「出边」目标节点（入边不高亮）
   const isLinked = selectedNodeId.value !== null &&
-    n.edges.some(e => e.source === selectedNodeId.value || e.target === selectedNodeId.value)
+    n.edges.some(e => e.source === selectedNodeId.value)
   const isHighlighted = isSelected || isLinked
 
   ctx.beginPath()
@@ -469,16 +480,17 @@ function drawNode(ctx: CanvasRenderingContext2D, n: GNode) {
   ctx.fillText(n.name, n.x, n.y)
 }
 
-function drawEdge(ctx: CanvasRenderingContext2D, sn: GNode, tn: GNode) {
+function drawEdge(ctx: CanvasRenderingContext2D, sn: GNode, tn: GNode, edge?: GEdge) {
   const p1 = intersectRect(sn, sn.x, sn.y, tn.x, tn.y)
   const p2 = intersectRect(tn, tn.x, tn.y, sn.x, sn.y)
   if (!p1 || !p2) return
 
-  // 选中节点关联的边高亮为黄色
-  const isLinked = selectedNodeId.value !== null && (
-    sn.id === selectedNodeId.value || tn.id === selectedNodeId.value
-  )
-  const color = isLinked ? edgeColors.selected : edgeColors.implemented
+  // 只高亮选中节点的「出边」（source=选中节点），入边不高亮
+  const isLinked = selectedNodeId.value !== null && sn.id === selectedNodeId.value
+  // 未在 TransitionManager 中实现的单向边标红；选中高亮（黄色）优先级最高
+  const color = isLinked
+    ? edgeColors.selected
+    : (edge?.implemented === false ? edgeColors.missing : edgeColors.implemented)
 
   ctx.strokeStyle = color
   ctx.lineWidth = isLinked ? 3 : 2
@@ -487,9 +499,9 @@ function drawEdge(ctx: CanvasRenderingContext2D, sn: GNode, tn: GNode) {
   ctx.lineTo(p2.x, p2.y)
   ctx.stroke()
 
-  // 箭头
+  // 箭头（加大）
   const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x)
-  const size = 8
+  const size = 14
   ctx.fillStyle = color
   ctx.beginPath()
   ctx.moveTo(p2.x, p2.y)
