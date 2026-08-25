@@ -18,6 +18,14 @@ from backend.core.legacy.Scene.SceneGraph import SceneGraph
 
 # Todo：优化场景识别速度
 
+# OCR 小区域预放大参数：
+# 极小文本区域（如"剩余挑战券数量"数字角标）直接送模型时，det 预处理会先 padding 到
+# 32x32 再线性放大到短边 736，文字信息损失严重导致检测/识别失败（表现为"识别不到且极快返回"）。
+# 识别前先用 INTER_CUBIC 高质量插值把 ROI 放大到模型训练常用输入短边，可明显提升效果。
+_OCR_UPSCALE_MIN_SHORT_SIDE = 64   # ROI 短边低于该像素视为"过小区域"，触发预放大
+_OCR_UPSCALE_TARGET_SIDE = 736     # PaddleOCR det 模型训练常用输入短边（DetResizeForTest limit_side_len）
+_OCR_UPSCALE_MAX_RATIO = 16.0      # 放大倍数上限，防止极小区域放大过猛（内存/耗时保护）
+
 class Recognizer:
     def __init__(self, scene_graph: SceneGraph, parent_logger: str | logging.Logger = ""):
         if isinstance(parent_logger, str):
@@ -659,6 +667,21 @@ class Recognizer:
         if roi_img.ndim == 3 and roi_img.shape[2] == 4:
             roi_img = cv2.cvtColor(roi_img, cv2.COLOR_BGRA2BGR)
 
+        # 过小区域识别前放大：短边 < 64px 的 ROI 直接送模型时 det 内部 padding+放大导致
+        # 文字模糊、检测不到文本（表现为"识别不到且极快返回"）。这里先用 INTER_CUBIC 把
+        # ROI 放大到模型训练常用输入短边（736），提升小数字/角标区域的识别效果。
+        up_scale = 1.0
+        roi_h, roi_w = roi_img.shape[:2]
+        if min(roi_h, roi_w) < _OCR_UPSCALE_MIN_SHORT_SIDE:
+            up_scale = min(
+                _OCR_UPSCALE_TARGET_SIDE / float(min(roi_h, roi_w)),
+                _OCR_UPSCALE_MAX_RATIO,
+            )
+            new_w = max(int(round(roi_w * up_scale)), 1)
+            new_h = max(int(round(roi_h * up_scale)), 1)
+            roi_img = cv2.resize(roi_img, (new_w, new_h),
+                                 interpolation=cv2.INTER_CUBIC)
+
         try:
             # 注意：OnnxOcr.ocr 第二个参数是裁剪框 box，而非阈值。
             # 此处 roi_img 已是裁剪后的区域，传 None 表示无需坐标偏移复原；
@@ -670,7 +693,7 @@ class Recognizer:
             self.logger.error(f"[{ocr_area.name}] OCR 识别失败：{e}")
             return []
 
-        # 将区域内的文本框坐标叠加 ROI 偏移，转换为相对原图的坐标
+        # 将区域内的文本框坐标除以放大比例还原到 ROI 原坐标，再叠加 ROI 偏移得到原图坐标
         min_score = getattr(ocr_area, "ocr_min_score", 0.5)
         area_results = []
         for item in results:
@@ -679,8 +702,8 @@ class Recognizer:
             if score < min_score:
                 continue
             box = item.get("box", [])  # 框格式遵循项目惯例：[[x1, y1], [x2, y2], [x3, y3], [x4, y4]]
-            xs = [float(p[0]) for p in box]
-            ys = [float(p[1]) for p in box]
+            xs = [float(p[0]) / up_scale for p in box]
+            ys = [float(p[1]) / up_scale for p in box]
             area_results.append((text, [
                 x_start + int(min(xs)), y_start + int(min(ys)),
                 x_start + int(max(xs)), y_start + int(max(ys))

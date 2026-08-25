@@ -75,6 +75,10 @@ async def upload_element_image(element_id: str, file: UploadFile = File(...)):
     ok = _db.update_element_by_id(element_id, bgra=data)
     if not ok:
         raise HTTPException(status_code=500, detail="图像保存失败")
+    # 同步共享 SceneGraph 单例：重新推导 gray/mask，保证后续匹配/识别用新图
+    updated = _db.get_element_by_id(element_id)
+    if updated is not None:
+        _sync_graph_element(updated, refresh_image=True)
     return {"ok": True}
 
 
@@ -195,6 +199,7 @@ def update_scene(scene_id: str, payload: dict):
         ok = _db.rename_scene_by_id(scene_id, new_name)
         if not ok:
             raise HTTPException(status_code=400, detail="场景重命名失败（可能名称已存在）")
+        _sync_graph_scene_rename(scene_id, new_name)
     return {"ok": True}
 
 
@@ -204,6 +209,7 @@ def delete_scene(scene_id: str):
     ok = _db.delete_scene_by_id(scene_id)
     if not ok:
         raise HTTPException(status_code=404, detail="场景不存在")
+    _unsync_graph_scene(scene_id)
     return {"ok": True}
 
 
@@ -290,6 +296,7 @@ def create_element(payload: dict):
     element = _db.add_element(scene_id, name, **fields)
     if element is None:
         raise HTTPException(status_code=400, detail="元素创建失败（场景不存在或同名元素已存在）")
+    _sync_graph_element(element)
     return {"element": _element_summary(element)}
 
 
@@ -302,6 +309,10 @@ def update_element(element_id: str, payload: dict):
     ok = _db.update_element_by_id(element_id, **fields)
     if not ok:
         raise HTTPException(status_code=404, detail="元素不存在或更新失败")
+    # 同步共享 SceneGraph 单例：ROI/阈值/名称等字段变更后识别/匹配必须用新值
+    updated = _db.get_element_by_id(element_id)
+    if updated is not None:
+        _sync_graph_element(updated)
     return {"ok": True}
 
 
@@ -311,6 +322,7 @@ def delete_element(element_id: str):
     ok = _db.delete_element_by_id(element_id)
     if not ok:
         raise HTTPException(status_code=404, detail="元素不存在")
+    _unsync_graph_element(element_id)
     return {"ok": True}
 
 
@@ -386,6 +398,126 @@ def _find_element_in_graph(recognizer, element_id: str):
     return None
 
 
+# ===== 共享 SceneGraph 单例同步 =====
+# 共享 SceneGraph 首次构建时缓存了全部 Element 内存对象（含 ROI/阈值/gray/mask）。
+# 资源管理器中增删改元素/场景后必须同步该缓存，否则「执行匹配/OCR」仍用旧数据
+# （表现为"微调区域保存后识别又返回上次结果"）。
+_GRAPH_SYNC_FIELDS = (
+    "name", "symbol", "type", "threshold", "ratio_x", "ratio_y",
+    "match_type", "roi_x", "roi_y", "roi_width", "roi_height",
+    "ocr_min_score", "coordinate_x", "coordinate_y",
+)
+
+
+def _invalidate_scene_element_dict(scene):
+    """失效 Scene.element_dict 的 cached_property 缓存（改名/增删元素后需重建）"""
+    try:
+        if "element_dict" in scene.__dict__:
+            del scene.__dict__["element_dict"]
+    except Exception:
+        pass
+
+
+def _refresh_graph_element_image(target, new_bgra_bytes):
+    """IMG 元素 bgra 变更后重新推导 gray/mask（与 SceneGraph.__init__ 一致）"""
+    if not new_bgra_bytes:
+        return
+    try:
+        import numpy as np
+        import cv2
+        buf = np.frombuffer(bytes(new_bgra_bytes), dtype=np.uint8)
+        img = cv2.imdecode(buf, cv2.IMREAD_UNCHANGED)
+        if img is None:
+            return
+        object.__setattr__(target, "bgra", np.ascontiguousarray(img))
+        gray = cv2.cvtColor(img[:, :, :3], cv2.COLOR_BGR2GRAY).astype(np.uint8)
+        object.__setattr__(target, "gray", gray)
+        if img.shape[-1] == 4:
+            mask = (img[:, :, 3] > 0).astype(np.uint8) * 255
+        else:
+            mask = np.ones_like(gray, dtype=np.uint8) * 255
+        object.__setattr__(target, "mask", mask)
+    except Exception as e:
+        logger.warning(f"刷新 SceneGraph 元素图像失败: {e}")
+
+
+def _sync_graph_element(updated: Element, refresh_image: bool = False):
+    """将最新元素字段同步到共享 SceneGraph 单例。
+
+    - 共享 SceneGraph 为模块级单例，首次构建时缓存全部元素内存对象；
+    - 元素在资源管理器中更新后不同步，识别/匹配仍用旧 ROI/阈值；
+    - refresh_image=True（图片上传）时从 bgra 重新推导 gray/mask。
+    """
+    try:
+        from backend.services.scheduler_service import get_shared_scene_graph
+        graph = get_shared_scene_graph()
+    except Exception:
+        return
+    scene = next((s for s in graph.scenes.values() if s.id == updated.scene_id), None)
+    if scene is None:
+        return
+    target = next((e for e in scene.elements if e.id == updated.id), None)
+    if target is None:
+        # 新建元素首次同步：直接追加
+        scene.elements.append(updated)
+        if updated.type == ElementType.IMG and getattr(updated, "bgra", None):
+            _refresh_graph_element_image(updated, getattr(updated, "bgra", None))
+        target = updated
+    else:
+        for f in _GRAPH_SYNC_FIELDS:
+            try:
+                setattr(target, f, getattr(updated, f))
+            except Exception:
+                pass
+        if refresh_image:
+            _refresh_graph_element_image(target, getattr(updated, "bgra", None))
+    _invalidate_scene_element_dict(scene)
+
+
+def _unsync_graph_element(element_id: str):
+    """从共享 SceneGraph 单例移除元素（元素删除后）"""
+    try:
+        from backend.services.scheduler_service import get_shared_scene_graph
+        graph = get_shared_scene_graph()
+    except Exception:
+        return
+    for scene in graph.scenes.values():
+        before = len(scene.elements)
+        scene.elements = [e for e in scene.elements if e.id != element_id]
+        if len(scene.elements) != before:
+            _invalidate_scene_element_dict(scene)
+            return
+
+
+def _sync_graph_scene_rename(scene_id: str, new_name: str):
+    """同步共享 SceneGraph 中的场景改名（graph.scenes 以场景名为 key）"""
+    try:
+        from backend.services.scheduler_service import get_shared_scene_graph
+        graph = get_shared_scene_graph()
+    except Exception:
+        return
+    for old_key, s in list(graph.scenes.items()):
+        if s.id == scene_id:
+            if old_key != new_name:
+                del graph.scenes[old_key]
+                s.name = new_name
+                graph.scenes[new_name] = s
+            return
+
+
+def _unsync_graph_scene(scene_id: str):
+    """从共享 SceneGraph 单例移除场景（场景删除后）"""
+    try:
+        from backend.services.scheduler_service import get_shared_scene_graph
+        graph = get_shared_scene_graph()
+    except Exception:
+        return
+    for key, s in list(graph.scenes.items()):
+        if s.id == scene_id:
+            del graph.scenes[key]
+            return
+
+
 @router.post("/elements/{element_id}/match")
 def match_element(element_id: str):
     """元素执行匹配：加载其所属场景底图并对该元素执行 element_match
@@ -425,11 +557,10 @@ def ocr_element(element_id: str):
         raise HTTPException(status_code=400, detail="仅 OCR 区域类型元素可执行识别")
     scene_img = _load_scene_image(element.scene_id)
     recognizer = _get_recognizer()
-    graph_element = _find_element_in_graph(recognizer, element_id)
-    if graph_element is None:
-        return {"ok": False, "error": "SceneGraph 中找不到该元素"}
+    # OCR 识别仅依赖 ROI/ocr_min_score 等标量字段（不需要 gray/mask），直接用数据库最新
+    # 元素对象，避免共享 SceneGraph 单例缓存旧 ROI 导致"微调区域保存后识别结果不变"。
     try:
-        results = recognizer.area_ocr(scene_img, graph_element, bool_debug=False)
+        results = recognizer.area_ocr(scene_img, element, bool_debug=False)
         return {
             "ok": True,
             "results": [
