@@ -82,7 +82,7 @@ class XiaoHaoTiLi(BaseTask):
             self.__update_progress()
             return self.__set_next_scene()
         if self.operationer.click_and_wait("超影扫荡"):
-            self.logger.warning("装备")
+            self.logger.info("存在超影扫荡选项，自动使用")
             self.__update_progress()
             return self.__set_next_scene()
         # 先看看当前装备能不能进阶，毕竟进阶说明没有能扫荡的了
@@ -91,7 +91,7 @@ class XiaoHaoTiLi(BaseTask):
             return False
         if self.operationer.click_and_wait("可装备"):
             self.operationer.click_and_wait("一键添加")
-            self.logger.warning("存在[可装备]装备，已一键添加")
+            self.logger.info("存在[可装备]装备，已一键添加")
         elif self.operationer.click_and_wait("可合成"):
             self.logger.debug("存在[可合成]装备，将合成")
         elif self.operationer.click_and_wait("可扫荡"):
