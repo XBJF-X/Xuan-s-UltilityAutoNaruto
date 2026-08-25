@@ -91,6 +91,8 @@ export const utilsApi = {
     client.get('/utils/log-history', { params: { config_id: configId, limit } }),
   // 检查更新：对比本地 version.json 与 GitHub v17 分支，返回提交历史
   checkUpdate: () => client.get('/utils/check-update'),
+  // 依赖健康检查：版本是否满足 MIN_RELEASE_TAG + 关键模块是否缺失
+  checkDependency: () => client.get('/utils/dependency-check'),
   // 应用更新（后台执行，进度通过 updateStatus 轮询）
   applyUpdate: () => client.post('/utils/apply-update'),
   // 应用大更新：下载最新 GitHub Release 安装包并自动重启安装（进度通过 updateStatus 轮询）

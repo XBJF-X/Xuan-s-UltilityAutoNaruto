@@ -6,6 +6,7 @@ import re
 import time
 from fastapi import APIRouter, HTTPException
 from backend.services.config_service import shared_config_service as _config_service
+from backend.api.utils import _read_local_version, _read_min_release_tag, _version_gt
 
 router = APIRouter()
 _schedulers: dict[str, object] = {}
@@ -205,6 +206,20 @@ async def precheck_scheduler(config_id: str):
 
 @router.post("/start/{config_id}")
 async def start_scheduler(config_id: str):
+    # 依赖库版本硬拦截：本 commit 需要的最旧依赖库 ReleaseTag（MIN_RELEASE_TAG）不满足时
+    # 禁止启动调度器——热更新只替换代码、不携带依赖库（OCR 模型/DLL 等），若本地 _version.py
+    # 低于所需版本，运行期可能因代码依赖新依赖库出现恶性 BUG，必须走 Release 完整安装包更新。
+    local_version = _read_local_version()
+    required_tag, required_version = _read_min_release_tag()
+    if required_version and local_version and _version_gt(required_version, local_version):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"当前版本 {local_version} 低于本版本要求的最低版本 {required_tag}，"
+                f"依赖库不完整，禁止启动调度器。请前往 Release 下载最新安装包更新。"
+            ),
+        )
+
     sched = _get_scheduler(config_id)
     ok = sched.start()
     if not ok:

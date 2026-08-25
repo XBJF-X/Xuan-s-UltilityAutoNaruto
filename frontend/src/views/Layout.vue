@@ -274,7 +274,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useMessage } from 'naive-ui'
+import { useMessage, useDialog } from 'naive-ui'
 import {
   RefreshOutlined, SettingsOutlined, SystemUpdateOutlined,
   FolderOpenOutlined, HelpOutlineOutlined, CameraOutlined, HubOutlined,
@@ -294,6 +294,7 @@ import { useWebSocket } from '@/api/ws'
 const router = useRouter()
 const appStore = useAppStore()
 const message = useMessage()
+const dialog = useDialog()
 
 const showCreateDialog = ref(false)
 const newUsername = ref('')
@@ -670,8 +671,37 @@ function openResourceGraph() {
 onMounted(() => {
   appStore.checkBackendHealth()
   appStore.loadConfigs()
+  checkDependencyOnStart()
   checkUpdateOnStart()
 })
+
+// 启动时依赖健康检查：版本过低或模块缺失时弹窗引导前往 Release 更新，
+// 让用户在依赖库不完整时也能通过界面操作，而不是只能在群里求助。
+async function checkDependencyOnStart() {
+  try {
+    const res = await utilsApi.checkDependency()
+    const data = res.data
+    if (!data || data.ok) return
+    const msgs: string[] = []
+    if (data.deprecated) {
+      msgs.push(`当前版本 ${data.local_version} 低于本版本要求的最低版本 ${data.required_tag}，依赖库不完整`)
+    }
+    if (data.missing_modules?.length) {
+      msgs.push(`检测到以下依赖缺失：${data.missing_modules.join('、')}`)
+    }
+    dialog.warning({
+      title: '依赖库不完整',
+      content: `${msgs.join('\n')}\n\n为避免任务出现异常，请前往 GitHub Release 页面下载最新安装包更新。`,
+      positiveText: '前往 Release',
+      negativeText: '稍后再说',
+      onPositiveClick: () => {
+        window.open(data.release_url || 'https://github.com/XBJF-X/Xuan-s-UltilityAutoNaruto/releases', '_blank')
+      },
+    })
+  } catch {
+    // 依赖检查接口异常时静默忽略，不打扰用户
+  }
+}
 
 // 程序启动时自动检查更新：仅当全局设置"自动更新"开启且云端有新版本时弹出更新窗口
 async function checkUpdateOnStart() {

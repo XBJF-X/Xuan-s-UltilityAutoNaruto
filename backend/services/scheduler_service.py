@@ -326,6 +326,21 @@ class SchedulerService:
                 return False
             self.running = True
 
+        # 依赖库版本拦截（兜底：API 层 start_scheduler 已拦截，这里防止绕过 API 直接调用，
+        # 保证任何入口都不会在依赖库版本不满足时启动调度器）
+        try:
+            from backend.api.utils import _read_local_version, _read_min_release_tag, _version_gt
+            local_version = _read_local_version()
+            required_tag, required_version = _read_min_release_tag()
+            if required_version and local_version and _version_gt(required_version, local_version):
+                self.logger.error(
+                    "当前版本 %s 低于本版本要求的最低版本 %s，依赖库不完整，禁止启动调度器。"
+                    "请前往 Release 下载最新安装包更新。", local_version, required_tag)
+                self.running = False
+                return False
+        except Exception:
+            pass  # 版本检查异常不阻塞启动，避免误伤正常用户
+
         self.logger.info("正在启动调度器...")
         try:
             TASK_TYPE_MAP, BaseTask, TaskType = self._lazy_init()
@@ -333,6 +348,11 @@ class SchedulerService:
             import traceback
             tb = traceback.format_exc()
             self.logger.error(f"设备初始化失败: {e}\n{tb}")
+            # 依赖模块缺失（如热更新后代码依赖新版安装包中的 Python 包/DLL）时给出明确指引
+            if isinstance(e, (ModuleNotFoundError, ImportError)):
+                self.logger.error(
+                    "检测到依赖模块缺失（%s）：热更新只替换代码、不携带依赖库。"
+                    "请前往 GitHub Release 下载最新安装包更新后再启动调度器。", e)
             self.running = False
             return False
 

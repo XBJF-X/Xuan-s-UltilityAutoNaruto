@@ -1,4 +1,5 @@
 """工具类 API 路由 - 历史日志 / 检查更新 / 应用更新 / 反馈打包"""
+import importlib
 import json
 import logging
 import os
@@ -286,6 +287,56 @@ def _read_min_release_tag() -> tuple[str, str]:
         return "", ""
 
 
+# 关键依赖模块探测清单（find_spec 仅查是否存在、不实际加载，避免触发重型初始化）
+_DEPENDENCY_PROBE_MODULES = (
+    "onnxruntime",
+    "minidevice",
+    "adbutils",
+    "uiautomator2",
+    "cv2",
+    "numpy",
+)
+
+
+def check_dependency() -> dict:
+    """依赖健康检查：本 commit 所需依赖库版本是否满足 + 关键 Python 依赖是否缺失。
+
+    用于：①调度器启动前硬拦截（不满足禁止启动，防止因代码依赖新依赖库导致任务恶性 BUG）；
+         ②前端启动时弹窗提示用户前往 Release 下载完整安装包。
+    """
+    import importlib.util
+
+    local_version = _read_local_version()
+    required_tag, required_version = _read_min_release_tag()
+    deprecated = (
+        bool(required_version)
+        and bool(local_version)
+        and _version_gt(required_version, local_version)
+    )
+
+    missing_modules = []
+    for mod_name in _DEPENDENCY_PROBE_MODULES:
+        try:
+            spec = importlib.util.find_spec(mod_name)
+            if spec is None:
+                missing_modules.append(mod_name)
+        except (ImportError, AttributeError):
+            missing_modules.append(mod_name)
+        except Exception:
+            # 其余异常（模块自身初始化报错等）不归类为缺失，避免误报
+            pass
+
+    return {
+        "ok": not deprecated and not missing_modules,
+        "deprecated": deprecated,
+        "local_version": local_version,
+        "required_tag": required_tag,
+        "required_version": required_version,
+        "missing_modules": missing_modules,
+        "release_url": _RELEASES_URL,
+    }
+
+
 def _parse_version(v: str):
     """解析语义化版本号 -> (major, minor, patch, prerelease)；无法解析返回 None。"""
     if not v:
@@ -432,6 +483,25 @@ def _read_local_sha() -> Optional[str]:
     except Exception:
         pass
     return None
+
+
+@router.get("/dependency-check")
+async def dependency_check():
+    """依赖健康检查：版本是否满足 MIN_RELEASE_TAG + 关键模块是否缺失。
+
+    前端启动时调用，发现异常时弹窗引导用户前往 Release 更新。
+    """
+    result = check_dependency()
+    # 汇总后端启动时导入失败的路由模块（main.py 逐个导入容错收集，保证界面可用）
+    try:
+        import backend.main as _bm
+        failed = getattr(_bm, "_FAILED_API_MODULES", None) or []
+        if failed:
+            result["missing_modules"] = list(result["missing_modules"]) + list(failed)
+            result["ok"] = False
+    except Exception:
+        pass
+    return result
 
 
 @router.get("/check-update")

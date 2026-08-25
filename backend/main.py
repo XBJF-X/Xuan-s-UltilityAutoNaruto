@@ -24,7 +24,34 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from backend.api import config, tasks, scheduler, settings as api_settings, ws, utils as api_utils, device as api_device, validate, resource
+# 逐个导入 API 路由模块并容错：任一模块因依赖缺失（如热更新后缺少新版安装包中的依赖）
+# 导入失败时，跳过该模块并记录，保证应用仍能启动（前端界面可显示、检查更新可用）。
+import importlib
+
+# (模块名, 路由前缀, 标签)；顺序与原先一致
+_API_ROUTERS_SPEC = [
+    ("config", "/api/configs", "配置管理"),
+    ("tasks", "/api/tasks", "任务管理"),
+    ("scheduler", "/api/scheduler", "调度器"),
+    ("settings", "/api/settings", "全局设置"),
+    ("utils", "/api/utils", "工具"),
+    ("validate", "/api/utils", "工具"),
+    ("device", "/api/device", "设备"),
+    ("resource", "/api/resource", "资源管理"),
+    ("ws", "/ws", "WebSocket"),
+]
+
+# 各路由模块导入结果（导入失败为 None）
+_API_MODULES: dict[str, object] = {}
+# 导入失败的模块及原因（供 /api/utils/dependency-check 汇总展示）
+_FAILED_API_MODULES: list[str] = []
+
+for _mod_name, _prefix, _tag in _API_ROUTERS_SPEC:
+    try:
+        _API_MODULES[_mod_name] = importlib.import_module(f"backend.api.{_mod_name}")
+    except Exception as _e:
+        _API_MODULES[_mod_name] = None
+        _FAILED_API_MODULES.append(f"{_mod_name}: {_e}")
 
 # ===== 全局崩溃捕获 =====
 # 将未捕获的异常也通过 logging 发送到 WebSocket（而不只是 stderr）
@@ -62,7 +89,6 @@ from contextlib import asynccontextmanager
 async def lifespan(app: FastAPI):
     """应用生命周期：启动时初始化，关闭时清理"""
     import asyncio
-    from backend.api.ws import get_ws_log_handler
     from backend.log_setup import setup_backend_logging
 
     # ---- 启动逻辑 ----
@@ -70,15 +96,22 @@ async def lifespan(app: FastAPI):
     setup_backend_logging()
 
     # 2. 添加 WebSocket 日志推送（全局共享实例，root 与 config logger 共用）
-    ws_handler = get_ws_log_handler()
-    ws_handler.setFormatter(logging.Formatter("%(message)s"))
-    ws_handler.set_loop(asyncio.get_event_loop())
-    ws_handler.setLevel(logging.DEBUG)
-    root_logger = logging.getLogger()
-    if ws_handler not in root_logger.handlers:
-        root_logger.addHandler(ws_handler)
-
-    logging.getLogger("WebSocket").info("WebSocket 日志推送已启动")
+    #    模块导入失败时跳过，不阻塞应用启动（前端界面与检查更新仍可用）
+    ws_module = _API_MODULES.get("ws")
+    if ws_module is not None:
+        try:
+            ws_handler = ws_module.get_ws_log_handler()
+            ws_handler.setFormatter(logging.Formatter("%(message)s"))
+            ws_handler.set_loop(asyncio.get_event_loop())
+            ws_handler.setLevel(logging.DEBUG)
+            root_logger = logging.getLogger()
+            if ws_handler not in root_logger.handlers:
+                root_logger.addHandler(ws_handler)
+            logging.getLogger("WebSocket").info("WebSocket 日志推送已启动")
+        except Exception as e:
+            logging.getLogger("WebSocket").warning("WebSocket 日志推送初始化失败: %s", e)
+    else:
+        logging.getLogger("WebSocket").warning("ws 模块导入失败，跳过 WebSocket 日志推送")
 
     # 3. 清理过期日志
     _clean_old_logs()
@@ -188,16 +221,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 注册路由
-app.include_router(config.router, prefix="/api/configs", tags=["配置管理"])
-app.include_router(tasks.router, prefix="/api/tasks", tags=["任务管理"])
-app.include_router(scheduler.router, prefix="/api/scheduler", tags=["调度器"])
-app.include_router(api_settings.router, prefix="/api/settings", tags=["全局设置"])
-app.include_router(api_utils.router, prefix="/api/utils", tags=["工具"])
-app.include_router(validate.router, prefix="/api/utils", tags=["工具"])
-app.include_router(api_device.router, prefix="/api/device", tags=["设备"])
-app.include_router(resource.router, prefix="/api/resource", tags=["资源管理"])
-app.include_router(ws.router, prefix="/ws", tags=["WebSocket"])
+# 注册路由（导入失败的模块自动跳过，保证其余接口可用）
+for _mod_name, _prefix, _tag in _API_ROUTERS_SPEC:
+    _mod = _API_MODULES.get(_mod_name)
+    if _mod is not None and getattr(_mod, "router", None) is not None:
+        app.include_router(_mod.router, prefix=_prefix, tags=[_tag])
+    elif _mod is not None:
+        logging.getLogger("WebSocket").warning("模块 %s 导入成功但缺少 router，跳过注册", _mod_name)
 
 # 生产环境：托管前端静态文件（使用中间件处理 SPA 回退，不拦截 API）
 frontend_dist = _project_root / "frontend" / "dist"
