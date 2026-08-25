@@ -28,7 +28,7 @@ NewRun.bat
 Todo.txt
 start_backend.bat
 start_frontend.bat
-scripts/mem_profile.py
+scripts
 docs/scheduler-architecture-review.md
 
 
