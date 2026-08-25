@@ -249,8 +249,64 @@ _INSTALLER_ASSET_PREFIX = "XuanInstaller_V"
 # 低于该版本时，检查更新将提示用户前往 Release 下载完整安装包。
 _MIN_RELEASE_TAG_FILE = "MIN_RELEASE_TAG"
 
-# GitHub Releases 页面地址（依赖库过旧且无可用安装包资产时引导用户手动下载）
-_RELEASES_URL = f"https://github.com/{_GITHUB_OWNER}/{_GITHUB_REPO}/releases"
+# ===== 更新源平台配置（GitHub + Gitee 双源） =====
+# Gitee OpenAPI（gitee.com/api/v5）的 branches/commits 响应结构与 GitHub 兼容（已实测），
+# releases/latest 在未发布时返回 404（按"无 release"处理）；zipball 走 archive 直链匿名下载。
+_PLATFORM_GITHUB = {
+    "key": "github",
+    "label": "GitHub",
+    "owner": _GITHUB_OWNER,
+    "repo": _GITHUB_REPO,
+    "api_base": "https://api.github.com/repos",
+    "headers": {"Accept": "application/vnd.github+json"},
+    "zip_url": "https://codeload.github.com/{owner}/{repo}/zip/refs/heads/{branch}",
+    "releases_url": "https://github.com/{owner}/{repo}/releases",
+}
+_PLATFORM_GITEE = {
+    "key": "gitee",
+    "label": "Gitee",
+    "owner": "xuan-bu-jiu-fei",
+    "repo": "Xuan-s-UltilityAutoNaruto",
+    "api_base": "https://gitee.com/api/v5/repos",
+    "headers": {},
+    "zip_url": "https://gitee.com/{owner}/{repo}/repository/archive/{branch}.zip",
+    "releases_url": "https://gitee.com/{owner}/{repo}/releases",
+}
+_PLATFORMS = {"github": _PLATFORM_GITHUB, "gitee": _PLATFORM_GITEE}
+# auto 时按此顺序尝试（gitee 优先，适应国内网络；失败自动降级 github）
+_AUTO_PLATFORM_ORDER = ("gitee", "github")
+
+# 兼容旧引用（GitHub Releases 页面地址）
+_RELEASES_URL = _PLATFORM_GITHUB["releases_url"]
+
+
+def _get_update_source() -> str:
+    """读取 [助手设置] 更新源：github / gitee / auto（默认 auto）。"""
+    try:
+        from backend.services.settings_service import SettingsService
+        v = (SettingsService().get("助手设置", "更新源") or "").strip().lower()
+        if v in _PLATFORMS:
+            return v
+    except Exception:
+        pass
+    return "auto"
+
+
+def _select_platforms() -> list:
+    """按优先级返回更新源平台列表（auto = gitee 优先、github 兜底）。"""
+    src = _get_update_source()
+    if src in _PLATFORMS:
+        return [_PLATFORMS[src]]
+    return [_PLATFORMS[k] for k in _AUTO_PLATFORM_ORDER if k in _PLATFORMS]
+
+
+def _api_url(platform: dict, path: str) -> str:
+    return f"{platform['api_base']}/{platform['owner']}/{platform['repo']}/{path}"
+
+
+def _get_releases_url(platform: dict = None) -> str:
+    pf = platform or _select_platforms()[0]
+    return pf["releases_url"].format(owner=pf["owner"], repo=pf["repo"])
 
 
 def _read_local_version() -> str:
@@ -333,7 +389,7 @@ def check_dependency() -> dict:
         "required_tag": required_tag,
         "required_version": required_version,
         "missing_modules": missing_modules,
-        "release_url": _RELEASES_URL,
+        "release_url": _get_releases_url(),
     }
 
 
@@ -382,50 +438,67 @@ def _is_major_minor_update(remote_version: str, local_version: str) -> bool:
     return (pr[0], pr[1]) > (pl[0], pl[1])
 
 
-def _check_full_update(local_version: str) -> dict:
-    """查询 GitHub 最新 Release，判断是否存在需要走安装包的大更新。"""
-    try:
-        headers = {"Accept": "application/vnd.github+json"}
-        resp = requests.get(
-            f"https://api.github.com/repos/{_GITHUB_OWNER}/{_GITHUB_REPO}/releases/latest",
-            headers=headers, verify=False, timeout=15,
-        )
-        if resp.status_code != 200:
-            return {"ok": False, "message": f"GitHub Release 请求失败（{resp.status_code}）"}
-        rel = json.loads(resp.content.decode("utf-8"))
-        tag = str(rel.get("tag_name", ""))
-        version = tag.lstrip("vV")
-        asset = None
-        for a in rel.get("assets", []):
-            name = str(a.get("name", ""))
-            if name.lower().startswith(_INSTALLER_ASSET_PREFIX.lower()) and name.lower().endswith(".exe"):
-                asset = a
-                break
-        # 仅 major/minor 提升才触发大更新；同 minor 的 PATCH 级 Release 走热更新
-        has_update = (
-            bool(asset)
-            and bool(local_version)
-            and _version_gt(version, local_version)
-            and _is_major_minor_update(version, local_version)
-        )
-        return {
-            "ok": True,
-            "has_update": has_update,
-            "tag": tag,
-            "version": version,
-            "name": str(rel.get("name") or tag),
-            "published_at": rel.get("published_at"),
-            "body": (rel.get("body") or "").strip(),
-            "local_version": local_version,
-            "asset": {
-                "name": str(asset.get("name")),
-                "size": int(asset.get("size") or 0),
-                "download_url": str(asset.get("browser_download_url")),
-                "digest": str(asset.get("digest") or ""),
-            } if asset else None,
-        }
-    except Exception as e:
-        return {"ok": False, "message": f"检查大更新出错：{e}"}
+def _check_full_update(local_version: str, platform: dict = None) -> dict:
+    """查询更新源最新 Release，判断是否存在需要走安装包的大更新。
+
+    按更新源配置依次尝试平台；某平台未发布 Release（404）时降级到下一个平台；
+    全部平台均无 Release 时视为"无大更新"（has_update=False），不阻塞热更新检查。
+    """
+    platforms = [platform] if platform else _select_platforms()
+    tried = []
+    for pf in platforms:
+        tried.append(pf["label"])
+        try:
+            resp = requests.get(
+                _api_url(pf, "releases/latest"),
+                headers=pf["headers"], verify=False, timeout=15,
+            )
+            if resp.status_code == 404:
+                continue  # 该平台尚未发布 Release，降级尝试下一个平台
+            if resp.status_code != 200:
+                continue
+            rel = json.loads(resp.content.decode("utf-8"))
+            tag = str(rel.get("tag_name", ""))
+            version = tag.lstrip("vV")
+            asset = None
+            for a in rel.get("assets", []) or []:
+                name = str(a.get("name", ""))
+                if name.lower().startswith(_INSTALLER_ASSET_PREFIX.lower()) and name.lower().endswith(".exe"):
+                    asset = a
+                    break
+            # 仅 major/minor 提升才触发大更新；同 minor 的 PATCH 级 Release 走热更新
+            has_update = (
+                bool(asset)
+                and bool(local_version)
+                and _version_gt(version, local_version)
+                and _is_major_minor_update(version, local_version)
+            )
+            return {
+                "ok": True,
+                "has_update": has_update,
+                "tag": tag,
+                "version": version,
+                "name": str(rel.get("name") or tag),
+                "published_at": rel.get("published_at"),
+                "body": (rel.get("body") or "").strip(),
+                "local_version": local_version,
+                "asset": {
+                    "name": str(asset.get("name")),
+                    "size": int(asset.get("size") or 0),
+                    "download_url": str(asset.get("browser_download_url")
+                                        or asset.get("download_url") or ""),
+                    "digest": str(asset.get("digest") or ""),
+                } if asset else None,
+                "source": pf["label"],
+            }
+        except Exception:
+            continue
+    return {
+        "ok": True, "has_update": False,
+        "tag": "", "version": "", "name": "",
+        "published_at": "", "body": "", "local_version": local_version,
+        "asset": None, "source": " / ".join(tried) or "none",
+    }
 
 
 def _write_restart_request(mode: str, installer: str = "") -> bool:
@@ -509,63 +582,78 @@ async def check_update():
     """检查更新：对比本地 version.json 与 GitHub v17 分支，返回云端提交历史"""
     current_sha = _read_local_sha()
     try:
-        headers = {"Accept": "application/vnd.github+json"}
-        # 分支最新提交
-        branch_url = f"https://api.github.com/repos/{_GITHUB_OWNER}/{_GITHUB_REPO}/branches/{_BRANCH}"
-        resp = requests.get(branch_url, headers=headers, verify=False, timeout=15)
-        if resp.status_code != 200:
-            return {"ok": False, "message": f"GitHub API 请求失败（{resp.status_code}）"}
-        branch_data = json.loads(resp.content.decode("utf-8"))
-        latest_sha = branch_data["commit"]["sha"]
-        latest_message = branch_data["commit"]["commit"]["message"]
-
-        # 提交历史
+        # 按更新源配置依次尝试平台（auto = gitee 优先、github 兜底），分支请求成功即使用该平台
+        used_platform = None
+        latest_sha = latest_message = ""
         commits = []
-        commits_resp = requests.get(
-            f"https://api.github.com/repos/{_GITHUB_OWNER}/{_GITHUB_REPO}/commits",
-            params={"sha": _BRANCH, "per_page": 20},
-            headers=headers, verify=False, timeout=15,
-        )
-        if commits_resp.status_code == 200:
-            for c in json.loads(commits_resp.content.decode("utf-8")):
-                commits.append({
-                    "sha": c["sha"],
-                    "short_sha": c["sha"][:7],
-                    "message": (c["commit"]["message"] or "").splitlines()[0],
-                    "date": c["commit"]["committer"]["date"],
-                    "author": (c["commit"]["author"].get("name") or ""),
-                })
-
         current_commit = None
-        if current_sha:
-            # 尝试从云端历史中找本地提交信息
-            for c in commits:
-                if c["sha"] == current_sha:
-                    current_commit = c
-                    break
-            if not current_commit:
-                try:
-                    c_resp = requests.get(
-                        f"https://api.github.com/repos/{_GITHUB_OWNER}/{_GITHUB_REPO}/commits/{current_sha}",
-                        headers=headers, verify=False, timeout=15,
-                    )
-                    if c_resp.status_code == 200:
-                        c = json.loads(c_resp.content.decode("utf-8"))
-                        current_commit = {
+        for pf in _select_platforms():
+            try:
+                resp = requests.get(
+                    _api_url(pf, f"branches/{_BRANCH}"),
+                    headers=pf["headers"], verify=False, timeout=15,
+                )
+            except Exception:
+                continue
+            if resp.status_code != 200:
+                continue
+            used_platform = pf
+            branch_data = json.loads(resp.content.decode("utf-8"))
+            latest_sha = branch_data["commit"]["sha"]
+            latest_message = branch_data["commit"]["commit"]["message"]
+
+            # 提交历史
+            try:
+                commits_resp = requests.get(
+                    _api_url(pf, "commits"),
+                    params={"sha": _BRANCH, "per_page": 20},
+                    headers=pf["headers"], verify=False, timeout=15,
+                )
+                if commits_resp.status_code == 200:
+                    for c in json.loads(commits_resp.content.decode("utf-8")):
+                        commits.append({
                             "sha": c["sha"],
                             "short_sha": c["sha"][:7],
                             "message": (c["commit"]["message"] or "").splitlines()[0],
                             "date": c["commit"]["committer"]["date"],
                             "author": (c["commit"]["author"].get("name") or ""),
-                        }
-                except Exception:
-                    pass
+                        })
+            except Exception:
+                pass
+
+            # 本地提交详情（云端历史中没有时按 sha 单独拉取）
+            if current_sha:
+                for c in commits:
+                    if c["sha"] == current_sha:
+                        current_commit = c
+                        break
+                if not current_commit:
+                    try:
+                        c_resp = requests.get(
+                            _api_url(pf, f"commits/{current_sha}"),
+                            headers=pf["headers"], verify=False, timeout=15,
+                        )
+                        if c_resp.status_code == 200:
+                            c = json.loads(c_resp.content.decode("utf-8"))
+                            current_commit = {
+                                "sha": c["sha"],
+                                "short_sha": c["sha"][:7],
+                                "message": (c["commit"]["message"] or "").splitlines()[0],
+                                "date": c["commit"]["committer"]["date"],
+                                "author": (c["commit"]["author"].get("name") or ""),
+                            }
+                    except Exception:
+                        pass
+            break  # 分支请求成功即使用该平台
+
+        if used_platform is None:
+            return {"ok": False, "message": "检查更新失败：更新源（GitHub/Gitee）均不可达"}
 
         has_update = current_sha is None or current_sha != latest_sha
 
-        # 大更新检查：GitHub Releases/latest 版本对比（依赖库/正式版本走安装包）
+        # 大更新检查：更新源 Releases/latest 版本对比（依赖库/正式版本走安装包）
         local_version = _read_local_version()
-        full = _check_full_update(local_version)
+        full = _check_full_update(local_version, used_platform)
         full_update = bool(full.get("ok") and full.get("has_update"))
 
         # 依赖库版本检查：本 commit 需要的最旧 ReleaseTag（根目录 MIN_RELEASE_TAG）
@@ -595,7 +683,7 @@ async def check_update():
             full["deprecated"] = True
             full["required_tag"] = required_tag
             full["required_version"] = required_version
-            full["release_url"] = _RELEASES_URL
+            full["release_url"] = _get_releases_url(used_platform)
 
         # 有大更新时优先大更新（Release 包含全部变更）；否则走热更新
         update_type = "full" if full_update else ("hot" if has_update else "none")
@@ -665,21 +753,33 @@ def _do_apply_update():
             shutil.rmtree(tmp_root, ignore_errors=True)
         tmp_root.mkdir(parents=True, exist_ok=True)
 
-        # ---- 1. 下载 zipball ----
+        # ---- 1. 下载 zipball（按更新源配置依次尝试平台）----
         _set_update_status(phase="downloading", percent=5, message="正在下载云端最新版本...")
-        zip_url = f"https://codeload.github.com/{_GITHUB_OWNER}/{_GITHUB_REPO}/zip/refs/heads/{_BRANCH}"
         zip_path = tmp_root / "update.zip"
-        with requests.get(zip_url, verify=False, timeout=60, stream=True) as r:
-            r.raise_for_status()
-            total = int(r.headers.get("Content-Length", 0))
-            downloaded = 0
-            with open(zip_path, "wb") as f:
-                for chunk in r.iter_content(chunk_size=1024 * 256):
-                    f.write(chunk)
-                    downloaded += len(chunk)
-                    if total:
-                        pct = 5 + int(downloaded / total * 45)
-                        _set_update_status(phase="downloading", percent=pct, message=f"下载中 {downloaded // 1024}KB / {total // 1024}KB")
+        download_ok = False
+        for pf in _select_platforms():
+            zip_url = pf["zip_url"].format(owner=pf["owner"], repo=pf["repo"], branch=_BRANCH)
+            try:
+                with requests.get(zip_url, verify=False, timeout=60, stream=True) as r:
+                    r.raise_for_status()
+                    total = int(r.headers.get("Content-Length", 0))
+                    downloaded = 0
+                    with open(zip_path, "wb") as f:
+                        for chunk in r.iter_content(chunk_size=1024 * 256):
+                            f.write(chunk)
+                            downloaded += len(chunk)
+                            if total:
+                                pct = 5 + int(downloaded / total * 45)
+                                _set_update_status(phase="downloading", percent=pct, message=f"下载中 {downloaded // 1024}KB / {total // 1024}KB")
+                    download_ok = True
+                    break
+            except Exception as e:
+                logger.warning(f"从 {pf['label']} 下载更新包失败: {e}")
+                continue
+        if not download_ok:
+            _set_update_status(phase="error", percent=0, running=False,
+                               message="更新包下载失败：所有更新源均不可达", error="download_failed")
+            return
 
         # ---- 2. 解压 ----
         _set_update_status(phase="extracting", percent=50, message="正在解压更新包...")
@@ -737,7 +837,7 @@ def _do_apply_update():
 
         # ---- 4. 更新 version.json ----
         _set_update_status(phase="writing-version", percent=92, message="正在更新版本记录...")
-        latest = _read_local_sha_from_github()
+        latest = _get_latest_sha()
         vf = Path(get_real_path("version.json"))
         if latest:
             with open(vf, "w", encoding="utf-8") as f:
@@ -842,17 +942,18 @@ def _do_apply_release_update():
         _set_update_status(phase="error", percent=0, running=False, message=f"大更新失败：{e}", error=str(e))
 
 
-def _read_local_sha_from_github() -> Optional[str]:
-    try:
-        headers = {"Accept": "application/vnd.github+json"}
-        resp = requests.get(
-            f"https://api.github.com/repos/{_GITHUB_OWNER}/{_GITHUB_REPO}/branches/{_BRANCH}",
-            headers=headers, verify=False, timeout=15,
-        )
-        if resp.status_code == 200:
-            return json.loads(resp.content.decode("utf-8"))["commit"]["sha"]
-    except Exception:
-        pass
+def _get_latest_sha() -> Optional[str]:
+    """获取更新源分支最新 SHA（按更新源配置依次尝试平台）。"""
+    for pf in _select_platforms():
+        try:
+            resp = requests.get(
+                _api_url(pf, f"branches/{_BRANCH}"),
+                headers=pf["headers"], verify=False, timeout=15,
+            )
+            if resp.status_code == 200:
+                return json.loads(resp.content.decode("utf-8"))["commit"]["sha"]
+        except Exception:
+            continue
     return None
 
 
