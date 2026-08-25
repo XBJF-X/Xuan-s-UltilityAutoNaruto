@@ -18,13 +18,14 @@ from backend.core.legacy.Scene.SceneGraph import SceneGraph
 
 # Todo：优化场景识别速度
 
-# OCR 小区域预放大参数：
+# OCR 小区域预放大参数（2026-08-25 实测校准）：
 # 极小文本区域（如"剩余挑战券数量"数字角标）直接送模型时，det 预处理会先 padding 到
 # 32x32 再线性放大到短边 736，文字信息损失严重导致检测/识别失败（表现为"识别不到且极快返回"）。
-# 识别前先用 INTER_CUBIC 高质量插值把 ROI 放大到模型训练常用输入短边，可明显提升效果。
-_OCR_UPSCALE_MIN_SHORT_SIDE = 64   # ROI 短边低于该像素视为"过小区域"，触发预放大
-_OCR_UPSCALE_TARGET_SIDE = 736     # PaddleOCR det 模型训练常用输入短边（DetResizeForTest limit_side_len）
-_OCR_UPSCALE_MAX_RATIO = 16.0      # 放大倍数上限，防止极小区域放大过猛（内存/耗时保护）
+# 实测 3 张不同数字截图对比：原始 ROI 识别不稳定（数字 9/6 丢失），预放大到短边 256
+# （约 3 倍）三张全部稳定识别出数字；放大到 512/736 反而因插值失真导致数字丢失。
+_OCR_UPSCALE_MIN_SHORT_SIDE = 128   # ROI 短边低于该像素视为"小区域"，触发预放大
+_OCR_UPSCALE_TARGET_SIDE = 256      # 放大目标：短边放大到 256（实测识别最稳定）
+_OCR_UPSCALE_MAX_RATIO = 16.0       # 放大倍数上限，防止极小区域放大过猛（内存/耗时保护）
 
 class Recognizer:
     def __init__(self, scene_graph: SceneGraph, parent_logger: str | logging.Logger = ""):
