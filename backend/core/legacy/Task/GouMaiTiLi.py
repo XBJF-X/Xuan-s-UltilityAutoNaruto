@@ -50,11 +50,14 @@ class GouMaiTiLi(BaseTask):
     @TransitionOn("购买体力")
     def _(self):
         sygmcs=self.operationer.ocr_recognize("剩余购买次数")
-        if sygmcs and sygmcs[0].extract_numbers()[0]>self.target_buy_times:
-            self.logger.info(f"剩余购买次数为 {sygmcs[0].extract_numbers()[0]} 次")
-            self.operationer.click_and_wait("购买", wait_time=1.5)
-            self.logger.info(f"还需要购买体力 {sygmcs[0].extract_numbers()[0]-self.target_buy_times} 次")
-            return False
+        if sygmcs :
+            if sygmcs[0].extract_numbers()[0]>self.target_buy_times:
+                self.logger.info(f"剩余购买次数为 {sygmcs[0].extract_numbers()[0]} 次")
+                self.operationer.click_and_wait("购买", wait_time=1.5)
+                self.logger.info(f"还需要购买体力 {sygmcs[0].extract_numbers()[0]-self.target_buy_times} 次")
+                return False
+        else:
+            raise StepFailedError("识别已招财次数失败，自动退出执行")
         self.operationer.click_and_wait("X")
         raise TaskCompleted("任务执行完成")
     

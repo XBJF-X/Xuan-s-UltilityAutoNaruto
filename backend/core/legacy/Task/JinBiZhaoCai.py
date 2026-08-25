@@ -12,6 +12,7 @@ class JinBiZhaoCai(BaseTask):
     def run(self):
         self.target_times=self.config.get_task_exe_param("金币招财", "招财次数")
         self.process_times=0
+        self.buy_times=0
         return super().run()
 
     @TransitionOn()
@@ -19,13 +20,15 @@ class JinBiZhaoCai(BaseTask):
         yzccs=self.operationer.ocr_recognize("已招财次数")
         if yzccs:
             pattern = re.compile(
-                r'第\s*(\d+)\s*/\s*12\s*轮\s*[，,]\s*累积投币\s*[:：]\s*(\d+)\s*/\s*10'
+                r'第\s*(\d+)\s*/\s*(\d+)\s*轮\s*[，,]\s*累积投币\s*[:：]\s*(\d+)\s*/\s*(\d+)'
             )
             match = pattern.search(yzccs[0].text)
             if match:
-                x,y=int(match.group(1)), int(match.group(2))
-                self.process_times=10*(x-1)+y
+                current_round, total_round, current_coin, total_coin = map(int, match.groups())
+                self.process_times = total_coin * (current_round - 1) + current_coin
                 self.logger.info(f"识别到当前已金币招财 {self.process_times} 次")
+            else:
+                raise StepFailedError("识别已招财次数失败，自动退出执行")
 
         if self.process_times>=self.target_times:
             raise TaskCompleted("已招满金币招财")
