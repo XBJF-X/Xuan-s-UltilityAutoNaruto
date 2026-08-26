@@ -386,6 +386,7 @@ def match_scene(scene_id: str):
             "matched": recognized_name == scene.name,
         }
     except Exception as e:
+        logger.error("场景匹配失败（scene_id=%s）: %s", scene_id, e, exc_info=e)
         return {"ok": False, "matched": False, "error": str(e)}
 
 
@@ -534,6 +535,7 @@ def match_element(element_id: str):
     recognizer = _get_recognizer()
     graph_element = _find_element_in_graph(recognizer, element_id)
     if graph_element is None:
+        logger.warning("元素匹配失败（element_id=%s）: SceneGraph 中找不到该元素（可能无 BGRA 图像）", element_id)
         return {"ok": False, "matched": False, "error": "SceneGraph 中找不到该元素（可能无 BGRA 图像）"}
     try:
         matches = recognizer.element_match(scene_img, graph_element, bool_debug=False)
@@ -544,6 +546,7 @@ def match_element(element_id: str):
             "positions": [[int(a), int(b), int(c), int(d)] for a, b, c, d in matches[:10]],
         }
     except Exception as e:
+        logger.error("元素匹配失败（element_id=%s）: %s", element_id, e, exc_info=e)
         return {"ok": False, "matched": False, "error": str(e)}
 
 
@@ -569,6 +572,7 @@ def ocr_element(element_id: str):
             ],
         }
     except Exception as e:
+        logger.error("OCR 识别失败（element_id=%s）: %s", element_id, e, exc_info=e)
         return {"ok": False, "error": str(e)}
 
 

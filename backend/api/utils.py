@@ -647,6 +647,7 @@ async def check_update():
             break  # 分支请求成功即使用该平台
 
         if used_platform is None:
+            logger.warning("检查更新失败：更新源（GitHub/Gitee）均不可达")
             return {"ok": False, "message": "检查更新失败：更新源（GitHub/Gitee）均不可达"}
 
         has_update = current_sha is None or current_sha != latest_sha
@@ -712,6 +713,7 @@ async def check_update():
             "message": message,
         }
     except Exception as e:
+        logger.error("检查更新出错: %s", e, exc_info=e)
         return {"ok": False, "message": f"检查更新出错：{e}"}
 
 
@@ -736,6 +738,7 @@ async def apply_update():
     """下载并应用云端最新版本（后台线程执行，进度通过 /utils/update-status 轮询）"""
     with _STATUS_LOCK:
         if _UPDATE_STATUS["running"]:
+            logger.info("热更新请求被忽略：更新已在执行中")
             return {"ok": False, "message": "更新已在执行中"}
         _UPDATE_STATUS.update({
             "running": True, "phase": "", "percent": 0,
@@ -864,6 +867,7 @@ def _do_apply_update():
             output=str(project_root),
         )
     except Exception as e:
+        logger.error("热更新失败: %s", e, exc_info=e)
         _set_update_status(phase="error", percent=0, running=False, message=f"更新失败：{e}", error=str(e))
 
 
@@ -872,6 +876,7 @@ async def apply_release_update():
     """大更新：下载最新 GitHub Release 安装包并请求程序自动重启安装（后台执行）。"""
     with _STATUS_LOCK:
         if _UPDATE_STATUS["running"]:
+            logger.info("大更新请求被忽略：更新已在执行中")
             return {"ok": False, "message": "更新已在执行中"}
         _UPDATE_STATUS.update({
             "running": True, "phase": "", "percent": 0,
@@ -949,6 +954,7 @@ def _do_apply_release_update():
             output=str(installer_path),
         )
     except Exception as e:
+        logger.error("大更新失败: %s", e, exc_info=e)
         _set_update_status(phase="error", percent=0, running=False, message=f"大更新失败：{e}", error=str(e))
 
 
@@ -996,9 +1002,11 @@ async def feedback_options(config_id: str = "", date: str = ""):
     except Exception:
         pass
     if not config_id:
+        logger.warning("反馈选项请求缺少 config_id")
         return {"ok": False, "message": "缺少 config_id"}
     username = _get_config_username(config_id)
     if not username:
+        logger.warning("反馈选项请求配置不存在（config_id=%s），无法定位日志目录", config_id)
         return {"ok": False, "message": "配置不存在，无法定位日志目录"}
     log_root = Path(get_real_path("log"))
     user_dir = log_root / username
@@ -1047,12 +1055,15 @@ async def feedback_package(payload: dict):
     task_names = payload.get("task_names") or []
     save_path = payload.get("save_path", "")
     if not config_id or not date:
+        logger.warning("反馈打包请求缺少 config_id 或日期")
         return {"ok": False, "message": "缺少 config_id 或日期"}
     if not save_path:
+        logger.warning("反馈打包请求缺少保存位置")
         return {"ok": False, "message": "缺少保存位置"}
 
     with _STATUS_LOCK:
         if _FEEDBACK_STATUS["running"]:
+            logger.info("反馈打包请求被忽略：打包已在执行中")
             return {"ok": False, "message": "打包已在执行中"}
         _FEEDBACK_STATUS.update({
             "running": True, "percent": 0, "current": "",
@@ -1135,6 +1146,7 @@ def _do_feedback_package(config_id: str, date: str, task_names: list[str], save_
             message=f"反馈包已生成：{zip_path}", output=zip_path,
         )
     except Exception as e:
+        logger.error("反馈打包失败: %s", e, exc_info=e)
         _set_feedback_status(phase="error", percent=0, running=False, message=f"打包失败：{e}", error=str(e))
 
 
@@ -1169,6 +1181,7 @@ async def get_serial_list():
                 serials.append(parts[0])
         return {"serials": serials}
     except Exception:
+        logger.warning("adb devices 枚举失败，返回空列表")
         return {"serials": []}
 
 
@@ -1176,10 +1189,12 @@ async def get_serial_list():
 def browse_folder(payload: dict):
     """弹出文件夹选择对话框（pywin32），并把选取的文件夹路径返回给前端"""
     if os.name != "nt":
+        logger.warning("浏览文件夹请求被拒绝：仅支持 Windows 系统")
         return {"ok": False, "path": None, "message": "仅支持 Windows 系统"}
     title = (payload or {}).get("title", "选择文件夹")
     try:
         path = _browse_folder(title)
         return {"ok": path is not None, "path": path}
     except Exception as e:
+        logger.error("打开文件夹选择对话框失败: %s", e, exc_info=e)
         return {"ok": False, "path": None, "message": str(e)}

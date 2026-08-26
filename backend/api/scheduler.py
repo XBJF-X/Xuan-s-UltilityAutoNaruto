@@ -195,6 +195,10 @@ async def precheck_scheduler(config_id: str):
     serial_errors, warnings = _precheck_serial(cfg)
     path_errors = _precheck_screenshot_path(cfg)
     errors = serial_errors + path_errors
+    if errors:
+        _logger.warning("调度器预检未通过（config_id=%s）: %s", config_id, errors)
+    elif warnings:
+        _logger.info("调度器预检有提示（config_id=%s）: %s", config_id, warnings)
     result = {
         "ok": not errors,
         "errors": errors,

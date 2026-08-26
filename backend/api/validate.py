@@ -1,4 +1,5 @@
 """安装路径校验 API 路由 - 仅检查路径下关键文件存在性（不检查实例/分辨率）"""
+import logging
 import os
 from typing import Literal, List
 
@@ -6,6 +7,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 router = APIRouter()
+logger = logging.getLogger("ValidateAPI")
 
 
 class InstallPathRequest(BaseModel):
@@ -33,6 +35,7 @@ MUMU_MANAGER_CANDIDATES = [
 async def validate_install_path(req: InstallPathRequest):
     path = (req.path or "").strip()
     if not path:
+        logger.warning("安装路径校验请求缺少路径（mode=%s）", req.mode)
         return {"ok": False, "dll_ok": False, "manager_ok": False, "missing": [""]}
 
     if req.mode == "mumu":

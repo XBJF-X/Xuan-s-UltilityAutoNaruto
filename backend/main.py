@@ -19,9 +19,11 @@ _project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_project_root))
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, JSONResponse
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 
 # 逐个导入 API 路由模块并容错：任一模块因依赖缺失（如热更新后缺少新版安装包中的依赖）
@@ -172,6 +174,42 @@ app = FastAPI(
     description="火影忍者日常助手 - 后端 API 服务",
     lifespan=lifespan,
 )
+
+# ===== 全局 API 异常日志 =====
+# 此前 API 中 raise 的 HTTPException / 未处理异常只返回 JSON 给前端、不落日志，
+# 排查用户前端交互导致的错误时需要从日志回查，因此在此统一记录
+# （含请求方法 / 路径 / 状态码 / 详情，按级别区分 4xx 与 5xx）。
+_api_logger = logging.getLogger("API")
+
+
+@app.exception_handler(StarletteHTTPException)
+async def _api_http_exception_handler(request: Request, exc: StarletteHTTPException):
+    # 仅记录 API/WebSocket 路径（前端交互产生）；静态资源 404 由 SPA 回退中间件接管，避免刷屏
+    path = request.url.path
+    if path.startswith("/api/") or path.startswith("/ws/"):
+        if exc.status_code >= 500:
+            _api_logger.error("API 错误: %s %s -> %d %s", request.method, path, exc.status_code, exc.detail)
+        else:
+            _api_logger.warning("API 错误: %s %s -> %d %s", request.method, path, exc.status_code, exc.detail)
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+        headers=getattr(exc, "headers", None),
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def _api_validation_exception_handler(request: Request, exc: RequestValidationError):
+    # 前端发送非法请求体/参数时 FastAPI 返回 422，默认同样不落日志
+    _api_logger.warning("API 参数校验失败: %s %s -> %s", request.method, request.url.path, exc.errors())
+    return JSONResponse(status_code=422, content={"detail": exc.errors()})
+
+
+@app.exception_handler(Exception)
+async def _api_unhandled_exception_handler(request: Request, exc: Exception):
+    # 端点未捕获异常：默认只由 uvicorn 写入 backend.log，这里补写 Main.log（含完整 traceback）
+    _api_logger.error("API 未处理异常: %s %s", request.method, request.url.path, exc_info=exc)
+    return JSONResponse(status_code=500, content={"detail": f"服务器内部错误: {exc}"})
 
 
 def _clean_old_logs():
