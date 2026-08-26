@@ -273,8 +273,8 @@ _PLATFORM_GITEE = {
     "releases_url": "https://gitee.com/{owner}/{repo}/releases",
 }
 _PLATFORMS = {"github": _PLATFORM_GITHUB, "gitee": _PLATFORM_GITEE}
-# auto 时按此顺序尝试（gitee 优先，适应国内网络；失败自动降级 github）
-_AUTO_PLATFORM_ORDER = ("gitee", "github")
+# auto 时按此顺序尝试（github 优先；失败自动降级 gitee 兜底）
+_AUTO_PLATFORM_ORDER = ("github", "gitee")
 
 # 兼容旧引用（GitHub Releases 页面地址）
 _RELEASES_URL = _PLATFORM_GITHUB["releases_url"]
@@ -293,7 +293,7 @@ def _get_update_source() -> str:
 
 
 def _select_platforms() -> list:
-    """按优先级返回更新源平台列表（auto = gitee 优先、github 兜底）。"""
+    """按优先级返回更新源平台列表（auto = github 优先、gitee 兜底）。"""
     src = _get_update_source()
     if src in _PLATFORMS:
         return [_PLATFORMS[src]]
@@ -582,7 +582,7 @@ async def check_update():
     """检查更新：对比本地 version.json 与 GitHub v17 分支，返回云端提交历史"""
     current_sha = _read_local_sha()
     try:
-        # 按更新源配置依次尝试平台（auto = gitee 优先、github 兜底），分支请求成功即使用该平台
+        # 按更新源配置依次尝试平台（auto = github 优先、gitee 兜底），分支请求成功即使用该平台
         used_platform = None
         latest_sha = latest_message = ""
         commits = []
