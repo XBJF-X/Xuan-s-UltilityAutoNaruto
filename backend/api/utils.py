@@ -762,6 +762,12 @@ def _do_apply_update():
             try:
                 with requests.get(zip_url, verify=False, timeout=60, stream=True) as r:
                     r.raise_for_status()
+                    # Gitee 匿名下载 archive 可能触发机器验证：返回 200 + HTML 验证页而非 zip。
+                    # 先根据 Content-Type 识别非 zip 响应，直接降级到下一个平台（如 GitHub）。
+                    ctype = (r.headers.get("Content-Type") or "").lower()
+                    if "zip" not in ctype and ("html" in ctype or "json" in ctype or "text/plain" in ctype):
+                        logger.warning(f"从 {pf['label']} 下载更新包被拦截（Content-Type={ctype or '未知'}，疑似人机验证页），降级下一个更新源")
+                        continue
                     total = int(r.headers.get("Content-Length", 0))
                     downloaded = 0
                     with open(zip_path, "wb") as f:
@@ -771,6 +777,10 @@ def _do_apply_update():
                             if total:
                                 pct = 5 + int(downloaded / total * 45)
                                 _set_update_status(phase="downloading", percent=pct, message=f"下载中 {downloaded // 1024}KB / {total // 1024}KB")
+                    # 下载完成后校验文件确为 zip（部分验证页/代理未带正确 Content-Type 时的兜底判断）
+                    if not zipfile.is_zipfile(zip_path):
+                        logger.warning(f"从 {pf['label']} 下载的更新包不是有效 zip（可能返回了机器验证网页），降级下一个更新源")
+                        continue
                     download_ok = True
                     break
             except Exception as e:
