@@ -1039,7 +1039,7 @@ async def feedback_package(payload: dict):
     """后台打包反馈压缩包
 
     body: {config_id, date, task_names: [str], save_path: str}
-    打包内容：Main.log* + log/<用户名>/<日期>/Xuan.log* + screenshot/<任务名>/*
+    打包内容：Main.log* + launcher.log* + backend.log* + log/<用户名>/<日期>/Xuan.log* + screenshot/<任务名>/*
     输出：XuanFeedBook_{用户名}_{YYYYMMDD}.zip
     """
     config_id = payload.get("config_id", "")
@@ -1086,6 +1086,11 @@ def _do_feedback_package(config_id: str, date: str, task_names: list[str], save_
         # 1. Main.log*
         for fp in sorted(log_root.glob("Main.log*"), key=lambda p: p.name):
             files.append((fp, fp.name))
+
+        # 1-1. launcher.log* / backend.log*（引导器与后端原始输出，排查启动/崩溃/访问日志）
+        for log_name in ("launcher.log", "backend.log"):
+            for fp in sorted(log_root.glob(f"{log_name}*"), key=lambda p: p.name):
+                files.append((fp, fp.name))
 
         # 2. 所选日期的 Xuan.log*
         if date_dir.exists():

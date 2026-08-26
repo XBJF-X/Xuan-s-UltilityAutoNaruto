@@ -61,7 +61,7 @@ _original_excepthook = sys.excepthook
 def _websocket_excepthook(exc_type, exc_value, exc_tb):
     """将未捕获异常通过 logging.error 发送（WebSocketLogHandler 会自动捕获）"""
     tb_text = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
-    logging.getLogger("CRASH").error(f"未捕获的异常:\n{tb_text}")
+    logging.getLogger("CRASH").error(f"[程序异常退出] 未捕获的异常:\n{tb_text}")
     if _original_excepthook is not None:
         _original_excepthook(exc_type, exc_value, exc_tb)
 
@@ -74,7 +74,7 @@ _original_thread_excepthook = threading.excepthook if hasattr(threading, 'except
 
 def _websocket_thread_excepthook(args):
     tb_text = "".join(traceback.format_exception(args.exc_type, args.exc_value, args.exc_traceback))
-    logging.getLogger("CRASH").error(f"后台线程异常:\n{tb_text}")
+    logging.getLogger("CRASH").error(f"[程序异常退出] 后台线程异常:\n{tb_text}")
     if _original_thread_excepthook:
         _original_thread_excepthook(args)
 
@@ -94,6 +94,14 @@ async def lifespan(app: FastAPI):
     # ---- 启动逻辑 ----
     # 1. 初始化文件日志系统（Main.log 10MB 轮转）
     setup_backend_logging()
+
+    # 1-1. 记录启动横幅（启动时间/客户端版本/Commit/构建时间），
+    #      写入 Main.log，并 print 到 stdout（生产环境由 launcher 重定向到 backend.log）
+    from backend.runtime_info import build_start_banner
+    root_logger = logging.getLogger()
+    start_banner = build_start_banner("Xuan Backend")
+    root_logger.info("\n" + start_banner)
+    print(start_banner, flush=True)
 
     # 2. 添加 WebSocket 日志推送（全局共享实例，root 与 config logger 共用）
     #    模块导入失败时跳过，不阻塞应用启动（前端界面与检查更新仍可用）
@@ -119,6 +127,11 @@ async def lifespan(app: FastAPI):
     yield  # 应用运行期间
 
     # ---- 关闭逻辑 ----
+    # 记录退出横幅（退出时间/原因），写入 Main.log 并 print 到 stdout（backend.log）
+    from backend.runtime_info import build_exit_banner
+    exit_banner = build_exit_banner("Xuan Backend", reason="正常退出")
+    logging.getLogger("WebSocket").info("\n" + exit_banner)
+    print(exit_banner, flush=True)
     logging.getLogger("WebSocket").info("应用关闭")
     # 程序退出时清理 adb server（issue #4：避免退出后残留 adb 进程）
     _shutdown_adb_server()

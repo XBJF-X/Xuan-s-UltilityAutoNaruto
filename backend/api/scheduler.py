@@ -94,7 +94,7 @@ def destroy_scheduler(config_id: str):
         return
     try:
         if getattr(sched, "running", False):
-            sched.stop()
+            sched.stop("配置删除")
         _logger.info(f"已销毁配置 {config_id} 的调度器实例")
     except Exception as e:
         _logger.error(f"销毁配置 {config_id} 的调度器实例失败: {e}")
@@ -230,7 +230,7 @@ async def start_scheduler(config_id: str):
 @router.post("/stop/{config_id}")
 async def stop_scheduler(config_id: str):
     sched = _get_scheduler(config_id)
-    sched.stop()
+    sched.stop("用户手动停止")
     return {"ok": True}
 
 

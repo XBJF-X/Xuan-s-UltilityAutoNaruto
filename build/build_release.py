@@ -183,6 +183,32 @@ def step_assemble():
         shutil.copy2(src_min_release_tag, RELEASE / "MIN_RELEASE_TAG")
         log("  复制 MIN_RELEASE_TAG（最小依赖库ReleaseTag）")
 
+    # 6-2. 构建信息随包分发（日志启动横幅显示 commit/构建时间，launcher/backend 运行时读取 _build_info.py）
+    try:
+        def _git(*args):
+            return subprocess.run(
+                ["git", *args], cwd=str(ROOT), capture_output=True, text=True,
+                timeout=10, encoding="utf-8", errors="ignore",
+            )
+        commit_res = _git("rev-parse", "--short", "HEAD")
+        commit_short = (commit_res.stdout.strip()[:12]
+                        if commit_res.returncode == 0 and commit_res.stdout.strip() else "unknown")
+        branch_res = _git("rev-parse", "--abbrev-ref", "HEAD")
+        branch = (branch_res.stdout.strip()
+                  if branch_res.returncode == 0 and branch_res.stdout.strip() else "")
+    except Exception:
+        commit_short, branch = "unknown", ""
+    from datetime import datetime as _dt
+    build_time = _dt.now().strftime("%Y-%m-%d %H:%M:%S")
+    (RELEASE / "_build_info.py").write_text(
+        "# 由 build_release.py 自动生成，请勿手动修改\n"
+        f'__build_time__ = "{build_time}"\n'
+        f'__commit__ = "{commit_short}"\n'
+        f'__branch__ = "{branch}"\n',
+        encoding="utf-8",
+    )
+    log("  生成 _build_info.py（commit/构建时间）")
+
     # 7. 用户数据目录（首次为空，运行后生成）
     (RELEASE / "config").mkdir(exist_ok=True)
     (RELEASE / "log").mkdir(exist_ok=True)

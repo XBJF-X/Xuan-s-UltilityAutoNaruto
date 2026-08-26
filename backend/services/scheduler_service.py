@@ -15,6 +15,10 @@ from backend.core.scene_graph import SceneGraph
 
 T = TypeVar('T')
 
+# ===== 配置模式名称映射（用于调度器启动横幅，便于反馈定位） =====
+_CONTROL_MODE_NAMES = {0: "MiniTouch", 1: "U2"}
+_SCREEN_MODE_NAMES = {0: "DroidCastRaw", 1: "WindowCapture", 2: "U2", 3: "MuMu", 4: "LD"}
+
 
 # ===== 全局共享 SceneGraph 单例 =====
 # 所有配置的调度器复用同一个 SceneGraph（构建后只读，场景/元素识别不写库），
@@ -139,6 +143,9 @@ class SchedulerService:
         self.pending_once_tasks: List[str] = []
         # 截图保存回调（_lazy_init 时注入，供卡死告警截图使用）
         self._save_screenshot = None
+        # 调度器启动时间 / 停止原因（供停止横幅与问题定位）
+        self.started_at: Optional[datetime] = None
+        self._stop_reason = ""
 
         # 为当前 config 添加专属文件处理器（log/<用户名>/<日期>/Xuan.log）
         username = config.get_config("用户名", "unknown")
@@ -316,6 +323,40 @@ class SchedulerService:
         self.executor.set_watchdog(self.watchdog)
         return TASK_TYPE_MAP, BaseTask, TaskType
 
+    def _log_start_banner(self) -> None:
+        """记录调度器启动横幅（启动时间 / 控制模式 / 截图模式 / 串口 / 版本等基本信息），
+        写入 config 专属日志 log/<用户名>/<日期>/Xuan.log，便于反馈时定位筛选。"""
+        from backend.runtime_info import get_client_version, get_runtime_commit
+        cfg = self.config
+
+        def _to_int(v):
+            try:
+                return int(v)
+            except (TypeError, ValueError):
+                return -1
+
+        control_mode = _to_int(cfg.get_config("控制模式", 0))
+        screen_mode = _to_int(cfg.get_config("截图模式", 0))
+        width = 56
+        lines = [
+            "=" * width,
+            "调度器启动",
+            f"启动时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            f"配置: {self.config.config_path.stem}",
+            f"用户名: {cfg.get_config('用户名', '')}",
+            f"配置类型: {cfg.get_config('配置类型', '')}",
+            f"控制模式: {_CONTROL_MODE_NAMES.get(control_mode, '未知')} ({control_mode})",
+            f"截图模式: {_SCREEN_MODE_NAMES.get(screen_mode, '未知')} ({screen_mode})",
+            f"串口: {cfg.get_config('串口', '')}",
+            f"模拟器分辨率: {cfg.get_config('模拟器分辨率', '')}",
+            f"调试模式: {cfg.get_config('调试模式', 0)}",
+            f"执行模式: {'预设模式' if self.run_once else '持久模式'}",
+            f"客户端版本: {get_client_version()}",
+            f"Commit: {get_runtime_commit()}",
+            "=" * width,
+        ]
+        self.logger.info("\n".join(lines))
+
     # ================================================================
     # 公开接口
     # ================================================================
@@ -372,6 +413,11 @@ class SchedulerService:
         for msg in env_msgs:
             self.logger.info(msg)
 
+        # 记录调度器启动横幅（环境检测通过，即将真正启动），并记录启动时刻供停止横幅计算运行时长
+        self.started_at = datetime.now()
+        self._stop_reason = ""
+        self._log_start_banner()
+
         # 临时任务启动时一律关闭不执行（临时预设除外，其由用户显式勾选），
         # 只允许立即执行或被其他任务激活后执行
         if not self.run_once:
@@ -405,7 +451,7 @@ class SchedulerService:
             self._init_once_pending()
             if not self.pending_once_tasks:
                 self.logger.warning("预设未勾选任何任务，调度器不启动")
-                self.stop()
+                self.stop("预设未勾选任何任务")
                 return False
         if self.on_status_change:
             self.on_status_change({
@@ -426,11 +472,32 @@ class SchedulerService:
         self._start_scan_loop()
         return True
 
-    def stop(self) -> bool:
+    def stop(self, reason: str = "") -> bool:
         with self._lock:
             if not self.running:
                 return False
             self.running = False
+
+        # 记录停止原因：显式传入优先；未传入时按执行模式给默认值
+        if reason:
+            self._stop_reason = reason
+        elif not self._stop_reason:
+            self._stop_reason = "预设执行完毕" if self.run_once else "用户手动停止"
+
+        # 记录调度器停止横幅（停止时间 / 运行时长 / 停止原因），便于反馈筛选定位
+        duration = ""
+        if self.started_at:
+            duration = str(datetime.now() - self.started_at)
+        self.logger.info("\n".join([
+            "=" * 56,
+            "调度器停止",
+            f"停止时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}",
+            f"运行时长: {duration}",
+            f"停止原因: {self._stop_reason}",
+            "=" * 56,
+        ]))
+        self.started_at = None
+        self._stop_reason = ""
 
         self.logger.info("正在停止调度器...")
 
@@ -700,7 +767,7 @@ class SchedulerService:
         # 待执行列表耗尽 → 自动关闭调度器
         if self.running:
             self.logger.info("预设任务全部执行完毕，自动关闭调度器")
-            threading.Thread(target=self.stop, daemon=True).start()
+            threading.Thread(target=self.stop, kwargs={"reason": "预设任务全部执行完毕"}, daemon=True).start()
 
     def _reset_once_progress(self):
         """临时预设运行结束后，将执行进度与下次执行时间重置为默认值，不持久化运行结果"""

@@ -26,6 +26,7 @@ import sys
 import threading
 import time
 import signal
+from datetime import datetime
 
 DEFAULT_PORT = 4199
 BACKEND_TIMEOUT = 60
@@ -41,6 +42,73 @@ def _setup_logging(log_path: str):
         datefmt="%Y-%m-%d %H:%M:%S",
         handlers=[logging.FileHandler(log_path, encoding="utf-8")],
     )
+
+
+def _read_project_file(base_dir: str, name: str) -> str:
+    """读取项目根目录下的文本文件；不存在或读取失败返回空串。"""
+    try:
+        path = os.path.join(base_dir, name)
+        with open(path, "r", encoding="utf-8") as f:
+            return f.read()
+    except Exception:
+        return ""
+
+
+def _get_client_version(base_dir: str) -> str:
+    """读取 _version.py 中的客户端版本号；失败返回 unknown。"""
+    import re
+    text = _read_project_file(base_dir, "_version.py")
+    m = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', text)
+    return m.group(1).strip() if m else "unknown"
+
+
+def _get_runtime_commit(base_dir: str) -> str:
+    """获取本次运行的 commit：优先 _build_info.py，其次 git rev-parse（开发模式）。"""
+    import re
+    text = _read_project_file(base_dir, "_build_info.py")
+    m = re.search(r'__commit__\s*=\s*["\']([^"\']*)["\']', text)
+    if m and m.group(1).strip():
+        return m.group(1).strip()
+    try:
+        if os.path.isdir(os.path.join(base_dir, ".git")):
+            r = subprocess.run(
+                ["git", "rev-parse", "--short", "HEAD"], cwd=base_dir,
+                capture_output=True, text=True, timeout=5,
+                encoding="utf-8", errors="ignore",
+            )
+            if r.returncode == 0 and r.stdout.strip():
+                return r.stdout.strip()[:12]
+    except Exception:
+        pass
+    return "unknown"
+
+
+def _startup_banner(base_dir: str, component: str = "Xuan Launcher") -> str:
+    """生成启动横幅（启动时间 / 客户端版本 / Commit），写入 launcher.log。"""
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    lines = [
+        f"==================== {component} 启动 ====================",
+        f"启动时间: {now}",
+        f"客户端版本: {_get_client_version(base_dir)}",
+        f"Commit: {_get_runtime_commit(base_dir)}",
+    ]
+    width = max(len(l) for l in lines)
+    lines.append("=" * width)
+    return "\n".join(lines)
+
+
+def _exit_banner(base_dir: str, reason: str = "") -> str:
+    """生成退出横幅（退出时间 / 退出原因），写入 launcher.log。"""
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    lines = [
+        "==================== Xuan Launcher 退出 ====================",
+        f"退出时间: {now}",
+    ]
+    if reason:
+        lines.append(f"退出原因: {reason}")
+    width = max(len(l) for l in lines)
+    lines.append("=" * width)
+    return "\n".join(lines)
 
 
 def get_base_dir() -> str:
@@ -338,6 +406,9 @@ def start_backend(base_dir: str, py_exe: str, internal: str, log_dir: str):
     if internal and os.path.isdir(internal):
         paths.append(internal)
     env["PYTHONPATH"] = os.pathsep.join(paths)
+    # 强制后端子进程 stdout/stderr 以 UTF-8 输出（backend.log 以 utf-8 打开），
+    # 否则子进程按系统 ANSI 代码页（如 GBK）编码，中文日志（如启动横幅）在文件中乱码
+    env["PYTHONIOENCODING"] = "utf-8"
 
     flags = 0
     if hasattr(subprocess, "CREATE_NO_WINDOW"):
@@ -442,6 +513,14 @@ def _run(show_window: bool, autoclose: int = 0) -> int:
     os.makedirs(log_dir, exist_ok=True)
     _setup_logging(os.path.join(log_dir, "launcher.log"))
 
+    # 启动横幅（启动时间 / 客户端版本 / Commit），便于在 launcher.log 中快速定位每次运行
+    LOG.info("%s", _startup_banner(base_dir))
+
+    # 统一退出出口：记录退出横幅（时间 + 原因）后返回退出码
+    def _finish(exit_code: int, reason: str) -> int:
+        LOG.info("%s", _exit_banner(base_dir, reason))
+        return exit_code
+
     # 单实例检测（必须在日志初始化之后，但要在其他操作之前）
     # 交互模式（有窗口）检测到旧进程时弹窗询问；--selftest 不弹窗，自动清理旧进程
     ensure_single_instance(base_dir, interactive=show_window)
@@ -453,13 +532,13 @@ def _run(show_window: bool, autoclose: int = 0) -> int:
     if not check_dependencies(py_exe, base_dir, internal):
         LOG.error("Python 环境缺少必要依赖 (uvicorn / fastapi)，请确保已安装或打包正确。")
         _remove_pid_file(base_dir)
-        return 1
+        return _finish(1, "启动失败：Python 环境缺少必要依赖 (uvicorn / fastapi)")
 
     # 启动后端
     proc, log_file, used_port = start_backend(base_dir, py_exe, internal, log_dir)
     if proc is None:
         _remove_pid_file(base_dir)
-        return 1
+        return _finish(1, "启动失败：无法启动后端进程")
 
     # 等待端口就绪（后端进程提前退出时立即失败，避免干等满超时）
     if not wait_port(used_port, timeout=BACKEND_TIMEOUT, proc=proc):
@@ -472,7 +551,7 @@ def _run(show_window: bool, autoclose: int = 0) -> int:
             proc.kill()
         log_file.close()
         _remove_pid_file(base_dir)
-        return 1
+        return _finish(1, f"启动失败：后端在 {BACKEND_TIMEOUT} 秒内未就绪（端口 {used_port}）")
 
     LOG.info("后端已就绪 http://127.0.0.1:%d", used_port)
 
@@ -487,7 +566,7 @@ def _run(show_window: bool, autoclose: int = 0) -> int:
         # 自检也可能触发 adb server 启动（如 /serial-list），退出前统一清理
         stop_adb_server()
         LOG.info("自检完成")
-        return 0
+        return _finish(0, "自检完成，正常退出")
 
     # 正常模式：启动 WebView 窗口
     import webview
@@ -537,7 +616,11 @@ def _run(show_window: bool, autoclose: int = 0) -> int:
             else:
                 LOG.error("大更新安装包缺失，跳过自动重启（%s）", installer)
     LOG.info("已退出")
-    return 0
+    if mode == "hot":
+        return _finish(0, "热更新完成，自动重启程序")
+    if mode == "full":
+        return _finish(0, "大更新完成，自动重启程序")
+    return _finish(0, "窗口关闭，正常退出")
 
 
 def main():
@@ -549,7 +632,16 @@ def main():
                 autoclose = int(args[i + 1])
             except ValueError:
                 pass
-    return _run(show_window="--selftest" not in args, autoclose=autoclose)
+    try:
+        return _run(show_window="--selftest" not in args, autoclose=autoclose)
+    except Exception:
+        # 未捕获异常：记录退出横幅（含原因）后以失败码退出，便于在 launcher.log 定位
+        LOG.exception("程序异常退出")
+        try:
+            LOG.info("%s", _exit_banner(get_base_dir(), reason=f"程序异常退出：{sys.exc_info()[1]}"))
+        except Exception:
+            pass
+        return 1
 
 
 if __name__ == "__main__":
