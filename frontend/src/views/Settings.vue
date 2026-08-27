@@ -245,6 +245,13 @@ async function checkInstallPath(key: string) {
     message.warning(installPathGuide(key))
     return
   }
+  // 校验前先持久化：确保"校验通过的路径"就是运行时（config.get_config）读取的 setting.ini 值。
+  // 否则手输路径后直接点"检查环境"会校验未保存的输入缓冲，而调度器/截图读到的是 setting.ini
+  // 旧值，导致"设置页校验通过、调度器却提示缺少文件"的不一致。
+  const saved = settings.value['助手设置']?.[key] ?? ''
+  if (path !== saved) {
+    await onSet('助手设置', key, path)
+  }
   installChecking.value[key] = true
   installHint.value = ''
   try {
