@@ -17,43 +17,45 @@ class JinBiZhaoCai(BaseTask):
 
     @TransitionOn()
     def _(self):
-        yzccs = self.operationer.ocr_recognize("已招财次数")
-        if yzccs:
-            # 分别定义轮次和投币的正则模式
-            round_pattern = re.compile(r'第\s*(\d+)\s*/\s*(\d+)\s*轮')
-            coin_pattern = re.compile(r'累积投币\s*[:：]\s*(\d+)\s*/\s*(\d+)')
+        # 分别识别两个区域
+        round_ocr = self.operationer.ocr_recognize("招财轮次")
+        coin_ocr = self.operationer.ocr_recognize("累积投币")
 
-            current_round = total_round = current_coin = total_coin = None
+        if not round_ocr or not coin_ocr:
+            raise StepFailedError("识别已招财次数失败：OCR 结果为空")
 
-            # 遍历所有识别结果，分别提取数字
-            for item in yzccs:
-                text = item.text
-                # 匹配轮次
-                match_round = round_pattern.search(text)
-                if match_round:
-                    current_round, total_round = map(int, match_round.groups())
-                    self.logger.debug(f"匹配到轮次: {current_round}/{total_round}")
-                # 匹配投币
-                match_coin = coin_pattern.search(text)
-                if match_coin:
-                    current_coin, total_coin = map(int, match_coin.groups())
-                    self.logger.debug(f"匹配到投币: {current_coin}/{total_coin}")
+        # 提取数字对的正则
+        pattern = re.compile(r'(\d+)\s*/\s*(\d+)')
 
-            # 检查四个数字是否全部获取
-            if None in (current_round, total_round, current_coin, total_coin):
-                raise StepFailedError("识别已招财次数失败，自动退出执行")
+        def extract_single_pair(ocr_list):
+            """从 OCR 结果中提取唯一的数字对，返回 (int, int)，失败返回 None"""
+            pairs = []
+            for item in ocr_list:
+                matches = pattern.findall(item.text)
+                for m in matches:
+                    pairs.append((int(m[0]), int(m[1])))
+            if len(pairs) != 1:
+                return None
+            return pairs[0]
 
-            self.process_times = total_coin * (current_round - 1) + current_coin
-            self.logger.info(f"识别到当前已金币招财 {self.process_times} 次")
-        else:
-            self.logger.warning("未识别到已招财次数文本")
+        round_pair = extract_single_pair(round_ocr)
+        coin_pair = extract_single_pair(coin_ocr)
+
+        if round_pair is None or coin_pair is None:
+            self.logger.error(f"轮次数字对: {round_pair}, 投币数字对: {coin_pair}")
+            raise StepFailedError("识别已招财次数失败，未找到唯一数字对")
+
+        current_round, total_round = round_pair
+        current_coin, total_coin = coin_pair
+
+        self.process_times = total_coin * (current_round - 1) + current_coin
+        self.logger.info(f"识别到当前已金币招财 {self.process_times} 次")
 
         if self.process_times >= self.target_times:
             raise TaskCompleted("已招满金币招财")
 
         if self.process_times < self.target_times:
             self.operationer.click_and_wait("金币招财")
-            # self.process_times += 1
             self.logger.info(f"已招财 {self.process_times + 1} 次")
             return False
     

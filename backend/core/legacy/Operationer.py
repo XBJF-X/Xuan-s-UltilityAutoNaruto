@@ -8,7 +8,7 @@ from backend.core.legacy.Config import Config
 from backend.core.legacy.Device import Device
 from backend.core.legacy.Enums import ElementType
 from backend.core.legacy.Exceptions import StepFailedError, Stop
-from backend.core.legacy.OcrText import OcrText
+from backend.core.legacy.OcrText import OcrResultList, OcrText
 from backend.core.legacy.Recognizer import Recognizer
 from backend.core.legacy.Scene.SceneGraph import SceneGraph
 
@@ -118,7 +118,7 @@ class Operationer:
             max_attempts=max_attempts,
             stable_kwargs=stable_kwargs)
 
-    def ocr_recognize(self, element, **kwargs) -> List[OcrText]:
+    def ocr_recognize(self, element, **kwargs) -> OcrResultList:
         """
         对指定 OcrArea 区域执行 OCR 识别，返回所有识别结果（按置信度降序排序）
 
@@ -134,7 +134,7 @@ class Operationer:
         if not results:
             return []
         # 按置信度降序排列
-        return sorted(results, key=lambda r: r.score, reverse=True)
+        return OcrResultList(sorted(results, key=lambda r: r.score, reverse=True))
 
     def _ocr_results(self, element, **kwargs) -> List[OcrText]:
         """

@@ -44,7 +44,7 @@ class GouWuTianXin(BaseTask):
     @TransitionOn("购物甜心-内部")
     def _(self):
         djs=self.operationer.ocr_recognize("倒计时")
-        if djs and djs[0].extract_numbers()[0]<=2:
+        if djs and djs.extract_all_numbers()[0]<=2:
             self.operationer.clicker.stop()
             return False
         self.operationer.clicker.start()

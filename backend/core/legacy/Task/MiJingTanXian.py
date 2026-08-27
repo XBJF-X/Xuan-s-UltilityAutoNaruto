@@ -61,7 +61,8 @@ class MiJingTanXian(BaseTask):
         ###################################
         num_of_tzq= self.operationer.ocr_recognize("剩余挑战券数量")
         if num_of_tzq:
-            if  num_of_tzq[0].extract_numbers()[0]!=0:
+            if not num_of_tzq.has_number(0):
+            # if  num_of_tzq[0].extract_numbers()[0]!=0:
                 self.operationer.click_and_wait("出战")
                 self.bool_click = True
                 self.logger.info(f"挑战券为 {num_of_tzq[0].extract_numbers()[0]} ，继续执行")

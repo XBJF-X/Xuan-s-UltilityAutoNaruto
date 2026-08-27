@@ -43,7 +43,8 @@ class WuChaBieYuXuanSai(BaseTask):
             target=7
         cc=self.operationer.ocr_recognize("场次")
         if cc:
-            if cc[0].extract_numbers()[0]>=target:
+            if cc.is_greater_than(target):
+            # if cc[0].extract_numbers()[0]>=target:
                 self.finished = True
             # if self.operationer.detect_element("场次-30"):
             #     self.finished = True
