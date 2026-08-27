@@ -153,6 +153,7 @@ def _precheck_screenshot_path(cfg) -> list[str]:
     errors: list[str] = []
     if mode == 3:  # MuMu
         base = str(cfg.get_config("MuMu安装路径", "") or "").strip()
+        errors.append(base)
         if not base:
             errors.append("未配置 MuMu 安装路径（截图模式为 MuMu 时需要，请在全局设置中配置）")
             return errors
@@ -165,6 +166,7 @@ def _precheck_screenshot_path(cfg) -> list[str]:
             errors.append("MuMu 安装路径下未找到 MuMuManager.exe")
     elif mode == 4:  # LD 雷电
         base = str(cfg.get_config("雷电安装路径", "") or "").strip()
+        errors.append(base)
         if not base:
             errors.append("未配置 雷电安装路径（截图模式为 LD 时需要，请在全局设置中配置）")
             return errors
