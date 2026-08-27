@@ -89,24 +89,26 @@ class MuMu(Screen):
             os.path.join(self.current_mumu_path, "shell/sdk/external_renderer_ipc.dll"),
             os.path.join(self.current_mumu_path, "nx_main/sdk/external_renderer_ipc.dll")
         ]
-        no_exist_lib_paths=[]
+        no_exist_lib_paths = []
+        load_failed_lib_paths = []
         dll_handle = None
         for lib_path in lib_paths:
             if os.path.exists(lib_path):
-                dll_handle = self.LoadLibrary(lib_path)
+                # 只记录成功加载的 handle，避免"前面成功、后面失败"被覆盖成 0 而误报
+                handle = self.LoadLibrary(lib_path)
+                if handle:
+                    dll_handle = handle
+                else:
+                    load_failed_lib_paths.append(lib_path)
             else:
                 no_exist_lib_paths.append(lib_path)
-
-
 
         if not dll_handle:
             for lib_path in no_exist_lib_paths:
                 self.logger.warning(f"加载库失败: {lib_path}")
-            self.logger.warning(f"请仔细检查MuMu安装路径和实例索引配置，如果不知道怎么配置请认真参考README！！！")
-            self.logger.warning(f"请仔细检查MuMu安装路径和实例索引配置，如果不知道怎么配置请认真参考README！！！")
-            self.logger.warning(f"请仔细检查MuMu安装路径和实例索引配置，如果不知道怎么配置请认真参考README！！！")
-            self.logger.warning(f"请仔细检查MuMu安装路径和实例索引配置，如果不知道怎么配置请认真参考README！！！")
-            self.logger.warning(f"请仔细检查MuMu安装路径和实例索引配置，如果不知道怎么配置请认真参考README！！！")
+            for lib_path in load_failed_lib_paths:
+                self.logger.warning(f"动态库存在但加载失败（可能依赖缺失/位数不匹配/被占用）: {lib_path}")
+            self.logger.warning("请仔细检查MuMu安装路径和实例索引配置，如果不知道怎么配置请认真参考README！！！")
             return False
 
         # 获取函数地址
