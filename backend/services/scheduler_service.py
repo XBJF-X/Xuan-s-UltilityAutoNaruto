@@ -141,6 +141,10 @@ class SchedulerService:
         # 临时预设（配置类型=临时）：只执行一遍、按顺序执行，跑完自动关闭调度器
         self.run_once = (config.config_type == "临时")
         self.pending_once_tasks: List[str] = []
+        # 待激活任务列表：任务执行期间通过 _on_task_activate_request 登记，
+        # 待当前任务结束后（_execute_done_callback）统一激活并立即执行，
+        # 避免在任务执行线程中直接激活对扫描循环时序的依赖（更稳定）。
+        self._pending_activate_tasks: List[str] = []
         # 截图保存回调（_lazy_init 时注入，供卡死告警截图使用）
         self._save_screenshot = None
         # 调度器启动时间 / 停止原因（供停止横幅与问题定位）
@@ -416,6 +420,8 @@ class SchedulerService:
         # 记录调度器启动横幅（环境检测通过，即将真正启动），并记录启动时刻供停止横幅计算运行时长
         self.started_at = datetime.now()
         self._stop_reason = ""
+        # 清空上次运行遗留的待激活任务登记（防止跨轮次残留导致误激活）
+        self._pending_activate_tasks.clear()
         self._log_start_banner()
 
         # 临时任务启动时一律关闭不执行（临时预设除外，其由用户显式勾选），
@@ -477,6 +483,8 @@ class SchedulerService:
             if not self.running:
                 return False
             self.running = False
+        # 清空未处理的待激活任务登记（调度器已停止，无需再激活）
+        self._pending_activate_tasks.clear()
 
         # 记录停止原因：显式传入优先；未传入时按执行模式给默认值
         if reason:
@@ -833,12 +841,45 @@ class SchedulerService:
 
         # 标记最后运行时间
         task.last_run_time = datetime.now(ZoneInfo("Asia/Shanghai"))
+        # 处理其他任务登记的待激活任务（当前任务已结束，激活并立即执行）
+        self._process_pending_activations()
         # 推送完整状态快照（任务回到等待态）
         self._push_snapshot()
 
     def _on_task_activate_request(self, task_name: str):
-        """其他任务请求激活指定任务"""
-        self.execute_task_now(task_name, enable_if_needed=True)
+        """其他任务请求激活指定任务：先登记到待激活列表，待当前任务结束后统一激活。
+
+        原先在执行线程中直接 execute_task_now，完全依赖扫描循环时序去捡起该任务
+        （扫描可能恰好错过、且抢占判断可能将其延后），鲁棒性不足；临时预设模式下
+        扫描只遍历预设列表，被激活的临时任务甚至永远不会执行。改为登记后在任务完成
+        回调中统一处理，时机确定、无需与扫描线程竞争。
+        """
+        if task_name not in self._pending_activate_tasks:
+            self._pending_activate_tasks.append(task_name)
+            self.logger.info(f"{task_name} 已登记待激活（当前任务结束后立即执行）")
+        else:
+            self.logger.debug(f"{task_name} 已在待激活列表中，忽略重复激活请求")
+
+    def _process_pending_activations(self):
+        """任务结束回调中处理待激活列表：激活登记的任务并立即尝试启动。"""
+        if not self._pending_activate_tasks:
+            return
+        pending = list(self._pending_activate_tasks)
+        self._pending_activate_tasks.clear()
+        for task_name in pending:
+            task = self.task_queue.get_task(task_name)
+            if task is None:
+                self.logger.warning(f"待激活任务 {task_name} 不在任务队列中，忽略")
+                continue
+            self.execute_task_now(task_name, enable_if_needed=True)
+            if self.run_once:
+                # 临时预设模式：被激活任务插入待执行列表最前，下一轮扫描优先执行
+                if task_name in self.pending_once_tasks:
+                    self.pending_once_tasks.remove(task_name)
+                self.pending_once_tasks.insert(0, task_name)
+        # 同步扫描一次：让被激活任务立即进入执行（_scanning 标志防重入，
+        # 若扫描线程正在扫描则本次返回，由下一轮扫描兜底）
+        self.scan()
 
     # ================================================================
     # 超时监视器：告警信号处理
