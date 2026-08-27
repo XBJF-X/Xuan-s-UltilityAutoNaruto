@@ -70,16 +70,15 @@ class Config:
                 self.logger.warning(f"读取 setting.ini 中 {key} 失败: {e}")
                 return empty
         if key in self._PATH_KEYS:
-            value = self.setting_dics.get(key)
-            if value in (None, ""):
-                # JSON 中为空时兜底读取 setting.ini [助手设置]
-                try:
-                    from backend.services.settings_service import SettingsService
-                    fallback = SettingsService().get("助手设置", key)
-                    if fallback:
-                        return fallback
-                except Exception as e:
-                    self.logger.warning(f"读取 setting.ini 中 {key} 失败: {e}")
+            # 安装路径只从 setting.ini [助手设置] 读取，不读 config JSON
+            # （参数迁移后旧 JSON 参数不再支持，避免残留旧路径覆盖设置中的新路径）
+            try:
+                from backend.services.settings_service import SettingsService
+                value = SettingsService().get("助手设置", key)
+                return value if value else empty
+            except Exception as e:
+                self.logger.warning(f"读取 setting.ini 中 {key} 失败: {e}")
+                return empty
         return self.setting_dics.get(key, empty)
 
     def set_config(self, key: str, value: Any):
@@ -92,14 +91,16 @@ class Config:
                 self.logger.warning(f"写入 setting.ini 中 {key} 失败: {e}")
             self.logger.debug(f"设置全局 {key} 为 {bool(value)}")
             return
-        self.setting_dics[key] = value
         if key in self._PATH_KEYS:
-            # 安装路径已迁移至 setting.ini [助手设置]，保存时同步写入
+            # 安装路径只写 setting.ini [助手设置]，不落 config JSON
             try:
                 from backend.services.settings_service import SettingsService
                 SettingsService().set("助手设置", key, value)
             except Exception as e:
                 self.logger.warning(f"写入 setting.ini 中 {key} 失败: {e}")
+            self.logger.debug(f"设置全局 {key} 为 {value}")
+            return
+        self.setting_dics[key] = value
         self.logger.debug(f"设置 {key} 为 {value}")
         self.save_config_to_file()
 
@@ -234,6 +235,10 @@ class Config:
             self.setting_dics = default_config
 
         self.tasks = self.setting_dics.get("任务", {})
+        # 安装路径键已迁移至 setting.ini [助手设置]，从内存/JSON 移除，
+        # 避免旧 JSON 残留参数回写或经 setting_dics 被其他消费方读到
+        for key in self._PATH_KEYS:
+            self.setting_dics.pop(key, None)
         self.logger.debug("配置合并完成")
 
     def save_config_to_file(self):

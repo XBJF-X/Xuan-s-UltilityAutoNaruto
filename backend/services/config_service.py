@@ -108,13 +108,11 @@ class ConfigService:
         cfg = self.get_config(config_id)
         if not cfg:
             return None
-        # 安装路径键在 config JSON 中可能为空（已迁移至 setting.ini [助手设置]），
-        # 用 get_config 兜底读取实际生效值，供前端展示与判断（避免误报"未设置"）
+        # 安装路径键只认 setting.ini [助手设置] 的实际生效值（可能为空），
+        # 直接覆盖 setting_dics，避免前端读到 config JSON 中残留的旧路径
         setting_dics = copy.deepcopy(cfg.setting_dics)
         for key in ("MuMu安装路径", "雷电安装路径"):
-            value = cfg.get_config(key)
-            if value:
-                setting_dics[key] = value
+            setting_dics[key] = cfg.get_config(key) or ""
         # 全局键（错误自动截图等已迁移至 setting.ini）：不显示在单配置中，避免前端在配置详情回写
         for key in ("错误自动截图",):
             setting_dics.pop(key, None)
