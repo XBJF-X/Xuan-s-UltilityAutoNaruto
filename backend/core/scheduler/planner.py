@@ -38,5 +38,16 @@ class TaskPlanner:
 
     @staticmethod
     def should_preempt(running_task, candidate) -> bool:
-        """candidate 是否应抢占 running_task（优先级更高（__lt__ 更小）才抢占）。"""
+        """candidate 是否应抢占 running_task。
+
+        - candidate 带 force_execute_now（"立即执行"请求）时，优先抢占正在运行的任务：
+          否则低优先级"立即执行"任务会被更高/同级优先级任务无限延后，立即执行形同虚设；
+        - 正在运行的任务自身也是"立即执行"请求时，按优先级（__lt__ 更小即优先级更高）比较，
+          避免连续"立即执行"请求互相无脑打断；
+        - 无"立即执行"标记时保持原语义：仅更高优先级（__lt__ 更小）才抢占。
+        """
+        cand_force = bool(getattr(candidate, "force_execute_now", False))
+        run_force = bool(getattr(running_task, "force_execute_now", False))
+        if cand_force and not run_force:
+            return True
         return running_task > candidate

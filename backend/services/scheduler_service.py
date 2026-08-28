@@ -714,7 +714,7 @@ class SchedulerService:
                         self.executor.start_task(next_task)
                         self._push_snapshot()
                 else:
-                    # 有正在执行的任务 → 检查优先级抢占
+                    # 有正在执行的任务 → 检查抢占（更高优先级，或被选中的任务带"立即执行"标记）
                     running_task = running_tasks[0]
                     if self.planner.should_preempt(running_task, next_task):
                         self.logger.info(
