@@ -91,6 +91,7 @@ class GouMaiTiLi(BaseTask):
         else:
             raise StepFailedError("识别已招财次数失败，自动退出执行")
         self.operationer.click_and_wait("X")
+        self._activate_another_task("消耗体力")
         raise TaskCompleted("任务执行完成")
     
     # @TransitionOn("二级密码")
