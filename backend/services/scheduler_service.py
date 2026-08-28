@@ -698,9 +698,11 @@ class SchedulerService:
             if next_task is not None:
                 running_tasks = self.task_queue.get_tasks_by_status(0)
                 if not running_tasks:
-                    # 没有正在执行的任务 → 直接执行
+                    # 没有正在执行的任务 → 直接执行。
+                    # 注意：不在进入执行队列时清除 force_execute_now（"立即执行"）标记，
+                    # 标记保留到任务完成回调统一清除——使 should_preempt 能识别
+                    # "立即执行启动"的任务，保护其不被普通任务抢占（见 TaskPlanner）。
                     if self._update_task_status(next_task.task_name, 0):
-                        next_task.force_execute_now = False
                         self.logger.info(
                             f"[{next_task.task_name}]-[{next_task.base_priority}] 进入执行队列"
                         )
