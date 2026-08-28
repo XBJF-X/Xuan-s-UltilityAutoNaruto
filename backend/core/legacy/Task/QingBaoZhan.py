@@ -13,6 +13,7 @@ class QingBaoZhan(BaseTask):
         super().__init__(*args, **kwargs)
         self.reset_task_exe_prog()
     def run(self):
+        self.hydz_num=None
         self.reward_40=False
         self.reward_60=False
         self.reward_100=False
@@ -157,25 +158,31 @@ class QingBaoZhan(BaseTask):
         elif not self.config.get_task_exe_prog(self.task_name, "领取情报站活跃度", False):
             self.logger.info("领取活跃度奖励")
             receive_times = 0
+            self.operationer.click_and_wait("充值6元礼包-领取",match_text="领取")
             # 点击所有的领取按钮
-            while self.operationer.click_and_wait("活跃度任务-领取", wait_time=3):
+            while self.operationer.click_and_wait("活跃度任务-领取",match_text="领取", wait_time=3):
                 receive_times += 1
                 if receive_times > 20:
                     self.logger.warning("情报站活跃度领取奖励失败，请手动领取")
                     break
                 continue
+            hydz=self.operationer.ocr_recognize("活跃度值")
+            if hydz:
+                self.hydz_num=hydz.extract_all_numbers()[0]
             self.config.set_task_exe_prog(self.task_name, "领取情报站活跃度", True)
             return False
-
         
         elif not self.reward_60:
-            self.handle_activity_reward(60)
+            if self.hydz_num is None or self.hydz_num>=60:
+                self.handle_activity_reward(60)
             return False
         elif not self.reward_100:
-            self.handle_activity_reward(100)
+            if self.hydz_num is None or self.hydz_num>=100:
+                            self.handle_activity_reward(100)
             return False
         elif not self.reward_40:
-            self.handle_activity_reward(40)
+            if self.hydz_num is None or self.hydz_num>=40:
+                            self.handle_activity_reward(40)
             return False
         self.operationer.click_and_wait("X")
         raise TaskCompleted("任务执行完成")

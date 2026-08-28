@@ -238,7 +238,7 @@ class BaseTask:
         #     self.logger.debug(f"注册场景处理函数: {scene} -> {func.__qualname__}")
 
         self.transition_manager = transition_manager
-        self.operationer = operationer
+        self.operationer:Operationer = operationer
         self.activate_another_task_func = activate_another_task_func
         self.callback = callback
 
