@@ -29,10 +29,7 @@ class SaiJiShengChang(MeiRiShengChang):
         self.bool_click = False
         self.operationer.clicker.stop()
         if not self.checked:
-            while self.operationer.click_and_wait(
-                    "领取",
-                    max_time=1
-            ):
+            while self.operationer.click_and_wait("领取"):
                 continue
             self.operationer.swipe_and_wait(
                 start_coordinate=[1262, 191],
