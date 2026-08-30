@@ -729,10 +729,14 @@ class TransitionManager:
             operationer.click_and_wait("开始游戏")
 
         @self.register("决斗场-匹配中", "忍术对战")
-        @self.register("决斗场-匹配中", "要塞内部")
         @self.register("决斗场-匹配中", "火影格斗大赛-无差别")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("取消匹配")
+
+        @self.register("决斗场-匹配中", "要塞内部")
+        def _(operationer: Operationer, *args, **kwargs):
+            operationer.click_and_wait("取消匹配",wait_time=0.8)
+            operationer.click_and_wait("X")
 
         @self.register("副本结算-点击任意位置关闭界面", "丰饶之间")
         @self.register("副本结算-点击任意位置关闭界面", "小队突袭")
