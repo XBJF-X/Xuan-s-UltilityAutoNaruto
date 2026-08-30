@@ -950,12 +950,11 @@ class SchedulerService:
                 if el is not None:
                     elements.append(el)
             if elements and self.operationer.search_and_click(
-                    elements, [], once_max_attempts=1, max_attempts=2):
+                    elements, [], max_attempts=2):
                 self.logger.info("场景停滞处理：已点击 X 元素")
                 return
             else:
                 self.logger.info("场景停滞处理：未找到可点击的 X 元素")
-            # TODO(用户): 补充"返回""退出"等元素的查找与点击策略
 
             # 任何可视元素都未找到，则直接点击可能的坐标
             x_coor_element= self.operationer.get_element("X", "主场景")
@@ -964,7 +963,8 @@ class SchedulerService:
             self.operationer.click_and_wait(back_coor_element)
 
         except Exception as e:
-            self.logger.error(f"场景停滞处理失败: {e}")
+            import traceback
+            self.logger.error(f"场景停滞处理失败: {e}\n{traceback.format_exc()}")
 
     def _handle_game_frozen(self, event):
         """
