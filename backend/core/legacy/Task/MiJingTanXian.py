@@ -65,7 +65,7 @@ class MiJingTanXian(BaseTask):
             # if  num_of_tzq[0].extract_numbers()[0]!=0:
                 self.operationer.click_and_wait("出战")
                 self.bool_click = True
-                self.logger.info(f"挑战券为 {num_of_tzq[0].extract_numbers()[0]} ，继续执行")
+                self.logger.info(f"挑战券为 {num_of_tzq.extract_all_numbers()[0]} ，继续执行")
                 return False
             else:
                 self.logger.info("挑战券已耗尽，任务执行结束")
