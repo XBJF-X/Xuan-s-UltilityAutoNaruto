@@ -638,15 +638,15 @@ class BaseTask:
             dt=self.last_run_time
         dt = self._ensure_tz_aware(dt)
         today = dt.date()
-        if dt.time() < datetime.time(5, 0):
+        if dt.time() < datetime.time(5, 1):
             today -= timedelta(days=1)
         tomorrow = today + timedelta(days=1)
 
-        start_dt = datetime.datetime.combine(today, self.start_line or datetime.time(5, 0), tzinfo=self.tz_info)
+        start_dt = datetime.datetime.combine(today, self.start_line or datetime.time(5, 1), tzinfo=self.tz_info)
         if self.dead_line:
             dead_dt = datetime.datetime.combine(today, self.dead_line, tzinfo=self.tz_info)
         else:
-            dead_dt = datetime.datetime.combine(tomorrow, datetime.time(5, 0), tzinfo=self.tz_info)
+            dead_dt = datetime.datetime.combine(tomorrow, datetime.time(5, 1), tzinfo=self.tz_info)
 
         return [(start_dt, dead_dt)]
 

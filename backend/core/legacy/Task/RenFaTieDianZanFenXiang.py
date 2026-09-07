@@ -52,14 +52,14 @@ class RenFaTieDianZanFenXiang(BaseTask):
         if dt is None:
             dt=self.last_run_time
         today = dt.date()
-        if dt.time() < datetime.time(5, 0):
+        if dt.time() < datetime.time(5, 1):
             today -= datetime.timedelta(days=1)
         
         # 计算today所在的周一
         this_monday = today - datetime.timedelta(days=today.weekday())
 
-        start_dt = datetime.datetime.combine(this_monday, datetime.time(5, 0), tzinfo=self.tz_info)
-        dead_dt = datetime.datetime.combine(this_monday+datetime.timedelta(weeks=1), datetime.time(5, 0), tzinfo=self.tz_info)
+        start_dt = datetime.datetime.combine(this_monday, datetime.time(5, 1), tzinfo=self.tz_info)
+        dead_dt = datetime.datetime.combine(this_monday+datetime.timedelta(weeks=1), datetime.time(5, 1), tzinfo=self.tz_info)
 
         return [(start_dt, dead_dt)]
     

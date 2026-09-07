@@ -104,14 +104,14 @@ class SaiJiShengChang(MeiRiShengChang):
             dt=self.last_run_time
         dt = self._ensure_tz_aware(dt)
         today = dt.date()
-        if dt.time() < time(5, 0):
+        if dt.time() < time(5, 1):
             today -= timedelta(days=1)
         
         # 计算start_dt为today所在月的倒数第二天的凌晨五点，dead_dt为today所在月的倒数第二天的两天后的凌晨五点
         next_month = today.replace(day=28) + timedelta(days=4)  # this will never fail
         last_day_of_month = next_month - timedelta(days=next_month.day)     
         second_last_day_of_month = last_day_of_month - timedelta(days=1)
-        start_dt = datetime.combine(second_last_day_of_month, time(5, 0), tzinfo=self.tz_info)
+        start_dt = datetime.combine(second_last_day_of_month, time(5, 1), tzinfo=self.tz_info)
         dead_dt = start_dt + timedelta(days=2)
 
         return [(start_dt, dead_dt)]

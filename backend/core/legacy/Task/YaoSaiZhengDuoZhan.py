@@ -143,7 +143,7 @@ class YaoSaiZhengDuoZhan(BaseTask):
 
         # 以当天为基准；若时间早于 05:00 则视为前一天
         today = now.date()
-        if now.time() < datetime.time(5, 0):
+        if now.time() < datetime.time(5, 1):
             today -= datetime.timedelta(days=1)
 
         # 计算本周的周六日期
@@ -159,7 +159,7 @@ class YaoSaiZhengDuoZhan(BaseTask):
             dt = self.last_run_time
         dt = self._ensure_tz_aware(dt)
         today = dt.date()
-        if dt.time() < datetime.time(5, 0):
+        if dt.time() < datetime.time(5, 1):
             today -= datetime.timedelta(days=1)
 
         # 计算today所在的周六

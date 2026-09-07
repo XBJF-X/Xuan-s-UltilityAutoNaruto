@@ -161,14 +161,14 @@ class GengDuoWanFa(BaseTask):
             dt=self.last_run_time
         dt = self._ensure_tz_aware(dt)
         today = dt.date()
-        if dt.time() < time(5, 0):
+        if dt.time() < time(5, 1):
             today -= timedelta(days=1)
         
         # 计算today所在的周一
         this_monday = today - timedelta(days=today.weekday())
 
-        start_dt = datetime.combine(this_monday, time(5, 0), tzinfo=self.tz_info)
-        dead_dt = datetime.combine(this_monday+timedelta(weeks=1), time(5, 0), tzinfo=self.tz_info)
+        start_dt = datetime.combine(this_monday, time(5, 1), tzinfo=self.tz_info)
+        dead_dt = datetime.combine(this_monday+timedelta(weeks=1), time(5, 1), tzinfo=self.tz_info)
 
         return [(start_dt, dead_dt)]
     

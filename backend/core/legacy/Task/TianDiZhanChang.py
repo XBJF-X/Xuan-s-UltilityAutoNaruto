@@ -182,7 +182,7 @@ class TianDiZhanChang(BaseTask):
             dt = self.last_run_time
         dt = self._ensure_tz_aware(dt)
         today = dt.date()
-        if dt.time() < datetime.time(5, 0):
+        if dt.time() < datetime.time(5, 1):
             today -= timedelta(days=1)
 
         # 计算today所在的周三
