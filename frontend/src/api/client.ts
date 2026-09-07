@@ -89,6 +89,9 @@ export const utilsApi = {
   // 读取历史日志文件，供刷新/重连后恢复展示（config_id 为空或 '__global__' 表示程序全局日志）
   logHistory: (configId: string, limit = 500) =>
     client.get('/utils/log-history', { params: { config_id: configId, limit } }),
+  // 在系统文件管理器中打开本地日志目录，返回 { ok, path }（config_id 为空或 __global__ 打开 log/ 根目录）
+  openLogDir: (configId: string) =>
+    client.get('/utils/open-log-dir', { params: { config_id: configId } }),
   // 检查更新：对比本地 version.json 与 GitHub v17 分支，返回提交历史
   checkUpdate: () => client.get('/utils/check-update'),
   // 依赖健康检查：版本是否满足 MIN_RELEASE_TAG + 关键模块是否缺失

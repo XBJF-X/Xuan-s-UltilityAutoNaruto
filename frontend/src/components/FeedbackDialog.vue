@@ -16,6 +16,14 @@
     </template>
 
     <template v-else>
+      <!-- 顶部：打开本地日志目录（打包反馈前核对日志文件） -->
+      <div class="log-dir-bar">
+        <n-text depth="3" style="font-size: 12px; flex: 1;">打包前如需核对日志文件，可先在系统文件管理器中打开本地日志目录</n-text>
+        <n-button size="small" :loading="openingLogDir" :disabled="isPackaging" @click="openLogDir">
+          打开日志目录
+        </n-button>
+      </div>
+
       <!-- 第一步：问题发生日期 -->
       <n-form label-placement="top" :show-feedback="false">
         <n-form-item label="问题发生日期">
@@ -111,6 +119,7 @@ const selectedDate = ref<string | null>(null)
 const selectedTasks = ref<string[]>([])
 const savePath = ref('')
 const browsing = ref(false)
+const openingLogDir = ref(false)
 const isPackaging = ref(false)
 const starting = ref(false)
 const progress = ref<{ running: boolean; phase: string; percent: number; message: string; error: string }>({
@@ -169,6 +178,25 @@ async function browse() {
     message.error(e?.response?.data?.detail || '选择文件夹失败')
   } finally {
     browsing.value = false
+  }
+}
+
+/** 在系统文件管理器中打开当前配置对应的本地日志目录 */
+async function openLogDir() {
+  if (openingLogDir.value) return
+  openingLogDir.value = true
+  try {
+    const res = await utilsApi.openLogDir(props.configId || '')
+    const data = res.data
+    if (data?.ok) {
+      message.success(`已打开日志目录：${data.path || ''}`)
+    } else {
+      message.error(data?.message || '打开日志目录失败')
+    }
+  } catch (e: any) {
+    message.error(e?.response?.data?.detail || '打开日志目录失败')
+  } finally {
+    openingLogDir.value = false
   }
 }
 
@@ -236,6 +264,7 @@ function reset() {
   savePath.value = ''
   isPackaging.value = false
   starting.value = false
+  openingLogDir.value = false
   progress.value = { running: false, phase: '', percent: 0, message: '', error: '' }
 }
 
@@ -276,6 +305,16 @@ onBeforeUnmount(stopPolling)
 </script>
 
 <style scoped>
+.log-dir-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  padding: 8px 10px;
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 6px;
+}
 .center-box {
   display: flex;
   flex-direction: column;

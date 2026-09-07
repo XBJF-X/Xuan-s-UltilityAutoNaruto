@@ -1198,3 +1198,53 @@ def browse_folder(payload: dict):
     except Exception as e:
         logger.error("打开文件夹选择对话框失败: %s", e, exc_info=e)
         return {"ok": False, "path": None, "message": str(e)}
+
+
+# ============================================================
+# 打开本地日志目录（反馈/日志界面跳转系统文件管理器）
+# ============================================================
+_DATE_DIR_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+
+
+def _latest_log_date_dir(user_dir: Path) -> Optional[Path]:
+    """在 log/<用户名>/ 下定位最近一个含日志文件的日期目录（YYYY-MM-DD）"""
+    try:
+        date_dirs = sorted(
+            (d for d in user_dir.iterdir()
+             if d.is_dir() and _DATE_DIR_RE.match(d.name)),
+            key=lambda d: d.name, reverse=True,
+        )
+        for date_dir in date_dirs:
+            if any(date_dir.glob("*.log*")):
+                return date_dir
+    except Exception:
+        pass
+    return None
+
+
+@router.get("/open-log-dir")
+def open_log_dir(config_id: str = ""):
+    """在系统文件管理器中打开本地日志目录（Windows os.startfile）
+
+    - config_id 为空或 __global__：打开 log/ 根目录
+    - config_id = Config_N：打开 log/<用户名>/ 下最近含日志的日期目录（YYYY-MM-DD）；
+      无日期目录时退回 log/<用户名>/（不存在则创建），取不到用户名则退回 log/
+    """
+    if os.name != "nt":
+        logger.warning("打开日志目录请求被拒绝：仅支持 Windows 系统")
+        return {"ok": False, "message": "仅支持 Windows 系统"}
+    try:
+        log_root = Path(get_real_path("log"))
+        log_root.mkdir(parents=True, exist_ok=True)
+        target = log_root
+        if config_id and config_id != "__global__":
+            username = _get_config_username(config_id)
+            if username:
+                user_dir = log_root / username
+                user_dir.mkdir(parents=True, exist_ok=True)
+                target = _latest_log_date_dir(user_dir) or user_dir
+        os.startfile(str(target))
+        return {"ok": True, "path": str(target)}
+    except Exception as e:
+        logger.error("打开本地日志目录失败: %s", e, exc_info=e)
+        return {"ok": False, "message": str(e)}

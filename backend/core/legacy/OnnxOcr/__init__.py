@@ -26,6 +26,31 @@ class OnnxOcr:
     )
         # 共享单例并发安全：OCR 推理串行化
         self._lock = threading.Lock()
+        # 是否已处于 CPU 兜底模式：DirectML 推理失败自动重建 CPU 引擎后置 True，
+        # 避免每次推理失败都重复尝试 GPU（切换后本进程持续走 CPU）
+        self._cpu_fallback = not use_gpu
+
+    def _switch_to_cpu_engine(self) -> bool:
+        """DirectML 推理失败后的 CPU 兜底：重建一份纯 CPU 引擎并替换当前引擎。
+
+        重建失败时保持原引擎不变并返回 False，避免把仍可用的引擎弄丢。
+        仅在持有 self._lock 时调用（本类 ocr 内部使用）。
+        """
+        try:
+            cpu_engine = ONNXPaddleOcr(
+                use_gpu=False,
+                use_angle_cls=False,
+                det_model_dir=str(self.det_model),
+                rec_model_dir=str(self.rec_model),
+                rec_char_dict_path=str(self.rec_dict),
+            )
+        except Exception as e:
+            self.logger.error("重建 CPU 兜底 OCR 引擎失败: %s", e, exc_info=e)
+            return False
+        self.engine = cpu_engine
+        self._cpu_fallback = True
+        self.logger.warning("OCR 已切换为 CPU 兜底引擎，后续识别均使用 CPU")
+        return True
 
     def ocr(self, 
             image,
@@ -36,7 +61,19 @@ class OnnxOcr:
         """对输入图像进行OCR识别，并按需要还原坐标/过滤文本/格式化返回结果。"""
         # 共享实例可能被多配置/多任务线程并发调用，推理整体加锁串行化（调用频率低，可接受）
         with self._lock:
-            raw_result = self.engine.ocr(image)
+            try:
+                raw_result = self.engine.ocr(image)
+            except Exception:
+                if self._cpu_fallback:
+                    # 已处于 CPU 兜底模式仍失败：属于真实错误（模型/输入异常），交上层处理
+                    raise
+                # GPU(DirectML) 运行期推理失败（驱动/DML 设备异常等）时，
+                # 自动重建纯 CPU 引擎兜底重试一次；成功后本进程后续识别均走 CPU
+                self.logger.warning(
+                    "GPU(DirectML) OCR 推理异常，自动切换 CPU 引擎兜底重试", exc_info=True)
+                if not self._switch_to_cpu_engine():
+                    raise
+                raw_result = self.engine.ocr(image)
 
         # ONNXPaddleOcr 的返回结构通常为: [[ [box, [text, score]], ... ]]
         lines = raw_result[0] if isinstance(raw_result, list) and raw_result else []

@@ -3,11 +3,13 @@
     v-model:show="showModel"
     preset="card"
     title="检查更新"
-    style="width: 640px"
+    style="width: min(640px, calc(100vw - 48px))"
     :mask-closable="!isUpdating"
     :closable="!isUpdating"
     @after-leave="reset"
   >
+    <!-- 内容区按当前视图高度限制并内部滚动：小窗口下页脚（关闭/立即更新）不被挤出窗口外 -->
+    <div class="modal-scroll">
     <template v-if="loading">
       <div class="center-box">
         <n-spin size="large" />
@@ -127,6 +129,7 @@
       </div>
 
     </template>
+    </div>
 
     <template #footer>
       <n-space justify="end">
@@ -304,6 +307,11 @@ onBeforeUnmount(stopPolling)
 </script>
 
 <style scoped>
+.modal-scroll {
+  max-height: max(140px, calc(100vh - 230px));
+  overflow-y: auto;
+  padding-right: 2px;
+}
 .center-box {
   display: flex;
   flex-direction: column;
