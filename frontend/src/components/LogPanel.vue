@@ -5,6 +5,7 @@
       <n-space>
         <n-switch v-model:value="autoScroll" size="small" />
         <n-text depth="3" style="font-size: 12px">自动滚动</n-text>
+        <n-text v-if="autoScrollPaused" style="font-size: 12px; color: #f0a020">选中中已暂停</n-text>
         <n-switch
           v-if="configId && configId !== '__global__'"
           :value="debugModeEnabled"
@@ -23,12 +24,18 @@
           <template #trigger>
             <n-button text size="tiny" @mousedown.prevent @click="copyLogs">复制</n-button>
           </template>
-          选中日志后点「复制」只复制选中内容，未选中则复制当前显示的全部日志
+          选中日志后点「复制」只复制选中内容（也可选中后右键 → 复制），未选中则复制当前显示的全部日志
         </n-tooltip>
         <n-button text size="tiny" @click="clear">清空</n-button>
       </n-space>
     </div>
-    <div class="log-body" ref="bodyRef">
+    <div
+      class="log-body"
+      ref="bodyRef"
+      @mousedown="onBodyMouseDown"
+      @contextmenu.prevent="openCtxMenu"
+      @scroll="ctxMenu.show = false"
+    >
       <div v-for="(line, i) in filteredLogs" :key="i" class="log-line" :class="'level-' + line.level.toLowerCase()">
         <span class="log-ts">{{ formatTime(line.ts) }}</span>
         <span class="log-level">[{{ line.level }}]</span>
@@ -39,6 +46,17 @@
         <n-text depth="3">暂无日志，启动调度器后将显示实时日志</n-text>
       </div>
     </div>
+    <!-- 右键菜单：选中日志后右键 → 复制选中；未选中时可复制全部/全选/清空 -->
+    <n-dropdown
+      trigger="manual"
+      placement="bottom-start"
+      :show="ctxMenu.show"
+      :x="ctxMenu.x"
+      :y="ctxMenu.y"
+      :options="ctxMenuOptions"
+      @select="handleCtxSelect"
+      @clickoutside="ctxMenu.show = false"
+    />
   </div>
 </template>
 
@@ -64,6 +82,16 @@ const autoScroll = ref(true)
 const bodyRef = ref<HTMLElement | null>(null)
 const saveScreenshotEnabled = ref(false)
 const debugModeEnabled = ref(false)
+
+// ---- 选择/右键复制相关状态 ----
+// 拖选期间（以及已存在选区时）暂停"自动滚动"跳底：否则新日志到来会把视图拉到底部、
+// 选区被顶走，导致没法在滚动过程中继续选择。
+const isSelecting = ref(false)
+const hasSelection = ref(false)
+const autoScrollPaused = computed(() => isSelecting.value || hasSelection.value)
+// 日志右键菜单（WebView2/Electron 默认没有原生右键菜单，这里自绘）
+// text 为右键时的选中内容快照：点击菜单项会清掉页面选区，必须先记下来
+const ctxMenu = ref({ show: false, x: 0, y: 0, hasSelection: false, text: '' })
 
 let historyFetching = false
 let stopReconnectListener: (() => void) | null = null
@@ -216,26 +244,203 @@ async function writeClipboard(text: string): Promise<boolean> {
   }
 }
 
-/**
- * 复制日志：优先复制鼠标选中的行（便于只取关键信息），
- * 未选中时复制当前显示的全部日志。
- */
-async function copyLogs() {
+/** 复制任意文本到剪贴板并统一提示 */
+async function copyText(text: string, okText: string) {
+  const ok = await writeClipboard(text)
+  if (ok) message.success(okText)
+  else message.error('复制失败，请手动选中日志后按 Ctrl+C')
+}
+
+/** 复制当前选中的日志（无选中时提示） */
+async function copySelection() {
   const selected = selectedTextInBody()
-  const useSelection = selected.trim().length > 0
-  const text = useSelection
-    ? selected
-    : filteredLogs.value.map(formatLogLine).join('\n')
+  if (!selected.trim()) {
+    message.warning('请先用鼠标选中要复制的日志')
+    return
+  }
+  await copyText(selected, '已复制选中日志')
+}
+
+/** 复制右键菜单打开时记录的选中内容（菜单点击会清掉页面选区，故用快照） */
+async function copyCtxSelection() {
+  const text = ctxMenu.value.text
   if (!text.trim()) {
+    message.warning('请先用鼠标选中要复制的日志')
+    return
+  }
+  await copyText(text, '已复制选中日志')
+}
+
+/** 复制当前显示的全部日志 */
+async function copyAllLogs() {
+  const lines = filteredLogs.value
+  if (lines.length === 0) {
     message.warning('暂无可复制的日志')
     return
   }
-  const ok = await writeClipboard(text)
-  if (ok) {
-    message.success(useSelection ? '已复制选中日志' : `已复制 ${filteredLogs.value.length} 条日志`)
-  } else {
-    message.error('复制失败，请手动选中日志后按 Ctrl+C')
+  await copyText(lines.map(formatLogLine).join('\n'), `已复制 ${lines.length} 条日志`)
+}
+
+/**
+ * 复制日志（顶部「复制」按钮）：有选中复制选中内容，未选中复制当前全部。
+ */
+async function copyLogs() {
+  if (selectedTextInBody().trim()) await copySelection()
+  else await copyAllLogs()
+}
+
+/** 全选日志内容（便于一次性复制，不必拖选到面板底部） */
+function selectAllLogs() {
+  const root = bodyRef.value
+  const sel = window.getSelection?.()
+  if (!root || !sel) return
+  const range = document.createRange()
+  range.selectNodeContents(root)
+  sel.removeAllRanges()
+  sel.addRange(range)
+  updateSelectionState()
+}
+
+/** 同步"是否存在选区"（用于暂停自动滚动 + 右键菜单项启用判断） */
+function updateSelectionState() {
+  const has = selectedTextInBody().trim().length > 0
+  if (has !== hasSelection.value) hasSelection.value = has
+}
+
+/** 右键菜单项：选中日志后右键即可「复制」 */
+const ctxMenuOptions = computed(() => {
+  const count = filteredLogs.value.length
+  return [
+    { label: '复制', key: 'copy', disabled: !ctxMenu.value.hasSelection },
+    { label: `复制全部日志（${count} 条）`, key: 'copy-all', disabled: count === 0 },
+    { label: '全选日志', key: 'select-all', disabled: count === 0 },
+    { type: 'divider' as const },
+    { label: '清空日志', key: 'clear' },
+  ]
+})
+
+function openCtxMenu(e: MouseEvent) {
+  updateSelectionState()
+  const text = selectedTextInBody()
+  ctxMenu.value = {
+    show: true,
+    x: e.clientX,
+    y: e.clientY,
+    hasSelection: text.trim().length > 0,
+    text,
   }
+}
+
+function handleCtxSelect(key: string) {
+  ctxMenu.value.show = false
+  if (key === 'copy') copyCtxSelection()
+  else if (key === 'copy-all') copyAllLogs()
+  else if (key === 'select-all') selectAllLogs()
+  else if (key === 'clear') clear()
+}
+
+// ==================== 拖选：上下边缘自动滚动 ====================
+// 浏览器只在指针拖出容器后自动滚动；指针停在容器上下边缘内侧时不滚动，这里补上这段
+// （指针在容器外则完全交给浏览器原生行为，避免二者叠加导致速度翻倍）。滚动的同时把
+// 选区延伸到边缘所在行，保证"一边滚一边选"能选到后面/前面的日志。
+const EDGE_SCROLL_ZONE = 26       // 距上/下边缘多少像素内触发滚动
+const EDGE_SCROLL_MAX_SPEED = 16  // 每帧最大滚动像素
+let edgeScrollRaf = 0
+let pointerX = 0
+let pointerY = 0
+let selAnchor: { node: Node; offset: number } | null = null
+
+type CaretRangeFn = (x: number, y: number) => Range | null
+const caretRangeFromPoint: CaretRangeFn | undefined =
+  (document as Document & { caretRangeFromPoint?: CaretRangeFn }).caretRangeFromPoint
+
+/** 指针位于容器内上/下边缘区域时返回滚动速度（px/帧），否则 0 */
+function edgeScrollSpeed(clientY: number, rect: DOMRect): number {
+  if (clientY < rect.top || clientY > rect.bottom) return 0 // 容器外交给浏览器原生
+  if (clientY < rect.top + EDGE_SCROLL_ZONE) {
+    const ratio = (rect.top + EDGE_SCROLL_ZONE - clientY) / EDGE_SCROLL_ZONE
+    return -Math.ceil(Math.min(ratio, 1) * EDGE_SCROLL_MAX_SPEED)
+  }
+  if (clientY > rect.bottom - EDGE_SCROLL_ZONE) {
+    const ratio = (clientY - (rect.bottom - EDGE_SCROLL_ZONE)) / EDGE_SCROLL_ZONE
+    return Math.ceil(Math.min(ratio, 1) * EDGE_SCROLL_MAX_SPEED)
+  }
+  return 0
+}
+
+/** 滚动后把选区延伸到指针所在行（指针在容器外时贴到最近的内边缘） */
+function extendSelectionToPointer(x: number, y: number, rect: DOMRect) {
+  if (!selAnchor || !caretRangeFromPoint) return
+  const clampedY = Math.min(Math.max(y, rect.top + 1), rect.bottom - 1)
+  const caret = caretRangeFromPoint.call(document, x, clampedY)
+  const sel = window.getSelection?.()
+  if (!caret || !sel) return
+  try {
+    const range = document.createRange()
+    range.setStart(selAnchor.node, selAnchor.offset)
+    range.setEnd(caret.startContainer, caret.startOffset)
+    sel.removeAllRanges()
+    sel.addRange(range)
+  } catch {
+    // 反向拖选（锚点在指针之后）时交换首尾；仍失败则只保留滚动效果
+    try {
+      const range = document.createRange()
+      range.setStart(caret.startContainer, caret.startOffset)
+      range.setEnd(selAnchor.node, selAnchor.offset)
+      sel.removeAllRanges()
+      sel.addRange(range)
+    } catch {
+      // 选区跨节点越界等异常：忽略，滚动效果不受影响
+    }
+  }
+}
+
+function runEdgeScroll() {
+  edgeScrollRaf = 0
+  if (!isSelecting.value) return
+  const root = bodyRef.value
+  if (!root) return
+  const rect = root.getBoundingClientRect()
+  const speed = edgeScrollSpeed(pointerY, rect)
+  if (speed === 0) return
+  const before = root.scrollTop
+  root.scrollTop = before + speed
+  if (root.scrollTop !== before) extendSelectionToPointer(pointerX, pointerY, rect)
+  if (isSelecting.value) edgeScrollRaf = requestAnimationFrame(runEdgeScroll)
+}
+
+function startEdgeScroll() {
+  if (!edgeScrollRaf) edgeScrollRaf = requestAnimationFrame(runEdgeScroll)
+}
+
+function onBodyMouseDown(e: MouseEvent) {
+  ctxMenu.value.show = false
+  if (e.button !== 0) return
+  isSelecting.value = true
+  pointerX = e.clientX
+  pointerY = e.clientY
+  // 记录拖选锚点，供边缘滚动时延伸选区
+  const caret = caretRangeFromPoint ? caretRangeFromPoint.call(document, e.clientX, e.clientY) : null
+  selAnchor = caret ? { node: caret.startContainer, offset: caret.startOffset } : null
+}
+
+function onDocMouseMove(e: MouseEvent) {
+  pointerX = e.clientX
+  pointerY = e.clientY
+  if (!isSelecting.value) return
+  const root = bodyRef.value
+  if (!root) return
+  if (edgeScrollSpeed(e.clientY, root.getBoundingClientRect()) !== 0) startEdgeScroll()
+}
+
+function onDocMouseUp() {
+  isSelecting.value = false
+  selAnchor = null
+  if (edgeScrollRaf) {
+    cancelAnimationFrame(edgeScrollRaf)
+    edgeScrollRaf = 0
+  }
+  updateSelectionState()
 }
 
 function clear() {
@@ -254,7 +459,8 @@ watch(() => props.configId, () => {
 })
 
 watch(filteredLogs, async () => {
-  if (autoScroll.value) {
+  // 存在选区/正在拖选时不跳底，否则会打断"一边滚动一边选择"
+  if (autoScroll.value && !autoScrollPaused.value) {
     await nextTick()
     if (bodyRef.value) {
       bodyRef.value.scrollTop = bodyRef.value.scrollHeight
@@ -271,10 +477,21 @@ onMounted(() => {
       fetchHistory()
     }
   })
+  // 拖选/右键复制：全局监听鼠标与选区变化（拖选可能移出日志面板范围）
+  document.addEventListener('mousemove', onDocMouseMove)
+  document.addEventListener('mouseup', onDocMouseUp)
+  document.addEventListener('selectionchange', updateSelectionState)
 })
 
 onBeforeUnmount(() => {
   stopReconnectListener?.()
+  document.removeEventListener('mousemove', onDocMouseMove)
+  document.removeEventListener('mouseup', onDocMouseUp)
+  document.removeEventListener('selectionchange', updateSelectionState)
+  if (edgeScrollRaf) {
+    cancelAnimationFrame(edgeScrollRaf)
+    edgeScrollRaf = 0
+  }
 })
 </script>
 
