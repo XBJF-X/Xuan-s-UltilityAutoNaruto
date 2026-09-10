@@ -57,7 +57,8 @@ class XiuXingZhiLu(BaseTask):
 | `Union(a, b)` / `a \| b` | 多窗口并集 | （可用）多个时段 |
 | `Custom(fn, cycle=…)` | 逃生舱：窗口依赖任务参数 | 叛忍来袭、巅峰对决、天地战场、要塞争夺战 |
 
-对应描述会通过 `task.schedule_description` 暴露（前端总览/任务详情直接展示）。
+`task.schedule_description`（= `schedule.describe()`）用于日志与调试输出（例如
+"跳过窗口校验（排期规则: 每周一 05:01 起整周）"）；前端**不展示**排期信息。
 
 ---
 
@@ -127,7 +128,7 @@ class EveryNWeeks(Schedule):
 ```
 
 同步清单：新增类 + 在 `test_scene/verify_schedule.py` 补表驱动用例 + 文档表格加一行。
-（前端只渲染 `describe()`，无需改动；持久化格式不变，仍是 `下次执行时间` 时间戳。）
+（前端不感知排期；持久化格式不变，仍是 `下次执行时间` 时间戳。）
 
 ---
 

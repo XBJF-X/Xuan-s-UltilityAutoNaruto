@@ -43,19 +43,6 @@
                 />
               </div>
             </div>
-            <div class="param-row">
-              <div class="param-label">
-                <div class="param-label-main">可执行窗口</div>
-                <div class="param-label-desc">任务的声明式排期（窗口 + 周期）</div>
-              </div>
-              <div class="param-control">
-                <n-input
-                  :value="taskSchedule"
-                  disabled
-                  style="min-width: 240px; text-align: center;"
-                />
-              </div>
-            </div>
 
           </div>
         </div>
@@ -148,13 +135,6 @@ const formattedNextTime = computed(() => {
   }
   // 已经是字符串则直接返回
   return t
-})
-
-/** 任务排期描述（窗口 + 周期）：取自调度器状态快照；调度器未启动时显示 — */
-const taskSchedule = computed(() => {
-  const snap = appStore.schedulerSnapshots[appStore.activeConfigId as string]
-  const entry = (snap?.tasks || []).find((t: any) => t.name === currentTaskName.value)
-  return entry?.schedule || '—'
 })
 
 function comboOptions(detail: any) {
