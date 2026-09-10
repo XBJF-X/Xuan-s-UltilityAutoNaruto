@@ -9,6 +9,15 @@ from minidevice.utils.command_builder_utils import CommandBuilder
 
 from backend.core.legacy.Config import Config
 from backend.core.legacy.Control import Control, InvalidResolution
+from backend.core.legacy.Control.adb_bootstrap import ensure_adb_device
+
+# 初始化重试：程序退出时会 adb kill-server，下次首次连接时 adb server 冷启动、
+# 本机模拟器端口尚未被扫描到，`device 'emulator-xxxx' not found` 属瞬态错误；
+# 等待设备就绪 + 有限重试即可自愈（U2 由 uiautomator2 内部等待设备，无此问题）。
+_INIT_ATTEMPTS = 3
+# 每次尝试前的 adb 就绪等待时长（秒），逐次缩短避免长时间阻塞调度器启动
+_INIT_WAIT_TIMEOUTS = (15.0, 6.0, 6.0)
+_INIT_RETRY_INTERVAL = 1.5
 
 
 class ArchType(Enum):
@@ -36,21 +45,67 @@ class MiniTouch(Control):
             if not self.serial:
                 raise RuntimeError("设备序列号不能为空")
 
-            self._build_core()
-
-            self.adb = adb.device(self.serial)
-            self.get_device_info()
-            if not self.check_resolution():
-                raise InvalidResolution("模拟器分辨率比例不符合16:9的要求，请在模拟器设置内切换！")
-            self.logger.info(
-                f"MiniTouch 初始化成功 | 分辨率:{self.screen_size[0]}x{self.screen_size[1]},最大连接数:{self.max_contacts},最大压力:{self.max_pressure}"
-            )
+            self._init_device()
 
         except Exception as e:
             self.logger.error(f"MiniTouch 初始化失败: {e}")
             self.release()
             self._released = True
             raise
+
+    def _init_device(self):
+        """初始化 minitouch 核心与设备信息（adb 未就绪时等待并重试）。
+
+        adb server 冷启动（程序退出时执行过 adb kill-server）或模拟器刚上线时，
+        `device 'xxx' not found`、端口转发失败等都属于瞬态错误；这里先等待目标
+        串口在 adb 设备列表中就绪，再对整体初始化做有限重试。
+        """
+        last_error: Exception | None = None
+        for attempt in range(1, _INIT_ATTEMPTS + 1):
+            wait_timeout = _INIT_WAIT_TIMEOUTS[
+                min(attempt - 1, len(_INIT_WAIT_TIMEOUTS) - 1)]
+            ensure_adb_device(self.serial, self.logger, timeout=wait_timeout)
+            try:
+                self._build_core()
+
+                self.adb = adb.device(self.serial)
+                self.get_device_info()
+                if not self.check_resolution():
+                    raise InvalidResolution("模拟器分辨率比例不符合16:9的要求，请在模拟器设置内切换！")
+                self.logger.info(
+                    f"MiniTouch 初始化成功 | 分辨率:{self.screen_size[0]}x{self.screen_size[1]},最大连接数:{self.max_contacts},最大压力:{self.max_pressure}"
+                )
+                return
+            except InvalidResolution:
+                # 分辨率不符属配置问题，重试无意义，直接由上层报错
+                raise
+            except Exception as e:
+                last_error = e
+                # 半初始化的核心可能已启动设备端 minitouch 服务/占用 socket，重试前清理
+                self._discard_core()
+                if attempt < _INIT_ATTEMPTS:
+                    self.logger.warning(
+                        f"MiniTouch 初始化第 {attempt} 次失败（{e}），"
+                        f"{_INIT_RETRY_INTERVAL}s 后重试..."
+                    )
+                    time.sleep(_INIT_RETRY_INTERVAL)
+        if last_error is not None:
+            raise last_error
+        raise RuntimeError("MiniTouch 初始化失败：重试流程未产生异常，请检查 adb 与模拟器状态")
+
+    def _discard_core(self):
+        """丢弃未完成初始化的 minitouch 核心（重试前释放进程与 socket）。
+
+        注意：``_released`` / ``_shutdown_requested`` 不动——本方法只服务于
+        初始化重试，最终失败仍由 ``__init__`` 的 ``release()`` 统一善后。
+        """
+        core = self._mt_core
+        self._mt_core = None
+        if core is not None:
+            try:
+                core.stop()
+            except Exception as e:
+                self.logger.debug(f"清理未就绪的 MiniTouch 核心失败: {e}")
 
     def _build_core(self):
         self._mt_core = MiniTouchCore(self.serial)

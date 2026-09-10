@@ -133,6 +133,14 @@ def _precheck_serial(cfg) -> tuple[list[str], list[str]]:
     # 设备在线检查：仅当 adb 能枚举到该串口才算在线（MuMu/雷电 可能不出现，降级为警告）
     try:
         from backend.api.device import get_adb_serials
+        # 冷启动竞态：程序退出会 adb kill-server，下次首次查询时 adb server 刚启动、
+        # 本机模拟器端口尚未扫描完，此时直接查询会把在线设备误报为"不在列表中"。
+        # 这里短暂等待（不允许重启 server，避免影响其他运行中的配置）后再枚举。
+        try:
+            from backend.core.legacy.Control.adb_bootstrap import ensure_adb_device
+            ensure_adb_device(serial, _logger, timeout=5.0, allow_rescan=False)
+        except Exception as e:
+            _logger.debug(f"adb 就绪等待失败（继续按当前设备列表判断）: {e}")
         serials = get_adb_serials()
         if serial not in serials:
             msg = f"串口 {serial} 未在 adb 设备列表中发现（当前已连接：{', '.join(serials) or '无'}）"

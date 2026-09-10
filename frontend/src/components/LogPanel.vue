@@ -19,6 +19,12 @@
           @update:value="toggleSaveScreenshot"
         />
         <n-text v-if="configId && configId !== '__global__'" depth="3" style="font-size: 12px">截图</n-text>
+        <n-tooltip trigger="hover" :delay="300">
+          <template #trigger>
+            <n-button text size="tiny" @mousedown.prevent @click="copyLogs">复制</n-button>
+          </template>
+          选中日志后点「复制」只复制选中内容，未选中则复制当前显示的全部日志
+        </n-tooltip>
         <n-button text size="tiny" @click="clear">清空</n-button>
       </n-space>
     </div>
@@ -38,6 +44,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue'
+import { useMessage } from 'naive-ui'
 import { mergeHistory, useWebSocket, type LogEntry } from '@/api/ws'
 import { configApi, utilsApi } from '@/api/client'
 
@@ -52,6 +59,7 @@ const props = withDefaults(defineProps<{
 })
 
 const { logMap, clearLogsByConfig, onMessage } = useWebSocket()
+const message = useMessage()
 const autoScroll = ref(true)
 const bodyRef = ref<HTMLElement | null>(null)
 const saveScreenshotEnabled = ref(false)
@@ -156,6 +164,80 @@ function formatTime(ts: number) {
   return d.toLocaleTimeString('zh-CN', { hour12: false })
 }
 
+/** 复制用完整时间戳（含日期，便于粘贴到反馈里定位问题） */
+function formatFullTime(ts: number) {
+  const d = new Date(ts)
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} `
+    + `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}`
+}
+
+/** 单条日志的复制文本（与面板展示一致：时间 [级别] [logger] 内容） */
+function formatLogLine(line: LogEntry) {
+  const parts = [formatFullTime(line.ts), `[${line.level}]`]
+  if (line.logger_name) parts.push(`[${line.logger_name}]`)
+  parts.push(line.message)
+  return parts.join(' ')
+}
+
+/** 读取日志面板内鼠标选中的文本（选区不在面板内时返回空串） */
+function selectedTextInBody(): string {
+  const sel = window.getSelection?.()
+  if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return ''
+  const node = sel.getRangeAt(0).commonAncestorContainer
+  const root = bodyRef.value
+  if (root && node && !root.contains(node)) return ''
+  return sel.toString()
+}
+
+/** 写剪贴板：优先 Clipboard API，不可用时降级 execCommand（Electron 兜底） */
+async function writeClipboard(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text)
+      return true
+    }
+  } catch {
+    // 剪贴板 API 被拒绝/不可用 → 走下方 execCommand 降级方案
+  }
+  try {
+    const ta = document.createElement('textarea')
+    ta.value = text
+    ta.style.position = 'fixed'
+    ta.style.top = '-1000px'
+    ta.style.opacity = '0'
+    document.body.appendChild(ta)
+    ta.select()
+    const ok = document.execCommand('copy')
+    document.body.removeChild(ta)
+    return ok
+  } catch {
+    return false
+  }
+}
+
+/**
+ * 复制日志：优先复制鼠标选中的行（便于只取关键信息），
+ * 未选中时复制当前显示的全部日志。
+ */
+async function copyLogs() {
+  const selected = selectedTextInBody()
+  const useSelection = selected.trim().length > 0
+  const text = useSelection
+    ? selected
+    : filteredLogs.value.map(formatLogLine).join('\n')
+  if (!text.trim()) {
+    message.warning('暂无可复制的日志')
+    return
+  }
+  const ok = await writeClipboard(text)
+  if (ok) {
+    message.success(useSelection ? '已复制选中日志' : `已复制 ${filteredLogs.value.length} 条日志`)
+  } else {
+    message.error('复制失败，请手动选中日志后按 Ctrl+C')
+  }
+}
+
 function clear() {
   if (props.configId === '__global__') {
     clearLogsByConfig('')
@@ -221,11 +303,21 @@ onBeforeUnmount(() => {
   font-family: 'Consolas', 'Courier New', monospace;
   font-size: 12px;
   line-height: 1.5;
+  /* 允许鼠标选中日志文本（Ctrl+C 复制），方便排查问题时粘贴 */
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
+}
+.log-body ::selection {
+  background: #3a5f8f;
+  color: #fff;
 }
 .log-line {
   padding: 1px 12px;
   white-space: pre-wrap;
   word-break: break-all;
+  user-select: text;
+  -webkit-user-select: text;
 }
 .log-line:hover {
   background: rgba(255, 255, 255, 0.05);

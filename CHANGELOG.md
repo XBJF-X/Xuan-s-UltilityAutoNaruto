@@ -1,4 +1,16 @@
+## v0.17.34 (2026-09-11)
+
+### Fix
+
+- **控制**: 修复 adb server 冷启动竞态导致「首次启动调度器必失败」（`device 'emulator-5560' not found`）——程序退出会执行 `adb kill-server`，下次首次连接时 adb server 刚启动、本机模拟器端口尚未扫描完，MiniTouch 立即发命令即报设备不存在，等几秒重启调度器又能成功。新增 `backend/core/legacy/Control/adb_bootstrap.py`：`ensure_adb_device()` 等待目标串口进入 adb 设备列表（`ip:port` 主动 `adb connect` 兜底；本机模拟器串口久等不到时重启一次 adb server 强制重扫；可在只读场景用 `allow_rescan=False` 关闭重扫）。MiniTouch 初始化改为「等待 + 最多 3 次重试」（重试前清理半初始化核心，分辨率不符不重试），调度器启动前串口预检也做 5s 就绪等待
+
+### Feat
+
+- **前端**: 日志面板支持复制——新增「复制」按钮（选中日志时只复制选中内容，未选中复制当前显示的全部日志；Clipboard API 不可用时降级 `execCommand`），日志文本可鼠标选中并用 Ctrl+C 复制，选中高亮可见
+
+
 ## v0.17.9 (2026-08-16)
+
 
 ### Feat
 
