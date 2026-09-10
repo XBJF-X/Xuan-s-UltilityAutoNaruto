@@ -3,7 +3,7 @@ import heapq
 import logging
 import threading
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional, Callable, List, TypeVar, Generic, Dict
 from zoneinfo import ZoneInfo
 
@@ -18,6 +18,11 @@ T = TypeVar('T')
 # ===== 配置模式名称映射（用于调度器启动横幅，便于反馈定位） =====
 _CONTROL_MODE_NAMES = {0: "MiniTouch", 1: "U2"}
 _SCREEN_MODE_NAMES = {0: "DroidCastRaw", 1: "WindowCapture", 2: "U2", 3: "MuMu", 4: "LD"}
+
+# ===== 账号配置模式“告一段落”判定 =====
+# 执行队列与就绪队列均为空，且最早的等待任务排期也在该阈值之后时，
+# 视为本段时间的执行告一段落，向用户发送一次桌面通知
+IDLE_NOTIFY_THRESHOLD = timedelta(hours=1)
 
 
 # ===== 全局共享 SceneGraph 单例 =====
@@ -153,6 +158,14 @@ class SchedulerService:
         # 调度器启动时间 / 停止原因（供停止横幅与问题定位）
         self.started_at: Optional[datetime] = None
         self._stop_reason = ""
+
+        # 桌面通知（仅 Windows）：预设跑完 / 账号配置模式告一段落时提醒用户
+        # _idle_notified 为“同一段空闲只通知一次”的去抖标记
+        self._idle_notified = False
+        # 本次启动以来执行结束的任务数（用于判断是否真的“执行过一段时间”）
+        self._completed_count = 0
+        # 临时预设本次待执行任务总数（通知文案用）
+        self._preset_total = 0
 
         # 为当前 config 添加专属文件处理器（log/<用户名>/<日期>/Xuan.log）
         username = config.get_config("用户名", "unknown")
@@ -429,6 +442,10 @@ class SchedulerService:
         self._pending_activate_tasks.clear()
         # 清空临时启用登记（跨轮次的临时启用不应影响本轮判定）
         self._temp_activated_tasks.clear()
+        # 通知去抖标记与执行计数按本轮重置（避免上一轮的“已通知”状态影响本轮）
+        self._idle_notified = False
+        self._completed_count = 0
+        self._preset_total = 0
         self._log_start_banner()
 
         # 临时任务启动时一律关闭不执行（临时预设除外，其由用户显式勾选），
@@ -782,6 +799,9 @@ class SchedulerService:
                         )
                         # 执行层停止被抢占任务（交还超时监视器 + 停止线程）
                         self.executor.stop_task(running_task)
+
+            # ---- 3. 空闲判定：执行告一段落时通知用户（仅账号配置模式）----
+            self._notify_account_idle(now)
         finally:
             self._scanning = False
 
@@ -798,6 +818,7 @@ class SchedulerService:
         else:
             pending = list(enabled)
         self.pending_once_tasks = pending
+        self._preset_total = len(pending)
         self.logger.info(f"预设待执行任务（按顺序）: {' -> '.join(pending) or '无'}")
 
     def _scan_once(self):
@@ -831,9 +852,10 @@ class SchedulerService:
                 self._push_snapshot()
             return
 
-        # 待执行列表耗尽 → 自动关闭调度器
+        # 待执行列表耗尽 → 通知用户后自动关闭调度器
         if self.running:
             self.logger.info("预设任务全部执行完毕，自动关闭调度器")
+            self._notify_preset_finished()
             threading.Thread(target=self.stop, kwargs={"reason": "预设任务全部执行完毕"}, daemon=True).start()
 
     def _reset_once_progress(self):
@@ -864,6 +886,97 @@ class SchedulerService:
             self.logger.warning(f"重置预设执行进度失败: {e}")
 
     # ================================================================
+    # 桌面通知（仅 Windows）
+    # ================================================================
+
+    def _notifications_enabled(self) -> bool:
+        """[助手设置] 任务通知 开关（默认开启）。"""
+        try:
+            from backend.services.settings_service import SettingsService
+            return SettingsService().getboolean("助手设置", "任务通知", default=True)
+        except Exception as e:
+            # setting.ini 属外部依赖：读取失败按“开启”处理并留痕，不影响调度
+            self.logger.warning(f"读取[助手设置]任务通知失败，按开启处理: {e}")
+            return True
+
+    def _notify_user(self, title: str, message: str) -> None:
+        """向用户发送桌面系统通知（仅 Windows）。
+
+        开关关闭 / 平台不支持时跳过；发送失败只记录日志，不影响调度循环。
+        """
+        if not self._notifications_enabled():
+            self.logger.debug("任务通知开关已关闭，跳过本次通知")
+            return
+        from backend.services.notify_service import is_supported, notify_async
+        if not is_supported():
+            self.logger.debug("当前平台不支持桌面通知（仅 Windows），跳过本次通知")
+            return
+        self.logger.info(f"发送桌面通知：{title} | {message}")
+        notify_async(title, message, logger=self.logger)
+
+    def _notify_preset_finished(self) -> None:
+        """临时预设模式：预设任务全部执行完毕后通知用户。"""
+        username = self.config.get_config("用户名", "未知用户")
+        self._notify_user(
+            "玄的日常助手 · 预设执行完毕",
+            f"{username}：预设任务已全部执行完毕"
+            f"（共 {self._preset_total} 个任务），调度器已自动停止")
+
+    def _notify_account_idle(self, now: datetime) -> None:
+        """账号配置模式：执行告一段落时通知用户。
+
+        判定（与需求一致）：执行队列与就绪队列均为空，且最早的等待队列项
+        （仅统计已启用的任务）排期也在 ``IDLE_NOTIFY_THRESHOLD``（1 小时）之后；
+        队列里已无待执行任务时同样视为告一段落。
+
+        去抖：同一段空闲只通知一次（``_idle_notified``）；一旦有任务进入执行/就绪
+        队列即重新武装，便于下一次告一段落再次提醒。另外，本次启动后尚未执行过
+        任何任务（刚启动）时不通知，避免刚打开就弹窗。
+        """
+        if self.run_once:
+            return
+        if (self.task_queue.get_tasks_by_status(0)
+                or self.task_queue.get_tasks_by_status(1)):
+            # 有任务在执行/待执行 → 重新武装通知
+            self._idle_notified = False
+            return
+        if self._completed_count == 0:
+            return
+        if self._idle_notified:
+            return
+
+        upcoming = []
+        for task in self.task_queue.get_tasks_by_status(2):
+            if not getattr(task, "is_activated", False):
+                continue
+            next_execute = getattr(task, "next_execute_time", None)
+            if isinstance(next_execute, datetime):
+                upcoming.append(task)
+
+        username = self.config.get_config("用户名", "未知用户")
+        if not upcoming:
+            self._idle_notified = True
+            self._notify_user(
+                "玄的日常助手 · 任务告一段落",
+                f"{username}：所有任务已执行完毕，当前没有待执行的任务"
+                "（1 小时内无排期），助手已进入空闲状态")
+            return
+
+        earliest = min(upcoming, key=lambda t: t.next_execute_time)
+        if earliest.next_execute_time <= now + IDLE_NOTIFY_THRESHOLD:
+            # 1 小时内有任务要跑，不算告一段落
+            self._idle_notified = False
+            return
+        self._idle_notified = True
+        hours = (earliest.next_execute_time - now).total_seconds() / 3600
+        self._notify_user(
+            "玄的日常助手 · 任务告一段落",
+            f"{username}：当前所有任务已执行完毕，下一个任务"
+            f"「{earliest.task_name}」将于 "
+            f"{earliest.next_execute_time.strftime('%m-%d %H:%M')} 执行"
+            f"（约 {hours:.1f} 小时后）")
+
+    # ================================================================
     # 回调：任务完成
     # ================================================================
 
@@ -877,6 +990,9 @@ class SchedulerService:
         if not self.running:
             self.logger.debug(f"调度器已停止，忽略任务 {task.task_name} 的完成信号")
             return
+
+        # 记一次“已执行完任务”，供账号配置模式的告一段落通知判定使用
+        self._completed_count += 1
 
         # 更新队列状态回等待(2)
         self._update_task_status(task.task_name, 2)

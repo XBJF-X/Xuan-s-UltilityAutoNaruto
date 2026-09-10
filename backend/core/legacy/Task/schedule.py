@@ -344,7 +344,8 @@ class Monthly(Schedule):
     """每月窗口。
 
     - ``day`` / ``days``：每月第几天（正数 1..31；**负索引 = 倒数第几天**，
-      ``-1`` 为月末、``-2`` 为倒数第 2 天）；
+      ``-1`` 为月末、``-2`` 为倒数第 2 天；负索引超出当月天数时收敛到当月 1 号，
+      **不跨越当月界限**）；
     - ``at``：窗口起点（默认日界 5:01）；
     - ``span``：窗口长度（默认 1 天）；
     - ``boundary``：日界（默认 5:01），"几点之前算上个月"的归一化基准。
@@ -385,14 +386,21 @@ class Monthly(Schedule):
         return next_month - _dt.timedelta(days=next_month.day)
 
     def _resolve(self, cycle_day: _dt.date, target: int) -> _dt.date:
-        """把"每月第几天（支持负索引）"解析为具体日期，越界时收敛到当月末。"""
+        """把"每月第几天（支持负索引）"解析为具体日期。
+
+        - 正数：超过当月天数时收敛到当月末；
+        - 负数（倒数第几天）：超过当月天数时**不跨越当月界限**，收敛到当月 1 号
+          （例如 2 月设为"倒数第 30 天" → 2 月 1 日，而不是 1 月 30 日）。
+        """
+        first_day = cycle_day.replace(day=1)
         if target > 0:
             try:
                 return cycle_day.replace(day=target)
             except ValueError:
                 return self._last_day_of(cycle_day)
         last_day = self._last_day_of(cycle_day)
-        return last_day - _dt.timedelta(days=abs(target) - 1)
+        resolved = last_day - _dt.timedelta(days=abs(target) - 1)
+        return max(resolved, first_day)
 
     def windows(self, base: _dt.datetime) -> List[Window]:
         cycle_day = _cycle_day(base, self.boundary)

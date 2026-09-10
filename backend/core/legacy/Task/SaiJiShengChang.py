@@ -4,14 +4,41 @@ from backend.core.legacy.Enums import KEY_INDEX
 from backend.core.legacy.Task import MeiRiShengChang
 from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Task.BaseTask import TransitionOn
-from backend.core.legacy.Task.schedule import Monthly
+from backend.core.legacy.Task.schedule import Custom, Monthly
+
+PARAM_DAYS_FROM_END = "倒数第几天"
+DEFAULT_DAYS_FROM_END = 2
+# 窗口长度：覆盖赛季结算（原行为为倒数第 2 天起 2 天）
+SEASON_WINDOW_SPAN = timedelta(days=2)
+
+
+def _monthly_windows(base, ctx):
+    """赛季胜场窗口：按任务参数“每月倒数第几天”生成窗口（缺省/非法回退倒数第 2 天）。
+
+    具体日期由 :class:`Monthly` 解析，负索引超出当月天数时会收敛到当月 1 号，
+    不会跨到上个月（例如 2 月设为“倒数第 30 天” → 2 月 1 日）。
+    """
+    days_from_end = DEFAULT_DAYS_FROM_END
+    if ctx is not None:
+        raw = ctx.param("赛季胜场", PARAM_DAYS_FROM_END, DEFAULT_DAYS_FROM_END)
+        try:
+            days_from_end = int(raw)
+        except (TypeError, ValueError):
+            days_from_end = DEFAULT_DAYS_FROM_END
+        if days_from_end < 1:
+            # Monthly 不接受 0（正数第几天 / 负数为倒数第几天），非法值回退默认
+            days_from_end = DEFAULT_DAYS_FROM_END
+    return Monthly(day=-days_from_end, span=SEASON_WINDOW_SPAN).windows(base)
 
 
 class SaiJiShengChang(MeiRiShengChang):
     source_scene = "赛季任务"
     task_max_duration = None
-    # 每月任务：窗口 [本月倒数第 2 天 5:01, +2 天)，覆盖赛季结算窗口
-    schedule = Monthly(day=-2, span=timedelta(days=2))
+    # 每月任务：窗口 [本月倒数第 N 天 5:01, +2 天)，覆盖赛季结算窗口
+    schedule = Custom(_monthly_windows,
+                      cycle=lambda base: base.replace(day=28) + timedelta(days=4),
+                      describe_text="每月倒数第 N 天 5:01 起 2 天（默认倒数第 2 天）")
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

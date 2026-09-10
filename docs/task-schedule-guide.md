@@ -177,6 +177,12 @@ class EveryNWeeks(Schedule):
 - **保留的框架入口**：`_get_execute_window` / `get_next_cycle_day` / `get_cycle_execute_time`
   由 `schedule` 驱动，任务侧无需重写、也不应重写。
 - **顺带修复**：`_check_window_invalid` 由"交集判定"改为**并集判定**（多窗口任务不再被误判越界）。
+- **窗口可配的任务参数（2026-09）**：
+  - 每周胜场：`schedule = Custom(_weekly_windows)` 读任务参数「每周几」（COMBOX 索引 0~6，默认周一），
+    仍为"整周窗口"语义（所选星期几 5:01 ~ 下周同日 5:01，可在本周内补跑）；
+  - 赛季胜场：`schedule = Custom(_monthly_windows)` 读任务参数「倒数第几天」（INT 1~31，默认 2），
+    窗口 = 当月倒数第 N 天 5:01 起 2 天；`Monthly._resolve` 的负索引**不跨越当月界限**
+    （超出当月天数时收敛到当月 1 号，如 2 月设 31 → 2 月 1 日）。
 
 ---
 
@@ -188,6 +194,8 @@ class EveryNWeeks(Schedule):
 | 全任务排期等价性 + 钩子别名 + 快照字段 | `.venv\Scripts\python.exe test_scene\verify_task_schedules.py` |
 | 既有调度/激活回归 | `verify_force_preempt.py`、`verify_scheduled_activation.py`、`verify_activation_path_fix.py`、`verify_temp_activation_restore.py` |
 | 执行日志与失败重试（各异常分支） | `.venv\Scripts\python.exe test_scene\verify_task_execution_logging.py` |
+| 通知服务 + 调度器通知时机 | `.venv\Scripts\python.exe test_scene\verify_task_notify.py` |
+| 胜场任务新增参数（每周几 / 倒数第几天） | `.venv\Scripts\python.exe test_scene\verify_win_task_params.py` |
 
 新增任务的验收清单：
 
@@ -250,3 +258,25 @@ class EveryNWeeks(Schedule):
   `detach_task()` 汇总 WARNING；BaseTask 侧的兜底提示用 `_log_once` 去重（只提示一次）。
 - 心跳失效后监视器**临时关闭"场景停滞"判定**（`_scene_stuck_enabled=False`），
   游戏卡死 / 模拟器卡死（画面静止类）判定不受影响；`attach_task` 会把心跳健康状态重置。
+
+---
+
+## 10. 桌面通知（预设跑完 / 账号配置告一段落）
+
+仅 Windows 生效；开关为 `setting.ini [助手设置] 任务通知`（默认开启，全局设置页可见）。
+
+| 模式 | 触发时机 | 通知内容 |
+| --- | --- | --- |
+| 临时预设 | 待执行列表耗尽、调度器即将自动停止 | `预设执行完毕`：共 N 个任务，调度器已自动停止 |
+| 账号配置（持久） | **执行队列与就绪队列均为空**，且最早的已启用等待任务排期 **> 1 小时**（或已无待执行任务） | `任务告一段落`：下一个任务「X」将于 MM-DD HH:MM 执行（约 N.N 小时后） |
+
+- 实现：`backend/services/notify_service.py` —— 由后端调用 Windows PowerShell 5.1 的
+  WinRT `ToastNotificationManager` 弹原生 Toast（**零新增依赖**）；脚本用
+  `-EncodedCommand`（UTF-16LE + Base64）整体传参，规避中文/引号被命令行解析破坏。
+  非 Windows、开关关闭或 PowerShell 调用失败时**只记录日志**（`notify()` 返回 False），
+  绝不影响调度循环。
+- 阈值与去抖：`IDLE_NOTIFY_THRESHOLD = timedelta(hours=1)`（模块级常量）；
+  同一段空闲只通知一次（`SchedulerService._idle_notified`），一旦有任务进入执行/就绪队列即重新武装；
+  另外**本次启动后尚未执行过任何任务时不会通知**（避免刚启动就弹窗）。
+- 相关验证：`test_scene/verify_task_notify.py`。
+

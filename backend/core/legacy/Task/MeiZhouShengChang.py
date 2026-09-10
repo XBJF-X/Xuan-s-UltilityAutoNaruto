@@ -4,14 +4,38 @@ from backend.core.legacy.Enums import KEY_INDEX
 from backend.core.legacy.Task import MeiRiShengChang
 from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Task.BaseTask import TransitionOn
-from backend.core.legacy.Task.schedule import Weekday, Weekly
+from backend.core.legacy.Task.schedule import Custom, Weekday, Weekly
+
+PARAM_WEEKDAY = "每周几"
+
+
+def _weekly_windows(base, ctx):
+    """每周胜场窗口：按任务参数“每周几”决定起始星期（缺省/非法回退周一）。
+
+    参数为 COMBOX 索引 0~6（周一~周日）；越界或非数字一律回退周一。
+    单 weekday 为**整周窗口** ``[所选星期几 5:01, 下周同日 5:01)``：当天没赶上时
+    可在本周内补跑（与原固定周一的行为一致，只是起始星期可配）。
+    """
+    index = Weekday.MON.value
+    if ctx is not None:
+        raw = ctx.param("每周胜场", PARAM_WEEKDAY, Weekday.MON.value)
+        try:
+            value = int(raw)
+        except (TypeError, ValueError):
+            value = Weekday.MON.value
+        if 0 <= value <= 6:
+            index = value
+    return Weekly(Weekday(index)).windows(base)
 
 
 class MeiZhouShengChang(MeiRiShengChang):
     source_scene = "忍术对战"
     task_max_duration = timedelta(hours=2)
-    # 每周任务：窗口 [本周一 5:01, 下周一 5:01)
-    schedule = Weekly(Weekday.MON)
+    # 每周任务：窗口 [所选星期几 5:01, 下周同日 5:01)，星期由任务参数"每周几"决定
+    schedule = Custom(_weekly_windows,
+                      cycle=lambda base: base + timedelta(weeks=1),
+                      describe_text="每周所选星期几 5:01 起整周（默认周一）")
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
