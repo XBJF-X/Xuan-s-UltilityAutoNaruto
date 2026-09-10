@@ -181,15 +181,15 @@ class MuMu(Screen):
 
         # 检查必要的函数是否加载成功
         if not self.connect_func:
-            self.logger.warning(f"函数指针获取失败: nemu_connect")
+            self.logger.warning("函数指针获取失败: nemu_connect")
             return False
 
         if not self.disconnect_func:
-            self.logger.warning(f"函数指针获取失败: nemu_disconnect")
+            self.logger.warning("函数指针获取失败: nemu_disconnect")
             return False
 
         if not self.capture_display_func:
-            self.logger.warning(f"函数指针获取失败: nemu_capture_display")
+            self.logger.warning("函数指针获取失败: nemu_capture_display")
             return False
 
         # get_display_id 函数在旧版本中可能不存在，这里只是警告

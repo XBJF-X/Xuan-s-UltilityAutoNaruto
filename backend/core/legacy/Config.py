@@ -24,7 +24,7 @@ class Config:
         self.load_and_merge_config()  # 改为合并加载方法
         self.save_config_to_file()  # 初始化后立即保存合并后的配置
         self._attach_config_log_handler()
-        self.logger.debug(f"初始化完成...")
+        self.logger.debug("初始化完成...")
 
     def _attach_config_log_handler(self):
         """为 Config 挂载 config 专属文件 handler + WebSocket handler，并切断向 root 的传播。

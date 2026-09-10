@@ -182,6 +182,20 @@ class Operationer:
             ocr_texts.append(OcrText(text, box, score))
         return ocr_texts
 
+    def _log_click(self, element_name: str) -> None:
+        """点击日志：**连续点击同一元素的同一任务**只首条 INFO，其余降 DEBUG。
+
+        点击类日志按次输出（一次搜索可能点几十次），长循环（如 while not
+        search_and_click(...)）会把日志刷满；元素名变化（或换了任务）时重新输出 INFO，
+        保证用户仍能看到"点了什么"。文件日志仍保留完整 DEBUG 明细。
+        """
+        key = (getattr(self, "task_name", ""), element_name)
+        if self.__dict__.get("_last_click_key") == key:
+            self.logger.debug(f"[Click] [{element_name}]")
+            return
+        self.__dict__["_last_click_key"] = key
+        self.logger.info(f"[Click] [{element_name}]")
+
     def click_and_wait(self, element, match_text='', all_coordinates=False,
                        full_match=False, random=False, **kwargs):
         """
@@ -210,7 +224,7 @@ class Operationer:
         """
         element = self._resolve_element(element)
         match_text = match_text or element.name
-        self.logger.info(f"[Click] [{element.name}]")
+        self._log_click(element.name)
 
         wait_time: float | None = kwargs.get("wait_time", None)
         max_time: float = kwargs.get("max_time", 0.7)
@@ -299,12 +313,13 @@ class Operationer:
         Returns:
             int: 是否成功找到并点击了element_list中的1-based元素
         """
-        self.logger.info(f"元素点击搜索内容：")
+        # 搜索内容清单属于调试信息（每次调用 1+N 条），降为 DEBUG 避免刷屏
+        self.logger.debug("元素点击搜索内容：")
         for element_id in element_list:
             if isinstance(element_id, Element):
-                self.logger.info(f"[元素] {element_id.name}")
+                self.logger.debug(f"[元素] {element_id.name}")
             else:
-                self.logger.info(f"[元素] {element_id}")
+                self.logger.debug(f"[元素] {element_id}")
 
         click_interval: float = kwargs.pop("click_interval", 0.5)
 
@@ -346,15 +361,16 @@ class Operationer:
             int: 未找到返回0，找到返回1-based索引，表示找到了params_list中哪个元素
         """
         # bool_debug: bool = kwargs.get("bool_debug", True)
-        self.logger.info(f"元素检测搜索内容：")
+        # 搜索内容清单属于调试信息（每次调用 1+N 条），降为 DEBUG 避免刷屏
+        self.logger.debug("元素检测搜索内容：")
         for item in item_list:
             if isinstance(item, Scene):
-                self.logger.info(f"[场景] {item.name}")
+                self.logger.debug(f"[场景] {item.name}")
             elif isinstance(item, Element):
                 if item.type == ElementType.IMG:
-                    self.logger.info(f"[图像] {item.name}")
+                    self.logger.debug(f"[图像] {item.name}")
                 elif item.type == ElementType.COORDINATE:
-                    self.logger.info(
+                    self.logger.debug(
                         f"[坐标] ({item.coordinate_x},{item.coordinate_y})")
             elif isinstance(item, str):
                 self.logger.debug(f"[元素] {item}")
@@ -419,7 +435,7 @@ class Operationer:
 
     def app_start(self):
         # 启动应用
-        self.logger.info(f"[App Start]")
+        self.logger.info("[App Start]")
         self.device.app_start()
 
     def app_stop(self, package_name: str | None = None):

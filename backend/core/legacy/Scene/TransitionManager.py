@@ -52,7 +52,7 @@ class TransitionManager:
         if source_id not in operationer.scene_graph.scenes or target_id not in operationer.scene_graph.scenes:
             raise ValueError(f"场景 {source_id} 或 {target_id} 不存在")
         if source_id == target_id:
-            self.logger.debug(f"已在终点")
+            self.logger.debug("已在终点")
             return
 
         # 优先执行直接跳转函数
@@ -69,7 +69,7 @@ class TransitionManager:
 
         if self._execute_transition(operationer, *args, **kwargs):
             operationer.current_scene = operationer.get_scene(target_id)
-            self.logger.debug(f"直接跳转成功")
+            self.logger.debug("直接跳转成功")
             return
         else:
             raise RuntimeError(f"从 {source_id} 到 {target_id} 跳转失败")

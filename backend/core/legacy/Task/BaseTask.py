@@ -655,12 +655,20 @@ class BaseTask:
             self.logger.info(f"识别到场景: {scene_name}")
         else:
             self.logger.debug(f"识别到场景: {scene_name}")
-        # 向超时监视器上报当前场景（心跳），用于场景停滞/卡死检测
+        # 向超时监视器上报当前场景（心跳），用于场景停滞/卡死检测。
+        # 监视器内部已对心跳失败留痕并临时关闭"场景停滞"判定；这里仅做兜底，
+        # 且必须提示（不再静默吞掉）——心跳失效会导致卡死判定失真。
+        # 注意不在此丢弃 self.watchdog：丢掉了也阻止不了监视器误判，真正有效的降级
+        # 在监视器侧（_scene_stuck_enabled），这里保留引用便于监视器继续被调度器收回。
         if self.watchdog is not None:
             try:
                 self.watchdog.heartbeat(scene_name)
-            except Exception:
-                pass
+            except Exception as e:
+                self._log_once(
+                    "watchdog-heartbeat-failed",
+                    "超时监视器心跳上报失败（场景停滞判定可能失真）: "
+                    f"{_format_exception(e)}",
+                    logging.WARNING)
         # 如果设置了next_scene，优先跳转
         if self.operationer.next_scene:
             if self.operationer.next_scene == scene_name:

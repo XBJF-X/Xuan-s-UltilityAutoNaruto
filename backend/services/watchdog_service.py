@@ -4,7 +4,10 @@
 - SchedulerService 初始化并持有本监视器（每个调度器一个实例）；
   任务开始执行时通过 attach_task() 将监视器交给当前正在执行的任务；
 - 正在执行的任务（BaseTask）在每轮场景识别后调用 heartbeat() 上报当前场景，
-  监视器据此记录任务的执行轨迹（场景变化时间线）；
+  监视器据此记录任务的执行轨迹（场景变化时间线）；**心跳失败时监视器自行留痕
+  （首次 ERROR + traceback）并临时关闭"场景停滞"判定**——心跳是该项判定的唯一
+  时间基准，失效后继续判定会导致误判卡死（进而停任务/重启游戏/重启模拟器），
+  失败次数在任务结束时由 detach_task() 汇总报告；
 - 监视器后台线程周期性截取游戏画面，进行三级检测：
     1. 场景停滞（SCENE_STUCK）：画面仍在变化，但任务长时间停留在同一场景；
     2. 游戏卡死（GAME_FROZEN）：画面长时间静止，探针点击设计坐标后依旧静止；
@@ -100,6 +103,12 @@ class TimeoutWatchdog:
         self._scene_since: float = time.monotonic()
         self._last_activity: float = time.monotonic()
 
+        # ---- 心跳健康状态（任务侧上报）----
+        # 心跳失败会让"场景停滞"判定的时间基准失真（可能误判卡死 → 停任务/重启游戏/
+        # 重启模拟器），因此失败后临时关闭该判定，并在任务结束时汇总报告（不静默）。
+        self._heartbeat_fail_count: int = 0
+        self._scene_stuck_enabled: bool = True
+
         # ---- 画面侧状态（帧差检测）----
         self._last_frame: Optional[np.ndarray] = None
         self._static_since: float = time.monotonic()
@@ -161,15 +170,26 @@ class TimeoutWatchdog:
             self._last_frame = None
             self._capture_fail_count = 0
             self._awaiting_recovery = False
+            # 心跳健康状态随任务重置（上一个任务的失败不应影响本任务）
+            self._heartbeat_fail_count = 0
+            self._scene_stuck_enabled = True
         task.attach_watchdog(self)
         self.logger.debug(f"开始监视任务 [{task.task_name}]")
 
     def detach_task(self, task: "BaseTask"):
-        """任务结束/被停止：收回监视器"""
+        """任务结束/被停止：收回监视器。
+        若本任务执行期间出现过心跳上报失败，在这里汇总报告（心跳失败不静默）。
+        """
         with self._lock:
-            if self._current_task is task:
+            was_current = self._current_task is task
+            if was_current:
                 self._current_task = None
+            fail_count = self._heartbeat_fail_count
         task.detach_watchdog()
+        if was_current and fail_count:
+            self.logger.warning(
+                f"任务 [{task.task_name}] 执行期间心跳上报失败 {fail_count} 次，"
+                f"已临时关闭场景停滞判定（游戏卡死/模拟器卡死检测不受影响）")
         self.logger.debug(f"停止监视任务 [{task.task_name}]")
 
     # ================================================================
@@ -180,16 +200,31 @@ class TimeoutWatchdog:
         """
         任务每轮场景识别后调用，上报当前场景。
         场景名变化会重置场景停滞计时；任何心跳都会刷新活动时间和截图失败计数关联。
+
+        本方法**不向外抛异常**：心跳失败会破坏"场景停滞"判定的时间基准（可能导致误判
+        卡死 → 停任务/重启游戏/重启模拟器），因此这里自行捕获并留痕——首次失败记录
+        ERROR（含 traceback）并临时关闭场景停滞判定，后续失败只计数，任务结束时由
+        detach_task() 汇总报告（避免每轮循环重复刷屏）。
         """
-        with self._lock:
-            if self._current_task is None:
-                return
-            now = time.monotonic()
-            if scene_name and scene_name != self._last_scene:
-                self.logger.debug(f"场景切换: {self._last_scene} -> {scene_name}")
-                self._last_scene = scene_name
-                self._scene_since = now
-            self._last_activity = now
+        try:
+            with self._lock:
+                if self._current_task is None:
+                    return
+                now = time.monotonic()
+                if scene_name and scene_name != self._last_scene:
+                    self.logger.debug(f"场景切换: {self._last_scene} -> {scene_name}")
+                    self._last_scene = scene_name
+                    self._scene_since = now
+                self._last_activity = now
+        except Exception as e:
+            with self._lock:
+                self._heartbeat_fail_count += 1
+                first_failure = self._heartbeat_fail_count == 1
+                self._scene_stuck_enabled = False
+            if first_failure:
+                self.logger.error(
+                    f"心跳上报失败，已临时关闭场景停滞判定（避免误判卡死）: "
+                    f"{type(e).__name__}: {e}", exc_info=True)
 
     # ================================================================
     # 调度器侧接口：恢复通知
@@ -278,7 +313,11 @@ class TimeoutWatchdog:
         with self._lock:
             scene_unchanged = now - self._scene_since
             scene_name = self._last_scene
-        if (scene_name is not None
+            scene_stuck_enabled = self._scene_stuck_enabled
+        # 心跳失效时该判定的时间基准不可信（会误判卡死），故跳过；
+        # 游戏卡死/模拟器卡死（画面静止）判定不受心跳影响，照常执行
+        if (scene_stuck_enabled
+                and scene_name is not None
                 and scene_unchanged >= scene_stuck_seconds
                 and static_seconds < freeze_seconds):
             self._raise(

@@ -138,11 +138,8 @@ class LD(Screen):
         ldconsole_path = os.path.join(self.config.get_config('雷电安装路径'), "ldconsole.exe")
         if not os.path.exists(ldconsole_path):
             self.logger.warning(f"未找到 ldconsole.exe: {ldconsole_path}")
-            self.logger.warning(f"请仔细检查LD安装路径配置，如果不知道怎么配置请认真参考README！！！")
-            self.logger.warning(f"请仔细检查LD安装路径配置，如果不知道怎么配置请认真参考README！！！")
-            self.logger.warning(f"请仔细检查LD安装路径配置，如果不知道怎么配置请认真参考README！！！")
-            self.logger.warning(f"请仔细检查LD安装路径配置，如果不知道怎么配置请认真参考README！！！")
-            self.logger.warning(f"请仔细检查LD安装路径配置，如果不知道怎么配置请认真参考README！！！")
+            # 原实现把同一句提示连续打印 5 次，改为 1 条（措辞不变，便于按老提示排查）
+            self.logger.warning("请仔细检查LD安装路径配置，如果不知道怎么配置请认真参考README！！！")
             return False
         return True
 
@@ -188,11 +185,8 @@ class LD(Screen):
 
         if not target_emu:
             self.logger.warning(f"未找到索引为 {self.config.get_config('雷电实例索引')} 的模拟器实例")
-            self.logger.warning(f"请仔细检查雷电实例索引配置，如果不知道怎么配置请认真参考README！！！")
-            self.logger.warning(f"请仔细检查雷电实例索引配置，如果不知道怎么配置请认真参考README！！！")
-            self.logger.warning(f"请仔细检查雷电实例索引配置，如果不知道怎么配置请认真参考README！！！")
-            self.logger.warning(f"请仔细检查雷电实例索引配置，如果不知道怎么配置请认真参考README！！！")
-            self.logger.warning(f"请仔细检查雷电实例索引配置，如果不知道怎么配置请认真参考README！！！")
+            # 原实现把同一句提示连续打印 5 次，改为 1 条（措辞不变，便于按老提示排查）
+            self.logger.warning("请仔细检查雷电实例索引配置，如果不知道怎么配置请认真参考README！！！")
             return False
 
         self.emu_info = target_emu

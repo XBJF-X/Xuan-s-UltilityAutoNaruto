@@ -42,7 +42,7 @@ class MiJingTanXian(BaseTask):
                     raise TaskCompleted("挑战券已扫荡完，任务执行完成")
                 return False
             else:
-                self.logger.info(f"扫荡次数耗尽")
+                self.logger.info("扫荡次数耗尽")
                 self.bool_sd=False
         self.operationer.click_and_wait("创建房间")
         self.operationer.next_scene="秘境探险-匹配"

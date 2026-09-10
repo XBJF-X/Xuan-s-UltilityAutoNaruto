@@ -232,3 +232,21 @@ class EveryNWeeks(Schedule):
 - **出错位置**：错误日志的 `位置=` 来自场景处理函数的源码位置（`_record_transition_source`），
   取代了旧的 `sys.settrace` 方案（不再为整个执行线程开启 tracing）。
 - **traceback**：仅"未捕获异常"附带（业务异常由任务主动抛出、消息明确，不需要）。
+
+### 日志级别约定（Operationer 点击 / 搜索）
+
+- `[Click] [元素名]`（`Operationer.click_and_wait`）为 **INFO**，但**同一任务连续点击
+  同一元素只首条 INFO、其余降 DEBUG**（`_log_click`）——搜索类长循环（`while not
+  search_and_click(...)`）过去会按次刷屏，元素切换或换任务时重新输出 INFO。
+- `元素点击搜索内容：` / `元素检测搜索内容：` 及逐项清单（一次调用 1+N 条）为 **DEBUG**
+  （原为 INFO）：仅作调试信息，文件日志（Xuan.log 为 DEBUG 级）仍保留完整明细，
+  前端需打开"调试"开关查看。
+- 点击/搜索的**结果**（成功的点击、`搜索超时`/`搜索次数已达N次` 等 WARNING）保持原级别不变。
+
+### 超时监视器心跳失效的处理
+
+- `BaseTask.transition()` 每轮上报 `watchdog.heartbeat(scene_name)`；该调用**不再静默吞异常**：
+  监视器内部自行捕获（首次失败 ERROR + traceback），并把失败次数累计到任务结束由
+  `detach_task()` 汇总 WARNING；BaseTask 侧的兜底提示用 `_log_once` 去重（只提示一次）。
+- 心跳失效后监视器**临时关闭"场景停滞"判定**（`_scene_stuck_enabled=False`），
+  游戏卡死 / 模拟器卡死（画面静止类）判定不受影响；`attach_task` 会把心跳健康状态重置。
