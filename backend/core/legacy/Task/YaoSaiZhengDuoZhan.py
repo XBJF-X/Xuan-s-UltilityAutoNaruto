@@ -37,9 +37,10 @@ class YaoSaiZhengDuoZhan(BaseTask):
     def _(self):
         if self._bool_kuafuyaosaizhan():
             if self.config.get_task_exe_param(self.task_name, "执行结束后是否有叛忍", False):
-                time.sleep(10)
-                self.logger.info("本周为跨服要塞战周，由于需要执行叛忍，故本任务暂时停留用于唤醒[叛忍来袭]任务")
-                return False
+                running_time = self.config.get_task_exe_param(
+                                self.task_name, "本任务执行多少分钟后执行叛忍", 0)
+                self._activate_another_task("叛忍来袭",delay=datetime.timedelta(running_time if not running_time else 30))
+                raise TaskCompleted("本周为跨服要塞战周且有[叛忍来袭]，故激活叛忍来袭后跳过要塞争夺战任务")
             else :
                 raise TaskCompleted("本周为跨服要塞战周且无[叛忍来袭]，故跳过要塞争夺战任务")
         
