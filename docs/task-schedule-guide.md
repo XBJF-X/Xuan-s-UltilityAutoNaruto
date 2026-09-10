@@ -153,25 +153,29 @@ class EveryNWeeks(Schedule):
         return self.get_cycle_execute_time(current_time, completed=True)
 ```
 
-### 「立即执行 / 被激活」的窗口语义
+### 「立即执行 / 被激活 / 预设顺序执行」的窗口语义
 
-带 `force_execute_now` 标记的任务（用户在总览点"执行"、或被其它任务激活）**跳过窗口校验**——
-用户/任务的显式意图优先，否则"立即执行"会被窗口压回起点，形同虚设。
-其余任务仍按窗口校验，不合规时抛 `TooEarlyToRun`（未到）/ `TimeOutDeadLineError`（已过）。
+`BaseTask._should_skip_window_check()` 为真时不走窗口校验（显式意图优先）：
+
+- `force_execute_now`：用户在总览点「执行」，或被其它任务激活；
+- `ignore_time_window`：临时预设模式按顺序执行时由调度器置位。
+
+其余情况按声明式排期校验窗口，不合规抛 `TooEarlyToRun`（未到）/ `TimeOutDeadLineError`（已过）。
 
 ---
 
-## 7. 兼容与迁移状态
+## 7. 迁移与清理状态
 
-- **旧写法仍可用**：`start_line` / `dead_line` 类属性会自动映射为
-  `Daily(at=start_line, until=dead_line)`（未显式声明 `schedule` 时）；
-  重写 `_get_execute_window` / `get_next_cycle_day` / `_handle_*` 的子类继续生效（子类优先）。
-- **已迁移为声明式排期**（2026-09，v0.17.28）：
-  情报站、冬日烟花季、无差别预选赛、一乐外卖、高级忍者招募、修行之路、更多玩法、每周胜场、
-  忍法帖点赞分享、忍法帖奖励、追击晓组织、赛季胜场、巅峰对决、天地战场、要塞争夺战、叛忍来袭、
-  消耗体力（统一日界 5:01）。
-- **顺带修复**：`_check_window_invalid` 由"交集判定"改为**并集判定**（多窗口任务不再被误判越界）；
-  `@debug_execute_window`（settrace）从窗口计算中摘除。
+- **全部任务已迁移为声明式排期**（含曾用旧 `start_line` 写法的排行榜点赞/冬日烟花季/无差别预选赛/一乐外卖）：
+  情报站、冬日烟花季、无差别预选赛、一乐外卖、排行榜点赞、高级忍者招募、修行之路、更多玩法、
+  每周胜场、忍法帖点赞分享、忍法帖奖励、追击晓组织、赛季胜场、巅峰对决、天地战场、要塞争夺战、
+  叛忍来袭、消耗体力（统一日界 5:01）。
+- **旧兼容层已删除**：`start_line` / `dead_line` 类属性与自动映射、6 个 `_handle_*` 转发别名、
+  弃用的 `@debug_execute_window` 装饰器全部移除；预设（临时预设）模式的"忽略时间窗口"
+  改由显式的 `BaseTask.ignore_time_window` 标记表达（不再靠清空 `start_line` 的 hack）。
+- **保留的框架入口**：`_get_execute_window` / `get_next_cycle_day` / `get_cycle_execute_time`
+  由 `schedule` 驱动，任务侧无需重写、也不应重写。
+- **顺带修复**：`_check_window_invalid` 由"交集判定"改为**并集判定**（多窗口任务不再被误判越界）。
 
 ---
 

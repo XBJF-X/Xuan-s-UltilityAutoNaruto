@@ -1,4 +1,3 @@
-from abc import abstractmethod
 import datetime
 import inspect
 import sys
@@ -9,7 +8,7 @@ from enum import IntEnum
 from logging import Logger
 from pathlib import Path
 from types import FrameType
-from typing import Any, Dict, Callable, List, Tuple
+from typing import Dict, Callable, List, Tuple
 from zoneinfo import ZoneInfo
 
 from backend.utils import get_real_path
@@ -24,12 +23,7 @@ from backend.core.legacy.Exceptions import (
 )
 from backend.core.legacy.Operationer import Operationer
 from backend.core.legacy.Scene.TransitionManager import TransitionManager
-from backend.core.legacy.Task.schedule import (
-    DAY_RESET,
-    Daily,
-    Schedule,
-    ScheduleContext,
-)
+from backend.core.legacy.Task.schedule import Daily, Schedule, ScheduleContext
 from backend.core.scheduler.runtime import RuntimeContext
 
 
@@ -85,25 +79,6 @@ def handle_transition_exceptions(func):
             sys.settrace(old_trace)
 
     return wrapper
-def debug_execute_window(func):
-    """【已弃用】原先给窗口计算挂 ``sys.settrace`` 以记录调用位置。
-
-    声明式排期（``schedule.py``）不需要它，而 settrace 有明显开销；
-    保留定义仅为兼容尚未清理的旧代码，新任务请勿使用。
-    """
-
-    def wrapper(self, *args, **kwargs):
-        old_trace = sys.gettrace()
-        sys.settrace(self.trace_callback)
-        try:
-            result = func(self, *args, **kwargs)
-            # self.logger.debug(f"可执行时间窗口: {[f'{start_dt.strftime('%Y-%m-%d %H:%M:%S')} - {end_dt.strftime('%Y-%m-%d %H:%M:%S')}' for start_dt, end_dt in result]}")
-            return result
-        finally:
-            sys.settrace(old_trace)
-
-    return wrapper
-
 def handle_task_exceptions(func):
 
     def wrapper(self, *args, **kwargs):
@@ -187,18 +162,15 @@ class BaseTask:
     """任务的声明式时间排期（可执行窗口 + 周期）。
 
     新任务只需改这一行，例如 ``schedule = Weekly(Weekday.MON)``；
-    框架据它计算窗口与"下次执行时间"，无需再重写 _get_execute_window /
-    get_next_cycle_day / _handle_* 等方法。窗口依赖任务参数时用 ``Custom``
-    （bind 后通过 ScheduleContext 实时读配置）。
+    框架据它计算窗口与"下次执行时间"，无需再写窗口/周期方法。
+    窗口依赖任务参数时用 ``Custom``（bind 后经 ScheduleContext 实时读配置）。
     """
+
+    ignore_time_window: bool = False
+    """是否忽略可执行窗口校验（预设顺序执行等场景由调度器置 True；任务自身一般不用）"""
 
     task_max_duration: timedelta = timedelta(minutes=10)
     """任务最长执行时间（无DDL的情况下生效）"""
-    start_line: datetime.time | None = None
-    """【旧写法·兼容】任务当天最早开始的时间点；未显式声明 schedule 时自动映射为
-    ``Daily(at=start_line, until=dead_line)``"""
-    dead_line: datetime.time | None = None
-    """【旧写法·兼容】任务当天截至的时间点；未显式声明 schedule 时自动映射（同上）"""
 
     tz_info = ZoneInfo("Asia/Shanghai")
 
@@ -325,18 +297,8 @@ class BaseTask:
         return bound
 
     def _bind_schedule(self) -> Schedule:
-        """解析并绑定本任务的排期。
-
-        - 子类未声明 ``schedule``（仍为默认 ``Daily()``）但设置了 ``start_line`` /
-          ``dead_line`` 时，自动映射为 ``Daily(at=start_line, until=dead_line)``
-          （旧写法兼容，行为与旧 ``_get_execute_window`` 一致）；
-        - 其余情况直接绑定子类声明的 ``schedule``。
-        """
-        sched = type(self).schedule
-        if isinstance(sched, Daily) and sched.at == DAY_RESET and sched.until is None:
-            if self.start_line is not None or self.dead_line is not None:
-                sched = Daily(at=self.start_line, until=self.dead_line)
-        return sched.bind(self._build_schedule_context())
+        """绑定本任务的排期：注入 ScheduleContext，使 Custom 排期能读取任务参数。"""
+        return type(self).schedule.bind(self._build_schedule_context())
 
     @property
     def schedule_description(self) -> str:
@@ -417,6 +379,22 @@ class BaseTask:
                 return True
         return False
 
+    def _should_skip_window_check(self) -> bool:
+        """是否跳过可执行窗口校验。
+
+        显式意图优先：``force_execute_now``（用户点「执行」或被其它任务激活）与
+        ``ignore_time_window``（临时预设顺序执行）都不受排期窗口限制，
+        否则"立即执行"会被窗口压回起点、预设顺序执行会被窗口拦下。
+        """
+        return (bool(getattr(self, "force_execute_now", False))
+                or bool(self.ignore_time_window))
+
+    def _skip_window_reason(self) -> str:
+        """跳过窗口校验的原因（写入日志）。"""
+        if getattr(self, "force_execute_now", False):
+            return "立即执行/被激活"
+        return "预设顺序执行"
+
     def _check_execute_window(self, current_time: datetime.datetime) -> None:
         """校验 current_time 是否落在任一可执行窗口内。
 
@@ -471,11 +449,9 @@ class BaseTask:
                 raise Stop("任务被停止")
 
             current_time = datetime.datetime.now(self.tz_info)
-            # 「立即执行 / 被跨任务激活」的任务不受可执行窗口限制（显式意图优先）；
-            # 其余情况按声明式排期校验窗口，不合规则抛 TooEarlyToRun / TimeOutDeadLineError
-            if getattr(self, "force_execute_now", False):
+            if self._should_skip_window_check():
                 self.logger.info(
-                    f"[Force] 任务被显式要求立即执行，跳过窗口校验"
+                    f"[IgnoreWindow] {self._skip_window_reason()}，跳过窗口校验"
                     f"（排期规则: {self.schedule_description}）")
             else:
                 self._check_execute_window(current_time)
@@ -687,25 +663,25 @@ class BaseTask:
     def schedule_next_on_complete(
             self) -> tuple[bool, datetime.datetime | None]:
         current_time = datetime.datetime.now(self.tz_info)
-        next_execute_time = self._handle_execution_completed(current_time)
+        next_execute_time = self.on_complete(current_time)
         return self._save_next_execute_time(next_execute_time)
 
     def schedule_next_on_timeout_deadline(
             self) -> tuple[bool, datetime.datetime | None]:
         current_time = datetime.datetime.now(self.tz_info)
-        next_execute_time = self._handle_timeout_deadline(current_time)
+        next_execute_time = self.on_deadline(current_time)
         return self._save_next_execute_time(next_execute_time)
     
     def schedule_next_on_timeout_max_duration(
             self) -> tuple[bool, datetime.datetime | None]:
         current_time = datetime.datetime.now(self.tz_info)
-        next_execute_time = self._handle_timeout_max_duration(current_time)
+        next_execute_time = self.on_timeout(current_time)
         return self._save_next_execute_time(next_execute_time)
 
     def schedule_next_on_too_early(
             self) -> tuple[bool, datetime.datetime | None]:
         current_time = datetime.datetime.now(self.tz_info)
-        next_execute_time = self._handle_too_early(current_time)
+        next_execute_time = self.on_too_early(current_time)
         return self._save_next_execute_time(next_execute_time)
 
     def schedule_next_with_delay(
@@ -716,12 +692,12 @@ class BaseTask:
         也会写入"下次执行时间"并由调度器到点触发（窗口校验与排期是两件事）。
         """
         current_time = datetime.datetime.now(self.tz_info)
-        next_execute_time = self._handle_delay(current_time, delta)
+        next_execute_time = self.on_delay(current_time, delta)
         return self._save_next_execute_time(next_execute_time)
 
     def schedule_execute_now(self) -> tuple[bool, datetime.datetime | None]:
         current_time = datetime.datetime.now(self.tz_info)
-        next_execute_time = self._handle_execute_now(current_time)
+        next_execute_time = self.on_execute_now(current_time)
         return self._save_next_execute_time(next_execute_time)
 
     ############################################################################################
@@ -734,9 +710,8 @@ class BaseTask:
         """返回可执行窗口列表（半开区间 ``[start, end)``，多窗口为并集）。
 
         默认由 ``self._schedule``（任务类上的声明式排期）计算；
-        仍保留"以 self.last_run_time 为基准"的旧约定，避免执行中跨过窗口期导致异常。
-        需要动态窗口（依赖任务参数 / 多窗口）时用 ``Custom`` 排期表达，
-        或继续重写本方法（旧写法完全兼容）。
+        基准为 ``last_run_time``（不传 dt 时），避免执行中跨过窗口期导致异常。
+        需要动态窗口（依赖任务参数 / 多窗口）时请用 ``Custom`` 排期表达。
         """
         base = self._ensure_tz_aware(dt) if dt is not None else self.last_run_time
         return [(w.start, w.end) for w in self._schedule.windows(base)]
@@ -805,37 +780,6 @@ class BaseTask:
                  delta: timedelta) -> datetime.datetime:
         """延后 delta 再执行（业务重试/冷却，**不受可执行窗口限制**）。"""
         return current_time + delta
-
-    # ---- 兼容旧名：旧任务重写旧名仍生效，新任务建议直接覆盖 on_* ----
-    def _handle_execution_completed(
-            self, current_time: datetime.datetime) -> datetime.datetime:
-        """【兼容别名】见 on_complete"""
-        return self.on_complete(current_time)
-
-    def _handle_timeout_deadline(self,
-                        current_time: datetime.datetime) -> datetime.datetime:
-        """【兼容别名】见 on_deadline"""
-        return self.on_deadline(current_time)
-
-    def _handle_timeout_max_duration(self,
-                        current_time: datetime.datetime) -> datetime.datetime:
-        """【兼容别名】见 on_timeout"""
-        return self.on_timeout(current_time)
-
-    def _handle_too_early(
-            self, current_time: datetime.datetime) -> datetime.datetime:
-        """【兼容别名】见 on_too_early"""
-        return self.on_too_early(current_time)
-
-    def _handle_execute_now(
-            self, current_time: datetime.datetime) -> datetime.datetime:
-        """【兼容别名】见 on_execute_now"""
-        return self.on_execute_now(current_time)
-
-    def _handle_delay(self, current_time: datetime.datetime,
-                      delta: timedelta) -> datetime.datetime:
-        """【兼容别名】见 on_delay"""
-        return self.on_delay(current_time, delta)
 
     def reset_task_exe_prog(self) -> bool:
         """重置任务执行进度参数，需要的任务自行重载"""

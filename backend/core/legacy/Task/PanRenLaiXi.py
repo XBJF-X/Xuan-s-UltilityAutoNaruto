@@ -1,9 +1,8 @@
 import datetime
 import time
-from zoneinfo import ZoneInfo
 
 from backend.core.legacy.Enums import KEY_INDEX
-from backend.core.legacy.Exceptions import TaskCompleted, TooEarlyToRun
+from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
 from backend.core.legacy.Task.schedule import Custom, Window
 

@@ -1,6 +1,4 @@
-import time
 import datetime
-
 
 from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
@@ -9,7 +7,7 @@ from backend.core.legacy.Task.schedule import Daily, Weekday, Weekly
 class RenFaTieJiangLi(BaseTask):
     source_scene = "忍法帖-周任务"
     task_max_duration = datetime.timedelta(minutes=3)
-    # 周排期：窗口 [本周一 5:01, 下周一 5:01)；未领完时按日粒度补领（见 _handle_execution_completed）
+    # 周排期：窗口 [本周一 5:01, 下周一 5:01)；未领完时按日粒度补领（见 on_complete）
     schedule = Weekly(Weekday.MON)
     # 任务内进度标记：run() 每次执行前重置为 False，on_complete 用它
     # 决定下次执行时间（类属性默认值保证未执行过 run() 的路径也能安全读取）

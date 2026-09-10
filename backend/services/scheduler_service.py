@@ -813,9 +813,8 @@ class SchedulerService:
             if not task.is_activated:
                 self.logger.info(f"预设任务未勾选，跳过: {task_name}")
                 continue
-            # 预设任务立即执行：忽略任务级时间窗口限制
-            task.start_line = None
-            task.dead_line = None
+            # 预设任务按顺序立即执行：置位"忽略时间窗口"标记（不走窗口校验）
+            task.ignore_time_window = True
             if task.current_status == 2:
                 self._update_task_status(task_name, 1)
             if task.current_status == 1:

@@ -31,7 +31,7 @@ import dataclasses
 import datetime as _dt
 from abc import ABC, abstractmethod
 from enum import IntEnum
-from typing import Any, Callable, Iterable, List, Sequence
+from typing import Any, Callable, Iterable, List
 
 DAY_RESET = _dt.time(5, 1)
 """游戏每日 5:00 刷新，留 1 分钟余量，作为统一日界常量"""
