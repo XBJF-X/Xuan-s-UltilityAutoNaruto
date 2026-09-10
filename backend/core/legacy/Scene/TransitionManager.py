@@ -279,6 +279,9 @@ class TransitionManager:
         @self.register("材料详情-扫荡", "修罗副本-关卡详情")
         @self.register("修罗副本-关卡详情", "修罗副本-章节")
         @self.register("修罗副本-章节", "冒险-修罗副本")
+        @self.register("忍法帖-周任务", "主场景")
+        @self.register("忍法帖-周活跃", "主场景")
+        @self.register("叛忍来袭-确认挑战", "叛忍来袭-内部")
         def _(operationer: Operationer, *args, **kwargs):
             """通用返回函数，点击[X]"""
             operationer.click_and_wait("X")
@@ -789,6 +792,20 @@ class TransitionManager:
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("V特权入口")
 
+        @self.register("忍法帖", "忍法帖-周任务")
+        @self.register("忍法帖-周活跃", "忍法帖-周任务")
+        def _(operationer: Operationer, *args, **kwargs):
+            operationer.click_and_wait("周任务")
+
+        @self.register("忍法帖-周任务", "忍法帖")
+        @self.register("忍法帖-周活跃", "忍法帖")
+        def _(operationer: Operationer, *args, **kwargs):
+            operationer.click_and_wait("奖励")
+
+        @self.register("忍法帖-周任务", "忍法帖-周活跃")
+        @self.register("忍法帖", "忍法帖-周活跃")
+        def _(operationer: Operationer, *args, **kwargs):
+            operationer.click_and_wait("周活跃")
 
 if __name__ == "__main__":
     TM = TransitionManager(None)

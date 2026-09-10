@@ -20,6 +20,7 @@ from .PuTongRenZheZhaoMu import PuTongRenZheZhaoMu
 from .QingBaoZhan import QingBaoZhan
 from .QingKongYouJian import QingKongYouJian
 from .RenFaTieDianZanFenXiang import RenFaTieDianZanFenXiang
+from .RenFaTieJiangLi import RenFaTieJiangLi
 from .RenWuJiHuiSuo import RenWuJiHuiSuo
 from .SaiJiShengChang import SaiJiShengChang
 from .ShangChengJiangLi import ShangChengJiangLi
@@ -63,6 +64,7 @@ TASK_TYPE_MAP = {
     '修行之路': XiuXingZhiLu,
     "每周胜场": MeiZhouShengChang,
     "忍法帖点赞分享": RenFaTieDianZanFenXiang,
+    "忍法帖奖励": RenFaTieJiangLi,
     '更多玩法': GengDuoWanFa,
     '团本': TuanBen,
     '要塞争夺战': YaoSaiZhengDuoZhan,
@@ -102,11 +104,13 @@ TASK_NAME_CN2EN_MAP = {
     '情报站': "QingBaoZhan",
     '冒险副本': "MaoXianFuBen",
     '活跃度奖励': "HuoYueDuJiangLi",
+    '积分赛奖励': "JiFenSaiJiangLi",
     '清空邮件': "QingKongYouJian",
 
     '修行之路': "XiuXingZhiLu",
     "每周胜场": "MeiZhouShengChang",
     "忍法帖点赞分享": "RenFaTieDianZanFenXiang",
+    "忍法帖奖励": "RenFaTieJiangLi",
     '更多玩法': "GengDuoWanFa",
     '团本': "TuanBen",
     '要塞争夺战': "YaoSaiZhengDuoZhan",

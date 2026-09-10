@@ -236,6 +236,10 @@ class Recognizer:
                 "叛忍来袭-结束",
                 "叛忍来袭-确认挑战",
             ],
+            "忍法帖": [
+                "忍法帖-周任务",
+                "忍法帖-周活跃",
+            ],
         }
         # 用于记录本次识别中已排除的弹窗
         self._excluded_popups_in_current_recognition: Set[str] = set()
