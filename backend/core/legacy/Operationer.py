@@ -1,3 +1,4 @@
+import random as _random  # 方法参数名 random 会遮蔽同名模块，故用别名导入
 import threading
 import time
 from typing import Tuple, Any, List
@@ -182,7 +183,7 @@ class Operationer:
         return ocr_texts
 
     def click_and_wait(self, element, match_text='', all_coordinates=False,
-                       full_match=False, **kwargs):
+                       full_match=False, random=False, **kwargs):
         """
         点击并等待一段时间
 
@@ -193,6 +194,8 @@ class Operationer:
                 IMG 元素点击模板匹配到的全部位置，OCR_AREA 元素点击全部文本命中位置
             full_match(bool): OCR 是否全字匹配（去首尾空白后完全相等），默认 False 为子串包含；
                 仅对 OCR_AREA 元素生效
+            random(bool): 随机点击，默认 False；all_coordinates=False 时从全部命中中随机选一个
+                点击（否则取识别顺序的第一个），all_coordinates=True 时打乱命中顺序后依次点击
             ** kwargs: 可选参数：
             - wait_time: 检测到之后的等待时间，默认为None,表示将等待画面稳定，支持自定义
             - max_time: 最大尝试时间，默认为2.0
@@ -222,7 +225,7 @@ class Operationer:
         return self._retry_until(
             lambda: self._click_element_once(
                 element, click_times, match_text, ratio_x, ratio_y,
-                all_coordinates, full_match, click_interval),
+                all_coordinates, full_match, click_interval, random),
             wait_time=wait_time,
             max_time=max_time,
             max_attempts=max_attempts,
@@ -267,7 +270,8 @@ class Operationer:
         return True
 
     def search_and_click(self, element_list, search_actions, match_text='',
-                         all_coordinates=False, full_match=False, **kwargs):
+                         all_coordinates=False, full_match=False, random=False,
+                         **kwargs):
         """
         循环执行元素点击搜索，支持多轮次、多位置尝试，并在过程中执行辅助操作（如点击或滑动）
 
@@ -279,6 +283,8 @@ class Operationer:
             match_text(str): OCR 匹配文本，为空时默认用 element.name
             all_coordinates(bool): 是否依次点击检测到的所有元素图标，默认 False（只点第一个）
             full_match(bool): OCR 是否全字匹配（去首尾空白后完全相等），默认 False 为子串包含
+            random(bool): 随机点击，默认 False；all_coordinates=False 时随机选一个命中点击，
+                all_coordinates=True 时打乱命中顺序后依次点击
             **kwargs:
             - click_interval: (float): all_coordinates=True 时相邻两次点击的间隔秒数，默认0.5
             - search_max_time: (float): 搜索尝试的最大时间，默认None，即不限时间
@@ -303,11 +309,12 @@ class Operationer:
         click_interval: float = kwargs.pop("click_interval", 0.5)
 
         def _check_once(item, **opt):
-            # all_coordinates/full_match/click_interval 必须闭包转发：_search_loop 只透传
-            # wait_time/max_time/max_attempts/stable_*，不会把这些开关带下去
+            # all_coordinates/full_match/random/click_interval 必须闭包转发：_search_loop
+            # 只透传 wait_time/max_time/max_attempts/stable_*，不会把这些开关带下去
             return self.click_and_wait(
                 item, match_text=match_text, all_coordinates=all_coordinates,
-                full_match=full_match, click_interval=click_interval, **opt)
+                full_match=full_match, random=random,
+                click_interval=click_interval, **opt)
 
         # 辅助 click 未指定 wait_time 时等待画面稳定（与原逻辑一致）
         return self._search_loop(element_list, search_actions, _check_once,
@@ -632,16 +639,35 @@ class Operationer:
             return text.strip() == match_text.strip()
         return match_text in text
 
+    def _arrange_click_targets(self, targets, all_coordinates, random):
+        """按 all_coordinates / random 整理点击目标序列（IMG 坐标或 OCR 结果）。
+
+        - all_coordinates=False：只保留一个目标；random=True 时从全部命中中随机取一个，
+          否则取识别顺序的第一个（保持原有行为）
+        - all_coordinates=True：保留全部目标；random=True 时先打乱顺序再依次点击
+        """
+        if not targets:
+            return []
+        if not all_coordinates:
+            return [_random.choice(targets)] if random else list(targets[:1])
+        if random:
+            shuffled = list(targets)
+            _random.shuffle(shuffled)
+            return shuffled
+        return list(targets)
+
     def _click_element_once(self, element, click_times, match_text,
                             ratio_x, ratio_y, all_coordinates=False,
-                            full_match=False, click_interval=0.5) -> bool:
+                            full_match=False, click_interval=0.5,
+                            random=False) -> bool:
         """单次点击尝试：按 ElementType 分派 COORDINATE/IMG/OCR_AREA
 
-        all_coordinates=True 时依次点击全部命中位置（相邻点击间隔 click_interval 秒），
-        否则只点击第一个命中位置（保持原有行为）。
+        - all_coordinates=True 时依次点击全部命中位置（相邻点击间隔 click_interval 秒），
+          否则只点击一个命中位置（保持原有行为）；
+        - random=True 时随机化：单目标取随机命中，多目标先打乱顺序再依次点击。
         """
         if element.type == ElementType.COORDINATE:
-            # 只有一个坐标，all_coordinates 对其无意义
+            # 只有一个坐标，all_coordinates/random 对其无意义
             return self.device.click(element.coordinate_x,
                                      element.coordinate_y,
                                      times=click_times)
@@ -651,8 +677,8 @@ class Operationer:
                 r for r in self._ocr_results(element)
                 if self._text_matches(r.text, match_text, full_match)
             ]
-            if not all_coordinates:
-                results = results[:1]
+            results = self._arrange_click_targets(results, all_coordinates,
+                                                  random)
             clicked = False
             for index, result in enumerate(results):
                 if index:
@@ -665,8 +691,8 @@ class Operationer:
             self.device.screen_cap(), element)
         if not coordinates:
             return False
-        if not all_coordinates:
-            coordinates = coordinates[:1]
+        coordinates = self._arrange_click_targets(coordinates, all_coordinates,
+                                                  random)
         clicked = False
         for index, coordinate in enumerate(coordinates):
             if index:
