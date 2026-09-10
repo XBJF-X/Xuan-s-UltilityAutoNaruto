@@ -302,9 +302,11 @@ class SchedulerService:
                 filepath = os.path.join(
                     save_dir, f"{ts}{('_' + reason) if reason else ''}.png")
                 cv2.imencode('.png', arr)[1].tofile(filepath)
-                self.logger.info(f"保存截图到{filepath}")
-            except Exception:
-                pass  # 截图保存失败不影响主流程
+                self.logger.info(
+                    f"保存截图到{filepath}" + (f"（原因: {reason}）" if reason else ""))
+            except Exception as e:
+                # 截图保存失败不影响任务主流程，但必须留痕（原实现静默吞掉异常）
+                self.logger.warning(f"截图保存失败: {type(e).__name__}: {e}")
 
         self._save_screenshot = _save_screenshot
 

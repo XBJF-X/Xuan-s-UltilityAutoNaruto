@@ -1,13 +1,12 @@
 import datetime
-import inspect
-import sys
+import functools
+import logging
 import threading
 import time
 from datetime import timedelta
 from enum import IntEnum
 from logging import Logger
 from pathlib import Path
-from types import FrameType
 from typing import Dict, Callable, List, Tuple
 from zoneinfo import ZoneInfo
 
@@ -25,6 +24,37 @@ from backend.core.legacy.Operationer import Operationer
 from backend.core.legacy.Scene.TransitionManager import TransitionManager
 from backend.core.legacy.Task.schedule import Daily, Schedule, ScheduleContext
 from backend.core.scheduler.runtime import RuntimeContext
+
+
+# --------------------------------------------------------------------------- #
+#                 执行日志 / 错误截图的公共常量与格式化助手（模块级）              #
+# --------------------------------------------------------------------------- #
+# 错误自动截图的原因标记：写入截图文件名，便于区分错误类型（也是反馈打包的筛选依据）。
+# 取值沿用历史约定，避免既有截图命名规则失效。
+SCREENSHOT_REASON_STEP_FAILED = "StepFailedError"
+SCREENSHOT_REASON_DEADLINE = "TimeOutDeadLineError"
+SCREENSHOT_REASON_MAX_DURATION = "TimeOutMaxDurationError"
+SCREENSHOT_REASON_UNKNOWN = "UnknownError"
+SCREENSHOT_REASON_UNREGISTERED_SCENE = "UnregisteredSceneForceReturn"
+
+
+def _format_duration(seconds: float) -> str:
+    """秒数 → 日志用可读时长（12.3s / 10m00s / 1h05m）。"""
+    if seconds < 60:
+        return f"{seconds:.1f}s"
+    if seconds < 3600:
+        return f"{int(seconds // 60)}m{int(seconds % 60):02d}s"
+    return f"{int(seconds // 3600)}h{int(seconds % 3600 // 60):02d}m"
+
+
+def _format_datetime(dt: datetime.datetime) -> str:
+    """时间 → 日志统一格式（与配置中"下次执行时间"的可读形式一致）。"""
+    return dt.strftime("%Y-%m-%d %H:%M:%S")
+
+
+def _format_exception(e: BaseException) -> str:
+    """异常 →"类型: 消息"（无消息时只留类型），便于日志检索定位。"""
+    return f"{type(e).__name__}: {e}" if str(e) else type(e).__name__
 
 
 class TaskType(IntEnum):
@@ -68,30 +98,60 @@ class TransitionOn:
 
 
 def handle_transition_exceptions(func):
+    """transition 装饰器：输出本轮 transition 的返回位置（DEBUG），便于定位步骤。
 
+    返回位置由 ``BaseTask._record_transition_source`` 在调用场景处理函数时静态取得；
+    不再使用 ``sys.settrace`` 全程跟踪——旧实现会为整个任务执行线程开启 tracing，
+    开销大，且记录的是"最后一条 return 事件"，位置并不精确。
+    """
+
+    @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
-        old_trace = sys.gettrace()
-        sys.settrace(self.trace_callback)
-        try:
-            result = func(self, *args, **kwargs)
-            return result
-        finally:
-            sys.settrace(old_trace)
+        self.transition_return = ""
+        result = func(self, *args, **kwargs)
+        if self.transition_return:
+            self.logger.debug(f"transition 返回位置: {self.transition_return}")
+        return result
 
     return wrapper
-def handle_task_exceptions(func):
 
+
+def handle_task_exceptions(func):
+    """任务执行装饰器：统一"开始 → 分类处理 → 结束汇总"的执行日志与收尾动作。
+
+    每次执行固定输出：一行开始摘要（INFO）→ 按需的分支日志 → 一行结束汇总（INFO）。
+
+    异常 → 结果 / 级别 / 收尾动作：
+
+    - TaskCompleted        完成         INFO  清理 + 重排期（任务未自行写入时）
+    - TooEarlyToRun        未到执行时间  INFO  清理 + 重排期
+    - StepFailedError      步骤失败     ERROR 错误截图 + 清理 + 冷却重试
+    - Stop                 被停止       WARN  仅清理（被抢占任务按原下次执行时间继续）
+    - TimeOutDeadLineError 窗口超时     ERROR 错误截图 + 清理 + 重排期
+    - TimeOutMaxDuration   执行超时     ERROR 错误截图 + 清理 + 重排期
+    - Exception            未捕获异常   ERROR 错误截图（含 traceback）+ 清理 + 冷却重试
+
+    说明：StepFailedError / 未捕获异常过去既不清理也不重排期，而"下次执行时间"仍是
+    过期时刻、会被调度器立刻判为到期，导致按扫描间隔（默认 1s）无限重试；现改为
+    冷却重试（``error_retry_delay``，任务类可覆盖）。
+    """
+
+    @functools.wraps(func)
     def wrapper(self, *args, **kwargs):
-        old_trace = sys.gettrace()
-        sys.settrace(self.trace_callback)
-        self.logger.info("开始执行")
+        started_at = time.perf_counter()
+        self._reset_execute_log_state()
+        self.logger.info(self._describe_execute_start())
         self.last_execute_error = None
         before_next_execute_ts = self.config.get_task_base_config(
             self.task_name, "下次执行时间")
+        reason, detail = "结束", ""
         try:
             func(self, *args, **kwargs)
         except TaskCompleted as e:
-            self.logger.info(str(e) if str(e) else "任务执行完成")
+            reason = "完成"
+            # 完成消息可能带业务说明（如"组织争霸任务暂未实现"），需保留到汇总日志
+            if str(e) and str(e) != "任务执行完成":
+                detail = str(e)
             self._cleanup_on_complete()
             after_next_execute_ts = self.config.get_task_base_config(
                 self.task_name, "下次执行时间")
@@ -102,46 +162,62 @@ def handle_task_exceptions(func):
                 if self.config.config_type != "临时":
                     self.config.set_task_base_config(self.task_name, "是否启用", False)
         except TooEarlyToRun as e:
-            self.logger.info(str(e) if str(e) else "任务执行时间过早，推迟执行")
+            reason = "未到执行时间"
+            detail = str(e) or "任务当前时间不在任何可执行窗口内"
             self._cleanup_on_too_early()
             self.schedule_next_on_too_early()
         except StepFailedError as e:
-            self.logger.error(e)
+            reason = "步骤失败"
             self.last_execute_error = str(e)
-            self._auto_screenshot("StepFailedError")
-        except Stop as e:
-            self.logger.warning("线程被要求停止")
+            self._log_execute_error(
+                "步骤执行失败", e,
+                self._auto_screenshot(SCREENSHOT_REASON_STEP_FAILED),
+                self._describe_retry())
+            self._cleanup_on_error()
+            self.schedule_next_with_delay(self.error_retry_delay)
+        except Stop:
+            reason = "被停止"
+            self.logger.warning(
+                "收到停止请求，正在清理（被抢占/被停止的任务按原下次执行时间继续）")
             self._cleanup_on_stop()
         except TimeOutDeadLineError as e:
-            self.logger.error(f"任务超时：已到达可执行窗口DeadLine")
+            reason = "窗口超时"
             self.last_execute_error = str(e)
-            self._auto_screenshot("TimeOutDeadLineError")
+            self._log_execute_error(
+                "窗口超时（已到达可执行窗口截止时间）", e,
+                self._auto_screenshot(SCREENSHOT_REASON_DEADLINE))
             self._cleanup_on_timeout()
             self.schedule_next_on_timeout_deadline()
-        except  TimeOutMaxDurationError as e:
-            self.logger.error(f"任务超时：超过任务最大执行时长")
+        except TimeOutMaxDurationError as e:
+            reason = "执行超时"
             self.last_execute_error = str(e)
-            self._auto_screenshot("TimeOutMaxDurationError")
+            max_duration = _format_duration(self.task_max_duration.total_seconds())
+            self._log_execute_error(
+                f"执行超时（超过最长执行时长 {max_duration}）", e,
+                self._auto_screenshot(SCREENSHOT_REASON_MAX_DURATION))
             self._cleanup_on_timeout()
             self.schedule_next_on_timeout_max_duration()
         except Exception as e:
-            self.logger.error(f"未知错误：{e}")
+            reason = "未捕获异常"
             self.last_execute_error = str(e)
-            self._auto_screenshot("UnknownError")
+            self._log_execute_error(
+                "未捕获异常", e,
+                self._auto_screenshot(SCREENSHOT_REASON_UNKNOWN),
+                self._describe_retry(), with_traceback=True)
+            self._cleanup_on_error()
+            self.schedule_next_with_delay(self.error_retry_delay)
         finally:
-            sys.settrace(old_trace)
             try:
                 self.bool_click = False
-                self.logger.debug("回调函数执行")
+                self.logger.debug("任务结束回调执行")
                 self.callback(self)
             except Exception as e:
-                self.logger.error(f"callback执行出错: {e}")
+                self.logger.error(f"✖ 调度回调失败: {_format_exception(e)}",
+                                  exc_info=True)
+            self.logger.info(
+                self._describe_execute_summary(reason, started_at, detail))
 
     return wrapper
-
-
-
-
 
 
 class BaseTask:
@@ -149,7 +225,7 @@ class BaseTask:
     transition_func: Dict[str, Callable] = {}
     """场景名到处理函数的映射，由TransitionOn装饰器填充"""
     transition_return: str = ""
-    """记录transition返回的位置，方便调试"""
+    """最近一次 transition 内场景处理函数的源码位置（file:line），用于调试与错误定位"""
     source_scene: str | None = None
     """任务的初始场景，需要先寻路到此处才能正式开始执行任务"""
 
@@ -171,6 +247,13 @@ class BaseTask:
 
     task_max_duration: timedelta = timedelta(minutes=10)
     """任务最长执行时间（无DDL的情况下生效）"""
+
+    error_retry_delay: timedelta = timedelta(minutes=5)
+    """步骤失败 / 未捕获异常后的冷却重试间隔（任务类可覆盖）。
+
+    过去这两类失败既不清理也不重排期，"下次执行时间"仍是过期时刻，会被调度器
+    立刻判为到期 → 按扫描间隔（默认 1s）无限重试并反复截图；改为冷却重试。
+    """
 
     tz_info = ZoneInfo("Asia/Shanghai")
 
@@ -326,6 +409,96 @@ class BaseTask:
             # 从时间戳转换为datetime对象
             return datetime.datetime.fromtimestamp(next_exec_ts, tz=china_tz)
 
+    # ------------------------------------------------------------------ #
+    #                 执行日志（开始 / 结束 / 错误，统一出口）               #
+    # ------------------------------------------------------------------ #
+    def _reset_execute_log_state(self) -> None:
+        """每次执行开始时清空"只记一次"的日志键与场景日志去重状态。"""
+        self.__dict__["_logged_once_keys"] = set()
+        self.__dict__.pop("_last_logged_scene", None)
+
+    def _log_once(self, key: str, message: str,
+                  level: int = logging.INFO) -> None:
+        """同一任务执行周期内相同提示只输出一次（避免窗口类提示每轮刷屏）。"""
+        logged = self.__dict__.setdefault("_logged_once_keys", set())
+        if key in logged:
+            return
+        logged.add(key)
+        self.logger.log(level, message)
+
+    def _execute_trigger_reason(self) -> str:
+        """执行触发方式："立即执行/被激活（跳过窗口校验）"、"预设顺序执行（跳过窗口校验）"或"正常排期"。"""
+        if self._should_skip_window_check():
+            return f"{self._skip_window_reason()}（跳过窗口校验）"
+        return "正常排期"
+
+    def _describe_execute_start(self) -> str:
+        """执行开始摘要：触发方式 + 排期规则 + 最长执行时长（每次执行仅一行）。"""
+        parts = [
+            "▶ 开始执行",
+            f"触发={self._execute_trigger_reason()}",
+            f"排期={self.schedule_description}",
+        ]
+        if self.task_max_duration:
+            parts.append("最长执行="
+                         f"{_format_duration(self.task_max_duration.total_seconds())}")
+        return " | ".join(parts)
+
+    def _describe_next_execute(self) -> str:
+        """下次执行时间文本（仅用于日志；读取失败降级为"未知"，不影响调度）。"""
+        try:
+            return _format_datetime(self.next_execute_time)
+        except Exception as e:
+            return f"未知（{_format_exception(e)}）"
+
+    def _describe_execute_summary(self, reason: str, started_at: float,
+                                  detail: str = "") -> str:
+        """执行结束摘要：结果 + 详情 + 耗时 + 下次执行时间（每次执行仅一行）。"""
+        parts = ["■ 执行结束", f"结果={reason}"]
+        if detail:
+            parts.append(f"详情={detail}")
+        parts.append(f"耗时={_format_duration(time.perf_counter() - started_at)}")
+        parts.append(f"下次执行={self._describe_next_execute()}")
+        return " | ".join(parts)
+
+    def _describe_retry(self) -> str:
+        """冷却重试提示（与 error_retry_delay 对应，追加到错误日志）。"""
+        delay = _format_duration(self.error_retry_delay.total_seconds())
+        return f"冷却重试={delay}后"
+
+    def _log_execute_error(self, title: str, exc: BaseException,
+                           screenshot_saved: bool = False, extra: str = "",
+                           with_traceback: bool = False) -> None:
+        """错误日志统一出口：``✖ 标题: 类型: 消息 | 位置=… | 错误截图=已保存 | 附加信息``。
+
+        - 位置取自 ``transition_return``（本轮场景处理函数的源码位置），便于直接定位
+          出错步骤；
+        - with_traceback=True 仅用于未捕获异常（业务异常如 StepFailedError 由任务
+          主动抛出且消息明确，不需要 traceback）。
+        """
+        parts = [f"✖ {title}: {_format_exception(exc)}"]
+        if self.transition_return:
+            parts.append(f"位置={self.transition_return}")
+        if screenshot_saved:
+            parts.append("错误截图=已保存")
+        if extra:
+            parts.append(extra)
+        self.logger.error(" | ".join(parts), exc_info=with_traceback)
+
+    def _record_transition_source(self, func: Callable) -> str:
+        """记录场景处理函数在源码中的位置（替代旧的 sys.settrace 方案，零运行时开销）。"""
+        code = getattr(func, "__code__", None)
+        if code is None:
+            self.transition_return = getattr(func, "__qualname__", str(func))
+            return self.transition_return
+        path = Path(code.co_filename)
+        try:
+            path = path.relative_to(get_real_path())
+        except ValueError:
+            pass
+        self.transition_return = f"{path}:{code.co_firstlineno}"
+        return self.transition_return
+
     def run(self):
         """
         启动新线程执行execute避免阻塞进程
@@ -421,13 +594,14 @@ class BaseTask:
                     expired_windows.append(end_dt)
 
         if valid_window_found:
-            # 至少有一个窗口可执行 → 只警告其他不符合的窗口，不抛错
+            # 至少有一个窗口可执行 → 只警告其他不符合的窗口，不抛错。
+            # 每次执行只提示一次：窗口校验在每轮循环都会跑，重复输出会刷屏
             for dt in too_early_windows:
-                self.logger.warning(
-                    f"[StartLine]未到任务可执行时间:{dt.strftime('%Y-%m-%d %H:%M:%S')}")
+                message = f"[StartLine]未到任务可执行时间:{_format_datetime(dt)}"
+                self._log_once(f"window:{message}", message, logging.WARNING)
             for dt in expired_windows:
-                self.logger.warning(
-                    f"[DeadLine]可执行窗口已过:{dt.strftime('%Y-%m-%d %H:%M:%S')}")
+                message = f"[DeadLine]可执行窗口已过:{_format_datetime(dt)}"
+                self._log_once(f"window:{message}", message, logging.WARNING)
             return
         # 所有窗口都不符合 → 抛出错误，尽量保留原有异常类型和信息
         if too_early_windows and not expired_windows:
@@ -443,24 +617,23 @@ class BaseTask:
     @handle_task_exceptions
     def _execute(self):
         self.operationer.next_scene = self.source_scene
+        # 是否跳过窗口校验、排期规则已由"开始日志"统一输出，循环内不再重复
         while True:
             # 检查停止信号
             if self._should_stop():
                 raise Stop("任务被停止")
 
             current_time = datetime.datetime.now(self.tz_info)
-            if self._should_skip_window_check():
-                self.logger.info(
-                    f"[IgnoreWindow] {self._skip_window_reason()}，跳过窗口校验"
-                    f"（排期规则: {self.schedule_description}）")
-            else:
+            if not self._should_skip_window_check():
                 self._check_execute_window(current_time)
             if self._check_timeout(current_time):
-                raise TimeOutMaxDurationError(f"[MaxDuration]任务执行超时:{current_time.strftime('%Y-%m-%d %H:%M:%S')}")
+                raise TimeOutMaxDurationError(
+                    f"[MaxDuration]任务执行超时:{_format_datetime(current_time)}")
+            # 清空上一轮的处理函数位置：出错时 _log_execute_error 只展示本轮位置
+            self.transition_return = ""
 
-            # 执行步骤转换
-            result = self.transition()
-            if result is not None and result:
+            # 执行步骤转换（处理函数返回 True 表示任务已完成）
+            if self.transition():
                 raise TaskCompleted("任务执行完成")
 
     @handle_transition_exceptions
@@ -471,12 +644,17 @@ class BaseTask:
 
         # 确保待调用的场景名为str
         if isinstance(scene, str):
-            self.logger.info(f"识别到场景: [Str] {scene}")
             scene_name = scene
         else:
-            self.logger.info(f"识别到场景: [Scene] {scene.name}")
             self.operationer.current_scene = scene
             scene_name = scene.name
+        # 场景日志：切换场景时 INFO（用户关心流程走向），持续停留同一场景降为 DEBUG
+        # （旧实现每轮循环都打 INFO，长时间任务会刷屏）
+        if scene_name != self.__dict__.get("_last_logged_scene"):
+            self.__dict__["_last_logged_scene"] = scene_name
+            self.logger.info(f"识别到场景: {scene_name}")
+        else:
+            self.logger.debug(f"识别到场景: {scene_name}")
         # 向超时监视器上报当前场景（心跳），用于场景停滞/卡死检测
         if self.watchdog is not None:
             try:
@@ -498,7 +676,11 @@ class BaseTask:
                 self.last_unregistered_scene_time = None
             func = self.transition_func[scene_name]
             # self.logger.debug(f"场景{scene_name}绑定的函数：{func.__qualname__}")
-            result = self.transition_func[scene_name](self)
+            # 记录处理函数源码位置（出错日志/调试日志据此定位步骤），异常也要记录
+            try:
+                result = func(self)
+            finally:
+                self._record_transition_source(func)
             return result
         else:
             if not self.last_unregistered_scene_time:
@@ -509,7 +691,7 @@ class BaseTask:
             else:
                 if self.last_unregistered_scene_time and time.perf_counter() - self.last_unregistered_scene_time > self.UNREGISTER_SCENE_MAX_TIME:
                     self.logger.warning(f"长时间未识别到注册场景，强制跳转回 source_scene: {self.source_scene}")
-                    self._auto_screenshot("UnregisteredSceneForceReturn")
+                    self._auto_screenshot(SCREENSHOT_REASON_UNREGISTERED_SCENE)
                     self.operationer.next_scene = self.source_scene
                     shortest_path = self.transition_manager.bfs_shortest_path(
                         scene_name, self.source_scene)
@@ -528,64 +710,52 @@ class BaseTask:
         # self.logger.debug(f"寻找注册函数: {scene_name}")
         func = self.transition_func[scene_name]
         # self.logger.debug(f"场景{scene_name}绑定的函数：{func.__qualname__}")
-        # 执行派生类的场景处理函数
-        result = self.transition_func[scene_name](self)
+        # 执行派生类的场景处理函数（异常也要记录位置，便于定位出错步骤）
+        try:
+            result = func(self)
+        finally:
+            self._record_transition_source(func)
         # self.logger.debug(f"[{scene_name}]注册函数执行完毕")
         # self.logger.debug(f"Transition的Result：{result}")
         # self.logger.debug(f"Transition的next_scene：{self.operationer.next_scene}")
         return result
-
-    def trace_callback(self, frame: FrameType, event, arg):
-        if event == "call":
-            func_name = "_" if hasattr(self, "source_scene") else "transition"
-            if frame.f_code.co_name == func_name:
-                frame.f_trace_lines = False
-                return self.trace_callback
-        elif event == "return":
-            try:
-                srcfile = inspect.getsourcefile(frame) or inspect.getfile(
-                    frame)
-            except Exception:
-                srcfile = None
-            if srcfile is None:
-                relative_path = Path("<unknown>")
-            else:
-                relative_path = Path(srcfile)
-            try:
-                relative_path = relative_path.relative_to(get_real_path())
-            except ValueError:
-                pass
-            self.transition_return = f"{relative_path}:{frame.f_lineno}"
-            self.logger.debug(self.transition_return)
 
     def _cleanup_on_stop(self):
         """停止请求时的清理"""
         self.operationer.clicker.stop()
         self.reset_task_exe_prog()
 
-    def _auto_screenshot(self, reason: str):
+    def _cleanup_on_error(self):
+        """步骤失败 / 未捕获异常时的清理（与超时一致：停止连点并复位进度，便于冷却后重试）"""
+        self.operationer.clicker.stop()
+        self.reset_task_exe_prog()
+
+    def _auto_screenshot(self, reason: str) -> bool:
         """错误/超时/异常场景自动截图一次，保存到 log/<用户名>/<日期>/screenshot/<任务名>/，
         便于用户打包反馈后开发者排查。可通过配置"错误自动截图"关闭，任何异常不阻断任务流程。
+
+        ``reason``（取 ``SCREENSHOT_REASON_*`` 常量）必须透传给配置的截图回调：
+        调度器的回调据此走"错误自动截图"开关，并把原因写进截图文件名（区分错误类型）。
+        返回是否已保存（供错误日志标注"错误截图=已保存"）。
         """
         try:
             if not self.config.get_config("错误自动截图", True):
-                return
+                return False
             op = self.operationer
             if op is None:
-                return
+                return False
             save_func = getattr(op, "screen_save_func", None)
             if callable(save_func):
-                save_func(self.task_name)
+                save_func(self.task_name, reason)
                 self.logger.info(f"已自动保存错误截图（原因: {reason}）")
-                return
-            # 兜底：直接截图保存
+                return True
+            # 兜底：直接截图保存（未配置截图回调的场景，如离线单测）
             frame = op.screen_cap()
             if frame is None:
-                return
+                return False
             import os
             import cv2
             from datetime import datetime
-            from backend.utils import get_real_path
             username = self.config.get_config("用户名", "unknown") or "unknown"
             safe_name = str(username).replace("/", "_").replace("\\", "_")
             date_str = datetime.now().strftime("%Y-%m-%d")
@@ -595,11 +765,14 @@ class BaseTask:
             ts = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:-3]
             filepath = os.path.join(save_dir, f"{ts}_{reason}.png")
             ok, buf = cv2.imencode(".png", frame)
-            if ok:
-                buf.tofile(filepath)
-                self.logger.info(f"已自动保存错误截图: {filepath}")
+            if not ok:
+                return False
+            buf.tofile(filepath)
+            self.logger.info(f"已自动保存错误截图: {filepath}")
+            return True
         except Exception as e:
-            self.logger.warning(f"错误截图保存失败: {e}")
+            self.logger.warning(f"错误截图保存失败: {_format_exception(e)}")
+            return False
 
     def _cleanup_on_timeout(self):
         """超时时的清理"""

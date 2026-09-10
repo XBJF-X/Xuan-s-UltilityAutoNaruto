@@ -187,6 +187,7 @@ class EveryNWeeks(Schedule):
 | 排期语义单测（窗口/周期/组合子/扩展示例） | `.venv\Scripts\python.exe test_scene\verify_schedule.py` |
 | 全任务排期等价性 + 钩子别名 + 快照字段 | `.venv\Scripts\python.exe test_scene\verify_task_schedules.py` |
 | 既有调度/激活回归 | `verify_force_preempt.py`、`verify_scheduled_activation.py`、`verify_activation_path_fix.py`、`verify_temp_activation_restore.py` |
+| 执行日志与失败重试（各异常分支） | `.venv\Scripts\python.exe test_scene\verify_task_execution_logging.py` |
 
 新增任务的验收清单：
 
@@ -194,3 +195,40 @@ class EveryNWeeks(Schedule):
 2. `schedule.describe()` 文案能准确说明窗口与周期；
 3. 在 `test_scene/verify_task_schedules.py` 加一条窗口断言（迁移前行为 = 迁移后行为）；
 4. 跑 `test_scene` 下全部 `verify_*.py`。
+
+---
+
+## 9. 执行日志与失败重试（BaseTask 统一出口）
+
+任务每次执行固定输出「一行开始 + 按需分支 + 一行结束」，全部由 `BaseTask` 的两个装饰器
+（`handle_task_exceptions` / `handle_transition_exceptions`）产出，任务侧只需正常抛异常：
+
+```
+[INFO]  ▶ 开始执行 | 触发=正常排期 | 排期=每周一 05:01 起整周 | 最长执行=10m00s
+[INFO]  识别到场景: 丰饶之间           ← 场景切换才输出 INFO，持续同场景降为 DEBUG
+[INFO]  已自动保存错误截图（原因: StepFailedError）
+[ERROR] ✖ 步骤执行失败: StepFailedError: 元素 [确定] 未定义 | 位置=backend/core/legacy/Task/FengRaoZhiJian.py:42 | 错误截图=已保存 | 冷却重试=5m00s后
+[INFO]  ■ 执行结束 | 结果=步骤失败 | 耗时=12.3s | 下次执行=2026-09-11 10:20:00
+```
+
+| 异常 | 结果 | 级别 | 收尾动作 |
+| --- | --- | --- | --- |
+| `TaskCompleted` | 完成 | INFO | 清理 + 重排期（任务未自行写入"下次执行时间"时；完成消息作为"详情"保留） |
+| `TooEarlyToRun` | 未到执行时间 | INFO | 清理 + 重排期（详情含未到的窗口起点） |
+| `StepFailedError` | 步骤失败 | ERROR | 错误截图 + 清理 + **冷却重试** |
+| `Stop` | 被停止 | WARN | 仅清理（被抢占/卡死处理的任务按原"下次执行时间"继续） |
+| `TimeOutDeadLineError` | 窗口超时 | ERROR | 错误截图 + 清理 + 重排期 |
+| `TimeOutMaxDurationError` | 执行超时 | ERROR | 错误截图 + 清理 + 重排期 |
+| 其它 `Exception` | 未捕获异常 | ERROR | 错误截图 + traceback + 清理 + **冷却重试** |
+
+- **冷却重试**：`BaseTask.error_retry_delay`（默认 `5min`，任务类可覆盖）。步骤失败/未捕获异常过去
+  既不清理也不重排期，"下次执行时间"仍是过期时刻 → 调度器立刻判为到期，按扫描间隔（默认 1s）
+  无限重试并反复截图；现在改为冷却 `error_retry_delay` 后重试。
+- **日志去重**：跳过窗口（开始日志里的 `触发=…（跳过窗口校验）`）每轮循环不再重复；
+  场景日志仅在切换时输出 INFO；多窗口的 `[StartLine]`/`[DeadLine]` 提示每次执行只输出一次
+  （`BaseTask._log_once`）。
+- **错误截图**：`_auto_screenshot(reason)` 把原因（`SCREENSHOT_REASON_*` 常量）透传给截图回调，
+  写入 `log/<用户名>/<日期>/screenshot/<任务名>/<时间>_<原因>.png`，并受"错误自动截图"开关控制。
+- **出错位置**：错误日志的 `位置=` 来自场景处理函数的源码位置（`_record_transition_source`），
+  取代了旧的 `sys.settrace` 方案（不再为整个执行线程开启 tracing）。
+- **traceback**：仅"未捕获异常"附带（业务异常由任务主动抛出、消息明确，不需要）。
