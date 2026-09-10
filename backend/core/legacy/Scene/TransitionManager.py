@@ -189,6 +189,8 @@ class TransitionManager:
         @self.register("组织助战-助战忍者", "小队突袭-组织助战")
         @self.register("X之要塞", "要塞战略图")
         @self.register("要塞战略图", "组织")
+        @self.register("跨服要塞战", "组织")
+        @self.register("跨服要塞战-要塞内部", "跨服要塞战")
         @self.register("天地战场", "组织")
         @self.register("追击晓组织", "组织")
         @self.register("叛忍来袭", "组织")
@@ -643,6 +645,7 @@ class TransitionManager:
             operationer.click_and_wait("进入组织")
 
         @self.register("主场景-组织", "要塞战略图")
+        @self.register("主场景-组织", "跨服要塞战")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("玩法")
             operationer.search_and_click(

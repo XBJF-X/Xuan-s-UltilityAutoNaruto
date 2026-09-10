@@ -36,9 +36,13 @@ class YaoSaiZhengDuoZhan(BaseTask):
     @TransitionOn()
     def _(self):
         if self._bool_kuafuyaosaizhan():
-            raise TaskCompleted("本周为跨服要塞战周，跳过要塞争夺战任务")
+            if self.config.get_task_exe_param(self.task_name, "执行结束后是否有叛忍", False):
+                time.sleep(10)
+                self.logger.info("本周为跨服要塞战周，由于需要执行叛忍，故本任务暂时停留用于唤醒[叛忍来袭]任务")
+                return False
+            else :
+                raise TaskCompleted("本周为跨服要塞战周且无[叛忍来袭]，故跳过要塞争夺战任务")
         
-        self.operationer.click_and_wait("信息")
         self.operationer.click_and_wait("玩法")
         self.operationer.swipe_and_wait(
                 (350, 464),
@@ -90,7 +94,18 @@ class YaoSaiZhengDuoZhan(BaseTask):
         self.operationer.long_press(self.joystick[0] + 100, self.joystick[1], 1.0)
         self.logger.info(f"[本服要塞战]已战斗 {self.fight_sum} 次")
         return False
-
+    
+    # =========================跨服要塞战部分==========================
+    @TransitionOn("跨服要塞战")
+    def _(self):
+        time.sleep(3)
+        return False
+    
+    @TransitionOn("跨服要塞战-要塞内部")
+    def _(self):
+        self.operationer.click_and_wait("诱敌")
+        return False
+    
     @TransitionOn("决斗场-匹配中")
     def _(self):
         self.operationer.clicker.stop()
