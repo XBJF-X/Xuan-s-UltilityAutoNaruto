@@ -30,7 +30,7 @@ start_backend.bat
 start_frontend.bat
 scripts
 docs/scheduler-architecture-review.md
-
+.cline/
 
 # ---------- 前端构建产物（dist 提交仓库供热更新拉取；electron 产物忽略） ----------
 frontend/dist-electron/
