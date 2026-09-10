@@ -145,6 +145,9 @@ class SchedulerService:
         # 待当前任务结束后（_execute_done_callback）统一激活并立即执行，
         # 避免在任务执行线程中直接激活对扫描循环时序的依赖（更稳定）。
         self._pending_activate_tasks: List[str] = []
+        # 跨任务临时启用登记：{任务名: 激活前是否已启用}。
+        # 仅登记"原本未激活、被其他任务临时启用"的任务，执行结束后恢复其原状态。
+        self._temp_activated_tasks: dict[str, bool] = {}
         # 截图保存回调（_lazy_init 时注入，供卡死告警截图使用）
         self._save_screenshot = None
         # 调度器启动时间 / 停止原因（供停止横幅与问题定位）
@@ -422,6 +425,8 @@ class SchedulerService:
         self._stop_reason = ""
         # 清空上次运行遗留的待激活任务登记（防止跨轮次残留导致误激活）
         self._pending_activate_tasks.clear()
+        # 清空临时启用登记（跨轮次的临时启用不应影响本轮判定）
+        self._temp_activated_tasks.clear()
         self._log_start_banner()
 
         # 临时任务启动时一律关闭不执行（临时预设除外，其由用户显式勾选），
@@ -485,6 +490,12 @@ class SchedulerService:
             self.running = False
         # 清空未处理的待激活任务登记（调度器已停止，无需再激活）
         self._pending_activate_tasks.clear()
+        # 临时启用的任务在停机时不写回配置（避免停止过程产生额外写入），仅清除登记
+        if self._temp_activated_tasks:
+            self.logger.warning(
+                f"调度器停止，以下临时启用的任务保持当前启用状态："
+                f"{list(self._temp_activated_tasks)}")
+        self._temp_activated_tasks.clear()
 
         # 记录停止原因：显式传入优先；未传入时按执行模式给默认值
         if reason:
@@ -598,6 +609,8 @@ class SchedulerService:
     def toggle_task_activation(self, task_name: str, state: bool):
         """切换启用/禁用（与原版 toggle_task_activation 一致）"""
         self.config.set_task_base_config(task_name, "是否启用", state)
+        # 用户手动设置优先：清除临时启用登记，避免任务结束后又被恢复为未激活
+        self._temp_activated_tasks.pop(task_name, None)
         temp_task = self.task_queue.get_task(task_name)
         if temp_task:
             if not state and temp_task.current_status == 0:
@@ -608,6 +621,48 @@ class SchedulerService:
         if self.on_task_state_change:
             self.on_task_state_change({"name": task_name, "activated": state})
         self._push_snapshot()
+
+    def _ensure_task_runnable(self, task_name: str) -> bool:
+        """确保任务可被调度：原本未启用时临时启用并登记，执行结束后恢复原状态。
+
+        仅"本次因跨任务激活而启用"的任务会被登记（原本已启用则不做任何改动）。
+
+        Returns:
+            bool: 本次是否执行了临时启用
+        """
+        if self.config.get_task_base_config(task_name, "是否启用", False):
+            return False
+        self.config.set_task_base_config(task_name, "是否启用", True)
+        # 记录原状态（False=未激活），供任务结束后恢复
+        self._temp_activated_tasks[task_name] = False
+        self.logger.info(
+            f"{task_name} 原为未激活，已临时启用（任务执行结束后恢复原状态）")
+        return True
+
+    def _restore_temp_activation(self, task) -> None:
+        """被跨任务激活的任务执行结束后，恢复其激活前的状态。
+
+        仅处理登记过的任务（原本未激活 → 恢复未激活）；原本已启用的任务不受影响，
+        用户中途手动启用（toggle_task_activation）会清除登记，同样不会被恢复。
+        """
+        task_name = task.task_name
+        if task_name not in self._temp_activated_tasks:
+            return
+        originally_activated = self._temp_activated_tasks.pop(task_name)
+        if originally_activated:
+            return
+        if self.config.config_type == "临时":
+            # 临时预设模式不持久化启用状态，避免污染预设文件
+            self.logger.info(
+                f"[{task_name}] 执行结束，当前为临时预设模式，不写回启用状态")
+            return
+        self.config.set_task_base_config(task_name, "是否启用", False)
+        task.force_execute_now = False
+        if getattr(task, "current_status", 2) != 2:
+            # 兜底：避免任务停留在就绪队列导致后续仍被扫描到
+            self._update_task_status(task_name, 2)
+        self._sync_task_state(task)
+        self.logger.info(f"[{task_name}] 执行结束，已恢复为未激活状态")
 
     def execute_task_now(self, task_name: str, enable_if_needed: bool = False):
         """立即执行（与原版 request_task_execute_now 一致）
@@ -622,7 +677,8 @@ class SchedulerService:
             self.logger.error(f"任务 {task_name} 不存在")
             return
         if enable_if_needed:
-            self.config.set_task_base_config(task_name, "是否启用", True)
+            # 原本未启用的任务会被临时启用，并在其执行结束后恢复原状态
+            self._ensure_task_runnable(task_name)
         if not task.is_activated and not getattr(task, "is_temp", False):
             self.logger.warning(f"任务 {task_name} 已禁用")
             return
@@ -843,6 +899,8 @@ class SchedulerService:
 
         # 标记最后运行时间
         task.last_run_time = datetime.now(ZoneInfo("Asia/Shanghai"))
+        # 跨任务临时启用的任务：结束后恢复其激活前状态（原本未激活 → 恢复未激活）
+        self._restore_temp_activation(task)
         # 处理其他任务登记的待激活任务（当前任务已结束，激活并立即执行）
         self._process_pending_activations()
         # 推送完整状态快照（任务回到等待态）
@@ -882,9 +940,7 @@ class SchedulerService:
                 f"被激活任务 {task_name} 不在任务队列中，仅写入下次执行时间")
         # 未启用的任务会被扫描循环跳过（TaskPlanner.is_due 要求 is_activated），
         # 需临时启用才能到点执行；执行结束后会恢复原状态
-        if not self.config.get_task_base_config(task_name, "是否启用", False):
-            self.config.set_task_base_config(task_name, "是否启用", True)
-            self.logger.info(f"{task_name} 原为未激活，已临时启用以便到点执行")
+        self._ensure_task_runnable(task_name)
         self.config.set_task_base_config(task_name, "下次执行时间",
                                         int(next_execute_time.timestamp()))
         self.logger.info(
