@@ -158,9 +158,9 @@ class QingBaoZhan(BaseTask):
         elif not self.config.get_task_exe_prog(self.task_name, "领取情报站活跃度", False):
             self.logger.info("领取活跃度奖励")
             receive_times = 0
-            self.operationer.click_and_wait("充值6元礼包-领取",match_text="领取")
+            self.operationer.click_and_wait("充值6元礼包-领取",match_text="领取",full_match=True)
             # 点击所有的领取按钮
-            while self.operationer.click_and_wait("活跃度任务-领取",match_text="领取", wait_time=3):
+            while self.operationer.click_and_wait("活跃度任务-领取",match_text="领取", random=True,wait_time=3):
                 receive_times += 1
                 if receive_times > 20:
                     self.logger.warning("情报站活跃度领取奖励失败，请手动领取")
@@ -172,20 +172,22 @@ class QingBaoZhan(BaseTask):
             self.config.set_task_exe_prog(self.task_name, "领取情报站活跃度", True)
             return False
         
-        elif not self.reward_60:
-            if self.hydz_num is None or self.hydz_num>=60:
-                self.handle_activity_reward(60)
-            return False
-        elif not self.reward_100:
-            if self.hydz_num is None or self.hydz_num>=100:
-                            self.handle_activity_reward(100)
-            return False
-        elif not self.reward_40:
-            if self.hydz_num is None or self.hydz_num>=40:
-                            self.handle_activity_reward(40)
-            return False
+        TIERS = (60, 100, 40) 
+        for tier in TIERS:
+            if self._try_claim(tier):
+                return False
+
         self.operationer.click_and_wait("X")
         raise TaskCompleted("任务执行完成")
+    
+    def _try_claim(self, threshold):
+        flag = getattr(self, f"reward_{threshold}")
+        if not flag:
+            self.__setattr__(f"reward_{threshold}", True)
+            if self.hydz_num is None or self.hydz_num >= threshold:
+                self.handle_activity_reward(threshold)
+                return True
+        return False
     @TransitionOn("福利站-每日签到")
     def _(self):
         self.operationer.click_and_wait("立即签到", wait_time=5)
@@ -224,19 +226,24 @@ class QingBaoZhan(BaseTask):
 
     def handle_activity_reward(self, num):
         self.logger.info(f"领取{num}活跃度奖励")
-        if self.operationer.click_and_wait(
+        self.operationer.click_and_wait(
                 f"活跃度任务-{num}",
-                wait_time=0
-        ):
-            if self.operationer.detect_element(
-                    "活跃度任务-今日已领取过该奖励",
-                    wait_time=2
-            ):
-                self.logger.warning(f"{num}活跃度奖励已领取")
-            self.config.set_task_exe_prog(self.task_name, f"{num}活跃度奖励已领取", True)
-        else:
-            self.logger.warning(f"{num}活跃度奖励领取失败，活跃度未达到要求")
-        self.__setattr__(f"reward_{num}", True)
+                wait_time=3
+        )
+        self.config.set_task_exe_prog(self.task_name, f"{num}活跃度奖励已领取", True)
+        # if self.operationer.click_and_wait(
+        #         f"活跃度任务-{num}",
+        #         wait_time=3
+        # ):
+        #     if self.operationer.detect_element(
+        #             "活跃度任务-今日已领取过该奖励",
+        #             wait_time=2
+        #     ):
+        #         self.logger.warning(f"{num}活跃度奖励已领取")
+        #     self.config.set_task_exe_prog(self.task_name, f"{num}活跃度奖励已领取", True)
+        # else:
+        #     self.logger.warning(f"{num}活跃度奖励领取失败，活跃度未达到要求")
+        # self.__setattr__(f"reward_{num}", True)
 
     def _get_execute_window(self,dt: datetime | None = None):
         if dt is None:
