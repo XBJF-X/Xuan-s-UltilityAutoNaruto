@@ -558,17 +558,32 @@ class BaseTask:
         self.operationer.clicker.stop()
         self.reset_task_exe_prog()
 
-    def _activate_another_task(self, task_name: str):
+    def _activate_another_task(self, task_name: str,
+                               next_execute_time: datetime.datetime | None = None,
+                               delay: timedelta | None = None):
         """
-        立即执行某一任务
+        激活另一任务
+
         Args:
-            task_name(str):需要立即执行的任务名称
-
-        Returns:
-
+            task_name(str): 需要激活的任务名称
+            next_execute_time(datetime|None): 指定被激活任务的下次执行时间；
+                与 delay 同为 None 时表示"立即执行"（当前任务结束后立刻执行）
+            delay(timedelta|None): 相对当前时间延后多久执行（与 next_execute_time 二选一）
         """
-        self.logger.info(f"{task_name}被激活，将立即执行")
-        self.activate_another_task_func(task_name)
+        if next_execute_time is not None and delay is not None:
+            self.logger.warning("同时指定了 next_execute_time 与 delay，忽略 delay")
+            delay = None
+        if next_execute_time is None and delay is not None:
+            next_execute_time = datetime.datetime.now(self.tz_info) + delay
+        if next_execute_time is None:
+            self.logger.info(f"{task_name}被激活，将立即执行")
+        else:
+            self.logger.info(
+                f"{task_name}被激活，将于 "
+                f"{next_execute_time.strftime('%Y-%m-%d %H:%M:%S')} 执行")
+        # next_execute_time 为 None 时保持原有"立即执行"语义（调度器登记待激活）
+        self.activate_another_task_func(task_name,
+                                        next_execute_time=next_execute_time)
 
     def _save_next_execute_time(
         self, next_execute_time: datetime.datetime | None

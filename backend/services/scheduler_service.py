@@ -848,19 +848,55 @@ class SchedulerService:
         # 推送完整状态快照（任务回到等待态）
         self._push_snapshot()
 
-    def _on_task_activate_request(self, task_name: str):
-        """其他任务请求激活指定任务：先登记到待激活列表，待当前任务结束后统一激活。
+    def _on_task_activate_request(self, task_name: str,
+                                  next_execute_time=None):
+        """其他任务请求激活指定任务。
 
-        原先在执行线程中直接 execute_task_now，完全依赖扫描循环时序去捡起该任务
-        （扫描可能恰好错过、且抢占判断可能将其延后），鲁棒性不足；临时预设模式下
-        扫描只遍历预设列表，被激活的临时任务甚至永远不会执行。改为登记后在任务完成
-        回调中统一处理，时机确定、无需与扫描线程竞争。
+        两种方式（由 next_execute_time 区分）：
+        - 不传时间：登记到待激活列表，当前任务结束后统一激活并立即执行（原行为）；
+        - 传时间：只把该任务的下次执行时间设为指定时刻（未启用时临时启用），
+          当前任务不需要停留等待，到点后由扫描循环自然执行。
+
+        登记式激活的原因：原先在执行线程中直接 execute_task_now，完全依赖扫描循环时序
+        去捡起该任务（扫描可能恰好错过、且抢占判断可能将其延后），鲁棒性不足；临时预设
+        模式下扫描只遍历预设列表，被激活的临时任务甚至永远不会执行。改为登记后在任务
+        完成回调中统一处理，时机确定、无需与扫描线程竞争。
         """
+        if next_execute_time is not None:
+            self._schedule_task_activation(task_name, next_execute_time)
+            return
         if task_name not in self._pending_activate_tasks:
             self._pending_activate_tasks.append(task_name)
             self.logger.info(f"{task_name} 已登记待激活（当前任务结束后立即执行）")
         else:
             self.logger.debug(f"{task_name} 已在待激活列表中，忽略重复激活请求")
+
+    def _schedule_task_activation(self, task_name: str, next_execute_time) -> None:
+        """指定被激活任务的下次执行时间（不登记立即执行，当前任务无需停留等待）。"""
+        if next_execute_time.tzinfo is None:
+            next_execute_time = next_execute_time.replace(
+                tzinfo=ZoneInfo("Asia/Shanghai"))
+        task = self.task_queue.get_task(task_name)
+        if task is None:
+            self.logger.warning(
+                f"被激活任务 {task_name} 不在任务队列中，仅写入下次执行时间")
+        # 未启用的任务会被扫描循环跳过（TaskPlanner.is_due 要求 is_activated），
+        # 需临时启用才能到点执行；执行结束后会恢复原状态
+        if not self.config.get_task_base_config(task_name, "是否启用", False):
+            self.config.set_task_base_config(task_name, "是否启用", True)
+            self.logger.info(f"{task_name} 原为未激活，已临时启用以便到点执行")
+        self.config.set_task_base_config(task_name, "下次执行时间",
+                                        int(next_execute_time.timestamp()))
+        self.logger.info(
+            f"{task_name} 已指定下次执行时间："
+            f"{next_execute_time.strftime('%Y-%m-%d %H:%M:%S')}"
+            "（当前任务无需等待，到点自动执行）")
+        if task is not None:
+            self._sync_task_state(task)
+        self._push_snapshot()
+        # 指定时间已到/已过：立即触发一次扫描，让它尽快进入执行
+        if next_execute_time <= datetime.now(ZoneInfo("Asia/Shanghai")):
+            self.scan()
 
     def _process_pending_activations(self):
         """任务结束回调中处理待激活列表：激活登记的任务并立即尝试启动。"""

@@ -17,6 +17,8 @@ class RuntimeContext:
     transition_manager: Any
     operationer: Any
     # 任务请求立即执行 / 激活其他任务的回调（调度器注入）
+    # 调用形式：func(task_name, next_execute_time=None)——
+    # next_execute_time 为 None 表示立即执行，否则指定被激活任务的下次执行时间
     activate_another_task_func: Callable
     # 任务完成回调（调度器注入，原 BaseTask.callback）
     callback: Callable
