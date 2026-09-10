@@ -16,6 +16,10 @@ from backend.core.legacy.Scene.SceneGraph import SceneGraph
 class Operationer:
     current_scene: Scene | None = None
     next_scene: str | None = None
+    # 分享跳转常见的第三方应用包名（QQ / 微信），用于分享流程结束后清理后台
+    SHARE_APP_PACKAGES = ("com.tencent.mobileqq", "com.tencent.mm")
+    # 任务参数名：分享结束后是否关闭 QQ/微信后台（BOOL，参数缺失时视为开启）
+    SHARE_APP_STOP_PARAM = "分享后关闭QQ微信后台"
 
     def __init__(self, task_name: str, config: Config, device: Device,
                  scene_graph: SceneGraph, screen_save_func: Any,
@@ -390,10 +394,10 @@ class Operationer:
         self.logger.info(f"[App Start]")
         self.device.app_start()
 
-    def app_stop(self):
-        self.logger.info(f"[App Stop]")
-        # 停止应用
-        self.device.app_stop()
+    def app_stop(self, package_name: str | None = None):
+        self.logger.info(f"[App Stop] {package_name or self.device.package_name}")
+        # 停止应用（默认停止游戏本体；传入包名时停止指定应用）
+        self.device.app_stop(package_name)
 
     @property
     def is_naruto_frontend(self):
@@ -402,6 +406,38 @@ class Operationer:
             return front_app["package"] == self.device.package_name
         else:
             return False
+
+    @property
+    def current_app_package(self) -> str:
+        """当前前台应用包名；取不到时返回空字符串"""
+        return self.device.current_app_package
+
+    def close_share_app_background(self, share_app_package: str) -> bool:
+        """分享流程结束后关闭本次跳转使用的 QQ/微信后台。
+
+        Args:
+            share_app_package(str): 分享跳转期间记录到的前台应用包名
+
+        Returns:
+            bool: 是否实际执行了关闭操作
+
+        说明：
+        - 受任务参数 `分享后关闭QQ微信后台` 控制（BOOL，参数缺失时视为开启）；
+        - 仅当包名属于 SHARE_APP_PACKAGES（QQ/微信）时才执行，未识别到目标应用时
+          只告警跳过，避免对未安装应用盲发 `am force-stop` 刷错误日志。
+        """
+        if not self.config.get_task_exe_param(self.task_name,
+                                              self.SHARE_APP_STOP_PARAM, True):
+            self.logger.debug(
+                f"任务参数[{self.SHARE_APP_STOP_PARAM}]已关闭，跳过关闭分享应用后台")
+            return False
+        if share_app_package not in self.SHARE_APP_PACKAGES:
+            self.logger.warning(
+                f"未识别到本次分享跳转的应用（前台包名: {share_app_package or '未知'}），跳过关闭后台")
+            return False
+        self.logger.info(f"分享结束，关闭分享应用后台: {share_app_package}")
+        self.app_stop(share_app_package)
+        return True
 
     @property
     def rotated(self):

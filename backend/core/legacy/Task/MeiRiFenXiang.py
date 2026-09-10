@@ -24,7 +24,12 @@ class MeiRiFenXiang(BaseTask):
                 self.logger.debug("跳转分享失败，未能跳出游戏，请检查是否安装QQ/微信(与游戏账号对应)")
                 raise
         start_time = time.perf_counter()
+        share_app = ""
         while not self.operationer.is_naruto_frontend:
+            # 采样前台包名（必须在 app_start 之前）：识别本次分享跳转到的 QQ/微信
+            front_package = self.operationer.current_app_package
+            if front_package in self.operationer.SHARE_APP_PACKAGES:
+                share_app = front_package
             self.logger.debug("跳转成功，将返回游戏...")
             time.sleep(2)
             self.operationer.app_start()
@@ -38,4 +43,6 @@ class MeiRiFenXiang(BaseTask):
                 self.logger.debug("返回游戏失败，请自行检查...")
                 raise
 
+        # 分享结束（游戏已回到前台）后关闭 QQ/微信后台，避免第三方应用常驻
+        self.operationer.close_share_app_background(share_app)
         raise TaskCompleted("任务执行完成")

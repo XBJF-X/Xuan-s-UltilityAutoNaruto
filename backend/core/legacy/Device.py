@@ -85,12 +85,29 @@ class Device:
         # 启动应用
         self.control_manager.app_start(self.package_name)
 
-    def app_stop(self):
-        # 停止应用
-        self.control_manager.app_stop(self.package_name)
+    def app_stop(self, package_name: str | None = None):
+        # 停止应用（默认停止游戏本体；传入包名时停止指定应用，如分享后残留的 QQ/微信）
+        self.control_manager.app_stop(package_name or self.package_name)
 
     def current_app(self):
         return self.control_manager.current_app()
+
+    @property
+    def current_app_package(self) -> str:
+        """当前前台应用包名；取不到时返回空字符串。
+
+        兼容不同控制后端的返回类型：
+        - MiniTouch / U2：dict（{"package": ..., "activity": ...}）
+        - ADB（独立实现）：(包名, Activity) 元组
+        """
+        front_app = self.current_app()
+        if not front_app:
+            return ""
+        if isinstance(front_app, dict):
+            return front_app.get("package") or ""
+        if isinstance(front_app, (tuple, list)):
+            return front_app[0] or ""
+        return getattr(front_app, "package", "") or ""
 
     def input(self, input_text):
         self.control_manager.input(input_text)
