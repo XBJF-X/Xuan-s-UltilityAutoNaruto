@@ -2,12 +2,13 @@ from datetime import datetime, timedelta, time
 
 from backend.core.legacy.Exceptions import StepFailedError
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
+from backend.core.legacy.Task.schedule import Daily
 
 
 class DongRiYanHuaJi(BaseTask):
     source_scene = "冬日烟花季-主页"
-    start_line = time(19, 0)
-    dead_line = time(22, 0)
+    # 每日限时活动：窗口 19:00 ~ 22:00
+    schedule = Daily(at=time(19, 0), until=time(22, 0))
     task_max_duration = timedelta(hours=3)
 
     def __init__(self, *args, **kwargs):

@@ -3,18 +3,37 @@ import time
 
 from backend.core.legacy.Enums import KEY_INDEX
 from backend.core.legacy.Exceptions import TaskCompleted
-from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn, debug_execute_window
+from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
+from backend.core.legacy.Task.schedule import Custom, Weekday, WeeklySlot
 
 YS_list = [
     "火之要塞", "水之要塞", "土之要塞", "风之要塞", "雷之要塞", "汤之要塞", "田之要塞", "铁之要塞", "熊之要塞",
     "草之要塞", "雨之要塞", "海之要塞", "川之要塞", "泷之要塞", "云之要塞", "鸟之要塞", "涡之要塞", "霜之要塞"
 ]
 
+PARAM_HAS_PANREN = "执行结束后是否有叛忍"
+PARAM_PANREN_MINUTE = "本任务执行多少分钟后执行叛忍"
+
+
+def _saturday_slot(base, ctx):
+    """每周六 20:00 起的窗口；开启"执行结束后有叛忍"时终点改为 20:{N}（默认 20:30）。"""
+    minute = 30
+    if ctx is not None and ctx.param("要塞争夺战", PARAM_HAS_PANREN, False):
+        running = ctx.param("要塞争夺战", PARAM_PANREN_MINUTE, 0)
+        if running:
+            minute = running
+    slot = WeeklySlot(Weekday.SAT, datetime.time(20, 0), datetime.time(20, minute))
+    return slot.windows(base)
+
 
 # Todo：适配跨服要塞战部分
 class YaoSaiZhengDuoZhan(BaseTask):
     source_scene = "主场景-组织"
     task_max_duration=datetime.timedelta(minutes=30)
+    # 每周六 20:00 起的固定时段；窗口终点受"叛忍"联动参数影响
+    schedule = Custom(_saturday_slot,
+                      cycle=lambda base: base + datetime.timedelta(weeks=1),
+                      describe_text="每周六 20:00 起（终点受叛忍参数影响）")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -169,41 +188,10 @@ class YaoSaiZhengDuoZhan(BaseTask):
         base_date = datetime.date(2025, 9, 20)
         delta_weeks = (this_saturday - base_date).days // 7
         return delta_weeks >= 0 and (delta_weeks % 5) == 0
-    @debug_execute_window
-    def _get_execute_window(self, dt: datetime.datetime | None = None):
-        if dt is None:
-            dt = self.last_run_time
-        dt = self._ensure_tz_aware(dt)
-        today = dt.date()
-        if dt.time() < datetime.time(5, 1):
-            today -= datetime.timedelta(days=1)
-
-        # 计算today所在的周六
-        this_saturday = today - datetime.timedelta(days=today.weekday() - 5)
-
-        start_dt = datetime.datetime.combine(this_saturday,
-                                             datetime.time(20, 0),
-                                             tzinfo=self.tz_info)
-        end_time = datetime.time(20, 30)
-        if self.config.get_task_exe_param(self.task_name, "执行结束后是否有叛忍", False):
-            running_time = self.config.get_task_exe_param(
-                self.task_name, "本任务执行多少分钟后执行叛忍", 0)
-            if running_time != 0:
-                end_time = datetime.time(20, running_time)
-
-        dead_dt = datetime.datetime.combine(this_saturday,
-                                            end_time,
-                                            tzinfo=self.tz_info)
-
-        return [(start_dt, dead_dt)]
-
-    def get_next_cycle_day(self, dt: datetime.datetime) -> datetime.datetime:
-        return dt + datetime.timedelta(weeks=1)
-
-    def _handle_execution_completed(self, current_time: datetime.datetime):
+    def on_complete(self, current_time: datetime.datetime):
         if self.config.get_task_exe_param(self.task_name, "执行结束后是否有叛忍", True):
             self._activate_another_task("叛忍来袭")
         return self.get_cycle_execute_time(current_time, completed=True)
 
-    def _handle_timeout_max_duration(self, current_time: datetime.datetime):
-        return self._handle_execution_completed(current_time)
+    def on_timeout(self, current_time: datetime.datetime):
+        return self.on_complete(current_time)

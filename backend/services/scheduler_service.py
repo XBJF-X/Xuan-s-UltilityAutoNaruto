@@ -590,6 +590,8 @@ class SchedulerService:
             activated=bool(getattr(task, "is_activated", False)),
             next_execute=next_execute.strftime("%Y-%m-%d %H:%M:%S")
             if next_execute else None,
+            # 声明式排期描述（如"每周一 05:01 起整周"），供前端展示任务的窗口/周期
+            schedule=getattr(task, "schedule_description", None),
         )
 
     def _update_task_status(self, task_name: str, new_status: int) -> bool:

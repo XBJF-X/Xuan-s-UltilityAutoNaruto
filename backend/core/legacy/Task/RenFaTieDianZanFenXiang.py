@@ -4,6 +4,7 @@ import datetime
 
 from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
+from backend.core.legacy.Task.schedule import Weekday, Weekly
 
 
 # Todo：添加自动收集周活跃度奖励和周任务奖励
@@ -11,6 +12,8 @@ from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
 class RenFaTieDianZanFenXiang(BaseTask):
     source_scene = "忍法帖-排行榜"
     task_max_duration = datetime.timedelta(minutes=2)
+    # 每周任务：窗口 [本周一 5:01, 下周一 5:01)
+    schedule = Weekly(Weekday.MON)
 
     @TransitionOn()
     def _(self):
@@ -55,20 +58,3 @@ class RenFaTieDianZanFenXiang(BaseTask):
         # 分享结束（游戏已回到前台）后关闭 QQ/微信后台，避免第三方应用常驻
         self.operationer.close_share_app_background(share_app)
         raise TaskCompleted("任务执行完成")
-    def _get_execute_window(self,dt: datetime.datetime | None = None):
-        if dt is None:
-            dt=self.last_run_time
-        today = dt.date()
-        if dt.time() < datetime.time(5, 1):
-            today -= datetime.timedelta(days=1)
-        
-        # 计算today所在的周一
-        this_monday = today - datetime.timedelta(days=today.weekday())
-
-        start_dt = datetime.datetime.combine(this_monday, datetime.time(5, 1), tzinfo=self.tz_info)
-        dead_dt = datetime.datetime.combine(this_monday+datetime.timedelta(weeks=1), datetime.time(5, 1), tzinfo=self.tz_info)
-
-        return [(start_dt, dead_dt)]
-    
-    def get_next_cycle_day(self, dt: datetime.datetime) -> datetime.datetime:
-        return dt + datetime.timedelta(weeks=1)

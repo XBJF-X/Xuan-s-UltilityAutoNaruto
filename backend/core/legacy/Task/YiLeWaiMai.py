@@ -2,12 +2,14 @@ from datetime import time, timedelta, datetime
 
 from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
+from backend.core.legacy.Task.schedule import Daily
 
 
 class YiLeWaiMai(BaseTask):
     source_scene = "一乐外卖"
     task_max_duration = timedelta(minutes=2)
-    start_line = time(11, 0,20)
+    # 每日窗口：11:00:20 起（外卖刷新之后），至次日 5:01
+    schedule = Daily(at=time(11, 0, 20))
 
     @TransitionOn()
     def _(self):

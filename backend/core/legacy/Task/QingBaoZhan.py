@@ -3,11 +3,14 @@ from datetime import datetime, timedelta,time
 
 from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
+from backend.core.legacy.Task.schedule import Daily
 
 
 class QingBaoZhan(BaseTask):
     source_scene = "情报站-首页"
     task_max_duration = timedelta(minutes=5)
+    # 情报站按自然日刷新（0:00 日界），不是游戏日 5:01
+    schedule = Daily(boundary=time(0, 0))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -244,18 +247,6 @@ class QingBaoZhan(BaseTask):
         # else:
         #     self.logger.warning(f"{num}活跃度奖励领取失败，活跃度未达到要求")
         # self.__setattr__(f"reward_{num}", True)
-
-    def _get_execute_window(self,dt: datetime | None = None):
-        if dt is None:
-            dt=self.last_run_time
-        dt = self._ensure_tz_aware(dt)
-        today = dt.date()
-        tomorrow = today + timedelta(days=1)
-
-        start_dt = datetime.combine(today, time(0, 0), tzinfo=self.tz_info)
-        dead_dt = datetime.combine(tomorrow, time(0, 0), tzinfo=self.tz_info)
-
-        return [(start_dt, dead_dt)]
 
     def reset_task_exe_prog(self) -> bool:
         flag = all([

@@ -4,15 +4,34 @@ from datetime import timedelta
 
 from backend.core.legacy.Enums import KEY_INDEX
 from backend.core.legacy.Exceptions import TaskCompleted
-from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn, debug_execute_window
+from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
+from backend.core.legacy.Task.schedule import Custom, Weekday, WeeklySlot
 
 choose_dic = ["天之战场", "地之战场"]
+
+PARAM_HAS_PANREN = "执行结束后是否有叛忍"
+PARAM_PANREN_MINUTE = "本任务执行多少分钟后执行叛忍"
+
+
+def _wednesday_slot(base, ctx):
+    """每周三 21:00 起的窗口；开启"执行结束后有叛忍"时终点改为 21:{N}（默认 21:30）。"""
+    minute = 30
+    if ctx is not None and ctx.param("天地战场", PARAM_HAS_PANREN, False):
+        running = ctx.param("天地战场", PARAM_PANREN_MINUTE, 0)
+        if running:
+            minute = running
+    slot = WeeklySlot(Weekday.WED, datetime.time(21, 0), datetime.time(21, minute))
+    return slot.windows(base)
 
 
 # Todo：修复天地战场第二次上人时选人失误的问题
 class TianDiZhanChang(BaseTask):
     source_scene = "天地战场"
     task_max_duration = timedelta(minutes=30)
+    # 每周三 21:00 起的固定时段；窗口终点受"叛忍"联动参数影响
+    schedule = Custom(_wednesday_slot,
+                      cycle=lambda base: base + timedelta(weeks=1),
+                      describe_text="每周三 21:00 起（终点受叛忍参数影响）")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -175,44 +194,13 @@ class TianDiZhanChang(BaseTask):
         time.sleep(1)
         return False
     
-    @debug_execute_window
-    def _get_execute_window(self,
-                            dt: datetime.datetime | None = None):
-        if dt is None:
-            dt = self.last_run_time
-        dt = self._ensure_tz_aware(dt)
-        today = dt.date()
-        if dt.time() < datetime.time(5, 1):
-            today -= timedelta(days=1)
-
-        # 计算today所在的周三
-        this_wednesday = today - timedelta(days=today.weekday() - 2)
-
-        start_dt = datetime.datetime.combine(this_wednesday,
-                                             datetime.time(21, 0),
-                                             tzinfo=self.tz_info)
-        end_time = datetime.time(21, 30)
-        if self.config.get_task_exe_param(self.task_name, "执行结束后是否有叛忍", False):
-            running_time = self.config.get_task_exe_param(
-                self.task_name, "本任务执行多少分钟后执行叛忍", 0)
-            if running_time != 0:
-                end_time = datetime.time(21, running_time)
-
-        dead_dt = datetime.datetime.combine(this_wednesday,
-                                            end_time,
-                                            tzinfo=self.tz_info)
-
-        return [(start_dt, dead_dt)]
-    def get_next_cycle_day(self, dt: datetime.datetime) -> datetime.datetime:
-        return dt + datetime.timedelta(weeks=1)
-
-    def _handle_execution_completed(self, current_time: datetime.datetime):
+    def on_complete(self, current_time: datetime.datetime):
         if self.config.get_task_exe_param(self.task_name, "执行结束后是否有叛忍", True):
             self._activate_another_task("叛忍来袭")
         return self.get_cycle_execute_time(current_time, completed=True)
 
-    def _handle_timeout_max_duration(self, current_time: datetime.datetime):
-        return self._handle_execution_completed(current_time)
+    def on_timeout(self, current_time: datetime.datetime):
+        return self.on_complete(current_time)
 
     def reset_task_exe_prog(self) -> bool:
         self.config.set_task_exe_prog(self.task_name, "已战败角色数", 0)

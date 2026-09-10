@@ -1,7 +1,8 @@
-from datetime import timedelta, datetime, time, date
+from datetime import timedelta, datetime, time
 
 from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
+from backend.core.legacy.Task.schedule import DAY_RESET
 
 armor_coordinates = [
     "武器",
@@ -216,37 +217,25 @@ class XiaoHaoTiLi(BaseTask):
     
     
 
-    def _handle_execution_completed(self, current_time: datetime) -> datetime:
-        """处理任务执行完成后的时间更新（case1）"""
-        china_tz = current_time.tzinfo
-        today = date.today()
+    def on_complete(self, current_time: datetime) -> datetime:
+        """体力消耗的补跑排期（与统一日界 DAY_RESET = 5:01 对齐）：
 
-        # 创建今天5点和16点的datetime对象
-        today_5am = datetime.combine(today, time(5, 0), tzinfo=china_tz)
+        - 早于当天日界 → 当天日界（早上跑完再回来收尾）；
+        - 日界 ~ 16:00 → 最多 3 小时后再来（但不越过 16:00）；
+        - 16:00 之后 → 次日日界。
+        """
+        china_tz = current_time.tzinfo
+        today = current_time.date()
+        today_reset = datetime.combine(today, DAY_RESET, tzinfo=china_tz)
         today_16pm = datetime.combine(today, time(16, 0), tzinfo=china_tz)
 
-        # 情况1：当前时间小于今天5点
-        if current_time < today_5am:
-            # 新建时间时指定时区（与current_time一致）
-            next_execute_time = datetime(
-                current_time.year, current_time.month, current_time.day, 5, 0,
-                tzinfo=china_tz  # 关键：添加时区信息
-            )
-
-        # 情况2：当前时间在今天5点到16点之间
-        elif today_5am <= current_time < today_16pm:
+        if current_time < today_reset:
+            return today_reset
+        if current_time < today_16pm:
             to_16pm = today_16pm - current_time
-            next_execute_time = current_time + min(to_16pm, timedelta(hours=3))
-
-        # 情况3：当前时间过了今天16点
-        else:  # now >= today_16pm
-            next_day = current_time + timedelta(days=1)
-            # 新建时间时指定时区（与current_time一致）
-            next_execute_time = datetime(
-                next_day.year, next_day.month, next_day.day, 5, 0,
-                tzinfo=china_tz  # 关键：添加时区信息
-            )
-        return next_execute_time
+            return current_time + min(to_16pm, timedelta(hours=3))
+        next_day = current_time + timedelta(days=1)
+        return datetime.combine(next_day.date(), DAY_RESET, tzinfo=china_tz)
 
     def reset_task_exe_prog(self) -> bool:
         self.current_task = ""

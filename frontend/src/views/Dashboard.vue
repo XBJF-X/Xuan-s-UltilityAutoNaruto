@@ -37,7 +37,10 @@
                   <span class="task-name">{{ t.name }}</span>
                   <span v-if="failedTasks[t.name]" class="task-failed-tag" :title="failedTasks[t.name]">失败</span>
                 </div>
-                <div class="task-time">{{ formatNextExecute(t) }}</div>
+                <div class="task-time">
+                  {{ formatNextExecute(t) }}
+                  <span v-if="t.schedule" class="task-schedule">｜{{ t.schedule }}</span>
+                </div>
               </div>
               <button
                 class="task-execute-btn"
@@ -349,6 +352,10 @@ onUnmounted(() => {
   font-size: 14px;
   color: #999;
   padding-left: 4px;
+}
+.task-schedule {
+  color: #b0b0b0;
+  font-size: 12px;
 }
 .task-execute-btn {
   font-size: 17px;

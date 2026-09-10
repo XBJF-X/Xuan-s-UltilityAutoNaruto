@@ -5,12 +5,13 @@ from datetime import timedelta
 from backend.core.legacy.Enums import KEY_INDEX
 from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
+from backend.core.legacy.Task.schedule import Daily
 
 
 class WuChaBieYuXuanSai(BaseTask):
     source_scene = "火影格斗大赛-无差别"
-    start_line= datetime.time(18, 0)
-    dead_line = datetime.time(22, 0)
+    # 每日限时赛事：窗口 18:00 ~ 22:00
+    schedule = Daily(at=datetime.time(18, 0), until=datetime.time(22, 0))
     task_max_duration = timedelta(hours=4)
 
     def __init__(self, *args, **kwargs):

@@ -4,11 +4,14 @@ from typing import List
 
 from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
+from backend.core.legacy.Task.schedule import Interval
 
 
 class GaoJiRenZheZhaoMu(BaseTask):
     source_scene = "高级招募"
     task_max_duration = timedelta(minutes=3)
+    # 冷却型：窗口 [当日 5:01, +2 天)，完成后按冷却延后（成功 2 天 / 失败 10 分钟）
+    schedule = Interval(timedelta(days=2), window_span=timedelta(days=2))
 
     @TransitionOn()
     def _(self):
@@ -41,22 +44,3 @@ class GaoJiRenZheZhaoMu(BaseTask):
     def _(self):
         self.operationer.click_and_wait("确定")
         return False
-    def _get_execute_window(
-        self,
-        dt: datetime.datetime | None = None
-    ):
-        if dt is None:
-            dt=self.last_run_time
-        dt = self._ensure_tz_aware(dt)
-        today = dt.date()
-        if dt.time() < datetime.time(5, 1):
-            today -= timedelta(days=1)
-        after_2_day = today + timedelta(days=2)
-
-        start_dt = datetime.datetime.combine(today, self.start_line or datetime.time(5, 1), tzinfo=self.tz_info)
-        if self.dead_line:
-            dead_dt = datetime.datetime.combine(today, self.dead_line, tzinfo=self.tz_info)
-        else:
-            dead_dt = datetime.datetime.combine(after_2_day, datetime.time(5, 1), tzinfo=self.tz_info)
-
-        return [(start_dt, dead_dt)]

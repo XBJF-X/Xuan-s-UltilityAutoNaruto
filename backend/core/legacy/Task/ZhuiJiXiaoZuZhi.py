@@ -2,12 +2,14 @@ from datetime import datetime, timedelta,time
 
 from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
+from backend.core.legacy.Task.schedule import Weekday, Weekly
 
 
 class ZhuiJiXiaoZuZhi(BaseTask):
     source_scene = "追击晓组织"
     task_max_duration = timedelta(minutes=3)
-    start_line=time(12, 0)
+    # 每周任务：窗口 [本周一 12:00, 下周一 5:01)
+    schedule = Weekly(Weekday.MON, at=time(12, 0))
 
     @TransitionOn()
     def _(self):
@@ -37,22 +39,4 @@ class ZhuiJiXiaoZuZhi(BaseTask):
     def _(self):
         self.operationer.click_and_wait("确定")
         return False
-
-    def _get_execute_window(self,dt: datetime | None = None):
-        if dt is None:
-            dt=self.last_run_time
-        dt = self._ensure_tz_aware(dt)
-        today = dt.date()
-        if dt.time() < time(5, 1):
-            today -= timedelta(days=1)
-        
-        # 计算today所在的周一
-        this_monday = today - timedelta(days=today.weekday())
-
-        start_dt = datetime.combine(this_monday, self.start_line, tzinfo=self.tz_info) # type: ignore
-        dead_dt = datetime.combine(this_monday+timedelta(weeks=1), time(5, 1), tzinfo=self.tz_info)
-
-        return [(start_dt, dead_dt)]
-    def get_next_cycle_day(self, dt: datetime) :
-        return dt + timedelta(weeks=1)
 

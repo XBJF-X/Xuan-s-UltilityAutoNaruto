@@ -3,11 +3,14 @@ from datetime import timedelta, datetime,time
 from backend.core.legacy.Enums import KEY_INDEX
 from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
+from backend.core.legacy.Task.schedule import Weekday, Weekly
 
 
 class GengDuoWanFa(BaseTask):
     source_scene = "更多玩法"
     task_max_duration = timedelta(hours=2)
+    # 每周任务：窗口 [本周一 5:01, 下周一 5:01)，本周内可补跑
+    schedule = Weekly(Weekday.MON)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -156,26 +159,6 @@ class GengDuoWanFa(BaseTask):
         self.operationer.next_scene = "更多玩法"
         return False
     
-    def _get_execute_window(self,dt: datetime | None = None):
-        if dt is None:
-            dt=self.last_run_time
-        dt = self._ensure_tz_aware(dt)
-        today = dt.date()
-        if dt.time() < time(5, 1):
-            today -= timedelta(days=1)
-        
-        # 计算today所在的周一
-        this_monday = today - timedelta(days=today.weekday())
-
-        start_dt = datetime.combine(this_monday, time(5, 1), tzinfo=self.tz_info)
-        dead_dt = datetime.combine(this_monday+timedelta(weeks=1), time(5, 1), tzinfo=self.tz_info)
-
-        return [(start_dt, dead_dt)]
-    
-    def get_next_cycle_day(self, dt: datetime) -> datetime:
-        return dt + timedelta(weeks=1)
-    
-
     def reset_task_exe_prog(self) -> bool:
         self.checked = False
         self.finished = False

@@ -4,12 +4,51 @@ from zoneinfo import ZoneInfo
 
 from backend.core.legacy.Enums import KEY_INDEX
 from backend.core.legacy.Exceptions import TaskCompleted, TooEarlyToRun
-from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn, debug_execute_window
+from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
+from backend.core.legacy.Task.schedule import Custom, Window
+
+PARAM_HAS_PANREN = "执行结束后是否有叛忍"
+PARAM_PANREN_MINUTE = "本任务执行多少分钟后执行叛忍"
+
+
+def _panren_windows(base, ctx):
+    """叛忍来袭的多窗口排期：
+
+    - 周一~周三：若"天地战场"执行后会召唤叛忍 → 周三 21:00 触发窗口（+30 分钟缓冲）；
+    - 周四~周六：若"要塞争夺战"执行后会召唤叛忍 → 周六 20:00 触发窗口（+30 分钟缓冲）；
+    - 兜底：下一个周三 21:00 ~ 22:00。
+    """
+    tz = base.tzinfo
+    weekday = base.date().weekday()
+    windows = []
+    if ctx is not None:
+        if weekday in (0, 1, 2) and ctx.param("天地战场", PARAM_HAS_PANREN, False):
+            wed = base.date() + datetime.timedelta(days=2 - weekday)
+            minute = ctx.param("天地战场", PARAM_PANREN_MINUTE, 0) or 30
+            start = datetime.datetime.combine(wed, datetime.time(21, 0), tzinfo=tz)
+            end = datetime.datetime.combine(
+                wed, datetime.time(21, minute), tzinfo=tz) + datetime.timedelta(minutes=30)
+            windows.append(Window(start, end))
+        if weekday in (3, 4, 5) and ctx.param("要塞争夺战", PARAM_HAS_PANREN, False):
+            sat = base.date() + datetime.timedelta(days=5 - weekday)
+            minute = ctx.param("要塞争夺战", PARAM_PANREN_MINUTE, 0) or 30
+            start = datetime.datetime.combine(sat, datetime.time(20, 0), tzinfo=tz)
+            end = datetime.datetime.combine(
+                sat, datetime.time(20, minute), tzinfo=tz) + datetime.timedelta(minutes=30)
+            windows.append(Window(start, end))
+    next_wed = base.date() + datetime.timedelta(days=(2 - weekday) % 7)
+    start = datetime.datetime.combine(next_wed, datetime.time(21, 0), tzinfo=tz)
+    windows.append(Window(start, start + datetime.timedelta(minutes=60)))
+    return windows
 
 
 class PanRenLaiXi(BaseTask):
     source_scene = "主场景-组织"
     task_max_duration = datetime.timedelta(minutes=45)
+    # 多窗口排期：周三/周六的叛忍触发窗口 + 下周三兜底（窗口受其它任务参数影响）
+    schedule = Custom(_panren_windows,
+                      cycle=lambda base: base + datetime.timedelta(weeks=1),
+                      describe_text="周三/周六叛忍触发窗口 + 下周三兜底")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -199,50 +238,8 @@ class PanRenLaiXi(BaseTask):
         time.sleep(2)
         return False
     
-    def _get_task_trigger_time(self, base_time: datetime.time, task_name: str) -> datetime.time:
-        stop_minute = self.config.get_task_exe_param(task_name, "本任务执行多少分钟后执行叛忍", 0)
-        if stop_minute == 0:
-            stop_minute = 30
-        return base_time.replace(minute=stop_minute, second=0, microsecond=0)
-    
-    @debug_execute_window
-    def _get_execute_window(self,dt: datetime.datetime | None = None):
-        windows=[]
-        if dt is None:
-            dt=self.last_run_time
-        dt = self._ensure_tz_aware(dt)
-        today= dt.date()
-        match today.weekday():
-            case 0|1|2:
-                if self.config.get_task_exe_param("天地战场", "执行结束后是否有叛忍", False):
-                    wednesday = today + datetime.timedelta(days=(2 - today.weekday()))
-                    start_dt = datetime.datetime.combine(wednesday, datetime.time(21, 0), tzinfo=self.tz_info)
-                    end_dt = datetime.datetime.combine(
-                        wednesday, 
-                        self._get_task_trigger_time(datetime.time(21, 0), "天地战场"), 
-                        tzinfo=self.tz_info)
-                    windows.append((start_dt, end_dt + datetime.timedelta(minutes=30)))
-            case 3|4|5:
-                if self.config.get_task_exe_param("要塞争夺战", "执行结束后是否有叛忍", False):
-                    saturday = today + datetime.timedelta(days=(5 - today.weekday()))
-                    start_dt = datetime.datetime.combine(saturday, datetime.time(20, 0), tzinfo=self.tz_info)
-                    end_dt = datetime.datetime.combine(
-                        saturday,
-                        self._get_task_trigger_time(datetime.time(20, 0), "要塞争夺战"),
-                        tzinfo=self.tz_info)
-                    windows.append((start_dt, end_dt + datetime.timedelta(minutes=30)))
-        next_wednesday = today + datetime.timedelta(days=(2 - today.weekday()) % 7)
-        start_dt = datetime.datetime.combine(next_wednesday, datetime.time(21, 0), tzinfo=self.tz_info)
-        end_dt = start_dt + datetime.timedelta(minutes=60)
-        windows.append((start_dt, end_dt))
-        windows.sort(key=lambda x: x[0])
-        return windows
-    
-    def get_next_cycle_day(self, dt: datetime.datetime) -> datetime.datetime:
-        return dt + datetime.timedelta(weeks=1)
-
-    def _handle_timeout_max_duration(self, current_time: datetime.datetime) -> datetime.datetime:
-        return self._handle_execution_completed(current_time)
+    def on_timeout(self, current_time: datetime.datetime) -> datetime.datetime:
+        return self.on_complete(current_time)
 
     def reset_task_exe_prog(self) -> bool:
         self.check = False

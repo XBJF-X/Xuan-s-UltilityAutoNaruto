@@ -4,11 +4,14 @@ from backend.core.legacy.Enums import KEY_INDEX
 from backend.core.legacy.Task import MeiRiShengChang
 from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Task.BaseTask import TransitionOn
+from backend.core.legacy.Task.schedule import Monthly
 
 
 class SaiJiShengChang(MeiRiShengChang):
     source_scene = "赛季任务"
     task_max_duration = None
+    # 每月任务：窗口 [本月倒数第 2 天 5:01, +2 天)，覆盖赛季结算窗口
+    schedule = Monthly(day=-2, span=timedelta(days=2))
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -98,24 +101,4 @@ class SaiJiShengChang(MeiRiShengChang):
             self.bool_click = True
             return False
         raise TaskCompleted("任务执行完成")
-
-    def _get_execute_window(self,dt: datetime | None = None):
-        if dt is None:
-            dt=self.last_run_time
-        dt = self._ensure_tz_aware(dt)
-        today = dt.date()
-        if dt.time() < time(5, 1):
-            today -= timedelta(days=1)
-        
-        # 计算start_dt为today所在月的倒数第二天的凌晨五点，dead_dt为today所在月的倒数第二天的两天后的凌晨五点
-        next_month = today.replace(day=28) + timedelta(days=4)  # this will never fail
-        last_day_of_month = next_month - timedelta(days=next_month.day)     
-        second_last_day_of_month = last_day_of_month - timedelta(days=1)
-        start_dt = datetime.combine(second_last_day_of_month, time(5, 1), tzinfo=self.tz_info)
-        dead_dt = start_dt + timedelta(days=2)
-
-        return [(start_dt, dead_dt)]
-    
-    def get_next_cycle_day(self, dt:datetime) -> datetime:
-        return dt.replace(day=28) + timedelta(days=4)
 
