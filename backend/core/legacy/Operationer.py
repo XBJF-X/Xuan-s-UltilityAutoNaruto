@@ -57,13 +57,15 @@ class Operationer:
     def get_scene(self, scene_name):
         return self.scene_graph.get_scene(scene_name)
 
-    def detect_element(self, element, match_text='', **kwargs):
+    def detect_element(self, element, match_text='', full_match=False, **kwargs):
         """
         检测并等待一段时间
 
         Args:
             element(str|Element): 元素（元素名或 Element 对象）
             match_text(str): OCR 匹配文本，为空时默认用 element.name
+            full_match(bool): OCR 是否全字匹配（去首尾空白后完全相等），默认 False 为子串包含；
+                仅对 OCR_AREA 元素生效
             **kwargs: 可选参数：
             - wait_time: 检测到之后的等待时间
             - max_time: 最大尝试时间，默认为2.0
@@ -82,7 +84,7 @@ class Operationer:
 
         self.screen_save_func(self.task_name)
         return self._retry_until(
-            lambda: self._match_element_once(element, match_text),
+            lambda: self._match_element_once(element, match_text, full_match),
             wait_time=wait_time,
             max_time=max_time,
             max_attempts=max_attempts,
@@ -179,19 +181,25 @@ class Operationer:
             ocr_texts.append(OcrText(text, box, score))
         return ocr_texts
 
-    def click_and_wait(self, element, match_text='', **kwargs):
+    def click_and_wait(self, element, match_text='', all_coordinates=False,
+                       full_match=False, **kwargs):
         """
         点击并等待一段时间
 
         Args:
             element(str|Element): 元素
             match_text(str): OCR 匹配文本，为空时默认用 element.name
+            all_coordinates(bool): 是否依次点击检测到的所有元素图标，默认 False（只点第一个）；
+                IMG 元素点击模板匹配到的全部位置，OCR_AREA 元素点击全部文本命中位置
+            full_match(bool): OCR 是否全字匹配（去首尾空白后完全相等），默认 False 为子串包含；
+                仅对 OCR_AREA 元素生效
             ** kwargs: 可选参数：
             - wait_time: 检测到之后的等待时间，默认为None,表示将等待画面稳定，支持自定义
             - max_time: 最大尝试时间，默认为2.0
             - max_attempts: 最大尝试次数，如果定义则优先，不定义则按最大时间
             - click_times：点击次数，默认为1
             - ratio_x/ratio_y: OCR_AREA 点击文本框内比例，默认取 element.ratio_x/ratio_y
+            - click_interval: all_coordinates=True 时相邻两次点击的间隔秒数，默认0.5
 
             - stable_duration：画面需要保持稳定多长时间
             - stable_max_time：最多等待画面稳定多长时间
@@ -207,12 +215,14 @@ class Operationer:
         click_times: int = kwargs.get("click_times", 1)
         ratio_x: float = kwargs.get("ratio_x", element.ratio_x)
         ratio_y: float = kwargs.get("ratio_y", element.ratio_y)
+        click_interval: float = kwargs.get("click_interval", 0.5)
         stable_kwargs = self._extract_stable_kwargs(kwargs)
 
         self.screen_save_func(self.task_name)
         return self._retry_until(
             lambda: self._click_element_once(
-                element, click_times, match_text, ratio_x, ratio_y),
+                element, click_times, match_text, ratio_x, ratio_y,
+                all_coordinates, full_match, click_interval),
             wait_time=wait_time,
             max_time=max_time,
             max_attempts=max_attempts,
@@ -257,7 +267,7 @@ class Operationer:
         return True
 
     def search_and_click(self, element_list, search_actions, match_text='',
-                         **kwargs):
+                         all_coordinates=False, full_match=False, **kwargs):
         """
         循环执行元素点击搜索，支持多轮次、多位置尝试，并在过程中执行辅助操作（如点击或滑动）
 
@@ -267,7 +277,10 @@ class Operationer:
                     - {'click': 点击参数}：执行点击操作
                     - {'swipe': 滑动参数}：执行滑动操作
             match_text(str): OCR 匹配文本，为空时默认用 element.name
+            all_coordinates(bool): 是否依次点击检测到的所有元素图标，默认 False（只点第一个）
+            full_match(bool): OCR 是否全字匹配（去首尾空白后完全相等），默认 False 为子串包含
             **kwargs:
+            - click_interval: (float): all_coordinates=True 时相邻两次点击的间隔秒数，默认0.5
             - search_max_time: (float): 搜索尝试的最大时间，默认None，即不限时间
             - max_attempts: (int):尝试搜索的最大次数，默认None，即不限次数
             - once_max_time: (float):单次搜索点击的最大时间
@@ -287,15 +300,21 @@ class Operationer:
             else:
                 self.logger.info(f"[元素] {element_id}")
 
+        click_interval: float = kwargs.pop("click_interval", 0.5)
+
         def _check_once(item, **opt):
-            return self.click_and_wait(item, match_text=match_text, **opt)
+            # all_coordinates/full_match/click_interval 必须闭包转发：_search_loop 只透传
+            # wait_time/max_time/max_attempts/stable_*，不会把这些开关带下去
+            return self.click_and_wait(
+                item, match_text=match_text, all_coordinates=all_coordinates,
+                full_match=full_match, click_interval=click_interval, **opt)
 
         # 辅助 click 未指定 wait_time 时等待画面稳定（与原逻辑一致）
         return self._search_loop(element_list, search_actions, _check_once,
                                  **kwargs)
 
     def search_and_detect(self, item_list, search_actions, match_text='',
-                          **kwargs):
+                          full_match=False, **kwargs):
         """
         循环执行元素检测，支持多轮次、多位置尝试，并在过程中执行辅助操作（如点击或滑动）
 
@@ -305,6 +324,7 @@ class Operationer:
                     - {'click': 点击参数}：执行点击操作
                     - {'swipe': 滑动参数}：执行滑动操作
             match_text(str): OCR 匹配文本，为空时默认用 element.name
+            full_match(bool): OCR 是否全字匹配（去首尾空白后完全相等），默认 False 为子串包含
             **kwargs:
             - search_max_time: (float): 搜索尝试的最大时间，默认None，即不限时间
             - max_attempts: (int):尝试搜索的最大次数，默认None，即不限次数
@@ -335,7 +355,8 @@ class Operationer:
         def _check_once(item, **opt):
             if isinstance(item, Scene):
                 return self.detect_scene(item, **opt)
-            return self.detect_element(item, match_text=match_text, **opt)
+            return self.detect_element(item, match_text=match_text,
+                                       full_match=full_match, **opt)
 
         search_kwargs = dict(kwargs)
         search_kwargs.setdefault("wait_time", 1.0)
@@ -605,43 +626,69 @@ class Operationer:
                 time.sleep(sleep_time)
         return False
 
+    def _text_matches(self, text: str, match_text: str, full_match: bool) -> bool:
+        """OCR 文本匹配：full_match=True 时全字匹配（去首尾空白后完全相等），否则子串包含"""
+        if full_match:
+            return text.strip() == match_text.strip()
+        return match_text in text
+
     def _click_element_once(self, element, click_times, match_text,
-                            ratio_x, ratio_y) -> bool:
-        """单次点击尝试：按 ElementType 分派 COORDINATE/IMG/OCR_AREA"""
+                            ratio_x, ratio_y, all_coordinates=False,
+                            full_match=False, click_interval=0.5) -> bool:
+        """单次点击尝试：按 ElementType 分派 COORDINATE/IMG/OCR_AREA
+
+        all_coordinates=True 时依次点击全部命中位置（相邻点击间隔 click_interval 秒），
+        否则只点击第一个命中位置（保持原有行为）。
+        """
         if element.type == ElementType.COORDINATE:
+            # 只有一个坐标，all_coordinates 对其无意义
             return self.device.click(element.coordinate_x,
                                      element.coordinate_y,
                                      times=click_times)
 
         if element.type == ElementType.OCR_AREA:
-            results = self._ocr_results(element)
-            for r in results:
-                if match_text in r.text:
-                    x, y = r.get_inner_point(ratio_x, ratio_y)
-                    return self.device.click(x, y, times=click_times)
-            return False
+            results = [
+                r for r in self._ocr_results(element)
+                if self._text_matches(r.text, match_text, full_match)
+            ]
+            if not all_coordinates:
+                results = results[:1]
+            clicked = False
+            for index, result in enumerate(results):
+                if index:
+                    time.sleep(click_interval)
+                x, y = result.get_inner_point(ratio_x, ratio_y)
+                clicked = self.device.click(x, y, times=click_times) or clicked
+            return clicked
 
         coordinates = self.recognizer.element_match(
             self.device.screen_cap(), element)
-        if coordinates:
-            coordinate = coordinates[0]
+        if not coordinates:
+            return False
+        if not all_coordinates:
+            coordinates = coordinates[:1]
+        clicked = False
+        for index, coordinate in enumerate(coordinates):
+            if index:
+                time.sleep(click_interval)
             x_ratio, y_ratio = element.ratio_x, element.ratio_y
             # 按照元素可点击位置相对于模版左上角，相对整体的比例确定点击坐标
             x, y = (coordinate[0] * (1 - x_ratio) +
                     coordinate[2] * x_ratio), (
                         coordinate[1] * (1 - y_ratio) +
                         coordinate[3] * y_ratio)
-            return self.device.click(x, y, times=click_times)
-        return False
+            clicked = self.device.click(x, y, times=click_times) or clicked
+        return clicked
 
-    def _match_element_once(self, element, match_text) -> bool:
-        """单次元素匹配：OCR_AREA 走 OCR 文本包含匹配，其余走模板匹配"""
+    def _match_element_once(self, element, match_text, full_match=False) -> bool:
+        """单次元素匹配：OCR_AREA 走 OCR 文本匹配，其余走模板匹配"""
         if element.type == ElementType.OCR_AREA:
             results = self._ocr_results(element)
             self.logger.debug(f"[{element.name}] OCR结果：{results}")
             if not results:
                 return False
-            return any(match_text in r.text for r in results)
+            return any(self._text_matches(r.text, match_text, full_match)
+                       for r in results)
         coordinates = self.recognizer.element_match(
             self.device.screen_cap(), element, False)
         return len(coordinates) != 0
