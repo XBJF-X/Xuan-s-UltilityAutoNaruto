@@ -1,5 +1,5 @@
 
-from datetime import timedelta, time
+from datetime import datetime, timedelta, time
 
 from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
@@ -249,18 +249,18 @@ class QingBaoZhan(BaseTask):
         # self.__setattr__(f"reward_{num}", True)
 
     def reset_task_exe_prog(self) -> bool:
-        flag = all([
-            self.config.get_task_exe_prog(self.task_name, f"40活跃度奖励已领取", False),
-            self.config.get_task_exe_prog(self.task_name, f"60活跃度奖励已领取", False),
-            self.config.get_task_exe_prog(self.task_name, f"100活跃度奖励已领取", False)
-        ])
-        if flag:
+        # flag = all([
+        #     self.config.get_task_exe_prog(self.task_name, f"40活跃度奖励已领取", False),
+        #     self.config.get_task_exe_prog(self.task_name, f"60活跃度奖励已领取", False),
+        #     self.config.get_task_exe_prog(self.task_name, f"100活跃度奖励已领取", False)
+        # ])
+        # if flag:
 
-            self.logger.debug("所有活跃度奖励已领取!")
-        else:
-            for i in [40, 60, 100]:
-                if not self.config.get_task_exe_prog(self.task_name, f"{i}活跃度奖励已领取", False):
-                    self.logger.warning(f"{i}活跃度奖励未领取！！！")
+        #     self.logger.debug("所有活跃度奖励已领取!")
+        # else:
+        #     for i in [40, 60, 100]:
+        #         if not self.config.get_task_exe_prog(self.task_name, f"{i}活跃度奖励已领取", False):
+        #             self.logger.warning(f"{i}活跃度奖励未领取！！！")
 
         self.config.set_task_exe_prog(self.task_name, f"浏览卷轴", False)
         self.config.set_task_exe_prog(self.task_name, f"浏览村口", False)
@@ -269,7 +269,8 @@ class QingBaoZhan(BaseTask):
         self.config.set_task_exe_prog(self.task_name, f"情报站签到", False)
         self.config.set_task_exe_prog(self.task_name, f"浏览金币助手", False)
         self.config.set_task_exe_prog(self.task_name, f"领取情报站活跃度", False)
-        self.config.set_task_exe_prog(self.task_name, f"40活跃度奖励已领取", False)
-        self.config.set_task_exe_prog(self.task_name, f"60活跃度奖励已领取", False)
-        self.config.set_task_exe_prog(self.task_name, f"100活跃度奖励已领取", False)
+        # self.config.set_task_exe_prog(self.task_name, f"40活跃度奖励已领取", False)
+        # self.config.set_task_exe_prog(self.task_name, f"60活跃度奖励已领取", False)
+        # self.config.set_task_exe_prog(self.task_name, f"100活跃度奖励已领取", False)
         return True
+
