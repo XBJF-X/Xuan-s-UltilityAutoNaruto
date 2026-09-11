@@ -677,11 +677,29 @@ onMounted(() => {
 
 // 启动时依赖健康检查：版本过低或模块缺失时弹窗引导前往 Release 更新，
 // 让用户在依赖库不完整时也能通过界面操作，而不是只能在群里求助。
+// 另外单独检查 OCR GPU(DirectML) 加速：依赖库不含 DML provider 时 OCR 会静默回退
+// CPU 推理（任务执行时 CPU 占用呈尖峰），同样引导用户覆盖安装最新 Release。
 async function checkDependencyOnStart() {
   try {
     const res = await utilsApi.checkDependency()
     const data = res.data
-    if (!data || data.ok) return
+    if (!data) return
+    const releaseUrl = data.release_url
+      || 'https://github.com/XBJF-X/Xuan-s-UltilityAutoNaruto/releases'
+    // 仅在依赖库本身无问题时提示 OCR 加速（否则下面的「依赖库不完整」弹窗已包含同一
+    // 修复动作——覆盖安装，避免连弹两次）
+    if (data.ok && data.ocr_accel?.needs_notice) {
+      const pkg = data.ocr_accel.package || '未知'
+      const ver = data.ocr_accel.onnxruntime_version || ''
+      dialog.warning({
+        title: 'OCR 加速不可用',
+        content: `${data.ocr_accel.message}\n\n当前 onnxruntime：${pkg} ${ver}`.trim(),
+        positiveText: '前往 Release',
+        negativeText: '知道了',
+        onPositiveClick: () => { window.open(releaseUrl, '_blank') },
+      })
+    }
+    if (data.ok) return
     const msgs: string[] = []
     if (data.deprecated) {
       msgs.push(`当前版本 ${data.local_version} 低于本版本要求的最低版本 ${data.required_tag}，依赖库不完整`)
@@ -695,7 +713,7 @@ async function checkDependencyOnStart() {
       positiveText: '前往 Release',
       negativeText: '稍后再说',
       onPositiveClick: () => {
-        window.open(data.release_url || 'https://github.com/XBJF-X/Xuan-s-UltilityAutoNaruto/releases', '_blank')
+        window.open(releaseUrl, '_blank')
       },
     })
   } catch {
