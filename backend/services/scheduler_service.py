@@ -932,8 +932,17 @@ class SchedulerService:
         去抖：同一段空闲只通知一次（``_idle_notified``）；一旦有任务进入执行/就绪
         队列即重新武装，便于下一次告一段落再次提醒。另外，本次启动后尚未执行过
         任何任务（刚启动）时不通知，避免刚打开就弹窗。
+
+        时机：本方法在扫描末尾（任务入队/抢占判定之后）与任务完成回调中
+        （``_process_pending_activations`` 之后）都会被调用。若回调里还有登记的
+        待激活任务（``_pending_activate_tasks``）尚未落地，此刻队列虽空但马上会有
+        任务替补进就绪/执行队列，因此直接按"尚未告一段落"处理，不发通知。
         """
         if self.run_once:
+            return
+        if self._pending_activate_tasks:
+            # 待激活任务尚未处理：不能判定为空闲（否则通知刚发出任务就补位）
+            self._idle_notified = False
             return
         if (self.task_queue.get_tasks_by_status(0)
                 or self.task_queue.get_tasks_by_status(1)):
@@ -1020,6 +1029,9 @@ class SchedulerService:
         self._restore_temp_activation(task)
         # 处理其他任务登记的待激活任务（当前任务已结束，激活并立即执行）
         self._process_pending_activations()
+        # 空闲通知判定放在激活回调之后：被激活任务此刻已进入就绪/执行队列，
+        # 避免"就绪队列刚空就发通知、下一刻又被替补任务填上"的误报
+        self._notify_account_idle(datetime.now(ZoneInfo("Asia/Shanghai")))
         # 推送完整状态快照（任务回到等待态）
         self._push_snapshot()
 

@@ -23,6 +23,8 @@ export type WSMessage = {
 export type LogEntry = {
   level: string
   message: string
+  /** 日志记录生成时刻（毫秒）。实时日志取自后端 record.created（服务端时间），
+   *  历史日志取自日志文件解析（精确到秒）——两者同源，便于 mergeHistory 去重。 */
   ts: number
   config_id?: string
   logger_name?: string
@@ -88,8 +90,19 @@ function flushLogs() {
   }, 200)
 }
 
-function pushLog(level: string, message: string, config_id?: string, logger_name?: string) {
-  _pendingLogs.push({ level, message, ts: Date.now(), config_id, logger_name })
+/** 服务端日志时间戳（毫秒）：取后端附带 ts；缺失（旧后端）时退回接收时刻 */
+function serverTs(item: { ts?: unknown }): number {
+  return typeof item.ts === 'number' && item.ts > 0 ? item.ts : Date.now()
+}
+
+function pushLog(level: string, message: string, config_id?: string, logger_name?: string, ts?: number) {
+  _pendingLogs.push({
+    level,
+    message,
+    ts: typeof ts === 'number' && ts > 0 ? ts : Date.now(),
+    config_id,
+    logger_name,
+  })
   flushLogs()
 }
 
@@ -110,26 +123,42 @@ export function clearLogsByConfig(configId?: string) {
 
 /**
  * 合并历史日志到指定 config（刷新/重连后恢复展示用）。
- * 按 (ts + message) 去重，合并后按时间排序，不覆盖已有实时日志。
+ *
+ * 历史日志来自日志文件（时间戳精确到秒），实时日志来自 WebSocket（服务端毫秒）。
+ * 两者时间戳精度不同，若直接用 `ts + message` 去重会全部判为“新日志”，
+ * 导致刚看过的日志在历史补齐后再重复展示一遍（现象：日志面板每条重复两次）。
+ * 因此统一按「秒级时间戳 + 级别 + logger + 消息」比对，并用多重集计数消费：
+ * 同一秒内完全相同的重复日志（如失败重试循环）仍按已有条数保留，只补齐缺失条目。
  */
 export function mergeHistory(configId: string, entries: LogEntry[]) {
   if (!entries || entries.length === 0) return
   const cid = configId || ''
   const existing = logMap.value[cid] || []
-  const seen = new Set(existing.map(e => `${e.ts}:${e.message}`))
+  const available = new Map<string, number>()
+  for (const e of existing) {
+    const key = historyKey(e)
+    available.set(key, (available.get(key) || 0) + 1)
+  }
   const added: LogEntry[] = []
   for (const e of entries) {
-    const key = `${e.ts}:${e.message}`
-    if (!seen.has(key)) {
-      seen.add(key)
-      added.push(e)
+    const key = historyKey(e)
+    const remain = available.get(key) || 0
+    if (remain > 0) {
+      available.set(key, remain - 1)
+      continue
     }
+    added.push(e)
   }
   if (added.length === 0) return
   const merged = [...existing, ...added]
   merged.sort((a, b) => a.ts - b.ts)
   logMap.value[cid] = merged
   syncGlobalLogs()
+}
+
+/** 历史/实时日志统一比对键（秒级时间戳，与日志文件时间精度一致） */
+function historyKey(e: LogEntry): string {
+  return `${Math.floor((e.ts || 0) / 1000)}:${e.level}:${e.logger_name || ''}:${e.message}`
 }
 
 export function useWebSocket() {
@@ -157,14 +186,16 @@ export function useWebSocket() {
           const batch: any[] = data[1]
           for (const item of batch) {
             if (item.type === 'log') {
-              pushLog(item.level || 'INFO', item.message || '', item.config_id, item.logger_name)
+              pushLog(item.level || 'INFO', item.message || '', item.config_id,
+                item.logger_name, serverTs(item))
             }
             for (const h of _handlers) h(item)
           }
         } else {
           const msg = data as WSMessage
           if (msg.type === 'log') {
-            pushLog(msg.level || 'INFO', msg.message || '', msg.config_id, msg.logger_name)
+            pushLog(msg.level || 'INFO', msg.message || '', msg.config_id,
+              msg.logger_name, serverTs(msg))
           } else if (msg.type === 'status' || msg.type === 'task_state' || msg.type === 'scheduler_snapshot') {
             // broadcast_status/broadcast_task_state/broadcast_snapshot 把 config_id
             // 包在 data 内，归一化到顶层，各监听者统一用 msg.config_id 过滤

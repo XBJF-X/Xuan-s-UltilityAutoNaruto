@@ -116,6 +116,11 @@ class WebSocketLogHandler(logging.Handler):
                     "message": msg,
                     "config_id": config_id,
                     "logger_name": record.name,
+                    # 日志记录生成时刻（服务端毫秒时间戳，取自 record.created，
+                    # 与日志文件 asctime 同源）。前端据此展示时间并做历史日志去重：
+                    # 若前端改用接收时刻，历史补齐时会因时间戳不一致而把同一条日志
+                    # 重复展示一遍（详见 frontend/src/api/ws.ts 的 mergeHistory）。
+                    "ts": int(record.created * 1000),
                 })
         except Exception:
             pass
