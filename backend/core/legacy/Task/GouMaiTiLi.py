@@ -7,7 +7,7 @@ from backend.core.legacy.OcrText import OcrText
 from backend.core.legacy.Exceptions import StepFailedError, TaskCompleted
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
 
-
+PARAM_CONSUME_STAMINA = "购买后消耗体力"
 
 
 class GouMaiTiLi(BaseTask):
@@ -91,7 +91,12 @@ class GouMaiTiLi(BaseTask):
         else:
             raise StepFailedError("识别已招财次数失败，自动退出执行")
         self.operationer.click_and_wait("X")
-        self._activate_another_task("消耗体力")
+        # 参数缺省视为开启：保持"购买流程结束后激活消耗体力"的既有语义
+        if self.config.get_task_exe_param(
+                self.task_name, PARAM_CONSUME_STAMINA, True):
+            self._activate_another_task("消耗体力")
+        else:
+            self.logger.info("已按参数设置跳过[消耗体力]任务")
         raise TaskCompleted("任务执行完成")
     
     # @TransitionOn("二级密码")

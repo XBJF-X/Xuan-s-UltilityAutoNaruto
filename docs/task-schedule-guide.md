@@ -183,6 +183,14 @@ class EveryNWeeks(Schedule):
   - 赛季胜场：`schedule = Custom(_monthly_windows)` 读任务参数「倒数第几天」（INT 1~31，默认 2），
     窗口 = 当月倒数第 N 天 5:01 起 2 天；`Monthly._resolve` 的负索引**不跨越当月界限**
     （超出当月天数时收敛到当月 1 号，如 2 月设 31 → 2 月 1 日）。
+- **执行行为可配的任务参数（2026-09-12）**（不涉及排期，只控制任务收尾时是否联动其他任务）：
+  - 一乐外卖：`领取后消耗体力`（BOOL，默认开启）——关闭后领完外卖不再激活「消耗体力」，
+    「未领到外卖本来就不激活」的既有条件保留；
+  - 购买体力：`购买后消耗体力`（BOOL，默认开启）——关闭后购买流程结束（点掉 X 之后）
+    不再激活「消耗体力」，购买次数/时长等逻辑不变。
+  - 两者都用 `self.config.get_task_exe_param(self.task_name, 参数名, True)` 读取，
+    缺省回退 `True` ⇒ 老配置行为与参数化之前**逐字等价**；存量配置由 `_merge_v3_configs`
+    自动补默认值，无需手改 `config/Config_N.json`。
 
 ---
 
@@ -196,6 +204,7 @@ class EveryNWeeks(Schedule):
 | 执行日志与失败重试（各异常分支） | `.venv\Scripts\python.exe test_scene\verify_task_execution_logging.py` |
 | 通知服务 + 调度器通知时机 | `.venv\Scripts\python.exe test_scene\verify_task_notify.py` |
 | 胜场任务新增参数（每周几 / 倒数第几天） | `.venv\Scripts\python.exe test_scene\verify_win_task_params.py` |
+| 体力消耗联动开关（一乐外卖/购买体力）+ 版本展示接口 | `.venv\Scripts\python.exe test_scene\verify_consume_stamina_params.py` |
 
 新增任务的验收清单：
 
