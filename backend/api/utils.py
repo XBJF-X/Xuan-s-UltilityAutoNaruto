@@ -728,10 +728,22 @@ async def dependency_check():
     return result
 
 
+@router.get("/version")
+async def get_local_version():
+    """读取随包分发的 _version.py 版本号（供前端展示"当前客户端版本"）。
+
+    与 check-update 不同：本接口不访问外部更新源，网络异常（更新源不可达）时
+    仍能返回本地版本，前端在"检查更新"弹窗中任何状态都能看到当前版本。
+    """
+    return {"ok": True, "version": _read_local_version()}
+
+
 @router.get("/check-update")
 async def check_update():
     """检查更新：对比本地 version.json 与 GitHub v17 分支，返回云端提交历史"""
     current_sha = _read_local_sha()
+    # 本地版本：既用于大更新/依赖库版本判定，也随响应返回供前端展示（各分支都要带上）
+    local_version = _read_local_version()
     try:
         # 按更新源配置依次尝试平台（auto = github 优先、gitee 兜底），分支请求成功即使用该平台
         used_platform = None
@@ -799,12 +811,12 @@ async def check_update():
 
         if used_platform is None:
             logger.warning("检查更新失败：更新源（GitHub/Gitee）均不可达")
-            return {"ok": False, "message": "检查更新失败：更新源（GitHub/Gitee）均不可达"}
+            return {"ok": False, "local_version": local_version,
+                    "message": "检查更新失败：更新源（GitHub/Gitee）均不可达"}
 
         has_update = current_sha is None or current_sha != latest_sha
 
         # 大更新检查：更新源 Releases/latest 版本对比（依赖库/正式版本走安装包）
-        local_version = _read_local_version()
         full = _check_full_update(local_version, used_platform)
         full_update = bool(full.get("ok") and full.get("has_update"))
 
@@ -855,6 +867,7 @@ async def check_update():
             "ok": True,
             "has_update": has_update or full_update,
             "update_type": update_type,
+            "local_version": local_version,
             "current_sha": current_sha,
             "latest_sha": latest_sha,
             "latest_message": latest_message,
@@ -865,7 +878,8 @@ async def check_update():
         }
     except Exception as e:
         logger.error("检查更新出错: %s", e, exc_info=e)
-        return {"ok": False, "message": f"检查更新出错：{e}"}
+        return {"ok": False, "local_version": local_version,
+                "message": f"检查更新出错：{e}"}
 
 
 # ============================================================

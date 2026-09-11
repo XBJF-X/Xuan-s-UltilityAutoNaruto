@@ -10,6 +10,12 @@
   >
     <!-- 内容区按当前视图高度限制并内部滚动：小窗口下页脚（关闭/立即更新）不被挤出窗口外 -->
     <div class="modal-scroll">
+    <!-- 当前客户端版本（根目录 _version.py，经 /utils/version 读取，不依赖更新源）：
+         放在正文顶部，检查中/检查失败/已是最新 三种状态都可见 -->
+    <div v-if="localVersion" class="version-badge">
+      <span class="vb-label">当前客户端版本</span>
+      <span class="vb-value">v{{ localVersion }}</span>
+    </div>
     <template v-if="loading">
       <div class="center-box">
         <n-spin size="large" />
@@ -164,6 +170,8 @@ const message = useMessage()
 const loading = ref(false)
 const error = ref('')
 const info = ref<any>(null)
+// 当前客户端版本（根目录 _version.py）：与更新源无关，弹窗打开即读取
+const localVersion = ref('')
 const isUpdating = ref(false)
 const startingUpdate = ref(false)
 const progress = ref<{ running: boolean; phase: string; percent: number; message: string; error: string }>({
@@ -211,6 +219,19 @@ function onFooterClick() {
   apply()
 }
 
+// 读取本地客户端版本：GET /utils/version 只读根目录 _version.py，不访问更新源，
+// 因此即使更新源（GitHub/Gitee）不可达、"检查更新失败"页面上也能看到当前版本
+async function loadLocalVersion() {
+  try {
+    const res = await utilsApi.localVersion()
+    const v = res.data?.version
+    if (v) localVersion.value = v
+  } catch (e) {
+    // 外部依赖不可控（后端未就绪/请求失败）：降级为不显示版本号，不影响弹窗其余功能
+    console.warn('[UpdateDialog] 读取当前版本失败', e)
+  }
+}
+
 async function check() {
   loading.value = true
   error.value = ''
@@ -218,6 +239,8 @@ async function check() {
   try {
     const res = await utilsApi.checkUpdate()
     const data = res.data
+    // check-update 顶层也带 local_version（含失败分支），拿到就同步显示
+    if (data?.local_version) localVersion.value = data.local_version
     if (!data?.ok) {
       error.value = data?.message || '检查更新失败'
       return
@@ -298,7 +321,9 @@ function close() {
 }
 
 watch(() => props.show, (v) => {
-  if (v && !info.value && !loading.value && !error.value) {
+  if (!v) return
+  loadLocalVersion()
+  if (!info.value && !loading.value && !error.value) {
     check()
   }
 })
@@ -318,6 +343,25 @@ onBeforeUnmount(stopPolling)
   align-items: center;
   gap: 12px;
   padding: 32px 0;
+}
+.version-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 6px 10px;
+  border: 1px solid #e6f4ff;
+  border-radius: 8px;
+  background: #f0f8ff;
+}
+.version-badge .vb-label {
+  font-size: 12px;
+  color: #888;
+}
+.version-badge .vb-value {
+  font-family: Consolas, monospace;
+  font-weight: bold;
+  color: #1677ff;
 }
 .version-compare {
   display: flex;
