@@ -387,7 +387,7 @@ class TransitionManager:
                 (200, 150),
                 (200, 750),
                 duration=0.3,
-                times=8,
+                times=4,
                 wait_time=0.3
             )
 
@@ -435,7 +435,7 @@ class TransitionManager:
                 (414, 214),
                 (414, 736),
                 duration=0.3,
-                times=8,
+                times=4,
                 wait_time=0.1
             )
             for i in range(8):
