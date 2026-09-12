@@ -19,6 +19,8 @@ class SceneGraph:
         else:
             self.logger = parent_logger.getChild(self.__class__.__name__)
         self.scenes: Dict[str, Scene] = {}  # 场景字典，键为场景名称
+        # 保留 ResourceDBManager 引用：供 SceneIndex 在（重建时）读取最新场景转移边
+        self._resource_db = resource_db_manager
         template_sum = 0
         start = time.perf_counter()
 

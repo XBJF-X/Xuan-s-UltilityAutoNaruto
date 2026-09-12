@@ -42,6 +42,15 @@ def get_shared_scene_graph() -> SceneGraph:
     return _shared_scene_graph
 
 
+def peek_shared_scene_graph() -> Optional[SceneGraph]:
+    """取已构建的共享 SceneGraph；未构建时返回 None（**不触发构建**）。
+
+    供"只需在已存在时做失效/清理"的场景使用（如资源管理器改边后失效候选集索引），
+    避免为一次轻量操作付出全量解码（~1.3s）的代价。
+    """
+    return _shared_scene_graph
+
+
 class PriorityQueue(Generic[T]):
     """基于 heapq 的优先级队列"""
 

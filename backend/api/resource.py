@@ -184,6 +184,7 @@ def create_scene(payload: dict):
     ok = _db.add_scene(name)
     if not ok:
         raise HTTPException(status_code=400, detail="场景创建失败（可能名称已存在）")
+    _invalidate_graph_edges()
     scene = _db.get_scene_by_name(name)
     return {"scene": _scene_summary(scene) if scene else {"name": name, "id": None}}
 
@@ -200,6 +201,8 @@ def update_scene(scene_id: str, payload: dict):
         if not ok:
             raise HTTPException(status_code=400, detail="场景重命名失败（可能名称已存在）")
         _sync_graph_scene_rename(scene_id, new_name)
+        # 边/候选集索引以场景名为键，改名后必须重建
+        _invalidate_graph_edges()
     return {"ok": True}
 
 
@@ -210,6 +213,8 @@ def delete_scene(scene_id: str):
     if not ok:
         raise HTTPException(status_code=404, detail="场景不存在")
     _unsync_graph_scene(scene_id)
+    # 场景删除会连带删除其全部边 → 候选集索引必须重建
+    _invalidate_graph_edges()
     return {"ok": True}
 
 
@@ -236,6 +241,8 @@ def create_edge(payload: dict):
     ok = _db.add_scene_edge_by_ids(str(source_scene_id), str(target_scene_id))
     if not ok:
         raise HTTPException(status_code=400, detail="场景跳转边创建失败")
+    # 识别链按转移图裁剪候选集，边变化后必须失效索引，否则仍按旧邻居裁剪
+    _invalidate_graph_edges()
     return {"ok": True}
 
 
@@ -249,6 +256,8 @@ def delete_edge(payload: dict):
     ok = _db.delete_scene_edge_by_ids(str(source_scene_id), str(target_scene_id))
     if not ok:
         raise HTTPException(status_code=404, detail="场景跳转边不存在")
+    # 同上：删边后候选集必须重建
+    _invalidate_graph_edges()
     return {"ok": True}
 
 
@@ -397,6 +406,20 @@ def _find_element_in_graph(recognizer, element_id: str):
             if e.id == element_id:
                 return e
     return None
+
+
+def _invalidate_graph_edges():
+    """场景/边变更后失效共享 SceneGraph 上的「候选集索引」（识别按转移图裁剪用）。
+
+    不失效的后果：识别仍按旧邻居裁剪候选集（新增的边不生效、删除的边仍被扫描）。
+    只作用于**已构建**的共享图（`peek_shared_scene_graph` 不触发构建），
+    避免为一次资源编辑付出全量解码（~1.3s）的代价。
+    """
+    from backend.services.scheduler_service import peek_shared_scene_graph
+    from backend.core.legacy.Scene.SceneIndex import invalidate_scene_index
+    graph = peek_shared_scene_graph()
+    if graph is not None:
+        invalidate_scene_index(graph)
 
 
 # ===== 共享 SceneGraph 单例同步 =====

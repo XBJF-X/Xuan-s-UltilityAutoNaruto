@@ -640,7 +640,11 @@ class BaseTask:
     def transition(self):
         # 获取当前屏幕截图并识别场景
         screenshot = self.operationer.screen_cap()
-        scene = self.operationer.recognizer.scene(screenshot,bool_debug=False)
+        # hint=当前所在场景：启用「按转移图裁剪候选集」（只匹配入/出边邻居 + 弹窗，
+        # 未命中会自动全量兜底，保证不漏判）；current_scene 由上一轮识别或
+        # TransitionManager 跳转维护，取不到时退回 None（= 全量扫描）
+        hint = getattr(self.operationer.current_scene, "name", None)
+        scene = self.operationer.recognizer.scene(screenshot, bool_debug=False, hint=hint)
 
         # 确保待调用的场景名为str
         if isinstance(scene, str):
