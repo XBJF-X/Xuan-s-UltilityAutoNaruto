@@ -9,6 +9,9 @@
   常规帧均值 ≈0.18s，单次 `scene_match` ≈3.4ms（其中 `matchTemplate` 占 ~60%）。
 - 优化后：只扫描「当前场景的入/出边邻居 + 弹窗」（见 `SceneIndex`），候选集 ≈4~25 个场景；
   Tier-1 未命中则全量兜底（**保证不漏判**）并把新跳转记为学习边，使兜底逐步归零。
+- 单帧固定开销：整幅截图的灰度转换**按帧缓存**（原先每个元素各转一次，全量扫描 ≈135 次/帧
+  ≈61ms），模板匹配尾部改为「`isfinite` + 阈值」一次筛候选（省掉 `nan_to_num` 整块拷贝
+  与单独的 `minMaxLoc` 全图扫描）；未命中时的最大响应只在调试模式采集。
 - 一键回退：`Recognizer(..., enable_pruning=False)` 恢复旧的全量扫描行为。
 """
 import logging
@@ -74,6 +77,8 @@ class _MatchContext:
     records: Dict[str, dict] = field(default_factory=dict)
     success_details: Optional[dict] = None
     excluded_popups: Set[str] = field(default_factory=set)
+    # 本帧灰度图缓存：同一帧内所有元素匹配共用一次 BGR→GRAY 转换（见 _scene_gray）
+    gray: Optional[np.ndarray] = None
 
 
 def _scene_name(result) -> Optional[str]:
@@ -148,11 +153,34 @@ class Recognizer:
         """构造一次识别调用的上下文（debug 时带日志作用域载体）。"""
         return _MatchContext(debug=debug, scope=DebugScope() if debug else None)
 
+    def _ensure_ctx(self, ctx: Optional[_MatchContext], debug: bool) -> _MatchContext:
+        """取调用方传入的帧上下文；未传（外部直接调 scene_match/element_match 等）时
+        新建并挂到实例上——保证 `self._debug_match_records` 等兼容属性仍能读到本次记录。
+        """
+        if isinstance(ctx, _MatchContext):
+            return ctx
+        ctx = self._make_ctx(bool(debug))
+        self._bind_context(ctx)
+        return ctx
+
     def _bind_context(self, ctx: _MatchContext) -> None:
         """把本帧上下文挂到实例上（并同步旧的属性名，保持外部可读）。"""
         self._ctx = ctx
         self._excluded_popups_in_current_recognition = ctx.excluded_popups
         self._debug_match_records = ctx.records
+
+    def _scene_gray(self, ctx: _MatchContext, scene_img) -> np.ndarray:
+        """取当前帧的灰度图（按帧缓存：整幅截图只做一次 BGR→GRAY）。
+
+        原先每个元素的 `template_match`/`sift_match` 都各自对整幅截图转一次灰度：
+        全量扫描时每帧 ~135 次（实测 ≈0.45ms/次 ≈ 61ms/帧，约占单帧成本 17%）。
+        缓存挂在帧上下文里，形状不一致时自动重算（防御 ctx 被跨图复用）。
+        """
+        gray = ctx.gray
+        if gray is None or gray.shape != scene_img.shape[:2]:
+            gray = cv2.cvtColor(scene_img, cv2.COLOR_BGR2GRAY).astype(np.uint8)
+            ctx.gray = gray
+        return gray
 
     # ============================================================= 识别主流程
 
@@ -202,6 +230,7 @@ class Recognizer:
             index.note_observed(self._last_matched_scene, _scene_name(result))
             self._last_matched_scene = _scene_name(result)
         self._last_successful_scene_details = ctx.success_details
+        ctx.gray = None      # 释放本帧灰度缓存（别让实例长期持有 ~4MB 的整帧灰度）
         return result
 
     def _detect_popup_first(self, scene_img, ctx=None) -> Optional[Scene]:
@@ -214,7 +243,7 @@ class Recognizer:
         Returns:
             命中弹窗（或其同屏子场景）返回 Scene，否则 None
         """
-        ctx = ctx if isinstance(ctx, _MatchContext) else self._make_ctx(bool(ctx))
+        ctx = self._ensure_ctx(ctx, bool(ctx))
         for scene_id in self.popup_scenes:
             scene = self.scene_graph.scenes.get(scene_id)
             if not scene or not scene.elements:
@@ -242,7 +271,7 @@ class Recognizer:
         Returns:
             Scene / `"未知场景"` / `"未知含X场景"`
         """
-        ctx = ctx if isinstance(ctx, _MatchContext) else self._make_ctx(bool(ctx))
+        ctx = self._ensure_ctx(ctx, bool(ctx))
         scene_ids = candidates if candidates is not None else self.scene_graph.scenes
         current_scene = None
         for scene_id in scene_ids:
@@ -282,7 +311,7 @@ class Recognizer:
         Returns:
             最终场景（Scene；若场景名不在库中则返回名字本身）
         """
-        ctx = ctx if isinstance(ctx, _MatchContext) else self._make_ctx(bool(ctx))
+        ctx = self._ensure_ctx(ctx, bool(ctx))
         checked_scenes = set()
         current_scene = current_scene_id
 
@@ -318,7 +347,7 @@ class Recognizer:
 
     def _check_unknown_with_x(self, scene_img, ctx=None) -> str:
         """用主场景的 X 标记元素区分"未知含X场景"与"未知场景"。"""
-        ctx = ctx if isinstance(ctx, _MatchContext) else self._make_ctx(bool(ctx))
+        ctx = self._ensure_ctx(ctx, bool(ctx))
         for x in (
             self.scene_graph.get_element("主场景", "X-普通"),
             self.scene_graph.get_element("主场景", "X-广告-1"),
@@ -432,7 +461,7 @@ class Recognizer:
         Returns:
             True = 命中；False = 未命中
         """
-        ctx = ctx if isinstance(ctx, _MatchContext) else self._make_ctx(bool_debug)
+        ctx = self._ensure_ctx(ctx, bool_debug)
         result = []
         matched_elements_info = []
         for element in template.elements:
@@ -497,7 +526,7 @@ class Recognizer:
         Returns:
             List[Tuple[int, int, int, int]]：命中的框坐标列表（x1, y1, x2, y2）
         """
-        ctx = ctx if isinstance(ctx, _MatchContext) else self._make_ctx(bool_debug)
+        ctx = self._ensure_ctx(ctx, bool_debug)
         if template.match_type == MatchType.SIFT:
             return self.sift_match(template, scene_img, ctx=ctx)
         return self.template_match(template, scene_img, bool_debug, ctx=ctx)
@@ -515,10 +544,10 @@ class Recognizer:
         Returns:
             List[Tuple[int, int, int, int]]：命中的外接矩形（0 或 1 个）
         """
-        ctx = ctx if isinstance(ctx, _MatchContext) else self._make_ctx(False)
+        ctx = self._ensure_ctx(ctx, False)
         min_match_ratio = template.threshold
         template_gray = template.gray
-        scene_gray = cv2.cvtColor(scene_img, cv2.COLOR_BGR2GRAY).astype(np.uint8)
+        scene_gray = self._scene_gray(ctx, scene_img)
 
         x, y, w_roi, h_roi = template.roi_x, template.roi_y, template.roi_width, template.roi_height
         scene_gray_roi = scene_gray[y:y + h_roi, x:x + w_roi]
@@ -616,13 +645,13 @@ class Recognizer:
         Returns:
             List[Tuple[int, int, int, int]]：去重后的命中框（x1, y1, x2, y2）
         """
-        ctx = ctx if isinstance(ctx, _MatchContext) else self._make_ctx(bool_debug)
+        ctx = self._ensure_ctx(ctx, bool_debug)
         template_img = template.gray
         mask = template.mask
         threshold = template.threshold
 
-        # 1. 场景转灰度（先取原图尺寸）
-        scene_gray = cv2.cvtColor(scene_img, cv2.COLOR_BGR2GRAY).astype(np.uint8)
+        # 1. 取本帧灰度图（按帧缓存：同一帧内所有元素共用一次转换）
+        scene_gray = self._scene_gray(ctx, scene_img)
         scene_h, scene_w = scene_gray.shape
 
         # 2. ROI 裁剪（越界收敛，保证框合法）
@@ -642,40 +671,51 @@ class Recognizer:
                 method=cv2.TM_CCOEFF_NORMED,
                 mask=mask,
             )
-            result = np.nan_to_num(result, nan=-1.0, posinf=-1.0, neginf=-1.0)
         except cv2.error as e:
             self.logger.error(f"[{template.name}] 模板匹配执行错误：{e}")
             return []
 
-        min_val, max_val, _min_loc, max_loc = cv2.minMaxLoc(result)
-        if bool_debug:
-            self.logger.debug(f"[{template.name}] 匹配结果统计：最大值={max_val:.2f}")
-        self._record_match_debug(
-            ctx, template.name,
-            method="TEMPLATE",
-            max_val=float(max_val),
-            min_val=float(min_val),
-            max_loc=max_loc,
-            roi=(x_start, y_start, x_end, y_end),
-            threshold=float(threshold),
-        )
-
-        # 4. 筛选超阈值位置并按置信度降序排序
-        locations = np.where(result >= threshold)
-        if len(locations[0]) == 0:
+        # 4. 一次筛出候选：掩码匹配在边缘/平坦区会产生 NaN/±Inf，用 isfinite 与阈值一并排除
+        #    （省掉 nan_to_num 的整块拷贝，也不再单独跑一次 minMaxLoc 全图扫描）
+        finite = np.isfinite(result)
+        locations = np.where(finite & (result >= threshold))
+        if locations[0].size == 0:
+            # 未命中：仅调试模式再取一次最大响应，便于排查"离阈值差多少"
+            #（生产路径不付这次全图扫描的代价，也不留调试记录）
+            if ctx.debug:
+                finite_values = result[finite]
+                self._record_match_debug(
+                    ctx, template.name,
+                    method="TEMPLATE",
+                    max_val=float(finite_values.max()) if finite_values.size else -1.0,
+                    roi=(x_start, y_start, x_end, y_end),
+                    threshold=float(threshold),
+                )
             return []
-        confidences = [result[row, col] for row, col in zip(locations[0], locations[1])]
+
+        # 5. 按置信度降序排序（命中框 = ROI 内坐标 + ROI 偏移）
+        confidences = result[locations[0], locations[1]]
         tmpl_h, tmpl_w = template_img.shape[:2]
         matches_with_conf = [
-            (conf, int(x + dx), int(y + dy), int(x + dx + tmpl_w), int(y + dy + tmpl_h))
+            (float(conf), int(x + dx), int(y + dy), int(x + dx + tmpl_w), int(y + dy + tmpl_h))
             for dx, dy, conf in zip(locations[1], locations[0], confidences)
         ]
         matches_with_conf.sort(reverse=True, key=lambda item: item[0])
 
+        if bool_debug:
+            self.logger.debug(f"[{template.name}] 匹配结果统计：最大值={matches_with_conf[0][0]:.2f}")
+        self._record_match_debug(
+            ctx, template.name,
+            method="TEMPLATE",
+            max_val=matches_with_conf[0][0],
+            roi=(x_start, y_start, x_end, y_end),
+            threshold=float(threshold),
+        )
+
         sorted_matches = [(x1, y1, x2, y2) for (_conf, x1, y1, x2, y2) in matches_with_conf]
         sorted_confidences = [conf for (conf, *_rest) in matches_with_conf]
 
-        # 5. NMS 去重（保留置信度更高的框）
+        # 6. NMS 去重（保留置信度更高的框）
         keep_boxes = self._non_max_suppression(
             sorted_matches, iou_threshold=0.3, confidences=sorted_confidences)
         conf_map = dict(zip(sorted_matches, sorted_confidences))
