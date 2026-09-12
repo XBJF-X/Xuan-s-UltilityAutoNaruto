@@ -6,6 +6,6 @@ version_files = [
 ]
 version_provider = "commitizen"
 version_scheme = "semver"
-version = "0.17.38"
+version = "0.17.39"
 update_changelog_on_bump = false
 major_version_zero = true
