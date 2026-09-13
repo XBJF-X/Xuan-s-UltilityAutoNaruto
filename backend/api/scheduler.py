@@ -266,10 +266,15 @@ async def get_tasks(config_id: str):
 
 
 @router.post("/tasks/{config_id}/{task_name}/execute")
-async def execute_task(config_id: str, task_name: str):
+async def execute_task(config_id: str, task_name: str, force: bool = False):
+    """立即执行任务。
+
+    - 默认受任务**自身排期窗口**约束：当前不在可执行窗口内（已过期/未开始）时不做任何
+      改动，返回 `{ok: False, reason, window_state, schedule}` 供前端提示；
+    - `force=True`：用户在二次确认弹窗中选择「忽略窗口强制执行」时传入。
+    """
     sched = _get_scheduler(config_id)
-    sched.execute_task_now(task_name)
-    return {"ok": True}
+    return sched.execute_task_now(task_name, ignore_window=force)
 
 
 @router.put("/tasks/{config_id}/{task_name}/activation")

@@ -58,12 +58,15 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from "vue";
+import { useMessage, useDialog } from "naive-ui";
 import { useAppStore } from "@/stores/app";
 import { schedulerApi } from "@/api/client";
 import LogPanel from "@/components/LogPanel.vue";
 import { useWebSocket } from "@/api/ws";
 
 const appStore = useAppStore();
+const message = useMessage();
+const dialog = useDialog();
 const loadingTasks = ref(false);
 // 任务列表直接读 AppStore 中由 WS scheduler_snapshot 维护的状态快照（零轮询）
 const taskList = computed(() => {
@@ -181,11 +184,50 @@ async function loadTaskStatus() {
   }
 }
 
-async function handleExecuteNow(taskName: string) {
+/**
+ * 立即执行任务。
+ *
+ * 后端默认按任务**自身排期窗口**校验：窗口外（已过期/未开始）会拒绝并返回原因，
+ * 此时弹二次确认，用户确认后带 force 重新请求（忽略窗口强制执行）。
+ */
+const FORCEABLE_WINDOW_STATES = ["窗口已过期", "窗口未开始"];
+
+async function handleExecuteNow(taskName: string, force = false) {
   if (!appStore.activeConfigId) return;
   try {
-    await schedulerApi.executeTask(appStore.activeConfigId, taskName);
-  } catch {}
+    const res = await schedulerApi.executeTask(
+      appStore.activeConfigId,
+      taskName,
+      force,
+    );
+    const data: any = res.data || {};
+    if (data.ok !== false) {
+      message.success(`已请求立即执行：${taskName}`);
+      return;
+    }
+    const reason = data.reason || "当前不满足立即执行条件";
+    const schedule = data.schedule ? `\n排期：${data.schedule}` : "";
+    // 非窗口原因（如任务已禁用）不给"强制执行"入口，直接提示
+    if (force || !FORCEABLE_WINDOW_STATES.includes(data.window_state)) {
+      message.warning(`无法立即执行「${taskName}」：${reason}`);
+      return;
+    }
+    dialog.warning({
+      title: "当前不在可执行窗口内",
+      content:
+        `任务「${taskName}」${reason}${schedule}\n` +
+        "强制执行会跳过窗口校验：若游戏里该玩法尚未开放，任务会空跑到最长执行时长，期间其它任务无法执行。",
+      positiveText: "强制执行",
+      negativeText: "知道了",
+      onPositiveClick: () => {
+        handleExecuteNow(taskName, true);
+      },
+    });
+  } catch (e: any) {
+    message.error(
+      `执行请求失败：${e?.response?.data?.detail || e?.message || e}`,
+    );
+  }
 }
 
 onMounted(() => {

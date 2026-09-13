@@ -182,6 +182,30 @@ class EveryNWeeks(Schedule):
 排期计算异常（如任务参数缺失）不阻断激活，只留痕后按原行为继续。回归：
 `test_scene/verify_activation_window_guard.py`。
 
+### 手动「执行」的窗口校验（2026-09-13，v0.17.43）
+
+总览面板的「执行」按钮走 `POST /api/scheduler/tasks/{config_id}/{task_name}/execute`，
+后端统一入口 `SchedulerService.execute_task_now(name, enable_if_needed=False, *,
+source, ignore_window)`：
+
+| 触发来源 | `source` | 窗口行为 |
+| --- | --- | --- |
+| 用户点「执行」 | `SOURCE_MANUAL`（默认） | **先做窗口预检**：`窗口内`/`不限时间` → 放行；`窗口已过期`/`窗口未开始` → 拒绝并返回原因（**不改任何状态**） |
+| 用户二次确认「强制执行」 | `SOURCE_MANUAL` + `ignore_window=True`（前端 `?force=true`） | 跳过预检，按旧行为立即执行（保留逃生舱，便于调试/特殊补救） |
+| 任务结束后激活另一任务 | `SOURCE_ACTIVATION` | 走上面的 `_skip_expired_activation` 守卫（不做这道预检） |
+
+响应体：`{"ok": bool, "reason": str|None, "window_state": str|None, "schedule": str|None}`，
+前端据此提示"窗口已过期/未开始 + 排期"并弹二次确认（`Dashboard.vue`）。`ok=False` 时
+"下次执行时间 / force 标记 / 启用状态"三者均不变。
+
+> 背景：过去手动执行也会打 `force_execute_now` 并跳过窗口校验，误触【天地战场】这类窄窗口
+> 任务会空跑到最长执行时长（30~45 分钟）、抢占正在运行的任务、还可能级联激活叛忍再来一轮，
+> 表现为"调度器卡死，只能关掉重开"。
+>
+> 回归：`test_scene/verify_manual_execute_guard.py`（12 项：拒绝零副作用、窗口内放行、
+> 强制放行、激活来源不预检、旧对象/探测异常兼容、禁用与不存在的原因回传、API `force` 透传、
+> 前端接线）。
+
 ---
 
 ## 7. 迁移与清理状态
@@ -225,6 +249,7 @@ class EveryNWeeks(Schedule):
 | 胜场任务新增参数（每周几 / 倒数第几天） | `.venv\Scripts\python.exe test_scene\verify_win_task_params.py` |
 | 体力消耗联动开关（一乐外卖/购买体力）+ 版本展示接口 | `.venv\Scripts\python.exe test_scene\verify_consume_stamina_params.py` |
 | 跨任务激活的窗口守卫（叛忍窗口过期不再激活） | `.venv\Scripts\python.exe test_scene\verify_activation_window_guard.py` |
+| 手动「执行」的窗口校验（拒绝原因 / 强制执行 / API force 透传） | `.venv\Scripts\python.exe test_scene\verify_manual_execute_guard.py` |
 | 识别过程日志开关 + 元素查找/OCR 一条总述 | `.venv\Scripts\python.exe test_scene\verify_recognition_and_search_logging.py` |
 
 新增任务的验收清单：

@@ -55,8 +55,11 @@ export const schedulerApi = {
   getTasks: (configId: string) => client.get(`/scheduler/tasks/${configId}`),
   // 启动前快速预检（串口/截图路径），返回 { ok, errors: string[], warnings: string[] }
   precheck: (configId: string) => client.post(`/scheduler/precheck/${configId}`),
-  executeTask: (configId: string, taskName: string) =>
-    client.post(`/scheduler/tasks/${configId}/${taskName}/execute`),
+  // force=true：用户已在二次确认弹窗中选择「忽略窗口强制执行」（默认受任务排期窗口约束）
+  executeTask: (configId: string, taskName: string, force = false) =>
+    client.post(
+      `/scheduler/tasks/${configId}/${taskName}/execute${force ? "?force=true" : ""}`,
+    ),
   toggleActivation: (configId: string, taskName: string, state: boolean) =>
     client.put(`/scheduler/tasks/${configId}/${taskName}/activation?state=${state}`),
 }

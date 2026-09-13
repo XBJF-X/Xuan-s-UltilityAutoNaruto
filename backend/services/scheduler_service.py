@@ -24,6 +24,12 @@ _SCREEN_MODE_NAMES = {0: "DroidCastRaw", 1: "WindowCapture", 2: "U2", 3: "MuMu",
 # 视为本段时间的执行告一段落，向用户发送一次桌面通知
 IDLE_NOTIFY_THRESHOLD = timedelta(hours=1)
 
+# ===== 立即执行的触发来源 =====
+# 用户点「执行」（手动）：默认做**窗口预检**，窗口外拒绝并返回原因（可显式强制忽略）
+SOURCE_MANUAL = "manual"
+# 任务结束后激活另一任务（`BaseTask._activate_another_task`）：窗口守卫见 _skip_expired_activation
+SOURCE_ACTIVATION = "activation"
+
 
 # ===== 全局共享 SceneGraph 单例 =====
 # 所有配置的调度器复用同一个 SceneGraph（构建后只读，场景/元素识别不写库），
@@ -692,30 +698,87 @@ class SchedulerService:
         self._sync_task_state(task)
         self.logger.info(f"[{task_name}] 执行结束，已恢复为未激活状态")
 
-    def execute_task_now(self, task_name: str, enable_if_needed: bool = False):
+    def execute_task_now(self, task_name: str, enable_if_needed: bool = False,
+                         *, source: str = SOURCE_MANUAL,
+                         ignore_window: bool = False) -> dict:
         """立即执行（与原版 request_task_execute_now 一致）
 
-        enable_if_needed=True 时先启用任务（对齐 V1 原版 activate_another_task_implement
-        传 enable_if_needed=True 的语义）：用于【要塞争夺战/天地战场】结束后自动激活
-        叛忍来袭等临时任务——仅设置下次执行时间不足以让其执行，扫描循环会因
-        is_activated=False 而跳过。
+        Args:
+            enable_if_needed(bool): 先启用任务（对齐 V1 原版
+                `activate_another_task_implement` 传 enable_if_needed=True 的语义）：用于
+                【要塞争夺战/天地战场】结束后自动激活叛忍来袭等临时任务——仅设置下次执行
+                时间不足以让其执行，扫描循环会因 is_activated=False 而跳过。
+            source(str): 触发来源，`SOURCE_MANUAL`（用户点「执行」）或
+                `SOURCE_ACTIVATION`（跨任务激活）。手动来源默认先做**窗口预检**。
+            ignore_window(bool): 手动来源是否显式忽略窗口（前端二次确认"强制执行"后传入）。
+
+        Returns:
+            dict: ``{"ok": bool, "reason": str|None, "window_state": str|None,
+            "schedule": str|None}``。``ok=False`` 时**未改动任何状态**（不写下次执行时间、
+            不置 force 标记、不临时启用），前端据此提示原因并可二次确认强制执行。
+
+        手动「执行」默认受任务自身排期约束：用户误触窄窗口任务（天地战场 周三 21:00~21:30、
+        要塞争夺战 周六 20:00~20:30、叛忍来袭 周三/周六窗口…）时，过去会带着
+        `force_execute_now` 跳过窗口校验空跑到最长执行时长（30~45 分钟）、抢占正在运行的
+        任务，并可能级联激活叛忍又来一轮，用户感受为"调度器卡死"。现在改为入口用
+        `BaseTask.probe_execute_window(now)` 预检：已过期/未开始 → 直接拒绝；
+        `ignore_window=True`（用户二次确认）仍可强制忽略。
         """
         task = self.task_queue.get_task(task_name)
         if not task:
             self.logger.error(f"任务 {task_name} 不存在")
-            return
+            return {"ok": False, "reason": f"任务 {task_name} 不存在",
+                    "window_state": None, "schedule": None}
+        if source == SOURCE_MANUAL and not ignore_window:
+            rejected = self._reject_manual_execute_outside_window(task)
+            if rejected is not None:
+                return rejected
         if enable_if_needed:
             # 原本未启用的任务会被临时启用，并在其执行结束后恢复原状态
             self._ensure_task_runnable(task_name)
         if not task.is_activated and not getattr(task, "is_temp", False):
-            self.logger.warning(f"任务 {task_name} 已禁用")
-            return
+            self.logger.warning(f"[{task_name}] 已禁用，忽略立即执行请求")
+            return {"ok": False, "reason": "任务已禁用，请先启用再执行",
+                    "window_state": None, "schedule": None}
         ok, _ = task.schedule_execute_now()
         if ok:
             task.force_execute_now = True
         self.logger.info(f"任务 {task_name} 已请求立即执行")
         self._sync_task_state(task)
         self._push_snapshot()
+        return {"ok": True, "reason": None, "window_state": None, "schedule": None}
+
+    def _reject_manual_execute_outside_window(self, task) -> Optional[dict]:
+        """手动「执行」的窗口预检：不在可执行窗口内 → 返回拒绝结果（可执行则返回 None）。
+
+        与跨任务激活守卫（`_skip_expired_activation`）同源：都用
+        `BaseTask.probe_execute_window(now)`（窗口基准取 now，而不是陈旧的 last_run_time）。
+        区别在于这里**返回原因**给前端提示，并允许用户二次确认后带 `ignore_window=True`
+        强制执行；拒绝时绝不改动任务状态（不写下次执行时间 / 不置 force / 不启用）。
+
+        探测不可用（旧任务对象无该接口）或抛异常（排期计算异常）时不阻断执行，只留痕。
+        """
+        probe = getattr(task, "probe_execute_window", None)
+        if not callable(probe):
+            return None
+        try:
+            runnable, state = probe(datetime.now(ZoneInfo("Asia/Shanghai")))
+        except Exception as e:
+            self.logger.warning(
+                f"探测 {task.task_name} 可执行窗口失败，按原行为立即执行: {e}")
+            return None
+        if runnable:
+            return None
+        schedule = getattr(task, "schedule_description", "") or None
+        self.logger.warning(
+            f"[{task.task_name}] 手动立即执行被拒绝：{state}"
+            f"（{schedule or '未知排期'}）→ 当前不在可执行窗口内")
+        return {
+            "ok": False,
+            "reason": f"{state}，当前不在可执行窗口内（如需强行执行请选择「强制执行」）",
+            "window_state": state,
+            "schedule": schedule,
+        }
 
     # ================================================================
     # 内部：静态扫描线程（替代原版 TimerThread，更简单可靠）
@@ -1108,7 +1171,8 @@ class SchedulerService:
             # 最长执行时长，期间调度器无法执行其它任务，见 _skip_expired_activation）
             if self._skip_expired_activation(task, now):
                 continue
-            self.execute_task_now(task_name, enable_if_needed=True)
+            self.execute_task_now(task_name, enable_if_needed=True,
+                                  source=SOURCE_ACTIVATION)
             if self.run_once:
                 # 临时预设模式：被激活任务插入待执行列表最前，下一轮扫描优先执行
                 if task_name in self.pending_once_tasks:
