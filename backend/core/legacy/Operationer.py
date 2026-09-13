@@ -13,6 +13,85 @@ from backend.core.legacy.OcrText import OcrResultList, OcrText
 from backend.core.legacy.Recognizer import Recognizer
 from backend.core.legacy.Scene.SceneGraph import SceneGraph
 
+# 一次查找最多展示几个匹配值（超出折叠为计数，避免长重试把日志行拉长）
+_MAX_LOGGED_MATCH_VALUES = 8
+
+
+def _format_match_values(values: List[float]) -> str:
+    """把一次查找的各次匹配值格式化为 ``[0.62, 0.71, 0.83]``（超出上限折叠）。"""
+    if not values:
+        return "无"
+    shown = [f"{value:.2f}" for value in values[:_MAX_LOGGED_MATCH_VALUES]]
+    if len(values) > _MAX_LOGGED_MATCH_VALUES:
+        shown.append(f"…共{len(values)}次")
+    return "[" + ", ".join(shown) + "]"
+
+
+def _format_ocr_texts(texts: List[tuple]) -> str:
+    """把 OCR 识别结果格式化为 ``['12'(0.98), '挑战券'(0.96)]``。"""
+    if not texts:
+        return "[]"
+    return "[" + ", ".join(f"'{text}'({score:.2f})" for text, score in texts) + "]"
+
+
+class _SearchMetrics:
+    """一次元素查找的过程汇总（匹配值 / OCR 文本），用于输出"一条总述"日志。
+
+    每次查找（`detect_element` / `click_and_wait` 的整轮重试）只输出一条：
+
+    - 图片元素：收集每次尝试的**最高匹配值**（未命中也有值 → 能看出"离阈值差多少"）；
+    - OCR 区域：保留最近一次识别到的**文本列表**（文本 + 置信度）。
+
+    取代原先"逐次尝试各一条 DEBUG、命中时又什么都不说"的散乱记录：
+    查找失败时用户/开发者能直接从一条日志里判断是阈值、ROI 还是确实没出现。
+    """
+
+    def __init__(self, element: Element):
+        self.element = element
+        self.kind = ("OCR" if element.type == ElementType.OCR_AREA
+                     else "坐标" if element.type == ElementType.COORDINATE else "图片")
+        self.attempts = 0
+        self.values: List[float] = []
+        self.threshold: float | None = None
+        self.method: str | None = None
+        self.texts: List[tuple] = []
+        self.match_text = ""
+
+    def note_attempt(self, metrics: dict | None = None) -> None:
+        """记录一次图片匹配尝试（`Recognizer.collect_element_match` 的指标）。"""
+        self.attempts += 1
+        if not metrics:
+            return
+        if metrics.get("method"):
+            self.method = metrics["method"]
+        if metrics.get("threshold") is not None:
+            self.threshold = float(metrics["threshold"])
+        if metrics.get("max_val") is not None:
+            self.values.append(float(metrics["max_val"]))
+
+    def note_ocr(self, results) -> None:
+        """记录一次 OCR 识别尝试（`OcrText` 列表）。"""
+        self.attempts += 1
+        self.texts = [(r.text, r.score) for r in results]
+
+    def describe(self, hit: bool) -> str:
+        """一条总述：元素 / 尝试次数 / 匹配值（或 OCR 文本）/ 阈值 / 结果。"""
+        parts = [f"查找[{self.element.name}]", f"类型={self.kind}",
+                 f"尝试={self.attempts}次"]
+        if self.kind == "OCR":
+            parts.append(f"识别文本={_format_ocr_texts(self.texts)}")
+            parts.append(f"匹配文本='{self.match_text}'")
+        else:
+            best = f"{max(self.values):.2f}" if self.values else "-"
+            parts.append(f"最高匹配值={best}")
+            parts.append(f"匹配值={_format_match_values(self.values)}")
+            if self.threshold is not None:
+                parts.append(f"阈值={self.threshold:.2f}")
+            if self.method:
+                parts.append(f"方式={self.method}")
+        parts.append(f"结果={'命中' if hit else '未命中'}")
+        return " | ".join(parts)
+
 
 class Operationer:
     current_scene: Scene | None = None
@@ -83,13 +162,18 @@ class Operationer:
         max_attempts: int | None = kwargs.get("max_attempts")
         stable_kwargs = self._extract_stable_kwargs(kwargs)
 
+        metrics = _SearchMetrics(element)
+        metrics.match_text = match_text
         self.screen_save_func(self.task_name)
-        return self._retry_until(
-            lambda: self._match_element_once(element, match_text, full_match),
+        result = self._retry_until(
+            lambda: self._match_element_once(element, match_text, full_match,
+                                             metrics),
             wait_time=wait_time,
             max_time=max_time,
             max_attempts=max_attempts,
             stable_kwargs=stable_kwargs)
+        self._log_search_summary(metrics, result)
+        return result
 
     def detect_scene(self, scene, **kwargs):
         """
@@ -175,11 +259,17 @@ class Operationer:
             self.logger.error(f"[{element.name}] OCR 识别异常：{e}")
             return []
 
-        ocr_texts = []
-        self.logger.debug(f"{element.name}的识别结果：")
-        for text, box, score in results:
-            self.logger.debug(f'文本：{text}， 置信度：{score}，位置：{box}')
-            ocr_texts.append(OcrText(text, box, score))
+        # 识别明细压成**一条** DEBUG（原先 1+N 条，每次 OCR 都刷屏）；
+        # 用户可见的"文本列表"汇总由调用方 `_log_search_summary` 输出
+        ocr_texts = [OcrText(text, box, score) for text, box, score in results]
+        if ocr_texts:
+            self.logger.debug(
+                f"[{element.name}] OCR 识别到 {len(ocr_texts)} 条："
+                + "，".join(
+                    f"'{t.text}'({t.score:.2f})@[{t.box[0]},{t.box[1]},"
+                    f"{t.box[2]},{t.box[3]}]" for t in ocr_texts))
+        else:
+            self.logger.debug(f"[{element.name}] OCR 未识别到任何文本")
         return ocr_texts
 
     def _log_click(self, element_name: str) -> None:
@@ -235,15 +325,19 @@ class Operationer:
         click_interval: float = kwargs.get("click_interval", 0.5)
         stable_kwargs = self._extract_stable_kwargs(kwargs)
 
+        metrics = _SearchMetrics(element)
+        metrics.match_text = match_text
         self.screen_save_func(self.task_name)
-        return self._retry_until(
+        result = self._retry_until(
             lambda: self._click_element_once(
                 element, click_times, match_text, ratio_x, ratio_y,
-                all_coordinates, full_match, click_interval, random),
+                all_coordinates, full_match, click_interval, random, metrics),
             wait_time=wait_time,
             max_time=max_time,
             max_attempts=max_attempts,
             stable_kwargs=stable_kwargs)
+        self._log_search_summary(metrics, result)
+        return result
 
     def swipe_and_wait(self, start_coordinate, end_coordinate, **kwargs):
         """
@@ -675,12 +769,13 @@ class Operationer:
     def _click_element_once(self, element, click_times, match_text,
                             ratio_x, ratio_y, all_coordinates=False,
                             full_match=False, click_interval=0.5,
-                            random=False) -> bool:
+                            random=False, metrics=None) -> bool:
         """单次点击尝试：按 ElementType 分派 COORDINATE/IMG/OCR_AREA
 
         - all_coordinates=True 时依次点击全部命中位置（相邻点击间隔 click_interval 秒），
           否则只点击一个命中位置（保持原有行为）；
-        - random=True 时随机化：单目标取随机命中，多目标先打乱顺序再依次点击。
+        - random=True 时随机化：单目标取随机命中，多目标先打乱顺序再依次点击；
+        - metrics(`_SearchMetrics`)：记录本次尝试的匹配值 / OCR 文本，供整轮查找汇总成一条日志。
         """
         if element.type == ElementType.COORDINATE:
             # 只有一个坐标，all_coordinates/random 对其无意义
@@ -689,8 +784,11 @@ class Operationer:
                                      times=click_times)
 
         if element.type == ElementType.OCR_AREA:
+            results = self._ocr_results(element)
+            if metrics is not None:
+                metrics.note_ocr(results)
             results = [
-                r for r in self._ocr_results(element)
+                r for r in results
                 if self._text_matches(r.text, match_text, full_match)
             ]
             results = self._arrange_click_targets(results, all_coordinates,
@@ -703,8 +801,10 @@ class Operationer:
                 clicked = self.device.click(x, y, times=click_times) or clicked
             return clicked
 
-        coordinates = self.recognizer.element_match(
+        coordinates, record = self.recognizer.collect_element_match(
             self.device.screen_cap(), element)
+        if metrics is not None:
+            metrics.note_attempt(record)
         if not coordinates:
             return False
         coordinates = self._arrange_click_targets(coordinates, all_coordinates,
@@ -722,18 +822,37 @@ class Operationer:
             clicked = self.device.click(x, y, times=click_times) or clicked
         return clicked
 
-    def _match_element_once(self, element, match_text, full_match=False) -> bool:
-        """单次元素匹配：OCR_AREA 走 OCR 文本匹配，其余走模板匹配"""
+    def _match_element_once(self, element, match_text, full_match=False,
+                            metrics=None) -> bool:
+        """单次元素匹配：OCR_AREA 走 OCR 文本匹配，其余走模板匹配
+
+        ``metrics``（`_SearchMetrics`）：记录本次尝试的匹配值 / OCR 文本，
+        由调用方在整轮查找结束后汇总成一条日志（见 `_log_search_summary`）。
+        """
         if element.type == ElementType.OCR_AREA:
             results = self._ocr_results(element)
-            self.logger.debug(f"[{element.name}] OCR结果：{results}")
+            if metrics is not None:
+                metrics.note_ocr(results)
             if not results:
                 return False
             return any(self._text_matches(r.text, match_text, full_match)
                        for r in results)
-        coordinates = self.recognizer.element_match(
-            self.device.screen_cap(), element, False)
+        coordinates, record = self.recognizer.collect_element_match(
+            self.device.screen_cap(), element)
+        if metrics is not None:
+            metrics.note_attempt(record)
         return len(coordinates) != 0
+
+    def _log_search_summary(self, metrics: "_SearchMetrics", hit: bool) -> None:
+        """把一次元素查找汇总成**一条**日志（过程明细不再逐条输出）。
+
+        图片元素给出每次尝试的最高匹配值与阈值，OCR 区域给出识别到的文本列表，
+        使"没找到元素"时能一条日志判断原因（阈值过高 / ROI 不对 / 画面确实没有）。
+        纯坐标元素（无匹配过程，attempts=0）不产生汇总。
+        """
+        if metrics is None or not metrics.attempts:
+            return
+        self.logger.info(f"[识别] {metrics.describe(hit)}")
 
     def _search_loop(self, item_list, search_actions, check_once,
                      action_click_wait_time=None, **kw) -> int:

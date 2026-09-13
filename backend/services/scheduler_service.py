@@ -1098,10 +1098,15 @@ class SchedulerService:
             return
         pending = list(self._pending_activate_tasks)
         self._pending_activate_tasks.clear()
+        now = datetime.now(ZoneInfo("Asia/Shanghai"))
         for task_name in pending:
             task = self.task_queue.get_task(task_name)
             if task is None:
                 self.logger.warning(f"待激活任务 {task_name} 不在任务队列中，忽略")
+                continue
+            # 窗口守卫：目标任务的可执行窗口已过期时不激活（否则会被临时启用并空转到
+            # 最长执行时长，期间调度器无法执行其它任务，见 _skip_expired_activation）
+            if self._skip_expired_activation(task, now):
                 continue
             self.execute_task_now(task_name, enable_if_needed=True)
             if self.run_once:
@@ -1112,6 +1117,41 @@ class SchedulerService:
         # 同步扫描一次：让被激活任务立即进入执行（_scanning 标志防重入，
         # 若扫描线程正在扫描则本次返回，由下一轮扫描兜底）
         self.scan()
+
+    def _skip_expired_activation(self, task, now: datetime) -> bool:
+        """跨任务"立即激活"前的窗口守卫：目标任务当前不可执行则跳过激活。
+
+        【要塞争夺战/天地战场】执行结束（含超窗口/超最长时长被强制结束）后会自动
+        激活【叛忍来袭】，而"立即执行/被激活"按设计会跳过窗口校验
+        （`BaseTask._should_skip_window_check`）。若这两个任务自己就拖到了叛忍窗口
+        （周三 21:00~22:00 / 周六 20:00~21:00）之后，照旧激活会让叛忍来袭被临时启用
+        并带着执行意图空转——游戏里已无叛忍入口，任务会一直重试到最长执行时长
+        （45 分钟），期间调度器无法执行其它任务（表现为"卡死"）。
+
+        因此这里先用 `BaseTask.probe_execute_window(now)` 探测目标任务的排期窗口：
+        不在窗口内（已过期 / 还没开始）→ 不启用、不登记立即执行，交由任务自身的排期
+        在下一个周期处理，并记一条 WARNING 说明原因。
+
+        Returns:
+            bool: True 表示因窗口不可执行跳过了本次激活
+        """
+        probe = getattr(task, "probe_execute_window", None)
+        if not callable(probe):
+            return False
+        try:
+            runnable, state = probe(now)
+        except Exception as e:
+            # 排期计算异常（任务参数/资源缺失等）不应阻断激活：留痕后按原行为继续
+            self.logger.warning(
+                f"探测 {task.task_name} 可执行窗口失败，按原行为激活: {e}")
+            return False
+        if runnable:
+            return False
+        self.logger.warning(
+            f"[{task.task_name}] {state}"
+            f"（{getattr(task, 'schedule_description', '未知排期')}），"
+            "跳过本次激活（不启用、不立即执行）")
+        return True
 
     # ================================================================
     # 超时监视器：告警信号处理

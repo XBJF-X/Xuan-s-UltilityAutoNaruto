@@ -614,6 +614,40 @@ class BaseTask:
                 f"[DeadLine]任务执行超时:{last_deadline.strftime('%Y-%m-%d %H:%M:%S')}")
         raise TooEarlyToRun("任务当前时间不在任何可执行窗口内")
 
+    def probe_execute_window(
+            self, now: datetime.datetime | None = None) -> tuple[bool, str]:
+        """探测"现在是否处于可执行窗口内"，供跨任务"立即激活"前做守卫。
+
+        返回 ``(是否可执行, 状态说明)``，状态取
+        ``"窗口内" / "窗口已过期" / "窗口未开始" / "不限时间"``。
+
+        与 `_check_execute_window` 的区别：窗口基准取 ``now``（缺省=此刻）而非
+        ``last_run_time`` —— "激活时窗口是否可执行"必须看**当前周期**，用陈旧的
+        ``last_run_time``（例如上一次执行在上周）会把窗口算成上一周期的，从而误判。
+
+        注意"过期"判定**不能**只看"所有窗口的终点都早于 now"：像【叛忍来袭】这类
+        多窗口排期（周三/周六触发窗口 + 下周三兜底），兜底窗口永远在未来，因此
+        这里以"当前时刻是否落在任一窗口内"为准——不在窗口内（已过期或还没开始）
+        就说明此刻激活只会空转（见 `SchedulerService._skip_expired_activation`）。
+        """
+        moment = (self._ensure_tz_aware(now) if now is not None
+                  else datetime.datetime.now(self.tz_info))
+        windows = list(self._get_execute_window(moment))
+        if not windows or all(start is None and end is None
+                              for start, end in windows):
+            return True, "不限时间"
+        if any((start is None or moment >= self._ensure_tz_aware(start))
+               and (end is None or moment < self._ensure_tz_aware(end))
+               for start, end in windows):
+            return True, "窗口内"
+        if all(end is None for _start, end in windows):
+            return True, "不限时间"
+        # 已有窗口结束（错过本周期这次机会）→ 过期；否则是还没到
+        if any(end is not None and moment >= self._ensure_tz_aware(end)
+               for _start, end in windows):
+            return False, "窗口已过期"
+        return False, "窗口未开始"
+
     @handle_task_exceptions
     def _execute(self):
         self.operationer.next_scene = self.source_scene

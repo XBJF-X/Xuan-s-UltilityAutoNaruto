@@ -13,6 +13,13 @@
   ≈61ms），模板匹配尾部改为「`isfinite` + 阈值」一次筛候选（省掉 `nan_to_num` 整块拷贝
   与单独的 `minMaxLoc` 全图扫描）；未命中时的最大响应只在调试模式采集。
 - 一键回退：`Recognizer(..., enable_pruning=False)` 恢复旧的全量扫描行为。
+
+## 日志（2026-09-13）
+识别过程日志（弹窗/候选场景/子场景逐项检查、hint 裁剪与兜底、模板匹配统计）**默认关闭**
+（`ENABLE_RECOGNITION_DEBUG_LOG = False`）：一帧可达几十行，日志文件被迅速灌满且任务流程
+反而看不清。开发调试时把该常量或 `Recognizer(..., enable_debug_log=True)` 置 True 即可。
+需要"离阈值差多少"这类指标时，用 `collect_element_match()` —— 它只回填一条结构化指标，
+不输出过程日志。
 """
 import logging
 import os
@@ -59,6 +66,14 @@ _OCR_UPSCALE_MAX_RATIO = 16.0       # 放大倍数上限，防止极小区域放
 # 即回到"每帧全量扫描"的旧行为）。
 ENABLE_SCENE_PRUNING = True
 
+# 识别过程调试日志总开关（**默认关闭**）。
+#
+# 打开后每次识别会逐条输出：弹窗场景逐项检查（19~22 行）、候选场景/子场景逐项检查、
+# hint 裁剪与全量兜底、模板匹配统计（最大值/阈值/命中框）等；这些属于"识别器内部细节"，
+# 生产运行只需保留"识别到场景: X"（BaseTask 输出）这类流程日志即可。
+# 排查识别问题时把此常量置 True（或 `Recognizer(..., enable_debug_log=True)`）。
+ENABLE_RECOGNITION_DEBUG_LOG = False
+
 # 弹窗场景的成员判断用 frozenset（self.popup_scenes 保持有序 tuple 供顺序匹配）
 _POPUP_SCENE_SET = frozenset(POPUP_SCENES)
 
@@ -73,6 +88,9 @@ class _MatchContext:
     """
 
     debug: bool = False
+    # 采集模式：不输出过程日志，但把"最大响应值"等指标完整写进 records
+    # （供 Operationer 汇总成一条日志：未命中时也能看到"离阈值差多少"）
+    collect: bool = False
     scope: Optional[DebugScope] = None
     records: Dict[str, dict] = field(default_factory=dict)
     success_details: Optional[dict] = None
@@ -99,7 +117,8 @@ class Recognizer:
     """场景识别器：全量兜底的候选集裁剪识别（详见模块 docstring）。"""
 
     def __init__(self, scene_graph: SceneGraph, parent_logger: str | logging.Logger = "",
-                 *, enable_pruning: bool = ENABLE_SCENE_PRUNING):
+                 *, enable_pruning: bool = ENABLE_SCENE_PRUNING,
+                 enable_debug_log: bool = ENABLE_RECOGNITION_DEBUG_LOG):
         if isinstance(parent_logger, str):
             self.logger = logging.getLogger("识别器")
         else:
@@ -109,6 +128,8 @@ class Recognizer:
         self.popup_scenes = POPUP_SCENES
         self.coincident_scenes = COINCIDENT_SCENES
         self.enable_pruning = enable_pruning
+        # 识别过程日志开关（默认关闭，见模块 docstring）
+        self.enable_debug_log = bool(enable_debug_log)
         # OCR 识别器（惰性初始化，仅在首次使用 OCR 时加载模型）
         self._onnx_ocr = None
         # 本实例上一帧命中的场景名：调用方未传 hint 时的裁剪依据
@@ -149,9 +170,18 @@ class Recognizer:
         replay_buffered_logs(self.logger, buffered, result, self._last_successful_scene_details)
         return result
 
-    def _make_ctx(self, debug: bool) -> _MatchContext:
-        """构造一次识别调用的上下文（debug 时带日志作用域载体）。"""
-        return _MatchContext(debug=debug, scope=DebugScope() if debug else None)
+    def _make_ctx(self, debug: bool, collect: bool = False) -> _MatchContext:
+        """构造一次识别调用的上下文（debug 时带日志作用域载体；collect 时采集指标）。"""
+        return _MatchContext(debug=debug, collect=collect,
+                             scope=DebugScope() if debug else None)
+
+    def _debug_log_enabled(self, bool_debug: bool) -> bool:
+        """过程调试日志是否输出：调用方要求（``bool_debug``）**且**总开关已打开。
+
+        识别链内部大量位置默认 `bool_debug=True`（旧行为），统一经此收敛，
+        使 `ENABLE_RECOGNITION_DEBUG_LOG=False` 时生产路径完全不输出过程日志。
+        """
+        return bool(bool_debug) and self.enable_debug_log
 
     def _ensure_ctx(self, ctx: Optional[_MatchContext], debug: bool) -> _MatchContext:
         """取调用方传入的帧上下文；未传（外部直接调 scene_match/element_match 等）时
@@ -198,15 +228,17 @@ class Recognizer:
         trusted = hint is not None and hint == self._last_matched_scene
         candidates = index.candidates(hint) if (self.enable_pruning and trusted) else None
         if candidates is not None:
-            self.logger.debug(
-                "候选集裁剪：hint=%s，候选 %d 个（%s）",
-                hint, len(candidates), "、".join(candidates),
-            )
+            if self.enable_debug_log:
+                self.logger.debug(
+                    "候选集裁剪：hint=%s，候选 %d 个（%s）",
+                    hint, len(candidates), "、".join(candidates),
+                )
         elif self.enable_pruning and hint and not trusted:
             index.full_scan_untrusted += 1
-            self.logger.debug(
-                "hint=%s 与上一帧识别（%s）不一致 → 不做裁剪，走全量仲裁",
-                hint, self._last_matched_scene)
+            if self.enable_debug_log:
+                self.logger.debug(
+                    "hint=%s 与上一帧识别（%s）不一致 → 不做裁剪，走全量仲裁",
+                    hint, self._last_matched_scene)
 
         result = self._detect_popup_first(scene_img, ctx)
         if result is None:
@@ -217,8 +249,10 @@ class Recognizer:
             # 注意：弹窗扫描无需重做——上面已对**同一帧**扫过全部弹窗且未命中，
             # 重复一遍只会白付 19 次模板匹配。
             index.full_scan_fallbacks += 1
-            self.logger.debug(
-                "候选集未命中（hint=%s，候选 %d 个）→ 全量兜底扫描", hint, len(candidates))
+            if self.enable_debug_log:
+                self.logger.debug(
+                    "候选集未命中（hint=%s，候选 %d 个）→ 全量兜底扫描",
+                    hint, len(candidates))
             result = self._detect_normal_scene(scene_img, ctx, None)
         elif candidates is not None and not _is_unknown(result):
             index.tier1_hits += 1
@@ -251,8 +285,10 @@ class Recognizer:
                 continue
 
             with scoped(ctx, f"scene:{scene.name}"):
-                self.logger.debug(f"检查弹窗场景: {scene.name}")
-                flag = self.scene_match(scene_img, scene, ctx=ctx)
+                if self.enable_debug_log:
+                    self.logger.debug(f"检查弹窗场景: {scene.name}")
+                flag = self.scene_match(scene_img, scene,
+                                        self.enable_debug_log, ctx=ctx)
             if flag:
                 # 本次识别后续下沉时不再重复检查该弹窗
                 ctx.excluded_popups.add(scene_id)
@@ -282,8 +318,10 @@ class Recognizer:
                 continue
 
             with scoped(ctx, f"scene:{scene.name}"):
-                self.logger.debug(f"开始匹配场景: {scene.name}")
-                flag = self.scene_match(scene_img, scene, ctx=ctx)
+                if self.enable_debug_log:
+                    self.logger.debug(f"开始匹配场景: {scene.name}")
+                flag = self.scene_match(scene_img, scene,
+                                        self.enable_debug_log, ctx=ctx)
             if flag:
                 current_scene = scene_id
                 break
@@ -330,8 +368,10 @@ class Recognizer:
                     continue
 
                 with scoped(ctx, f"scene:{sub_scene_name}"):
-                    self.logger.debug(f"检查子场景: {sub_scene_name}")
-                    flag = self.scene_match(scene_img, sub_scene, ctx=ctx)
+                    if self.enable_debug_log:
+                        self.logger.debug(f"检查子场景: {sub_scene_name}")
+                    flag = self.scene_match(scene_img, sub_scene,
+                                            self.enable_debug_log, ctx=ctx)
                 if flag:
                     if sub_scene_name in _POPUP_SCENE_SET and not is_popup:
                         ctx.excluded_popups.add(sub_scene_name)
@@ -437,7 +477,7 @@ class Recognizer:
                 x_start + int(max(xs)), y_start + int(max(ys))
             ], score))
 
-        if bool_debug:
+        if self._debug_log_enabled(bool_debug):
             self.logger.debug(f"[{ocr_area.name}] OCR 识别到 {len(area_results)} 条文本")
         return area_results
 
@@ -485,11 +525,14 @@ class Recognizer:
 
         if result and max(result) > 0:
             if ctx.debug:
-                self.logger.info(f"匹配成功: {template.name}")
+                # 结构化详情始终保留（调试/采集模式的数据入口，供上层/脚本读取）；
+                # 只有"过程日志开关"打开时才真正刷这条日志
                 ctx.success_details = {
                     "scene": template.name,
                     "elements": matched_elements_info,
                 }
+                if self.enable_debug_log:
+                    self.logger.info(f"匹配成功: {template.name}")
             return True
         # 场景没有任何标志元素（`result` 为空）→ 视为不匹配（与旧实现一致）
         return False
@@ -531,6 +574,36 @@ class Recognizer:
             return self.sift_match(template, scene_img, ctx=ctx)
         return self.template_match(template, scene_img, bool_debug, ctx=ctx)
 
+    def collect_element_match(self, scene_img, element: Element,
+                              bool_debug: bool = False) -> Tuple[List, dict]:
+        """单次元素匹配 + 汇总指标（供上层把一次查找报成"一条总述"）。
+
+        与 `element_match` 的差别：使用**采集模式**帧上下文——不输出过程日志，
+        但未命中时也把"最大响应值"记进指标（`template_match` 只在调试/采集模式才付
+        这一次全图扫描的代价），使上层能报出"离阈值差多少"，而不是只说"没找到"。
+
+        Args:
+            scene_img: 场景图像（BGR）
+            element(Element): 模板元素
+            bool_debug(bool): 是否回报日志（默认 False，不影响指标采集）
+
+        Returns:
+            ``(matches, metrics)``：``matches`` 同 `element_match` 返回值；
+            ``metrics`` 形如 ``{"method": "TEMPLATE", "max_val": 0.83,
+            "threshold": 0.8, "match_count": 1, "hit": True}``
+            （SIFT 元素为 ``num_template_features`` / ``good_matches`` 等）
+        """
+        ctx = self._make_ctx(bool_debug, collect=True)
+        self._bind_context(ctx)
+        try:
+            matches = self.element_match(scene_img, element, bool_debug, ctx=ctx)
+            metrics = dict(ctx.records.get(element.name) or {})
+        finally:
+            ctx.gray = None      # 与 scene() 一致：用完立即释放整帧灰度缓存
+        metrics["match_count"] = len(matches)
+        metrics["hit"] = bool(matches)
+        return matches, metrics
+
     def sift_match(self, template: Element, scene_img, ratio: float = 0.75,
                    ctx: Optional[_MatchContext] = None) -> List:
         """SIFT 特征匹配（ROI 限定）。
@@ -564,10 +637,11 @@ class Recognizer:
         # 最小匹配点数 = 模板特征数 × 比例（至少 4 个，单应性矩阵最低要求）
         num_template_features = len(kp1)
         min_good_matches = max(4, int(num_template_features * min_match_ratio))
-        self.logger.debug(
-            f"[{template.name}] 模板特征数: {num_template_features}, "
-            f"所需最小匹配: {min_good_matches}（特征提取 {feature_time * 1000:.1f}ms）"
-        )
+        if self.enable_debug_log:
+            self.logger.debug(
+                f"[{template.name}] 模板特征数: {num_template_features}, "
+                f"所需最小匹配: {min_good_matches}（特征提取 {feature_time * 1000:.1f}ms）"
+            )
         self._record_match_debug(
             ctx, template.name,
             method="SIFT",
@@ -577,10 +651,11 @@ class Recognizer:
 
         # 特征点/描述符不足 → 直接判不匹配
         if des1 is None or des2 is None or len(kp1) < 4 or len(kp2) < 4:
-            self.logger.debug(
-                f"[{template.name}] 特征点不足: 模板={len(kp1) if kp1 else 0}, "
-                f"场景={len(kp2) if kp2 else 0}"
-            )
+            if self.enable_debug_log:
+                self.logger.debug(
+                    f"[{template.name}] 特征点不足: 模板={len(kp1) if kp1 else 0}, "
+                    f"场景={len(kp2) if kp2 else 0}"
+                )
             self._record_match_debug(
                 ctx, template.name,
                 kp_template=len(kp1) if kp1 else 0,
@@ -595,8 +670,9 @@ class Recognizer:
         match_time = time.perf_counter() - start_time
 
         good_matches = [m for m, n in matches if m.distance < ratio * n.distance]
-        self.logger.debug(
-            f"[{template.name}] 有效匹配点数：{len(good_matches)}（匹配 {match_time * 1000:.1f}ms）")
+        if self.enable_debug_log:
+            self.logger.debug(
+                f"[{template.name}] 有效匹配点数：{len(good_matches)}（匹配 {match_time * 1000:.1f}ms）")
         self._record_match_debug(
             ctx, template.name,
             kp_template=len(kp1),
@@ -680,9 +756,9 @@ class Recognizer:
         finite = np.isfinite(result)
         locations = np.where(finite & (result >= threshold))
         if locations[0].size == 0:
-            # 未命中：仅调试模式再取一次最大响应，便于排查"离阈值差多少"
+            # 未命中：仅调试/采集模式再取一次最大响应，便于排查"离阈值差多少"
             #（生产路径不付这次全图扫描的代价，也不留调试记录）
-            if ctx.debug:
+            if ctx.debug or ctx.collect:
                 finite_values = result[finite]
                 self._record_match_debug(
                     ctx, template.name,
@@ -702,7 +778,7 @@ class Recognizer:
         ]
         matches_with_conf.sort(reverse=True, key=lambda item: item[0])
 
-        if bool_debug:
+        if self._debug_log_enabled(bool_debug):
             self.logger.debug(f"[{template.name}] 匹配结果统计：最大值={matches_with_conf[0][0]:.2f}")
         self._record_match_debug(
             ctx, template.name,

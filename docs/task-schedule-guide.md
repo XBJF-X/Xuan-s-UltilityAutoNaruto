@@ -163,6 +163,25 @@ class EveryNWeeks(Schedule):
 
 其余情况按声明式排期校验窗口，不合规抛 `TooEarlyToRun`（未到）/ `TimeOutDeadLineError`（已过）。
 
+### 跨任务激活的窗口守卫（2026-09-13）
+
+`_activate_another_task(名字)`（不传时间 = 立即执行）会经由调度器
+`_process_pending_activations → execute_task_now(enable_if_needed=True)` 执行：任务被**临时启用**
+并带 `force_execute_now`（跳过窗口校验）。若目标任务此刻已经错过本次窗口，这套组合会让它
+"启用着却干不了活"——例如【要塞争夺战/天地战场】自己超窗口/超时长被强制结束后仍去激活
+【叛忍来袭】，而叛忍窗口（周三 21:00~22:00 / 周六 20:00~21:00）已过：任务会在游戏里反复
+找不到叛忍入口，一直空转到最长执行时长（45 分钟），期间调度器无法执行其它任务。
+
+因此激活前会先调用 `BaseTask.probe_execute_window(now)`（窗口基准取 **now**，不是陈旧的
+`last_run_time`）：
+
+- `窗口内` / `不限时间` → 照常激活（`消耗体力` 这类整日窗口任务永远属于此类）；
+- `窗口已过期` / `窗口未开始` → **不启用、不登记立即执行**，只记一条 WARNING，交由任务自身的
+  排期在下一个周期处理。
+
+排期计算异常（如任务参数缺失）不阻断激活，只留痕后按原行为继续。回归：
+`test_scene/verify_activation_window_guard.py`。
+
 ---
 
 ## 7. 迁移与清理状态
@@ -205,6 +224,8 @@ class EveryNWeeks(Schedule):
 | 通知服务 + 调度器通知时机 | `.venv\Scripts\python.exe test_scene\verify_task_notify.py` |
 | 胜场任务新增参数（每周几 / 倒数第几天） | `.venv\Scripts\python.exe test_scene\verify_win_task_params.py` |
 | 体力消耗联动开关（一乐外卖/购买体力）+ 版本展示接口 | `.venv\Scripts\python.exe test_scene\verify_consume_stamina_params.py` |
+| 跨任务激活的窗口守卫（叛忍窗口过期不再激活） | `.venv\Scripts\python.exe test_scene\verify_activation_window_guard.py` |
+| 识别过程日志开关 + 元素查找/OCR 一条总述 | `.venv\Scripts\python.exe test_scene\verify_recognition_and_search_logging.py` |
 
 新增任务的验收清单：
 
