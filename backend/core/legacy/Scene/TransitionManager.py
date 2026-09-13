@@ -383,13 +383,28 @@ class TransitionManager:
         @self.register("忍界指引", "组织争霸赛")
         def _(operationer: Operationer, *args, **kwargs):
             """主场景跳转分场景函数，滑动屏幕找到[传入的目标ID]并点击"""
-            operationer.swipe_and_wait(
-                (200, 150),
-                (200, 750),
-                duration=0.3,
-                times=8,
-                wait_time=0.3
+            operationer.search_and_detect(
+                ["装备"],
+                [
+                    {
+                        'swipe':
+                        {
+                            "start_coordinate": [200, 150],
+                            "end_coordinate": [200, 750],
+                            "duration": 0.3
+                        }
+                    }
+                ],
+                max_attempts=8,
+                wait_time=0,
             )
+            # operationer.swipe_and_wait(
+            #     (200, 150),
+            #     (200, 750),
+            #     duration=0.3,
+            #     times=8,
+            #     wait_time=0.3
+            # )
 
             for i in range(8):
                 if operationer.click_and_wait(
@@ -431,13 +446,28 @@ class TransitionManager:
         @self.register("重返木叶-忍界指引", "组织争霸赛")
         def _(operationer: Operationer, *args, **kwargs):
             """主场景跳转分场景函数，滑动屏幕找到[传入的目标ID]并点击"""
-            operationer.swipe_and_wait(
-                (414, 214),
-                (414, 736),
-                duration=0.3,
-                times=8,
-                wait_time=0.1
+            operationer.search_and_detect(
+                ["装备"],
+                [
+                    {
+                        'swipe':
+                        {
+                            "start_coordinate": [414, 214],
+                            "end_coordinate": [414, 736],
+                            "duration": 0.3
+                        }
+                    }
+                ],
+                max_attempts=8,
+                wait_time=0,
             )
+            # operationer.swipe_and_wait(
+            #     (414, 214),
+            #     (414, 736),
+            #     duration=0.3,
+            #     times=8,
+            #     wait_time=0.1
+            # )
             for i in range(8):
                 if operationer.click_and_wait(
                         kwargs.get("target_id")
