@@ -89,7 +89,7 @@ class _MatchContext:
 
     debug: bool = False
     # 采集模式：不输出过程日志，但把"最大响应值"等指标完整写进 records
-    # （供 Operationer 汇总成一条日志：未命中时也能看到"离阈值差多少"）
+    # （供 Operationer 汇总成一条 DEBUG 日志：未命中时也能看到"离阈值差多少"）
     collect: bool = False
     scope: Optional[DebugScope] = None
     records: Dict[str, dict] = field(default_factory=dict)

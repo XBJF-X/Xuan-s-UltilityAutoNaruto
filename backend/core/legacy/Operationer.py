@@ -37,7 +37,7 @@ def _format_ocr_texts(texts: List[tuple]) -> str:
 class _SearchMetrics:
     """一次元素查找的过程汇总（匹配值 / OCR 文本），用于输出"一条总述"日志。
 
-    每次查找（`detect_element` / `click_and_wait` 的整轮重试）只输出一条：
+    每次查找（`detect_element` / `click_and_wait` 的整轮重试）只输出一条 **DEBUG**：
 
     - 图片元素：收集每次尝试的**最高匹配值**（未命中也有值 → 能看出"离阈值差多少"）；
     - OCR 区域：保留最近一次识别到的**文本列表**（文本 + 置信度）。
@@ -260,7 +260,7 @@ class Operationer:
             return []
 
         # 识别明细压成**一条** DEBUG（原先 1+N 条，每次 OCR 都刷屏）；
-        # 用户可见的"文本列表"汇总由调用方 `_log_search_summary` 输出
+        # 文本列表汇总由调用方 `_log_search_summary`（同为 DEBUG）输出
         ocr_texts = [OcrText(text, box, score) for text, box, score in results]
         if ocr_texts:
             self.logger.debug(
@@ -775,7 +775,7 @@ class Operationer:
         - all_coordinates=True 时依次点击全部命中位置（相邻点击间隔 click_interval 秒），
           否则只点击一个命中位置（保持原有行为）；
         - random=True 时随机化：单目标取随机命中，多目标先打乱顺序再依次点击；
-        - metrics(`_SearchMetrics`)：记录本次尝试的匹配值 / OCR 文本，供整轮查找汇总成一条日志。
+        - metrics(`_SearchMetrics`)：记录本次尝试的匹配值 / OCR 文本，供整轮查找汇总成一条 DEBUG 日志。
         """
         if element.type == ElementType.COORDINATE:
             # 只有一个坐标，all_coordinates/random 对其无意义
@@ -827,7 +827,7 @@ class Operationer:
         """单次元素匹配：OCR_AREA 走 OCR 文本匹配，其余走模板匹配
 
         ``metrics``（`_SearchMetrics`）：记录本次尝试的匹配值 / OCR 文本，
-        由调用方在整轮查找结束后汇总成一条日志（见 `_log_search_summary`）。
+        由调用方在整轮查找结束后汇总成一条 DEBUG 日志（见 `_log_search_summary`）。
         """
         if element.type == ElementType.OCR_AREA:
             results = self._ocr_results(element)
@@ -844,15 +844,19 @@ class Operationer:
         return len(coordinates) != 0
 
     def _log_search_summary(self, metrics: "_SearchMetrics", hit: bool) -> None:
-        """把一次元素查找汇总成**一条**日志（过程明细不再逐条输出）。
+        """把一次元素查找汇总成**一条 DEBUG**日志（过程明细不再逐条输出）。
 
         图片元素给出每次尝试的最高匹配值与阈值，OCR 区域给出识别到的文本列表，
         使"没找到元素"时能一条日志判断原因（阈值过高 / ROI 不对 / 画面确实没有）。
         纯坐标元素（无匹配过程，attempts=0）不产生汇总。
+
+        级别为 DEBUG：这类明细是"每次查找一条"持续产生的（一次任务可达上百条），
+        放进 INFO 会把流程日志重新刷满；日志文件（DEBUG 全量落盘）与前端面板的
+        「调试模式」开关（关闭时只看 INFO 及以上）可按需查看。
         """
         if metrics is None or not metrics.attempts:
             return
-        self.logger.info(f"[识别] {metrics.describe(hit)}")
+        self.logger.debug(f"[识别] {metrics.describe(hit)}")
 
     def _search_loop(self, item_list, search_actions, check_once,
                      action_click_wait_time=None, **kw) -> int:
