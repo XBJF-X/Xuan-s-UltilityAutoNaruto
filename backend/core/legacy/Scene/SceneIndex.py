@@ -188,9 +188,8 @@ class SceneIndex:
             return False
         with self._lock:
             self._learned.setdefault(hint, []).append(scene_name)
-        self.logger.info(
-            "场景候选索引学习到新跳转：%s -> %s（建议在资源管理器中补上该边，"
-            "以免下次仍需全量兜底）", hint, scene_name,
+        self.logger.debug(
+            "场景候选索引学习到新跳转：%s -> %s（建议在资源管理器中补上该边）", hint, scene_name,
         )
         return True
 
