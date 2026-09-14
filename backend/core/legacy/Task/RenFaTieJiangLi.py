@@ -18,6 +18,13 @@ class RenFaTieJiangLi(BaseTask):
     def run(self):
         self.all_tasks=False
         self.all_activations=False
+        self.reward_dict={
+            50:False,
+            100:False,
+            150:False,
+            200:False,
+            300:False,
+        }
         super().run()
 
     @TransitionOn()
@@ -37,18 +44,20 @@ class RenFaTieJiangLi(BaseTask):
             self.all_activations=True
             self.logger.info("所有周活跃度奖励已领取完毕")
             return True
-        TIERS = [50,100,150,200,300]
         hyd=self.operationer.ocr_recognize("本周活跃度值")
         if hyd:
             hyd_num=hyd.get_single_number()
             if hyd_num:
                 # 仅领取当前活跃度值已超过的档位：原写法生成布尔列表后把布尔值当档位号用
-                for tier in TIERS:
-                    if tier >= hyd_num:
+                for tier in self.reward_dict.keys():
+                    if tier >= hyd_num or self.reward_dict[tier]:
                         continue
-                    self.operationer.click_and_wait(f"活跃度-{tier}",click_times=2)
+                    self.operationer.click_and_wait(f"活跃度-{tier}",wait_time=1)
+                    self.operationer.click_and_wait("空白")
                     self.logger.info(f"活跃度[{tier}]奖励已领取")
-        return False
+                    self.reward_dict[tier]=True
+                    return False
+        return True
 
 
     def on_complete(
