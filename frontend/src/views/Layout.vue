@@ -323,7 +323,7 @@ const rawTasks = ref<Record<string, any>>({})
 const taskSchema = ref<Record<string, any>>({})
 
 // 是否显示已禁用的任务
-const showDisabledTasks = ref(false)
+const showDisabledTasks = ref(true)
 
 // 配置右键菜单
 const configContextMenu = ref({ show: false, x: 0, y: 0, configId: '', configName: '' })
