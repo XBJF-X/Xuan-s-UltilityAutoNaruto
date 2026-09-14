@@ -282,6 +282,9 @@ class TransitionManager:
         @self.register("忍法帖-周任务", "主场景")
         @self.register("忍法帖-周活跃", "主场景")
         @self.register("叛忍来袭-确认挑战", "叛忍来袭-内部")
+        @self.register("心悦俱乐部-恭喜获得", "心悦俱乐部")
+        @self.register("心悦俱乐部", "设置")
+        @self.register("设置", "主场景")
         def _(operationer: Operationer, *args, **kwargs):
             """通用返回函数，点击[X]"""
             operationer.click_and_wait("X")
@@ -313,6 +316,7 @@ class TransitionManager:
         @self.register("主场景", "主场景-装备")
         @self.register("主场景", "忍界指引")
         @self.register("主场景", "情报站-首页")
+        @self.register("主场景", "设置")
         @self.register("主场景-装备", "装备")
         @self.register("决斗场-首页", "忍术对战")
         @self.register("决斗场-首页", "赛季任务")
@@ -836,7 +840,12 @@ class TransitionManager:
         @self.register("忍法帖", "忍法帖-周活跃")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("周活跃")
-
+            
+        @self.register("设置", "心悦俱乐部")
+        def _(operationer: Operationer, *args, **kwargs):
+            operationer.click_and_wait("功能入口")
+            operationer.click_and_wait("下一列",click_times=5)
+            operationer.click_and_wait("心悦会员")
 if __name__ == "__main__":
     TM = TransitionManager(None)
-    print(TM.bfs_shortest_path("主场景", "装备"))
+    print(TM.bfs_shortest_path("主场景", "心悦俱乐部"))

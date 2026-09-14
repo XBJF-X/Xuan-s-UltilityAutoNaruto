@@ -37,6 +37,7 @@ from .ZhuiJiXiaoZuZhi import ZhuiJiXiaoZuZhi
 from .ZuZhiQiFu import ZuZhiQiFu
 from .ZuZhiZhengBa import ZuZhiZhengBa
 from .GouWuTianXin import GouWuTianXin
+from .XinYueJuLeBu import XinYueJuLeBu
 
 TASK_TYPE_MAP = {
     "排行榜点赞": PaiHangBangDianZan,
@@ -71,6 +72,7 @@ TASK_TYPE_MAP = {
     '叛忍来袭': PanRenLaiXi,
     '天地战场': TianDiZhanChang,
     '追击晓组织': ZhuiJiXiaoZuZhi,
+    '心悦俱乐部': XinYueJuLeBu,
 
     '巅峰对决': DianFengDuiJue,
     '组织争霸': ZuZhiZhengBa,
@@ -117,6 +119,7 @@ TASK_NAME_CN2EN_MAP = {
     '叛忍来袭': "PanRenLaiXi",
     '天地战场': "TianDiZhanChang",
     '追击晓组织': "ZhuiJiXiaoZuZhi",
+    '心悦俱乐部': "XinYueJuLeBu",
 
     '巅峰对决': "DianFengDuiJue",
     '组织争霸': "ZuZhiZhengBa",
