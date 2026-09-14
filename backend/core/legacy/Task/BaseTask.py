@@ -36,6 +36,8 @@ SCREENSHOT_REASON_DEADLINE = "TimeOutDeadLineError"
 SCREENSHOT_REASON_MAX_DURATION = "TimeOutMaxDurationError"
 SCREENSHOT_REASON_UNKNOWN = "UnknownError"
 SCREENSHOT_REASON_UNREGISTERED_SCENE = "UnregisteredSceneForceReturn"
+# 待跳转目标连续多次未推进（跳转函数不改变画面 / 目标在当前画面不可达）
+SCREENSHOT_REASON_JUMP_STALLED = "JumpStalled"
 
 
 def _format_duration(seconds: float) -> str:
@@ -259,6 +261,16 @@ class BaseTask:
 
     UNREGISTER_SCENE_MAX_TIME = 15
 
+    JUMP_STALL_LIMIT = 3
+    """同一「场景→目标」连续跳转的次数上限（超过即判定跳转未生效）。
+
+    next_scene 只在「识别到的场景 == next_scene」时才被清除，一旦目标在实际画面上
+    永远不可达（跳转函数是空操作，或当前画面下根本没有可走通的路径），任务每轮都在
+    「跳一次 → 回到原画面 → 再跳一次」里空转，其场景处理函数会被永久抢占。
+    超过该上限后框架放弃该目标（清空 next_scene + WARNING + 错误截图），把控制权
+    交回当前场景的处理函数。逐跳推进的正常寻路（场景名会变化）不受影响。
+    """
+
     def __init__(self, ctx: "RuntimeContext"):
         """构造注入收敛为单个 RuntimeContext（中间派重构）。
 
@@ -299,6 +311,8 @@ class BaseTask:
         # 立即执行标记：被请求"立即执行"后置 True，扫描选择时就绪队列中优先执行
         self.force_execute_now = False
         self.last_unregistered_scene_time = None
+        # 「跳转未推进」计数（{key: (场景, 目标), count: 连续次数}），达上限即放弃该目标
+        self._jump_stall = None
         # 最后一次执行是否出错（供调度器向前端透传失败标记）
         self.last_execute_error = None
 
@@ -651,6 +665,8 @@ class BaseTask:
     @handle_task_exceptions
     def _execute(self):
         self.operationer.next_scene = self.source_scene
+        # 每次执行重新开始：清空上一轮遗留的「跳转未推进」计数
+        self._clear_jump_stall()
         # 是否跳过窗口校验、排期规则已由"开始日志"统一输出，循环内不再重复
         while True:
             # 检查停止信号
@@ -707,15 +723,10 @@ class BaseTask:
                     "超时监视器心跳上报失败（场景停滞判定可能失真）: "
                     f"{_format_exception(e)}",
                     logging.WARNING)
-        # 如果设置了next_scene，优先跳转
-        if self.operationer.next_scene:
-            if self.operationer.next_scene == scene_name:
-                self.operationer.next_scene = None
-            else:
-                path = self.transition_manager.bfs_shortest_path(
-                    scene_name, self.operationer.next_scene)
-                if path and len(path) >= 2:
-                    return self.transition_manager.transition(self.operationer)
+        # 如果设置了next_scene，优先跳转；_pending_jump_path 内含「跳转未推进保护」——
+        # 同一 (场景, 目标) 连续多次仍跳不动时会放弃该目标并把控制权交回场景处理函数
+        if self._pending_jump_path(scene_name):
+            return self.transition_manager.transition(self.operationer)
 
         if scene_name in self.transition_func:
             if self.last_unregistered_scene_time:
@@ -730,27 +741,34 @@ class BaseTask:
             return result
         else:
             if not self.last_unregistered_scene_time:
-                self.last_unregistered_scene_time=time.perf_counter()
+                self.last_unregistered_scene_time = time.perf_counter()
             if not self.source_scene:
                 # 没有 source_scene，无法寻路，回退到未注册场景
                 scene_name = "未注册场景"
-            else:
-                if self.last_unregistered_scene_time and time.perf_counter() - self.last_unregistered_scene_time > self.UNREGISTER_SCENE_MAX_TIME:
-                    self.logger.warning(f"长时间未识别到注册场景，强制跳转回 source_scene: {self.source_scene}")
+            elif time.perf_counter() - self.last_unregistered_scene_time > self.UNREGISTER_SCENE_MAX_TIME:
+                # 长时间未识别到注册场景 → 强制回源。这里同样走 _pending_jump_path 的
+                # 「跳转未推进保护」：连续多次跳不动时它会清空 next_scene 并留 WARNING
+                # （错误截图一并保存），本分支再重置计时，把控制权交给下面的
+                # "未注册场景"处理函数——旧实现会在此每轮重复强行回源，同样可能空转。
+                self.operationer.next_scene = self.source_scene
+                path = self._pending_jump_path(scene_name)
+                if path:
+                    self.logger.warning(
+                        f"长时间未识别到注册场景，强制跳转回 source_scene: {self.source_scene}")
                     self._auto_screenshot(SCREENSHOT_REASON_UNREGISTERED_SCENE)
-                    self.operationer.next_scene = self.source_scene
-                    shortest_path = self.transition_manager.bfs_shortest_path(
-                        scene_name, self.source_scene)
-                    if shortest_path and len(shortest_path) >= 2:
-                        # 执行第一段路径跳转
-                        next_scene_in_path = shortest_path[1]
-                        self.logger.info(
-                            f"自动跳转回场景状态中: 从 {scene_name} 到 {next_scene_in_path} (路径: {' -> '.join(shortest_path)})"
-                        )
-                        return self.transition_manager.transition(self.operationer)
-                else:
-                    # 如果找不到路径，回退到原来的处理方式
-                    scene_name = "未注册场景"
+                    # 执行第一段路径跳转
+                    self.logger.info(
+                        f"自动跳转回场景状态中: 从 {scene_name} 到 {path[1]} "
+                        f"(路径: {' -> '.join(path)})")
+                    return self.transition_manager.transition(self.operationer)
+                # 回源失败（转移图无路径 / 跳转连续未生效）：重置计时并清掉刚挂上的目标，
+                # 避免把"待回源"长期挂起（它会抢占后续场景的处理函数）或每帧重复回源
+                self.last_unregistered_scene_time = time.perf_counter()
+                self.operationer.next_scene = None
+                scene_name = "未注册场景"
+            else:
+                # 未到强制回源时限，回退到原来的处理方式
+                scene_name = "未注册场景"
 
         # 正常执行注册函数
         # self.logger.debug(f"寻找注册函数: {scene_name}")
@@ -765,6 +783,68 @@ class BaseTask:
         # self.logger.debug(f"Transition的Result：{result}")
         # self.logger.debug(f"Transition的next_scene：{self.operationer.next_scene}")
         return result
+
+    def _clear_jump_stall(self):
+        """清空「跳转未推进」计数（到达目标 / 放弃目标 / 每次执行开始时调用）。"""
+        self._jump_stall = None
+
+    def _note_jump_attempt(self, scene_name: str, target: str) -> int:
+        """记录一次「场景→目标」跳转尝试，返回该组合的连续尝试次数。
+
+        组合发生变化（场景名变了 / 目标变了）说明跳转确实在推进，计数重新从 1 开始。
+        """
+        key = (scene_name, target)
+        stall = self.__dict__.get("_jump_stall")
+        if stall and stall.get("key") == key:
+            stall["count"] += 1
+        else:
+            stall = {"key": key, "count": 1}
+            self._jump_stall = stall
+        return stall["count"]
+
+    def _pending_jump_path(self, scene_name: str) -> list[str] | None:
+        """取本轮 pending（``operationer.next_scene``）跳转的路径；None 表示本轮不跳转。
+
+        含「跳转未推进保护」，三类不跳转的情形：
+
+        1. 已到达（``next_scene == 当前识别场景``）→ 清空 next_scene（原行为）；
+        2. 转移图里没有可行路径 → 维持原行为，交由当前场景的处理函数兜底；
+        3. **同一 (场景, 目标) 连续尝试超过 ``JUMP_STALL_LIMIT`` 次** → 判定跳转未生效
+           （跳转函数不改变画面，或该目标在当前画面下根本到不了），清空 next_scene、
+           记 WARNING + 错误截图，把控制权交回当前场景的处理函数。
+
+        第 3 条是「任务被到不了的目标劫持」的兜底：``next_scene`` 过去只在
+        「识别到的场景 == next_scene」时才清除，一旦目标在实际画面上永远不可达
+        （例：【更多玩法】对局加载期画面被误判后挂上"回源"目标，而副本内的
+        ``绝迹战场-副本内 -> 更多玩法-结算`` 跳转函数只是 sleep 等待），
+        任务每轮都在「跳一次 → 回到原画面 → 再跳一次」里空转，
+        连"副本内"里启动连点的处理函数都永远不会被执行。
+        """
+        target = self.operationer.next_scene
+        if not target:
+            return None
+        if target == scene_name:
+            self.operationer.next_scene = None
+            self._clear_jump_stall()
+            return None
+        path = self.transition_manager.bfs_shortest_path(scene_name, target)
+        if not (path and len(path) >= 2):
+            return None
+        count = self._note_jump_attempt(scene_name, target)
+        if count > self.JUMP_STALL_LIMIT:
+            self.logger.warning(
+                f"跳转 {scene_name}->{target} 连续 {count} 次未生效，放弃该目标，"
+                f"交由 [{scene_name}] 的处理函数继续"
+                f"（目标在当前画面可能不可达，或跳转函数本身不改变画面）")
+            self._auto_screenshot(SCREENSHOT_REASON_JUMP_STALLED)
+            self.operationer.next_scene = None
+            self._clear_jump_stall()
+            # 顺带重启「长时间未识别到注册场景」的计时：放弃目标后给任务一段自主恢复
+            # 的窗口，避免同一轮/下一轮又立刻强行回源（场景已注册时，registered 分支
+            # 会立刻把该计时清空，不受影响）
+            self.last_unregistered_scene_time = time.perf_counter()
+            return None
+        return path
 
     def _cleanup_on_stop(self):
         """停止请求时的清理"""
