@@ -69,16 +69,9 @@ class MiJingTanXian(BaseTask):
         if tzq is not None:
             self.logger.info(f"挑战券为 {tzq} ，继续执行")
         else:
-            # OCR 彻底读不出数字时按"未知"处理：不再中断任务，照常点出战，
-            # 由「挑战券不足」提示决定是否结束（避免"0 券却继续扫荡"式的空转）
-            self.logger.warning(
-                "识别剩余挑战券数量失败（已重试 %d 次），按未知处理：继续尝试出战",
-                self.TZQ_OCR_ATTEMPTS)
+            raise TaskCompleted("识别剩余挑战券数量失败（已重试 %d 次），按未知处理：不再尝试出战",self.TZQ_OCR_ATTEMPTS)
         self.operationer.click_and_wait("出战")
         self.bool_click = True
-        if self._no_ticket_tip_shown():
-            self.logger.info("检测到[挑战券不足]，任务执行结束")
-            raise TaskCompleted("挑战券已耗尽，任务执行完成")
         return False
 
     def _read_remain_ticket_count(self):
