@@ -51,22 +51,63 @@ _STATUS_LOCK = threading.Lock()
 # ============================================================
 # 通用辅助
 # ============================================================
+def _extract_browse_pidl(result):
+    """从 SHBrowseForFolder 的返回值中取出 PIDL；取消/无效时返回 None。
+
+    pywin32 的 `SHBrowseForFolder` 返回 `(pidl, displayName, iImage)` 三元组，
+    但**用户取消或直接关闭对话框时 pidl 为 None，而容器本身仍是真值元组**。
+    旧实现只判断 `if folder_selected:` 就把 None 当 PIDL 传给
+    `SHGetPathFromIDListW`，抛
+    `TypeError: None is not a valid ITEMIDLIST in this context`
+    （用户只是取消了选择，却被记成"打开文件夹选择对话框失败"）。
+    这里统一收敛三种形态：None / PIDL 单值 / (pidl, ...) 序列。
+    """
+    if result is None:
+        return None
+    if isinstance(result, (tuple, list)):
+        return result[0] if result else None
+    return result
+
+
 def _browse_folder(title: str):
+    """弹出文件夹选择对话框并返回所选路径；取消或选中非文件系统项目时返回 None。"""
     import win32com.shell.shell as shell
-    folder_selected = shell.SHBrowseForFolder()
-    if folder_selected:
-        # 将返回的 PIDL (项目标识符列表) 转换为实际的文件系统路径。
-        # 优先使用 Unicode 版本（SHGetPathFromIDListW），直接返回 str，天然支持中文路径；
-        # 回退到 ANSI 版本（SHGetPathFromIDList）时返回的是系统 ANSI 代码页
-        # （中文系统为 GBK/cp936）编码的 bytes，必须按 mbcs（系统 ANSI 代码页）解码，
-        # 不能按 utf-8 解码——否则含中文的路径（如 MuMu/雷电安装目录）会抛 UnicodeDecodeError。
-        pidl = folder_selected[0]
-        get_path = getattr(shell, "SHGetPathFromIDListW", None) or shell.SHGetPathFromIDList
+    import win32com.shell.shellcon as shellcon
+    try:
+        import win32gui
+        hwnd = win32gui.GetForegroundWindow() or 0
+    except Exception as e:
+        # 取不到前台窗口句柄不是致命问题：回退 0（桌面为 owner，等价旧行为）
+        logger.debug("获取前台窗口句柄失败，文件夹对话框以桌面为 owner: %s", e)
+        hwnd = 0
+    # 显式传参：title 此前从未传给 API（标题一直不生效）；owner 取前台窗口，
+    # 让对话框归属应用窗口并置于最前，避免"弹在应用窗口后面 → 用户以为没反应"。
+    # flags 只保留 BIF_RETURNONLYFSDIRS（仅文件系统目录），不加 BIF_NEWDIALOGSTYLE，
+    # 以免在 FastAPI 工作线程里额外要求 COM 以特定模式初始化。
+    result = shell.SHBrowseForFolder(
+        hwnd, None, title, shellcon.BIF_RETURNONLYFSDIRS)
+    pidl = _extract_browse_pidl(result)
+    if pidl is None:
+        logger.debug("用户取消了文件夹选择")
+        return None
+    # 将返回的 PIDL (项目标识符列表) 转换为实际的文件系统路径。
+    # 优先使用 Unicode 版本（SHGetPathFromIDListW），直接返回 str，天然支持中文路径；
+    # 回退到 ANSI 版本（SHGetPathFromIDList）时返回的是系统 ANSI 代码页
+    # （中文系统为 GBK/cp936）编码的 bytes，必须按 mbcs（系统 ANSI 代码页）解码，
+    # 不能按 utf-8 解码——否则含中文的路径（如 MuMu/雷电安装目录）会抛 UnicodeDecodeError。
+    get_path = getattr(shell, "SHGetPathFromIDListW", None) or shell.SHGetPathFromIDList
+    try:
         path = get_path(pidl)
-        if isinstance(path, bytes):
-            path = path.decode("mbcs")
-        return path
-    return None
+    except Exception as e:
+        # pywin32 对"非文件系统项目"（如 此电脑/网络）会抛 shell.error
+        logger.info("所选项目无法转换为文件系统路径，按取消处理: %s", e)
+        return None
+    if isinstance(path, bytes):
+        path = path.decode("mbcs")
+    if not path:
+        logger.info("所选项目没有文件系统路径（如 此电脑/网络），按取消处理")
+        return None
+    return path
 
 
 def _get_config_username(config_id: str) -> str:
@@ -1359,10 +1400,14 @@ def browse_folder(payload: dict):
     title = (payload or {}).get("title", "选择文件夹")
     try:
         path = _browse_folder(title)
-        return {"ok": path is not None, "path": path}
+        if path is None:
+            # 取消不是错误：不再记 ERROR（旧实现把取消当异常，
+            # 用户日志里出现"打开文件夹选择对话框失败"却无从下手）。
+            return {"ok": False, "cancelled": True, "path": None, "message": "已取消选择"}
+        return {"ok": True, "cancelled": False, "path": path}
     except Exception as e:
         logger.error("打开文件夹选择对话框失败: %s", e, exc_info=e)
-        return {"ok": False, "path": None, "message": str(e)}
+        return {"ok": False, "cancelled": False, "path": None, "message": str(e)}
 
 
 # ============================================================

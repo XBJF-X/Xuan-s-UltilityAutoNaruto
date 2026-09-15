@@ -224,8 +224,15 @@ async function onInstallPathBlur(key: string, v: string) {
 async function browseInstallPath(section: string, key: string) {
   try {
     const res = await utilsApi.browseFolder(installPathTitle(key))
-    const path: string | null = res.data?.path || null
-    if (!path) return
+    const data = res.data
+    const path: string | null = data?.path || null
+    if (!path) {
+      // 用户取消（cancelled=true）静默；真实失败提示，避免"点了没反应"
+      if (data && !data.cancelled) {
+        message.warning(data.message || '选择安装目录失败')
+      }
+      return
+    }
     installPathInput[key] = path
     await onSet(section, key, path)
     await checkInstallPath(key)

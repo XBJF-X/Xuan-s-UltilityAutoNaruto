@@ -173,6 +173,9 @@ async function browse() {
     const data = res.data
     if (data?.ok && data.path) {
       savePath.value = data.path
+    } else if (!data?.cancelled) {
+      // 用户取消（cancelled=true）静默；真实失败必须提示，避免"点了没反应"
+      message.warning(data?.message || '选择文件夹失败')
     }
   } catch (e: any) {
     message.error(e?.response?.data?.detail || '选择文件夹失败')
