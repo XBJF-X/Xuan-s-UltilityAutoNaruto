@@ -104,7 +104,7 @@ function commitSerial() {
     return;
   }
   if (!isValidSerial(v)) {
-    message.error("串口格式不正确，应为 127.0.0.1:5555 或 emulator-5554 形式");
+    message.error("串口格式不正确，应为 127.0.0.1:16xxx 或 emulator-5xxx 形式（16xxx/5xxx替换成你查所到的端口号）");
     serialText.value = gv("串口", "") || "";
     return;
   }
