@@ -1,3 +1,4 @@
+import logging
 import random as _random  # 方法参数名 random 会遮蔽同名模块，故用别名导入
 import threading
 import time
@@ -12,6 +13,9 @@ from backend.core.legacy.Exceptions import StepFailedError, Stop
 from backend.core.legacy.OcrText import OcrResultList, OcrText
 from backend.core.legacy.Recognizer import Recognizer
 from backend.core.legacy.Scene.SceneGraph import SceneGraph
+
+# 模块级日志器：类外（如 _SearchMetrics）也要留痕时使用
+_logger = logging.getLogger("Operationer")
 
 # 一次查找最多展示几个匹配值（超出折叠为计数，避免长重试把日志行拉长）
 _MAX_LOGGED_MATCH_VALUES = 8
@@ -72,7 +76,17 @@ class _SearchMetrics:
     def note_ocr(self, results) -> None:
         """记录一次 OCR 识别尝试（`OcrText` 列表）。"""
         self.attempts += 1
-        self.texts = [(r.text, r.score) for r in results]
+        try:
+            # 结果项可能不完整（None / 非 OcrText），逐项安全取值，避免汇总日志把任务打断
+            self.texts = [
+                (getattr(r, "text", "") or "",
+                 float(getattr(r, "score", 0.0) or 0.0))
+                for r in (results or [])
+            ]
+        except Exception as e:
+            # 汇总日志属"尽力而为"：取值失败只退化为不显示文本列表，不影响识别结果
+            _logger.debug("汇总 OCR 文本列表失败：%s", e)
+            self.texts = []
 
     def describe(self, hit: bool) -> str:
         """一条总述：元素 / 尝试次数 / 匹配值（或 OCR 文本）/ 阈值 / 结果。"""
@@ -222,9 +236,8 @@ class Operationer:
             List[OcrText]: 识别结果列表，按置信度从高到低排序；若无结果则返回空列表
         """
         results = self._ocr_results(element, **kwargs)
-        if not results:
-            return []
-        # 按置信度降序排列
+        # 恒返回 OcrResultList（空结果也返回空表）：调用方无需区分"空列表 / 结果列表"，
+        # 避免下游 ocr_texts.extract_all_numbers() 因类型不符抛 AttributeError 中断任务
         return OcrResultList(sorted(results, key=lambda r: r.score, reverse=True))
 
     def _ocr_results(self, element, **kwargs) -> List[OcrText]:
@@ -252,16 +265,34 @@ class Operationer:
             return []
 
         bool_debug: bool = kwargs.get("bool_debug", False)
+        # 截图异常按"无结果"返回（不再让 ROI 切片把异常抛到任务层）
         try:
-            results = self.recognizer.area_ocr(
-                self.device.screen_cap(), element, bool_debug)
+            scene_img = self.device.screen_cap()
+        except Exception as e:
+            self.logger.error(f"[{element.name}] OCR 前截图失败：{e}")
+            return []
+        if scene_img is None:
+            # 空截图仍交给识别器处理：真实识别器会在裁剪阶段安全失败（由下方 try 兜住），
+            # 而以"假识别器"驱动的验证脚本可忽略图像内容 → 保持既有测试语义
+            self.logger.warning(f"[{element.name}] OCR 前截图为空，仍尝试识别")
+        try:
+            results = self.recognizer.area_ocr(scene_img, element, bool_debug)
         except Exception as e:
             self.logger.error(f"[{element.name}] OCR 识别异常：{e}")
             return []
 
         # 识别明细压成**一条** DEBUG（原先 1+N 条，每次 OCR 都刷屏）；
         # 文本列表汇总由调用方 `_log_search_summary`（同为 DEBUG）输出
-        ocr_texts = [OcrText(text, box, score) for text, box, score in results]
+        ocr_texts = []
+        for item in results or []:
+            try:
+                text, box, score = item
+            except Exception as e:
+                # 单条结果结构异常不应打断整次识别（记 WARNING 后跳过该条）
+                self.logger.warning(
+                    f"[{element.name}] 跳过异常 OCR 结果项（{item!r}）：{e}")
+                continue
+            ocr_texts.append(OcrText(text, box, score))
         if ocr_texts:
             self.logger.debug(
                 f"[{element.name}] OCR 识别到 {len(ocr_texts)} 条："
@@ -744,7 +775,17 @@ class Operationer:
         return False
 
     def _text_matches(self, text: str, match_text: str, full_match: bool) -> bool:
-        """OCR 文本匹配：full_match=True 时全字匹配（去首尾空白后完全相等），否则子串包含"""
+        """OCR 文本匹配：full_match=True 时全字匹配（去首尾空白后完全相等），否则子串包含。
+
+        text / match_text 为空或非字符串时安全返回 False（不再抛 AttributeError/TypeError）。
+        """
+        if text is None:
+            text = ""
+        elif not isinstance(text, str):
+            text = str(text)
+        match_text = "" if match_text is None else str(match_text)
+        if not match_text:
+            return False
         if full_match:
             return text.strip() == match_text.strip()
         return match_text in text

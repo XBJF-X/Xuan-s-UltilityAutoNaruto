@@ -80,16 +80,18 @@ class GouMaiTiLi(BaseTask):
     @TransitionOn("购买体力")
     def _(self):
         sygmcs=self.operationer.ocr_recognize("剩余购买次数")
-        if sygmcs :
-            if sygmcs.is_greater_than(self.target_buy_times):
-            # if sygmcs[0].extract_numbers()[0]>self.target_buy_times:
+        remain = sygmcs.get_first_number() if sygmcs else None
+        if remain is not None:
+            if remain > self.target_buy_times:
                 self.operationer.click_and_wait("购买", wait_time=1.5)
-                self.logger.info(f"将再次购买 {sygmcs.extract_all_numbers()[0]-self.target_buy_times} 次")
+                self.logger.info(f"将再次购买 {remain - self.target_buy_times} 次")
                 return False
-            else:
-                self.logger.info("体力购买次数已足够")
+            self.logger.info("体力购买次数已足够")
         else:
-            raise StepFailedError("识别已招财次数失败，自动退出执行")
+            # OCR 未读出数字不再直接抛异常中断任务：记 WARNING 后按"已足够"收尾
+            self.logger.warning(
+                "未识别到[剩余购买次数]数字（识别文本=%s），按已足够处理",
+                sygmcs.texts() if sygmcs else [])
         self.operationer.click_and_wait("X")
         # 参数缺省视为开启：保持"购买流程结束后激活消耗体力"的既有语义
         if self.config.get_task_exe_param(

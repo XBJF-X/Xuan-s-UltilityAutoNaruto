@@ -44,7 +44,13 @@ class GouWuTianXin(BaseTask):
     @TransitionOn("购物甜心-内部")
     def _(self):
         djs=self.operationer.ocr_recognize("倒计时")
-        if djs and djs.extract_all_numbers()[0]<=2:
+        seconds = djs.get_first_number() if djs else None
+        if seconds is None:
+            # 读不到倒计时（切场景瞬间/识别失败）：维持原行为继续连点，记 WARNING 留痕
+            self.logger.warning(
+                "未识别到[倒计时]数字（识别文本=%s），继续连点",
+                djs.texts() if djs else [])
+        elif seconds <= 2:
             self.operationer.clicker.stop()
             return False
         self.operationer.clicker.start()

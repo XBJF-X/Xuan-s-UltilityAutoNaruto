@@ -170,8 +170,15 @@ class QingBaoZhan(BaseTask):
                     break
                 continue
             hydz=self.operationer.ocr_recognize("活跃度值")
-            if hydz:
-                self.hydz_num=hydz.extract_all_numbers()[0]
+            # 取数字统一走 get_first_number()：避免"识别到文本但没有数字"时抛 IndexError；
+            # 读不到时保持 self.hydz_num 不变（下游 _try_claim 已有 None 分支）
+            hydz_num = hydz.get_first_number() if hydz else None
+            if hydz_num is not None:
+                self.hydz_num=hydz_num
+            else:
+                self.logger.warning(
+                    "未识别到[活跃度值]数字（识别文本=%s）",
+                    hydz.texts() if hydz else [])
             self.config.set_task_exe_prog(self.task_name, "领取情报站活跃度", True)
             return False
         

@@ -62,6 +62,17 @@ _OCR_UPSCALE_MIN_SHORT_SIDE = 128   # ROI 短边低于该像素视为"小区域"
 _OCR_UPSCALE_TARGET_SIDE = 256      # 放大目标：短边放大到 256（实测识别最稳定）
 _OCR_UPSCALE_MAX_RATIO = 16.0       # 放大倍数上限，防止极小区域放大过猛（内存/耗时保护）
 
+# OCR 增强候选阶梯（2026-09-15 实测新增）：
+# "秘境探险-匹配/剩余挑战券数量" 实测（1600×900 截图）：原图链路只识别到 "过期"（数字被
+# ROI 左侧裁掉 + det 漏检），而 **Otsu 二值化** 变体识别出 "9"(0.998)；把 ROI 左移到数字区
+# 后原图链路本身即可 1.0 命中。故当**原图链路一个数字都没读出来**时，依次尝试下列增强级；
+# 任一级读出数字即采用"其与首级去重合并"的结果，全部无数字则回退首级结果——
+# 保证原本识别正常的场景 **结果与耗时完全不变**。
+ENABLE_OCR_ENHANCE = True
+_OCR_ENHANCE_LEVELS = ("otsu", "clahe", "expand")
+_OCR_ENHANCE_EXPAND_PX = 24   # expand 级：ROI 四周外扩像素（裁到画面内）
+_OCR_BOX_IOU_DEDUP = 0.5      # 合并时"同位置不同文本"的去重阈值（IoU）
+
 # 是否启用「按场景转移图裁剪待匹配场景集」（置 False 或构造参数 enable_pruning=False
 # 即回到"每帧全量扫描"的旧行为）。
 ENABLE_SCENE_PRUNING = True
@@ -113,12 +124,38 @@ def _is_unknown(result) -> bool:
     return isinstance(result, str) and result in UNKNOWN_SCENES
 
 
+def _box_iou(box_a: Sequence, box_b: Sequence) -> float:
+    """两个 `[x1, y1, x2, y2]` 框的交并比（IoU）；任一框非法时返回 0.0。
+
+    用于 OCR 增强级结果去重（同位置不同文本只保留高分条目）。
+    """
+    try:
+        ax1, ay1, ax2, ay2 = (float(box_a[0]), float(box_a[1]),
+                              float(box_a[2]), float(box_a[3]))
+        bx1, by1, bx2, by2 = (float(box_b[0]), float(box_b[1]),
+                              float(box_b[2]), float(box_b[3]))
+    except (TypeError, ValueError, IndexError, KeyError):
+        return 0.0
+    inter_w = min(ax2, bx2) - max(ax1, bx1)
+    inter_h = min(ay2, by2) - max(ay1, by1)
+    if inter_w <= 0 or inter_h <= 0:
+        return 0.0
+    inter = inter_w * inter_h
+    area_a = max(ax2 - ax1, 0.0) * max(ay2 - ay1, 0.0)
+    area_b = max(bx2 - bx1, 0.0) * max(by2 - by1, 0.0)
+    union = area_a + area_b - inter
+    if union <= 0:
+        return 0.0
+    return inter / union
+
+
 class Recognizer:
     """场景识别器：全量兜底的候选集裁剪识别（详见模块 docstring）。"""
 
     def __init__(self, scene_graph: SceneGraph, parent_logger: str | logging.Logger = "",
                  *, enable_pruning: bool = ENABLE_SCENE_PRUNING,
-                 enable_debug_log: bool = ENABLE_RECOGNITION_DEBUG_LOG):
+                 enable_debug_log: bool = ENABLE_RECOGNITION_DEBUG_LOG,
+                 enable_ocr_enhance: bool = ENABLE_OCR_ENHANCE):
         if isinstance(parent_logger, str):
             self.logger = logging.getLogger("识别器")
         else:
@@ -130,6 +167,8 @@ class Recognizer:
         self.enable_pruning = enable_pruning
         # 识别过程日志开关（默认关闭，见模块 docstring）
         self.enable_debug_log = bool(enable_debug_log)
+        # OCR 增强候选阶梯开关（默认开启；置 False 恢复"只跑原图一级"的旧行为）
+        self.enable_ocr_enhance = bool(enable_ocr_enhance)
         # OCR 识别器（惰性初始化，仅在首次使用 OCR 时加载模型）
         self._onnx_ocr = None
         # 本实例上一帧命中的场景名：调用方未传 hint 时的裁剪依据
@@ -419,23 +458,107 @@ class Recognizer:
         if self._onnx_ocr is None:
             self._onnx_ocr = get_shared_onnx_ocr()
 
-        # 裁剪识别区域
-        x, y = ocr_area.roi_x, ocr_area.roi_y
-        w, h = ocr_area.roi_width, ocr_area.roi_height
+        # 第 1 级：原图链路（与历史行为一致：原 ROI + 必要预放大 + 原图识别）
+        primary = self._ocr_roi_once(scene_img, ocr_area)
+
+        # 已读出数字（或关闭了增强）→ 直接返回：老场景结果与耗时完全不变
+        if not self.enable_ocr_enhance or self._has_digit(primary):
+            if self._debug_log_enabled(bool_debug):
+                self.logger.debug(
+                    f"[{ocr_area.name}] OCR 识别到 {len(primary)} 条文本")
+            return primary
+
+        # 增强候选阶梯：**仅在原图链路一个数字都没读出来**时启用（UI 微调 / 极小字体兜底）
+        for level in _OCR_ENHANCE_LEVELS:
+            try:
+                enhanced = self._ocr_roi_once(
+                    scene_img, ocr_area,
+                    region=(self._ocr_expand_region(scene_img, ocr_area)
+                            if level == "expand" else None),
+                    preprocess=("" if level == "expand" else level))
+            except Exception as e:
+                # 单级失败不影响其它增强级，也不影响首级结果（任务继续执行）
+                self.logger.warning(
+                    f"[{ocr_area.name}] OCR 增强级[{level}]识别失败：{e}")
+                continue
+            if not self._has_digit(enhanced):
+                continue
+            merged = self._merge_ocr_results(primary, enhanced)
+            if self._debug_log_enabled(bool_debug):
+                self.logger.debug(
+                    f"[{ocr_area.name}] OCR 增强级[{level}]读出数字，"
+                    f"去重合并后 {len(merged)} 条")
+            return merged
+
+        # 增强级都没读出数字 → 回退首级结果（文本型元素的匹配行为保持不变）
+        if self._debug_log_enabled(bool_debug):
+            self.logger.debug(
+                f"[{ocr_area.name}] OCR 增强级未读出数字，回退首级结果")
+        return primary
+
+    @staticmethod
+    def _has_digit(results) -> bool:
+        """识别结果中是否含阿拉伯数字（决定是否需要启用增强级）。"""
+        return any(any(ch.isdigit() for ch in text)
+                   for text, _box, _score in results)
+
+    def _ocr_expand_region(self, scene_img, ocr_area: Element):
+        """`expand` 增强级的裁剪区域：原 ROI 四周外扩（裁到画面内）。"""
         scene_h, scene_w = scene_img.shape[:2]
-        x_end = min(x + w, scene_w)
-        y_end = min(y + h, scene_h)
-        x_start = max(x, 0)
-        y_start = max(y, 0)
+        x0 = max(ocr_area.roi_x - _OCR_ENHANCE_EXPAND_PX, 0)
+        y0 = max(ocr_area.roi_y - _OCR_ENHANCE_EXPAND_PX, 0)
+        x1 = min(ocr_area.roi_x + ocr_area.roi_width + _OCR_ENHANCE_EXPAND_PX,
+                 scene_w)
+        y1 = min(ocr_area.roi_y + ocr_area.roi_height + _OCR_ENHANCE_EXPAND_PX,
+                 scene_h)
+        return x0, y0, x1, y1
+
+    def _ocr_roi_once(self, scene_img, ocr_area: Element,
+                      region: Optional[Tuple[int, int, int, int]] = None,
+                      preprocess: str = "") -> List:
+        """执行"一级"OCR：裁剪（可按 region 覆盖）→ 预处理 → 预放大 → 识别 → 过滤 → 坐标还原。
+
+        Args:
+            scene_img(np.ndarray): 原图（BGR 截图）
+            ocr_area(Element): OCR_AREA 元素（提供 ROI / ocr_min_score）
+            region(Optional[Tuple[int, int, int, int]]): 覆盖裁剪区域
+                (x_start, y_start, x_end, y_end)，用于增强候选（如 ROI 外扩）；None 用元素 ROI
+            preprocess(str): 预处理方式，""=原图 / "otsu"=Otsu 二值化 / "clahe"=CLAHE
+
+        Returns:
+            List[Tuple[str, List[int], float]]：[(文本, [x1, y1, x2, y2], 置信度)]，坐标为原图
+            坐标；ROI 非法、识别异常或无结果时返回 []
+        """
+        if region is None:
+            x_start, y_start = ocr_area.roi_x, ocr_area.roi_y
+            x_end = ocr_area.roi_x + ocr_area.roi_width
+            y_end = ocr_area.roi_y + ocr_area.roi_height
+        else:
+            x_start, y_start, x_end, y_end = region
+        scene_h, scene_w = scene_img.shape[:2]
+        x_end = min(x_end, scene_w)
+        y_end = min(y_end, scene_h)
+        x_start = max(x_start, 0)
+        y_start = max(y_start, 0)
         if x_end <= x_start or y_end <= y_start:
             self.logger.warning(f"[{ocr_area.name}] ROI 区域非法，跳过 OCR 识别")
             return []
         roi_img = scene_img[y_start:y_end, x_start:x_end]
+        if roi_img is None or roi_img.size == 0:
+            self.logger.warning(f"[{ocr_area.name}] ROI 裁剪为空，跳过 OCR 识别")
+            return []
         # png 底图/截图可能带 alpha 通道（4 通道 BGRA），而 OCR 检测预处理
         # NormalizeImage 仅支持 3 通道（mean/std 为 1x1x3），4 通道会触发
         # numpy 广播错误（(H,W,4) - (1,1,3)）导致 OCR 识别失败，统一转 3 通道 BGR。
         if roi_img.ndim == 3 and roi_img.shape[2] == 4:
             roi_img = cv2.cvtColor(roi_img, cv2.COLOR_BGRA2BGR)
+        # 单通道灰度输入（如灰度底图）统一转 3 通道，避免模型侧形状不匹配
+        elif roi_img.ndim == 2:
+            roi_img = cv2.cvtColor(roi_img, cv2.COLOR_GRAY2BGR)
+        # 增强级预处理（原图级 preprocess="" 时不做事）
+        if preprocess:
+            roi_img = self._preprocess_roi(roi_img, preprocess)
+
 
         # 过小区域识别前放大：短边 < 128px 的 ROI 直接送模型时，det 内部 padding + 放大
         # 会导致文字模糊、检测不到文本（表现为"识别不到且极快返回"）。
@@ -464,22 +587,73 @@ class Recognizer:
         min_score = getattr(ocr_area, "ocr_min_score", 0.5)
         area_results = []
         for item in results:
-            text = item.get("text", "")
-            score = float(item.get("score", 0.0))
-            if score < min_score:
+            try:
+                # 框格式遵循项目惯例：[[x1, y1], [x2, y2], [x3, y3], [x4, y4]]
+                text = item.get("text", "")
+                score = float(item.get("score", 0.0))
+                box = list(item.get("box", []) or [])
+            except Exception as e:
+                # 单条结果结构异常不应打断整次识别（记 WARNING 后跳过该条）
+                self.logger.warning(
+                    f"[{ocr_area.name}] 跳过异常 OCR 结果项（{item!r}）：{e}")
                 continue
-            # 框格式遵循项目惯例：[[x1, y1], [x2, y2], [x3, y3], [x4, y4]]
-            box = item.get("box", [])
+            if score < min_score or not box:
+                continue
             xs = [float(p[0]) / up_scale for p in box]
             ys = [float(p[1]) / up_scale for p in box]
             area_results.append((text, [
                 x_start + int(min(xs)), y_start + int(min(ys)),
                 x_start + int(max(xs)), y_start + int(max(ys))
             ], score))
-
-        if self._debug_log_enabled(bool_debug):
-            self.logger.debug(f"[{ocr_area.name}] OCR 识别到 {len(area_results)} 条文本")
         return area_results
+
+    @staticmethod
+    def _preprocess_roi(roi_img, mode: str):
+        """增强级预处理：`otsu`=Otsu 二值化 / `clahe`=CLAHE 局部对比度增强。
+
+        两者都把结果统一成 3 通道 BGR 再送模型（与推理侧输入约定一致）。
+
+        实测依据（2026-09-15，秘境探险-匹配/剩余挑战券数量）：同一 ROI 下原图与 CLAHE
+        都只读到 "过期"，Otsu 二值化可稳定读出数字 "9"(0.998)。
+        """
+        gray = (roi_img if roi_img.ndim == 2
+                else cv2.cvtColor(roi_img, cv2.COLOR_BGR2GRAY))
+        if mode == "otsu":
+            _threshold, binary = cv2.threshold(
+                gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+            return cv2.cvtColor(binary, cv2.COLOR_GRAY2BGR)
+        if mode == "clahe":
+            enhanced = cv2.createCLAHE(
+                clipLimit=3.0, tileGridSize=(8, 8)).apply(gray)
+            return cv2.cvtColor(enhanced, cv2.COLOR_GRAY2BGR)
+        raise ValueError(f"未知的 OCR 预处理方式：{mode}")
+
+    @staticmethod
+    def _merge_ocr_results(primary, enhanced) -> List:
+        """合并"原图级"与"增强级"识别结果（两者坐标同为原图量纲）。
+
+        - 文本归一化（去空白）相同：保留置信度更高的条目；
+        - 框重叠 IoU >= `_OCR_BOX_IOU_DEDUP` 但文本不同（实测如 "过期" / "天过期"）：
+          保留高分条目，避免增强级噪声污染调用方的文本匹配；
+        - 其余条目追加；最终按置信度降序返回（与 `ocr_recognize` 的排序语义一致）。
+        """
+        merged = list(primary)
+        for text, box, score in enhanced:
+            key = "".join(str(text).split())
+            matched = False
+            for index, (old_text, old_box, old_score) in enumerate(merged):
+                same_text = key == "".join(str(old_text).split())
+                if not same_text and _box_iou(box, old_box) < _OCR_BOX_IOU_DEDUP:
+                    continue
+                if score > old_score:
+                    merged[index] = (text, box, score)
+                matched = True
+                break
+            if not matched:
+                merged.append((text, box, score))
+        merged.sort(key=lambda item: item[2], reverse=True)
+        return merged
+
 
     def _record_match_debug(self, ctx: _MatchContext, name: str, **fields) -> None:
         """合并记录元素匹配调试信息（替代原先 6 处重复的 try/except 写字典）。"""

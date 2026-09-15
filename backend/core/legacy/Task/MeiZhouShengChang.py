@@ -72,19 +72,23 @@ class MeiZhouShengChang(MeiRiShengChang):
         self.bool_click = False
         self.operationer.clicker.stop()
         scs=self.operationer.ocr_recognize("本周胜场数")
-        if scs:
-            if scs.is_equal_to(10) or  scs.is_greater_than(10):
-
+        wins = scs.get_first_number() if scs else None
+        if wins is None:
+            # 读不到数字：不再走严格比较（旧 is_equal_to/is_greater_than 会抛 ValueError）
+            self.logger.warning(
+                "未识别到[本周胜场数]数字（识别文本=%s），按未满胜场处理",
+                scs.texts() if scs else [])
+        elif wins >= 10:
         # if self.operationer.detect_element("满胜场"):
-                self.logger.info("每周胜场已满")
-                self.checked = True
-                self.finished = True
-                for i in ["2", "5", "7", "10"]:
-                    self.operationer.click_and_wait(f"胜场{i}场", wait_time=0.5)
-                    self.operationer.click_and_wait(f"胜场{i}场", wait_time=0.5)
-                self.logger.info("每周胜场奖励已领取")
-                self.operationer.click_and_wait("X", click_times=2)
-                raise TaskCompleted("任务执行完成")
+            self.logger.info("每周胜场已满")
+            self.checked = True
+            self.finished = True
+            for i in ["2", "5", "7", "10"]:
+                self.operationer.click_and_wait(f"胜场{i}场", wait_time=0.5)
+                self.operationer.click_and_wait(f"胜场{i}场", wait_time=0.5)
+            self.logger.info("每周胜场奖励已领取")
+            self.operationer.click_and_wait("X", click_times=2)
+            raise TaskCompleted("任务执行完成")
         self.checked = True
         self.operationer.click_and_wait("X")
         return False
