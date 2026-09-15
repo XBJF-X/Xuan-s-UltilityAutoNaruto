@@ -6,6 +6,7 @@ from typing import List, Tuple
 import uiautomator2
 
 from backend.core.legacy.Control import Control, ControlMode
+from backend.core.legacy.Control import touch_residue
 from backend.core.legacy.Control.U2 import U2
 
 MINITOUCH_MAX_LIFETIME = 180
@@ -131,6 +132,30 @@ class Clicker:
         self.running = False
         self.logger.debug("所有点击线程已停止")
 
+    def wait_stopped(self, timeout: float = 3.0) -> bool:
+        """等待所有点击线程真正退出（不再发包）。
+
+        停止调度器时必须先等连点线程收尾、再释放控制实例：否则在途的
+        ``multi_tap`` 批次会被"抬起命令 + 杀进程"打断，设备端 slot 永久停在
+        按下态（v0.17.46 修复的根因之一）。
+
+        :param timeout: 最长等待秒数
+        :return: True=线程已全部退出
+        """
+        deadline = time.perf_counter() + max(float(timeout), 0.0)
+        while True:
+            with self._threads_lock:
+                self._threads = [t for t in self._threads if t.is_alive()]
+                alive = len(self._threads)
+            if alive == 0:
+                self.running = False
+                return True
+            if time.perf_counter() >= deadline:
+                self.running = True
+                self.logger.warning(f"等待连点线程退出超时，仍有 {alive} 个线程在运行")
+                return False
+            time.sleep(0.05)
+
     def update_coordinates(self, coordinates: List[Tuple[int, int]]):
         """更新坐标列表（需要外部先调用 stop，再调用 start 才能生效）"""
         with self._coord_lock:
@@ -154,6 +179,50 @@ class Clicker:
         finally:
             self.logger.debug(f"坐标 ({x},{y}) 的点击线程结束")
 
+    def _refresh_minitouch_instance(self, control_manager) -> bool:
+        """刷新 MiniTouch 实例（防模拟器杀服务 + 降低高频启停开销）。
+
+        顺序至关重要：**先抬起触点、再新建实例**。``create_control_instance()``
+        内部的 ``minidevice.MiniTouchCore`` 构造会 kill 掉设备端 minitouch 进程，
+        旧连接在其后发 ``u`` 必定失败（WinError 10053），此刻仍按下的 slot 会
+        永久残留在设备端（v0.17.46 修复）。
+
+        :return: True=实例已刷新且触点已确认抬起
+        """
+        old_control = control_manager.get_current_control()
+
+        lifted = True
+        if old_control is not None:
+            if hasattr(old_control, "up_all_contacts"):
+                try:
+                    lifted = bool(old_control.up_all_contacts())
+                except Exception as e:
+                    lifted = False
+                    self.logger.warning(f"刷新前抬起触点失败: {e}")
+            else:
+                # 无法在旧实例上抬起（不支持该接口）→ 交给裸 evdev 兜底
+                lifted = False
+
+        new_control = control_manager.create_control_instance()
+        if new_control is None:
+            self.logger.warning("MiniTouch 刷新失败，继续使用旧实例")
+        else:
+            replaced = control_manager.replace_current_control(new_control)
+            self.last_minitouch_create_time = time.perf_counter()
+            if replaced and replaced is not new_control:
+                try:
+                    replaced.release()
+                except Exception as e:
+                    self.logger.warning(f"释放旧 MiniTouch 实例失败: {e}")
+
+        if not lifted:
+            if not touch_residue.clean_stale_contacts(
+                    self.device_serial, logger=self.logger,
+                    reason="MiniTouch 刷新前抬起失败"):
+                self.logger.warning(
+                    "刷新前抬起触点失败且兜底清理未成功，设备端可能残留按下中的触点")
+        return lifted
+
     def _minitouch_click_worker(self, coords: List[Tuple[int, int]]):
         """
         MiniTouch 专用：多点同时点击工作线程
@@ -162,18 +231,8 @@ class Clicker:
         try:
             control_manager = self.operationer.device.control_manager
             if time.perf_counter() - self.last_minitouch_create_time > MINITOUCH_MAX_LIFETIME:
-                old_control = control_manager.get_current_control()
-                new_control = control_manager.create_control_instance()
-                if new_control is not None:
-                    old_control = control_manager.replace_current_control(new_control)
-                    self.last_minitouch_create_time = time.perf_counter()
-                    if old_control and old_control is not new_control:
-                        try:
-                            old_control.release()
-                        except Exception as e:
-                            self.logger.warning(f"释放旧 MiniTouch 实例失败: {e}")
-                else:
-                    self.logger.warning("MiniTouch 刷新失败，继续使用旧实例")
+                if not self._refresh_minitouch_instance(control_manager):
+                    self.logger.warning("MiniTouch 刷新期间触点未确认抬起，继续执行连点")
 
             control = control_manager.get_current_control()
             if not control or not control.ready:
@@ -205,9 +264,14 @@ class Clicker:
         except Exception as e:
             self.logger.error(f"创建 MiniTouch 实例失败: {e}")
         finally:
+            # 无条件尝试抬起：实例可能已被 release/替换（ready=False），旧实现会
+            # 直接跳过这一步，触点就永久留在设备端（v0.17.46 修复）
             try:
-                if control and control.ready:
-                    control.up_all_contacts()
+                if control is not None and hasattr(control, "up_all_contacts"):
+                    if not control.up_all_contacts():
+                        self.logger.warning(
+                            "抬起全部触点未成功，设备端可能残留按下中的触点；"
+                            "若出现「一次点击触发多个坐标」的异常，请重启模拟器后再反馈")
             except Exception as e:
                 self.logger.warning(f"抬起所有触点失败: {e}")
             self.logger.debug("MiniTouch 多点连点线程结束")

@@ -63,6 +63,17 @@ class ControlManager:
             self.logger.info(f"已经是[{new_mode.name}]模式")
             return
 
+        # 先抬起旧实例的触点：``create_control_instance()`` 内部的 MiniTouchCore
+        # 构造会 kill 设备端 minitouch 进程，之后旧连接再抬必定失败，此刻仍按下的
+        # slot 会永久残留（v0.17.46 修复）
+        with self._control_lock:
+            previous = self.current_control
+        if previous is not None and hasattr(previous, "up_all_contacts"):
+            try:
+                previous.up_all_contacts()
+            except Exception as e:
+                self.logger.warning(f"切换控制模式前抬起触点失败: {e}")
+
         # 先创建新实例，再原子替换，避免 current_control 短暂为空
         old_mode = self.control_mode
         self.control_mode = new_mode

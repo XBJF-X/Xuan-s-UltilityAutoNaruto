@@ -229,6 +229,28 @@ function confirmSerial() {
   serialModalShow.value = false;
 }
 
+// 清理残留触点：连点过程中设备端 minitouch 进程若在触点仍按下时被终止，evdev 的
+// MT slot 不会自动抬起，表现为「点一下屏幕就同时触发所有预设连点坐标」且只能重启
+// 模拟器。这里用裸 evdev 抬起序列清除（不影响其他设置）。
+const cleanLoading = ref(false);
+async function cleanStaleContacts() {
+  cleanLoading.value = true;
+  try {
+    const res = await deviceApi.cleanStaleContacts(props.configId);
+    if (res.data?.had_stale) {
+      message.success("已清理残留触点（检测到未结束的触摸手势）");
+    } else {
+      message.success("未检测到残留触点，已完成一次清理");
+    }
+  } catch (e: any) {
+    message.error(
+      `清理残留触点失败：${e?.response?.data?.detail || e?.message || e}`,
+    );
+  } finally {
+    cleanLoading.value = false;
+  }
+}
+
 // 键位配置弹窗（还原 KeyMapConfiguration.py）
 const keymapModalShow = ref(false);
 const keymapLoading = ref(false);
@@ -529,12 +551,22 @@ function confirmKeymap() {
             >
             <n-button
               size="small"
+              :loading="cleanLoading"
+              @click="cleanStaleContacts"
+              >清理残留触点</n-button
+            >
+            <n-button
+              size="small"
               type="primary"
               @click="confirmSerial"
               :disabled="!selectedSerial"
               >确定</n-button
             >
           </div>
+        </div>
+        <div class="serial-hint">
+          连点过程中若模拟器出现「点一下同时触发多个连点坐标」，点「清理残留触点」
+          即可恢复，无需重启模拟器
         </div>
       </n-spin>
     </n-modal>
@@ -711,6 +743,12 @@ function confirmKeymap() {
   flex-direction: column;
   gap: 8px;
   justify-content: flex-end;
+}
+.serial-hint {
+  margin-top: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #888;
 }
 .keymap-scroll {
   max-height: 60vh;

@@ -9,6 +9,7 @@ from minidevice.utils.command_builder_utils import CommandBuilder
 
 from backend.core.legacy.Config import Config
 from backend.core.legacy.Control import Control, InvalidResolution
+from backend.core.legacy.Control import touch_residue
 from backend.core.legacy.Control.adb_bootstrap import ensure_adb_device
 
 # 初始化重试：程序退出时会 adb kill-server，下次首次连接时 adb server 冷启动、
@@ -18,6 +19,12 @@ _INIT_ATTEMPTS = 3
 # 每次尝试前的 adb 就绪等待时长（秒），逐次缩短避免长时间阻塞调度器启动
 _INIT_WAIT_TIMEOUTS = (15.0, 6.0, 6.0)
 _INIT_RETRY_INTERVAL = 1.5
+
+# 释放前「抬起全部触点 → 关闭 socket/杀进程」之间的等待时长（秒）。
+# 抬起命令由设备端 minitouch 逐条执行，紧接着杀进程会让尚未处理的命令随进程一起
+# 消失，evdev 的 MT slot 就会永久停在按下态（随后任何一次点击都会同时触发这些
+# 坐标，只能重启模拟器）——v0.17.46 修复。
+_RELEASE_LIFT_SETTLE = 0.15
 
 
 class ArchType(Enum):
@@ -121,6 +128,30 @@ class MiniTouch(Control):
     def _is_disconnect_error(self, exc: Exception) -> bool:
         return getattr(exc, "winerror", None) == 10053 or "10053" in str(exc)
 
+    def _lift_contacts_on(self, core) -> bool:
+        """在指定核心上抬起全部触点。
+
+        必须由**按下触点的那个连接**发出才有效：minitouch 只对自己记录过按下的
+        slot 执行 ``u``，换实例/换连接再抬是空操作（实测）。无核心时视为成功。
+        """
+        if core is None:
+            return True
+        try:
+            self._send_up_all_contacts(core)
+            return True
+        except Exception as e:
+            if self._is_disconnect_error(e):
+                self.logger.warning(
+                    f"抬起触点失败（连接已断开），设备端可能残留按下中的触点: {e}")
+            else:
+                self.logger.warning(f"抬起触点失败，设备端可能残留按下中的触点: {e}")
+            return False
+
+    def _cleanup_stale_contacts(self, reason: str) -> bool:
+        """裸 evdev 兜底清理残留触点（不依赖 minitouch 内部状态）。"""
+        return touch_residue.clean_stale_contacts(
+            self.serial, logger=self.logger, reason=reason)
+
     def _reconnect(self):
         with self._core_lock:
             if self._released or self._shutdown_requested.is_set():
@@ -128,6 +159,10 @@ class MiniTouch(Control):
             try:
                 self.logger.info("MiniTouch 连接异常，尝试重建控制实例...")
                 old_core = self._mt_core
+                # 先抬起、再重建：``_build_core()`` 内部的 MiniTouchCore 构造会
+                # kill 掉设备端 minitouch 进程，旧连接的抬起命令届时必定失败
+                # （WinError 10053），按下中的 slot 会永久残留。
+                old_lifted = self._lift_contacts_on(old_core)
                 self._build_core()
                 if self._shutdown_requested.is_set():
                     try:
@@ -138,17 +173,14 @@ class MiniTouch(Control):
                     self._mt_core = None
                     self._released = True
                     return False
-                try:
-                    core = self._mt_core
-                    if core:
-                        self._send_up_all_contacts(core)
-                except Exception:
-                    pass
                 if old_core:
                     try:
                         old_core.stop()
                     except Exception:
                         pass
+                if not old_lifted:
+                    # 旧进程已死/连接已断，minitouch 抬不起来 → 裸 evdev 兜底
+                    self._cleanup_stale_contacts("重连时旧连接抬起失败")
                 self.logger.info("MiniTouch 重建成功")
                 return True
             except Exception as e:
@@ -188,6 +220,12 @@ class MiniTouch(Control):
         return int(self.screen_size[0] * 9) == int(self.screen_size[1] * 16)
 
     def release(self):
+        """释放控制实例：抬起全部触点 → 关闭 socket → 终止设备端 minitouch。
+
+        整段在 ``_core_lock`` 内完成，避免与在途 ``multi_tap`` 争用同一 socket；
+        抬起与 kill 之间留 ``_RELEASE_LIFT_SETTLE`` 让设备端把抬起命令执行完，
+        否则 slot 会永久停在按下态。
+        """
         with self._core_lock:
             if self._released:
                 return
@@ -195,28 +233,32 @@ class MiniTouch(Control):
             self._released = True
             core = self._mt_core
             self._mt_core = None
-        if core:
-            try:
-                self._send_up_all_contacts(core)
-                core.stop()
-            except Exception as e:
-                if self._is_disconnect_error(e):
-                    self.logger.debug(f"MiniTouch 连接已断开，忽略释放过程中的异常: {e}")
-                else:
+            lifted = self._lift_contacts_on(core)
+            if core is not None:
+                if lifted:
+                    time.sleep(_RELEASE_LIFT_SETTLE)
+                try:
+                    core.stop()
+                except Exception as e:
                     self.logger.warning(f"停止 MiniTouch 服务失败: {e}")
+        if not lifted:
+            # 抬起没成功：触点可能仍按在设备上（此后点击会同时触发多个坐标）
+            self._cleanup_stale_contacts("释放控制实例时抬起失败")
         self.logger.info("MiniTouch 已完全释放")
 
-    def up_all_contacts(self):
+    def up_all_contacts(self) -> bool:
+        """抬起全部触点；失败时用裸 evdev 兜底清理。
+
+        注意：只有「按下触点的那个连接」发出的 ``u`` 才有效，所以这里必须在
+        当前核心上发送（而不是新建实例后发送）。
+
+        :return: True=触点已抬起（或兜底清理成功）
+        """
         with self._core_lock:
-            core = self._mt_core
-        if core:
-            try:
-                self._send_up_all_contacts(core)
-            except Exception as e:
-                if self._is_disconnect_error(e):
-                    self.logger.debug(f"MiniTouch 连接已断开，忽略抬起触点异常: {e}")
-                else:
-                    self.logger.warning(f"停止 MiniTouch 服务失败: {e}")
+            lifted = self._lift_contacts_on(self._mt_core)
+        if not lifted:
+            lifted = self._cleanup_stale_contacts("抬起全部触点失败")
+        return lifted
 
     # ==================== 核心触摸方法（直接转发minidevice实现） ====================
     def click(self, x: int, y: int, duration: int = 100):

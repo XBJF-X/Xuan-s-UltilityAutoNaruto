@@ -85,6 +85,10 @@ export const deviceApi = {
   serialList: (configId: string) => client.get(`/device/${configId}/serial-list`),
   // 重启 ADB 服务并重新枚举设备，返回 { ok: boolean, serials: string[] }
   restartAdb: (configId: string) => client.post(`/device/${configId}/adb-restart`),
+  // 清理设备端残留触点（连点中途被杀进程导致 evdev slot 卡在按下态），
+  // 返回 { ok, serial, had_stale, before, after }，无需重启模拟器
+  cleanStaleContacts: (configId: string) =>
+    client.post(`/device/${configId}/clean-stale-contacts`),
 }
 
 // ===== 工具 API =====

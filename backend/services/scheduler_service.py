@@ -395,6 +395,62 @@ class SchedulerService:
         self.logger.info("\n".join(lines))
 
     # ================================================================
+    # 残留触点（粘滞多点触摸）自检 / 自愈
+    # ================================================================
+
+    def _device_serial(self) -> str:
+        """当前配置的串口（供残留触点自检/清理使用，取不到时返回空串）。"""
+        serial = ""
+        try:
+            serial = self.config.get_config("串口", "") or ""
+        except Exception:
+            serial = ""
+        if not serial:
+            device = getattr(self, "device", None)
+            if device is not None:
+                try:
+                    control = device.control_manager.get_current_control()
+                except Exception:
+                    control = None
+                serial = getattr(control, "serial", "") or ""
+        return str(serial).strip().replace("：", ":")
+
+    def _ensure_no_stale_contacts(self, reason: str) -> bool:
+        """设备端残留触点自检 + 裸 evdev 兜底清理（v0.17.46）。
+
+        连点期间设备端 minitouch 进程一旦在「触点仍按下」时被终止，evdev 的
+        MT slot 不会自动抬起，此后任何一次点击都会把残留坐标一并上报
+        （表现为「点一下同时触发所有预设连点坐标」，旧版本只能重启模拟器）。
+        """
+        serial = self._device_serial()
+        if not serial:
+            self.logger.debug(f"残留触点自检跳过（{reason}）：未配置串口")
+            return False
+        from backend.core.legacy.Control import touch_residue
+        try:
+            return touch_residue.ensure_no_stale_contacts(
+                serial, logger=self.logger, reason=reason)
+        except Exception as e:
+            self.logger.warning(f"残留触点自检异常（忽略，继续调度流程）: {e}")
+            return False
+
+    def _wait_clicker_stopped(self, task, timeout: float = 3.0) -> bool:
+        """等待任务内的连点线程真正退出。
+
+        停止调度器时必须先让连点线程收尾、再释放控制实例：否则在途的
+        ``multi_tap`` 批次会被「抬起命令 + 杀进程」打断，设备端 slot 永久停在
+        按下态（v0.17.46 修复的根因之一）。
+        """
+        clicker = getattr(getattr(task, "operationer", None), "clicker", None)
+        if clicker is None or not hasattr(clicker, "wait_stopped"):
+            return True
+        try:
+            return bool(clicker.wait_stopped(timeout))
+        except Exception as e:
+            self.logger.warning(f"等待连点线程退出出错（继续停止流程）: {e}")
+            return False
+
+    # ================================================================
     # 公开接口
     # ================================================================
 
@@ -438,6 +494,11 @@ class SchedulerService:
             self.logger.warning("设备未就绪，请检查[助手设置]中串口和截图模式方案设置")
             self.running = False
             return False
+
+        # 残留触点自检/自愈（v0.17.46）：上一轮连点若在触点按下期间被终止，设备端
+        # evdev 的 MT slot 会永久停在按下态（此后任何一次点击都会同时触发这些坐标，
+        # 只能重启模拟器），启动前先检测并清理，避免异常状态被继承到本轮。
+        self._ensure_no_stale_contacts("调度器启动前自检")
 
         # 启动前环境检测：截图路径文件 / 实例 / 分辨率16:9 / 后台保活，不通过则提示且不启动
         env_ok, env_msgs = self._pre_start_environment_check()
@@ -555,8 +616,14 @@ class SchedulerService:
         self.logger.info("正在停止调度器...")
 
         # 停止所有正在运行的任务（与原版一致）
-        for task in self.task_queue.get_tasks_by_status(0):
+        running_tasks = self.task_queue.get_tasks_by_status(0)
+        for task in running_tasks:
             self.executor.stop_task(task)
+        # 先等连点线程真正退出，再释放控制实例（v0.17.46）：否则在途的 multi_tap
+        # 批次会被「抬起命令 + 杀进程」打断，设备端 slot 永久停在按下态，
+        # 之后任何一次点击都会同时触发所有预设连点坐标。
+        for task in running_tasks:
+            self._wait_clicker_stopped(task)
 
         # 停止超时监视器
         if self.watchdog:
@@ -576,6 +643,9 @@ class SchedulerService:
                 except Exception:
                     pass
             self.device = None
+        # 释放后再自检一次：释放过程中若抬起失败（连接已断/进程已死），
+        # 这里用裸 evdev 兜底清除残留触点，避免残留被带到下一轮（v0.17.46）
+        self._ensure_no_stale_contacts("调度器停止后自检")
         if self.operationer:
             self.operationer.stop()
             self.operationer = None

@@ -293,3 +293,43 @@ async def restart_adb(config_id: str):
     ok = restart_adb_server()
     serials = get_adb_serials()
     return {"ok": ok, "serials": serials}
+
+
+@router.post("/{config_id}/clean-stale-contacts")
+async def clean_stale_contacts(config_id: str):
+    """清理设备端残留触点（粘滞多点触摸）。
+
+    连点过程中设备端 minitouch 进程若在「触点仍按下」时被终止（例如用户触摸屏幕
+    后模拟器杀服务、或连点刷新时先杀进程后抬起），evdev 的 MT slot 不会自动抬起，
+    之后任何一次点击都会把残留坐标一并上报——表现为「点一下屏幕就同时触发所有
+    预设连点坐标」，且重启前一直存在。本接口用裸 evdev 抬起序列清除，无需重启
+    模拟器（V0.17.46 起调度器启停也会自动做这件事）。
+    """
+    cfg = config_service.get_config(config_id)
+    if cfg is None:
+        raise HTTPException(status_code=404, detail="配置不存在")
+
+    serial = str(cfg.get_config("串口", "") or "").strip().replace("：", ":")
+    if not serial:
+        raise HTTPException(status_code=400, detail="未配置串口，无法清理残留触点")
+
+    from backend.core.legacy.Control import touch_residue
+
+    before = touch_residue.detect_touch_state(serial, logger=logger)
+    cleaned = touch_residue.clean_stale_contacts(
+        serial, logger=logger, reason="用户手动清理残留触点")
+    after = touch_residue.detect_touch_state(serial, logger=logger)
+
+    if not cleaned:
+        raise HTTPException(
+            status_code=500,
+            detail="清理失败：请确认模拟器已启动且 adb 连接正常（可先点「重启 Adb」）")
+
+    return {
+        "ok": True,
+        "serial": serial,
+        "had_stale": bool(before.get("active")),
+        "before": before,
+        "after": after,
+    }
+
