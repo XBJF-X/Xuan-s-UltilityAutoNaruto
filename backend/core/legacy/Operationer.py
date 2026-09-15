@@ -235,6 +235,7 @@ class Operationer:
         Returns:
             List[OcrText]: 识别结果列表，按置信度从高到低排序；若无结果则返回空列表
         """
+        self.screen_save_func(self.task_name)
         results = self._ocr_results(element, **kwargs)
         # 恒返回 OcrResultList（空结果也返回空表）：调用方无需区分"空列表 / 结果列表"，
         # 避免下游 ocr_texts.extract_all_numbers() 因类型不符抛 AttributeError 中断任务
