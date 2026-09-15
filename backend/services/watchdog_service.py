@@ -28,10 +28,17 @@
     超时检测-截图失败上限    int   默认 3（连续失败次数达到即判定模拟器卡死）
     超时检测-升级窗口秒      int   默认 300（重启游戏后该时长内再次卡死则升级为模拟器卡死）
     超时检测-恢复宽限秒      int   默认 60（处理流程执行完毕后的检测宽限期）
+
+任务级覆盖（BaseTask 类属性，优先级高于上表全局项；见 BaseTask.scene_stuck_seconds）：
+    scene_stuck_seconds      float/None  任务类可覆盖「场景停滞」阈值：
+                            >0 = 该任务的停滞秒数；<=0 = 该任务不做场景停滞判定；
+                            None（默认）= 沿用全局「超时检测-场景停滞秒数」。
+                            仅影响场景停滞，不影响画面静止类判定。
 """
 from __future__ import annotations
 
 import logging
+import math
 import threading
 import time
 from dataclasses import dataclass, field
@@ -46,6 +53,11 @@ if TYPE_CHECKING:
     from backend.core.legacy.Device import Device
     from backend.core.legacy.Operationer import Operationer
     from backend.core.legacy.Task.BaseTask import BaseTask
+
+
+# 场景停滞判定的默认阈值（秒）：全局配置项「超时检测-场景停滞秒数」的缺省值，
+# 也是任务类属性 BaseTask.scene_stuck_seconds 为 None（未覆盖）时的兜底。
+DEFAULT_SCENE_STUCK_SECONDS = 180.0
 
 
 class FreezeLevel(IntEnum):
@@ -122,6 +134,9 @@ class TimeoutWatchdog:
         # ---- 事件历史（供排查，仅保留最近 50 条）----
         self._event_history: List[FreezeEvent] = []
 
+        # ---- 一次性告警去重（配置/任务属性每轮检测都会读，避免刷屏）----
+        self._warned_keys: set = set()
+
     # ================================================================
     # 配置读取（每次检测时读取，支持运行时调整）
     # ================================================================
@@ -132,6 +147,67 @@ class TimeoutWatchdog:
             return default if value is None else value
         except Exception:
             return default
+
+    def _warn_once(self, key: str, message: str):
+        """同一 key 只告警一次（`attach_task` 重置）"""
+        with self._lock:
+            if key in self._warned_keys:
+                return
+            self._warned_keys.add(key)
+        self.logger.warning(message)
+
+    def _global_scene_stuck_seconds(self) -> float:
+        """全局「超时检测-场景停滞秒数」（配置值非法时告警一次并回退默认）"""
+        raw = self._cfg("超时检测-场景停滞秒数", DEFAULT_SCENE_STUCK_SECONDS)
+        try:
+            return float(raw)
+        except (TypeError, ValueError):
+            self._warn_once(
+                "global-scene-stuck-invalid",
+                f"配置项[超时检测-场景停滞秒数]取值非法（{raw!r}），"
+                f"已回退默认 {DEFAULT_SCENE_STUCK_SECONDS:.0f} 秒")
+            return DEFAULT_SCENE_STUCK_SECONDS
+
+    def _scene_stuck_seconds(self, default: float) -> float:
+        """本任务的「场景停滞」阈值（秒），任务级覆盖优先于全局配置。
+
+        取当前任务的 ``scene_stuck_seconds``（BaseTask 默认为 None = 不覆盖）：
+        正数采用；``<= 0`` 返回 0（该任务不做场景停滞判定）；缺省回退 ``default``
+        （全局配置值）；非法值（非数字 / NaN）告警一次后同样回退 ``default``。
+        """
+        task = self._current_task          # 单次引用读取，无需加锁
+        if task is None:
+            return default
+        value = getattr(task, "scene_stuck_seconds", None)
+        if value is None:
+            return default
+        try:
+            seconds = float(value)
+        except (TypeError, ValueError):
+            seconds = float("nan")
+        if math.isnan(seconds):
+            self._warn_once(
+                "task-scene-stuck-invalid",
+                f"[{getattr(task, 'task_name', '?')}] scene_stuck_seconds 取值非法"
+                f"（{value!r}），已回退 {default:.0f} 秒")
+            return default
+        if seconds <= 0:
+            return 0.0
+        return seconds
+
+    def _log_scene_stuck_threshold(self, task: "BaseTask"):
+        """任务开始执行时留痕本任务的场景停滞阈值（仅覆盖了全局值才 INFO）"""
+        default = self._global_scene_stuck_seconds()
+        seconds = self._scene_stuck_seconds(default)
+        if seconds <= 0:
+            self.logger.info(
+                f"[{task.task_name}] 任务设置已关闭场景停滞判定"
+                f"（scene_stuck_seconds={getattr(task, 'scene_stuck_seconds', None)!r}；"
+                f"游戏卡死/模拟器卡死检测不受影响）")
+        elif abs(seconds - default) >= 0.5:
+            self.logger.info(
+                f"[{task.task_name}] 场景停滞阈值按任务设置设为 {seconds:.0f} 秒"
+                f"（全局默认 {default:.0f} 秒）")
 
     # ================================================================
     # 生命周期
@@ -173,7 +249,11 @@ class TimeoutWatchdog:
             # 心跳健康状态随任务重置（上一个任务的失败不应影响本任务）
             self._heartbeat_fail_count = 0
             self._scene_stuck_enabled = True
+            # 一次性告警去重也随任务重置（换任务后允许重新提示一次）
+            self._warned_keys.clear()
         task.attach_watchdog(self)
+        # 任务级场景停滞阈值留痕（仅覆盖了全局值才 INFO，避免刷屏）
+        self._log_scene_stuck_threshold(task)
         self.logger.debug(f"开始监视任务 [{task.task_name}]")
 
     def detach_task(self, task: "BaseTask"):
@@ -308,7 +388,10 @@ class TimeoutWatchdog:
         static_seconds = self._update_static_state(small, now)
 
         # ---- 3. 场景停滞判定（画面仍在动，但场景长时间未变）----
-        scene_stuck_seconds = float(self._cfg("超时检测-场景停滞秒数", 180))
+        # 阈值优先级：任务类属性 scene_stuck_seconds > 全局配置 > 默认 180 秒；
+        # 任务侧显式关闭（<=0）时跳过（scene_stuck_seconds > 0 才判定）
+        scene_stuck_seconds = self._scene_stuck_seconds(
+            self._global_scene_stuck_seconds())
         freeze_seconds = float(self._cfg("超时检测-画面静止秒数", 60))
         with self._lock:
             scene_unchanged = now - self._scene_since
@@ -317,6 +400,7 @@ class TimeoutWatchdog:
         # 心跳失效时该判定的时间基准不可信（会误判卡死），故跳过；
         # 游戏卡死/模拟器卡死（画面静止）判定不受心跳影响，照常执行
         if (scene_stuck_enabled
+                and scene_stuck_seconds > 0
                 and scene_name is not None
                 and scene_unchanged >= scene_stuck_seconds
                 and static_seconds < freeze_seconds):

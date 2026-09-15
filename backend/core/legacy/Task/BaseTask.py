@@ -7,7 +7,7 @@ from datetime import timedelta
 from enum import IntEnum
 from logging import Logger
 from pathlib import Path
-from typing import Dict, Callable, List, Tuple
+from typing import Dict, Callable, List, Optional, Tuple
 from zoneinfo import ZoneInfo
 
 from backend.utils import get_real_path
@@ -255,6 +255,20 @@ class BaseTask:
 
     过去这两类失败既不清理也不重排期，"下次执行时间"仍是过期时刻，会被调度器
     立刻判为到期 → 按扫描间隔（默认 1s）无限重试并反复截图；改为冷却重试。
+    """
+
+    scene_stuck_seconds: Optional[float] = None
+    """场景停滞判定阈值（秒），由超时监视器（TimeoutWatchdog）读取，任务类可覆盖。
+
+    - ``None``（默认）：沿用全局配置 ``超时检测-场景停滞秒数``（默认 180 秒），
+      即与旧行为逐字等价；
+    - ``> 0``：该任务在同一场景停留超过此秒数才判定「场景停滞」。长对局任务
+      （如更多玩法/绝迹战场整局耗时远超 180 秒）必须在此覆盖，否则会被误判为
+      停滞并被中断、截图、走自救流程；
+    - ``<= 0``：该任务不做「场景停滞」判定（心跳失效时的临时关闭语义一致）。
+
+    仅作用于「场景停滞」，不影响画面静止类判定（游戏卡死/模拟器卡死），
+    也不影响全局配置项本身的语义；非法值（非数字/NaN）由监视器回退默认并告警。
     """
 
     tz_info = ZoneInfo("Asia/Shanghai")

@@ -13,6 +13,11 @@ class GengDuoWanFa(BaseTask):
     # 每周任务：窗口 [本周一 5:01, 下周一 5:01)，本周内可补跑
     schedule = Weekly(Weekday.MON)
 
+    # 绝迹战场 / 大蛇丸试炼是完整对局：进入「-副本内」后一局可持续数分钟，期间画面
+    # 因连点持续变化但场景名不变，用全局默认的 180 秒会误判「场景停滞」并中断任务。
+    # 这里放宽到 600 秒（只影响场景停滞判定；游戏卡死/模拟器卡死检测仍按全局阈值）。
+    scene_stuck_seconds = 600
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.checked = False
