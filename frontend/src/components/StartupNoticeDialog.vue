@@ -6,6 +6,7 @@
     style="width: min(620px, calc(100vw - 48px))"
     :mask-closable="false"
     :closable="canClose"
+    :close-on-esc="canClose"
   >
     <div class="notice-body">
       <n-text>
