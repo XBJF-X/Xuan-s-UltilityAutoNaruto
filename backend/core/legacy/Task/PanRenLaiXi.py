@@ -86,6 +86,7 @@ class PanRenLaiXi(BaseTask):
         if self.config.get_task_exe_param(self.task_name, "是否需要开启叛忍", True):
             self.operationer.click_and_wait("开启")
         self.operationer.click_and_wait("X")
+        self.operationer.next_scene = "主场景-组织"
         return False
 
     @TransitionOn("叛忍来袭-即将开始")
