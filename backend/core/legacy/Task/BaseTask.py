@@ -285,6 +285,31 @@ class BaseTask:
     tz_info = ZoneInfo("Asia/Shanghai")
 
     UNREGISTER_SCENE_MAX_TIME = 15
+    """识别不到注册场景（且不在转移图上）时，等待多久才强制回 source_scene。"""
+
+    graph_known_scene_immediate_return = True
+    """「场景图已知、但本任务没写处理函数」的画面是否**立刻**按图回源（默认开启）。
+
+    这类画面是「公共中转页」（如点 X 之后落到的「组织」、「主场景」等），不是真不认识的
+    画面。旧实现与"真未知画面"共用 ``UNREGISTER_SCENE_MAX_TIME``，于是每轮都要白等 15s
+    再走一次多跳回源（2026-09-16 叛忍来袭日志：每轮 ~26s，连续循环 3 轮 ≈ 105s）。
+
+    置 False 可回到旧语义（等满 ``UNREGISTER_SCENE_MAX_TIME`` 再回源）；
+    任务若担心"加载画面被误判成已知场景"，可提高 ``graph_known_scene_confirm_frames``。
+    """
+
+    graph_known_scene_confirm_frames = 2
+    """图内已知但未注册的画面需**连续确认**多少帧才触发立刻回源（默认 2）。
+
+    单帧误判（加载/过场被识别成某个已知场景）不会立刻触发回源；填 1 = 首帧即回源。
+    """
+
+    unknown_scene_retreat_seconds = 1.0
+    """未注册场景分支的循环退避秒数（默认 1s，0 = 不等待＝旧行为）。
+
+    旧实现走"未注册场景"处理函数时不做任何等待，而默认处理函数立即返回 False →
+    每轮都是"截图 + 识别 + 心跳"的高速空转（2026-09-16 日志一秒内 20+ 轮）。
+    """
 
     JUMP_STALL_LIMIT = 3
     """同一「场景→目标」连续跳转的次数上限（超过即判定跳转未生效）。
@@ -457,6 +482,7 @@ class BaseTask:
         """每次执行开始时清空"只记一次"的日志键与场景日志去重状态。"""
         self.__dict__["_logged_once_keys"] = set()
         self.__dict__.pop("_last_logged_scene", None)
+        self._clear_graph_known_streak()
 
     def _log_once(self, key: str, message: str,
                   level: int = logging.INFO) -> None:
@@ -894,6 +920,7 @@ class BaseTask:
         if scene_name in self.transition_func:
             if self.last_unregistered_scene_time:
                 self.last_unregistered_scene_time = None
+            self._clear_graph_known_streak()
             func = self.transition_func[scene_name]
             # self.logger.debug(f"场景{scene_name}绑定的函数：{func.__qualname__}")
             # 记录处理函数源码位置（出错日志/调试日志据此定位步骤），异常也要记录
@@ -903,6 +930,11 @@ class BaseTask:
                 self._record_transition_source(func)
             return result
         else:
+            # 场景图里存在、只是本任务没写处理函数的「公共中转页」（如点 X 后落到的
+            # 「组织」「主场景」）：立刻按图回源，不再白等 UNREGISTER_SCENE_MAX_TIME。
+            if self._try_graph_known_return(scene_name):
+                return self.transition_manager.transition(self.operationer)
+
             if not self.last_unregistered_scene_time:
                 self.last_unregistered_scene_time = time.perf_counter()
             if not self.source_scene:
@@ -933,6 +965,10 @@ class BaseTask:
                 # 未到强制回源时限，回退到原来的处理方式
                 scene_name = "未注册场景"
 
+        # 未注册场景分支：先退避再交给处理函数，避免"处理函数立即返回"造成高速空转
+        if scene_name == "未注册场景":
+            self._retreat_on_unregistered_scene()
+
         # 正常执行注册函数
         # self.logger.debug(f"寻找注册函数: {scene_name}")
         func = self.transition_func[scene_name]
@@ -946,6 +982,71 @@ class BaseTask:
         # self.logger.debug(f"Transition的Result：{result}")
         # self.logger.debug(f"Transition的next_scene：{self.operationer.next_scene}")
         return result
+
+    def _is_graph_known_scene(self, scene_name: str) -> bool:
+        """场景名是否存在于场景图（含未被本任务注册处理函数的公共中转页）。"""
+        graph = getattr(self.operationer, "scene_graph", None)
+        scenes = getattr(graph, "scenes", None)
+        if not scenes:
+            return False
+        return scene_name in scenes
+
+    def _try_graph_known_return(self, scene_name: str) -> bool:
+        """「图内已知但本任务未注册」→ 立刻按图回源；返回 True 表示调用方应执行跳转。
+
+        与 15s 强制回源的区别只在**时机**：这类画面（公共中转页）不需要观望窗口，
+        立刻寻路能让每轮从 ~26s 降到秒级；跳转本身仍受 `_pending_jump_path` 的
+        「跳转未推进保护」约束（连续跳不动就放弃并交回场景处理函数）。
+
+        单帧误判由 ``graph_known_scene_confirm_frames``（默认连续 2 帧）挡住；
+        任务已挂其它目标（``next_scene``）时不抢；场景图不可用（旧式替身）时退化为旧行为。
+        """
+        if not getattr(self, "graph_known_scene_immediate_return", True):
+            return False
+        source = self.source_scene
+        if not source or scene_name == source:
+            self._clear_graph_known_streak()
+            return False
+        if self.operationer.next_scene and self.operationer.next_scene != source:
+            # 任务之间/任务自身已声明了别的跳转目标，不抢
+            self._clear_graph_known_streak()
+            return False
+        if not self._is_graph_known_scene(scene_name):
+            self._clear_graph_known_streak()
+            return False
+
+        need = max(1, int(getattr(self, "graph_known_scene_confirm_frames", 1) or 1))
+        streak = self.__dict__.get("_graph_known_streak") or {}
+        count = streak.get("count", 0) + 1 if streak.get("scene") == scene_name else 1
+        self.__dict__["_graph_known_streak"] = {"scene": scene_name, "count": count}
+        if count < need:
+            self.logger.debug(
+                f"[{scene_name}] 场景图已知但本任务未注册，等待连续确认"
+                f"（{count}/{need} 帧）后再回源 {source}")
+            return False
+
+        self.operationer.next_scene = source
+        path = self._pending_jump_path(scene_name)
+        if not path:
+            # 转移图无路 / 跳转连续未生效：保持旧行为（清目标 + 走"未注册场景"兜底计时）
+            self.operationer.next_scene = None
+            return False
+        self._log_once(
+            f"graph-known-return:{scene_name}",
+            f"[{scene_name}] 场景图已知但本任务未注册该场景，"
+            f"立即按图回源 {source}（路径: {' -> '.join(path)}）")
+        self.last_unregistered_scene_time = None
+        return True
+
+    def _clear_graph_known_streak(self) -> None:
+        """清空「图内已知但未注册」的连续确认计数。"""
+        self.__dict__.pop("_graph_known_streak", None)
+
+    def _retreat_on_unregistered_scene(self) -> None:
+        """未注册场景的循环退避：避免处理函数立即返回导致的高速空转（见类属性说明）。"""
+        seconds = float(getattr(self, "unknown_scene_retreat_seconds", 0.0) or 0.0)
+        if seconds > 0:
+            time.sleep(seconds)
 
     def _clear_jump_stall(self):
         """清空「跳转未推进」计数（到达目标 / 放弃目标 / 每次执行开始时调用）。"""

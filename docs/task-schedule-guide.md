@@ -252,6 +252,7 @@ source, ignore_window)`：
 | 手动「执行」的窗口校验（拒绝原因 / 强制执行 / API force 透传） | `.venv\Scripts\python.exe test_scene\verify_manual_execute_guard.py` |
 | 识别过程日志开关 + 元素查找/OCR 一条总述 | `.venv\Scripts\python.exe test_scene\verify_recognition_and_search_logging.py` |
 | 卡死自救下沉任务线程 + 停止原因驱动重排期 | `.venv\Scripts\python.exe test_scene\verify_task_recovery.py` |
+| 未注册场景分流（图内已知立刻回源）+ 循环退避 | `.venv\Scripts\python.exe test_scene\verify_known_scene_return.py` |
 
 新增任务的验收清单：
 
@@ -369,6 +370,31 @@ source, ignore_window)`：
 - 验证：`test_scene/verify_task_recovery.py`（原因透传、`ignoring_stop` 恢复语义、
   兜底脱困在停止标志下仍执行、监视器请求/等待/清理契约、任务自救四种状态、
   默认自救策略、卡死停止重排期、真实 `_execute` 循环端到端）。
+
+### 未注册场景的两类分流与循环退避（2026-09-16）
+
+「未注册场景」过去把两类完全不同的画面混在一起：
+
+1. **图内已知、但本任务没写处理函数**的公共中转页（点 X 之后落到的「组织」「主场景」等）
+   —— 应当**立刻按图回源**；
+2. **真不认识的画面**（加载 / 广告 / 识别误判）—— 需要观望窗口。
+
+现在 `BaseTask.transition()` 的 else 分支先调 `_try_graph_known_return(scene_name)`：
+场景名存在于 `operationer.scene_graph.scenes` 时（默认还要连续 `graph_known_scene_confirm_frames`
+帧确认，防单帧误判）挂 `next_scene=source_scene` 并走 `bfs_shortest_path` 立刻回源，
+同样受「跳转未推进保护」约束；只有真未知画面才走 `UNREGISTER_SCENE_MAX_TIME`（15s）。
+
+| 参数（`BaseTask` 类属性） | 默认 | 说明 |
+| --- | --- | --- |
+| `graph_known_scene_immediate_return` | `True` | 置 False 回到旧语义（等满 15s 再回源） |
+| `graph_known_scene_confirm_frames` | `2` | 连续确认帧数（1 = 首帧即回源） |
+| `unknown_scene_retreat_seconds` | `1.0` | 未注册分支调用处理函数前的退避（0 = 旧行为） |
+
+- 现场收益（叛忍来袭 2026-09-16）：每轮从「15s 空转 + 3 跳回源 ≈ 26s」降到「确认 2 帧 + 按图一跳」；
+- 空转抑制：未注册分支过去每轮立刻返回（日志一秒 20+ 轮），现在按 `unknown_scene_retreat_seconds` 退避；
+- 不抢目标：任务已挂其它 `next_scene` 时不介入；旧式替身（无 `scene_graph`）自动退化为旧行为。
+- 验证：`test_scene/verify_known_scene_return.py`（确认帧、真未知画面保持旧语义、开关回退、
+  无场景图安全、不抢目标、无路交回处理函数、退避次数与开关、回源日志去重）。
 
 
 ---
