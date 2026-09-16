@@ -158,21 +158,6 @@ class GengDuoWanFa(BaseTask):
         self.finished = True
         return False
 
-    @TransitionOn("未知场景")
-    def _(self):
-        self.operationer.clicker.stop()
-        return False
-
-    @TransitionOn("未注册场景")
-    def _(self):
-        self.operationer.clicker.stop()
-        # 仅在"还没进入匹配/对局流程"（bool_click=False）时才回源：匹配中/匹配成功/
-        # 选择忍者/副本内都会置 bool_click=True，而对局入口的加载、过场、结算过渡画面
-        # 常被误判为本任务未注册的场景；此时若挂上 next_scene，它会一直抢占
-        # "…-副本内"处理函数（连点永远启动不了），直到对局结束画面变成结算才解除。
-        if not self.bool_click:
-            self.operationer.next_scene = "更多玩法"
-        return False
     
     def reset_task_exe_prog(self) -> bool:
         self.checked = False

@@ -186,11 +186,6 @@ class DianFengDuiJue(BaseTask):
         self.operationer.click_and_wait("确定")
         return False
 
-    @TransitionOn("未知场景")
-    def _(self):
-        self.operationer.clicker.stop()
-        time.sleep(1)
-        return False
     
     def on_complete(self, current_time: datetime.datetime):
         if self.config.get_task_exe_param(self.task_name, "执行结束后是否有叛忍", True):

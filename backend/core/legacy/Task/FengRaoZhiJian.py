@@ -70,16 +70,6 @@ class FengRaoZhiJian(BaseTask):
         self.operationer.click_and_wait("点击任意位置关闭界面")
         return False
 
-    @TransitionOn("未知场景")
-    def _(self):
-        self.operationer.clicker.stop()
-        return False
-
-    @TransitionOn("未注册场景")
-    def _(self):
-        self.operationer.clicker.stop()
-        return False
-
     def reset_task_exe_prog(self) -> bool:
         self.free_tried = False
         self.finished = False

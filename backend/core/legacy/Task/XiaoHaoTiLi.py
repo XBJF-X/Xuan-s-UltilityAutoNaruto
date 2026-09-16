@@ -55,8 +55,7 @@ class XiaoHaoTiLi(BaseTask):
     @TransitionOn()
     def _(self):
         if not self.check:
-            self.operationer.next_scene="冒险-冒险副本"
-            return False
+            return "冒险-冒险副本"
         return self.__set_next_scene()
     
     @TransitionOn("冒险-冒险副本")

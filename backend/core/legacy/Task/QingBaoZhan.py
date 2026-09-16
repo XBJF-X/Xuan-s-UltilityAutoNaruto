@@ -25,23 +25,21 @@ class QingBaoZhan(BaseTask):
     @TransitionOn()
     def _(self):
         if not self.config.get_task_exe_prog(self.task_name, "浏览卷轴", False):
-            self.operationer.click_and_wait("卷轴")
-            return False
+            return "情报站-卷轴"
+        
         elif not self.config.get_task_exe_prog(self.task_name, "浏览村口", False) or \
                 self.config.get_task_exe_prog(self.task_name, "点赞帖子", 0) < 3:
-            self.operationer.click_and_wait("村口")
-            return False
+            return "情报站-村口"
+        
         elif not self.config.get_task_exe_prog(self.task_name, "浏览忍者站", False):
-            self.operationer.click_and_wait("忍者站")
-            return False
-        self.operationer.click_and_wait("福利站")
-        return False
+            return "忍者站"
+        
+        return "福利站"
 
     @TransitionOn("情报站-卷轴")
     def _(self):
         self.config.set_task_exe_prog(self.task_name, "浏览卷轴", True)
-        self.operationer.click_and_wait("村口")
-        return False
+        return "情报站-村口"
 
     @TransitionOn("情报站-村口")
     def _(self):
@@ -85,20 +83,19 @@ class QingBaoZhan(BaseTask):
                 duration=0.5
             )
         else:
-            self.operationer.click_and_wait("首页")
+            return "情报站-首页"
         return False
 
     @TransitionOn("忍者站")
     def _(self):
         self.config.set_task_exe_prog(self.task_name, "浏览忍者站", True)
-        self.operationer.click_and_wait("推荐")
-        return False
+        return "情报站-首页"
 
     @TransitionOn("福利站")
     def _(self):
         if not self.operationer.detect_element("活跃度"):
-            self.operationer.click_and_wait("后退")
-            return False
+            return "情报站-首页"
+        
         if not self.config.get_task_exe_prog(self.task_name, "情报站签到", False):
             self.logger.info("福利站签到")
             # 点击一键签到
@@ -133,27 +130,6 @@ class QingBaoZhan(BaseTask):
             else:
                 self.logger.info("返回福利站")
                 self.operationer.press_key("BACK", wait_time=7)
-
-                # timeout = 15
-                # start_time = time.perf_counter()
-                # while self.operationer.rotated:
-                #     self.logger.debug("仍未进入金币助手...")
-                #     time.sleep(1)
-                #     if time.perf_counter() - start_time > timeout:
-                #         self.logger.debug("进入金币助手失败")
-                #         break
-                # start_time = time.perf_counter()
-                # while not self.operationer.rotated:
-                #     self.logger.debug("进入金币助手成功，将返回福利站...")
-                #     time.sleep(1)
-                #     self.operationer.press_key("back", wait_time=2)
-                #     if not self.operationer.rotated:
-                #         self.logger.debug("返回福利站，将尝试再次点击[Esc]键")
-                #         self.operationer.press_key("back", wait_time=1)
-                #
-                #     if time.perf_counter() - start_time > timeout:
-                #         self.logger.debug("返回福利站失败，请自行检查...")
-                #         break
 
             self.config.set_task_exe_prog(self.task_name, "浏览金币助手", True)
             return False
@@ -202,22 +178,19 @@ class QingBaoZhan(BaseTask):
     def _(self):
         self.operationer.click_and_wait("立即签到", wait_time=5)
         self.config.set_task_exe_prog(self.task_name, "情报站签到", True)
-        return False
+        return "福利站"
 
     @TransitionOn("福利站-签到成功")
     def _(self):
-        self.operationer.click_and_wait("我知道了", wait_time=3)
-        return False
+        return "福利站"
 
     @TransitionOn("福利站-活跃奖励-获得奖励")
     def _(self):
-        self.operationer.click_and_wait("我知道了", wait_time=3)
-        return False
+        return "福利站"
 
     @TransitionOn("福利站-100活跃奖励-确认")
     def _(self):
-        self.operationer.click_and_wait("确定", wait_time=3)
-        return False
+        return "福利站"
 
     @TransitionOn("福利站-40活跃奖励-抽取中")
     def _(self):
@@ -241,34 +214,8 @@ class QingBaoZhan(BaseTask):
                 wait_time=3
         )
         self.config.set_task_exe_prog(self.task_name, f"{num}活跃度奖励已领取", True)
-        # if self.operationer.click_and_wait(
-        #         f"活跃度任务-{num}",
-        #         wait_time=3
-        # ):
-        #     if self.operationer.detect_element(
-        #             "活跃度任务-今日已领取过该奖励",
-        #             wait_time=2
-        #     ):
-        #         self.logger.warning(f"{num}活跃度奖励已领取")
-        #     self.config.set_task_exe_prog(self.task_name, f"{num}活跃度奖励已领取", True)
-        # else:
-        #     self.logger.warning(f"{num}活跃度奖励领取失败，活跃度未达到要求")
-        # self.__setattr__(f"reward_{num}", True)
 
     def reset_task_exe_prog(self) -> bool:
-        # flag = all([
-        #     self.config.get_task_exe_prog(self.task_name, f"40活跃度奖励已领取", False),
-        #     self.config.get_task_exe_prog(self.task_name, f"60活跃度奖励已领取", False),
-        #     self.config.get_task_exe_prog(self.task_name, f"100活跃度奖励已领取", False)
-        # ])
-        # if flag:
-
-        #     self.logger.debug("所有活跃度奖励已领取!")
-        # else:
-        #     for i in [40, 60, 100]:
-        #         if not self.config.get_task_exe_prog(self.task_name, f"{i}活跃度奖励已领取", False):
-        #             self.logger.warning(f"{i}活跃度奖励未领取！！！")
-
         self.config.set_task_exe_prog(self.task_name, f"浏览卷轴", False)
         self.config.set_task_exe_prog(self.task_name, f"浏览村口", False)
         self.config.set_task_exe_prog(self.task_name, f"点赞帖子", 0)
@@ -276,8 +223,5 @@ class QingBaoZhan(BaseTask):
         self.config.set_task_exe_prog(self.task_name, f"情报站签到", False)
         self.config.set_task_exe_prog(self.task_name, f"浏览金币助手", False)
         self.config.set_task_exe_prog(self.task_name, f"领取情报站活跃度", False)
-        # self.config.set_task_exe_prog(self.task_name, f"40活跃度奖励已领取", False)
-        # self.config.set_task_exe_prog(self.task_name, f"60活跃度奖励已领取", False)
-        # self.config.set_task_exe_prog(self.task_name, f"100活跃度奖励已领取", False)
         return True
 

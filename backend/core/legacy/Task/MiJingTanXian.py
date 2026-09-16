@@ -43,9 +43,7 @@ class MiJingTanXian(BaseTask):
             else:
                 self.logger.info("扫荡次数耗尽")
                 self.bool_sd=False
-        self.operationer.click_and_wait("创建房间")
-        self.operationer.next_scene="秘境探险-匹配"
-        return False
+        return "秘境探险-匹配"
     
     # 剩余挑战券 OCR 读取失败时的重试次数与间隔（切场景瞬间/单帧抖动常读不到）
     TZQ_OCR_ATTEMPTS = 3
@@ -164,8 +162,10 @@ class MiJingTanXian(BaseTask):
         if not self.first_fight and not self.bool_sd:
             self.first_fight =True
             self.bool_sd=True
-        self.operationer.next_scene="秘境探险-首页" if self.bool_sd else "秘境探险-匹配"
-        return False
+        if self.bool_sd:
+            return "秘境探险-首页"
+        else:
+            return "秘境探险-匹配"
 
     @TransitionOn("恭喜你获得")
     def _(self):
@@ -244,19 +244,6 @@ class MiJingTanXian(BaseTask):
         self.bool_click = False
         self.fighting = False
         self.operationer.click_and_wait("确定")
-        return False
-    
-
-    @TransitionOn("未知场景")
-    def _(self):
-        self.fighting = False
-        self.operationer.clicker.stop()
-        return False
-
-    @TransitionOn("未注册场景")
-    def _(self):
-        self.fighting = False
-        self.operationer.clicker.stop()
         return False
 
     def reset_task_exe_prog(self) -> bool:

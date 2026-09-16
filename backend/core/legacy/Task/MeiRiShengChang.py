@@ -142,14 +142,3 @@ class MeiRiShengChang(BaseTask):
         self.operationer.click_and_wait("确定")
         return False
 
-    @TransitionOn("未知场景")
-    def _(self):
-        self.operationer.clicker.stop()
-        time.sleep(1)
-        return False
-
-    @TransitionOn("未注册场景")
-    def _(self):
-        self.operationer.clicker.stop()
-        time.sleep(1)
-        return False

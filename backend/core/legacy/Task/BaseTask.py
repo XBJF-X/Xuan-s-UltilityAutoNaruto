@@ -1119,17 +1119,12 @@ class BaseTask:
             self._retreat_on_unregistered_scene()
 
         # 正常执行注册函数
-        # self.logger.debug(f"寻找注册函数: {scene_name}")
         func = self.transition_func[scene_name]
-        # self.logger.debug(f"场景{scene_name}绑定的函数：{func.__qualname__}")
         # 执行派生类的场景处理函数（异常也要记录位置，便于定位出错步骤）
         try:
             result = func(self)
         finally:
             self._record_transition_source(func)
-        # self.logger.debug(f"[{scene_name}]注册函数执行完毕")
-        # self.logger.debug(f"Transition的Result：{result}")
-        # self.logger.debug(f"Transition的next_scene：{self.operationer.next_scene}")
         return self._normalize_handler_result(result)
 
     # ------------------------------------------------------------------ #
@@ -1706,9 +1701,12 @@ class BaseTask:
 
     @TransitionOn("未知场景")
     def _(self):
+        self.operationer.clicker.stop()
         time.sleep(1)
         return False
 
     @TransitionOn("未注册场景")
     def _(self):
+        self.operationer.clicker.stop()
+        time.sleep(1)
         return False

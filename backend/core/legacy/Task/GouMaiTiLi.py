@@ -49,33 +49,11 @@ class GouMaiTiLi(BaseTask):
                 self.target_buy_times=max(0,self.max_buy_times-buy_times)
             else:
                 raise StepFailedError("识别特权说明内容失败，将退出执行")
-        # self.operationer.next_scene="充值" if not self.max_buy_times else "购买体力"
+            
         if self.max_buy_times:
-            self.operationer.next_scene="购买体力"
+            return "购买体力"
         return False
     
-    # @TransitionOn("充值")
-    # def _(self):
-    #     self.operationer.click_and_wait("V特权")
-    #     tqsm=self.operationer.ocr_recognize("特权说明区域")
-    #     if tqsm:
-    #         pattern = re.compile(r'体力每日可购买\s*(\d+)\s*次')
-    #         matched=False
-    #         for ocr in tqsm:
-    #             match = pattern.search(ocr.text)
-    #             if match:
-    #                 self.max_buy_times=int(match.group(1))
-    #                 matched=True
-    #                 break
-    #         if not matched:
-    #             self.max_buy_times=5
-    #         self.logger.info(f"每日最多可购买体力次数为 {self.max_buy_times} 次")
-    #         buy_times=self.config.get_task_exe_param("购买体力", "购买体力次数")
-    #         self.target_buy_times=max(0,self.max_buy_times-buy_times)
-    #         self.operationer.next_scene="购买体力"
-    #     else:
-    #         raise StepFailedError("识别特权说明内容失败，将退出执行")
-    #     return False
 
     @TransitionOn("购买体力")
     def _(self):

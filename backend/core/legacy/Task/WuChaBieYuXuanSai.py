@@ -150,7 +150,6 @@ class WuChaBieYuXuanSai(BaseTask):
         self.bool_click = True
         self.operationer.clicker.start()
         time.sleep(0.5)
-        self.operationer.next_scene = "火影格斗大赛-无差别"
         return False
 
     @TransitionOn("决斗场-单局结算")
@@ -158,7 +157,6 @@ class WuChaBieYuXuanSai(BaseTask):
         self.checked = False
         self.bool_click = True
         self.operationer.clicker.stop()
-        self.operationer.next_scene = "火影格斗大赛-无差别"
         return False
 
     @TransitionOn("决斗场-结算")
@@ -167,8 +165,7 @@ class WuChaBieYuXuanSai(BaseTask):
         self.bool_click = False
         self.operationer.clicker.stop()
         self.operationer.click_and_wait("X")
-        self.operationer.next_scene = "火影格斗大赛-无差别"
-        return False
+        return "火影格斗大赛-无差别"
 
     @TransitionOn("你的对手离开了游戏")
     def _(self):
@@ -176,8 +173,7 @@ class WuChaBieYuXuanSai(BaseTask):
         self.bool_click = False
         self.operationer.clicker.stop()
         self.operationer.click_and_wait("确定")
-        self.operationer.next_scene = "火影格斗大赛-无差别"
-        return False
+        return "火影格斗大赛-无差别"
 
     @TransitionOn("对手已经掉线了")
     def _(self):
@@ -185,15 +181,4 @@ class WuChaBieYuXuanSai(BaseTask):
         self.bool_click = False
         self.operationer.clicker.stop()
         self.operationer.click_and_wait("确定")
-        self.operationer.next_scene = "火影格斗大赛-无差别"
-        return False
-
-    @TransitionOn("未知场景")
-    def _(self):
-        self.operationer.clicker.stop()
-        return False
-
-    @TransitionOn("未注册场景")
-    def _(self):
-        self.operationer.clicker.stop()
-        return False
+        return "火影格斗大赛-无差别"
