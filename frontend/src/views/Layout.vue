@@ -267,7 +267,14 @@
     <UpdateDialog v-model:show="showUpdateDialog" />
 
     <!-- 反馈 -->
-    <FeedbackDialog v-model:show="showFeedbackDialog" :config-id="appStore.activeConfigId" />
+    <FeedbackDialog
+      v-model:show="showFeedbackDialog"
+      :config-id="appStore.activeConfigId"
+      @open-update="showUpdateDialog = true"
+    />
+
+    <!-- 启动引导提示：程序启动时弹出，10s 内不可关闭，勾选「不再提示」后不再弹出 -->
+    <StartupNoticeDialog v-model:show="showStartupNotice" @go-feedback="handleStartupGoFeedback" />
   </div>
 </template>
 
@@ -288,6 +295,7 @@ import LogPanel from '@/components/LogPanel.vue'
 import AssistantSettingsPanel from '@/components/AssistantSettingsPanel.vue'
 import UpdateDialog from '@/components/UpdateDialog.vue'
 import FeedbackDialog from '@/components/FeedbackDialog.vue'
+import StartupNoticeDialog from '@/components/StartupNoticeDialog.vue'
 import PresetEditor from '@/views/PresetEditor.vue'
 import { useWebSocket } from '@/api/ws'
 
@@ -303,6 +311,7 @@ const schedulerRunning = ref(false)
 const schedulerStarting = ref(false)
 const showUpdateDialog = ref(false)
 const showFeedbackDialog = ref(false)
+const showStartupNotice = ref(false)
 
 const currentView = ref<'overview' | 'task' | 'globallog' | 'assistant' | 'preset'>('overview')
 const currentTaskName = ref<string | null>(null)
@@ -662,6 +671,33 @@ function openFeedback() {
   showFeedbackDialog.value = true
 }
 
+// 程序启动时的使用引导提示：读取全局设置 [助手设置] 启动提示（默认 True），
+// 在弹窗中勾选「不再提示」后该项被写为 False，之后启动不再弹出。
+// 与依赖检查/自动更新弹窗错开 1.2s 出现，避免多个弹窗叠加遮挡；
+// 更新窗口已打开时本轮跳过（用户未勾选「不再提示」时下次启动仍会提示）。
+async function checkStartupNotice() {
+  try {
+    await new Promise(resolve => setTimeout(resolve, 1200))
+    if (showUpdateDialog.value) return
+    const res = await settingsApi.getAll()
+    const flag = res.data?.['助手设置']?.['启动提示']
+    // 仅显式 False 时不再提示；键缺失/为空（旧 setting.ini）时仍弹出，避免引导被静默跳过
+    if (String(flag ?? '').trim().toLowerCase() === 'false') return
+    showStartupNotice.value = true
+  } catch {
+    // 全局设置接口异常时不打扰用户（启动引导非关键功能）
+  }
+}
+
+// 引导弹窗「跳转反馈界面」：未选择配置时给出指引（反馈需按配置用户名定位日志目录）
+function handleStartupGoFeedback() {
+  if (!appStore.activeConfigId) {
+    message.warning('请先在左侧选择或新建一个配置，再生成反馈包')
+    return
+  }
+  showFeedbackDialog.value = true
+}
+
 function openResourceGraph() {
   // hash 路由下，新标签页打开需带上当前 hash 前缀
   const href = router.resolve({ name: 'ResourceGraph' }).href
@@ -673,6 +709,7 @@ onMounted(() => {
   appStore.loadConfigs()
   checkDependencyOnStart()
   checkUpdateOnStart()
+  checkStartupNotice()
 })
 
 // 启动时依赖健康检查：版本过低或模块缺失时弹窗引导前往 Release 更新，

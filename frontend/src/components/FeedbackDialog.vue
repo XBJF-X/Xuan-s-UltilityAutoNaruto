@@ -16,6 +16,38 @@
     </template>
 
     <template v-else>
+      <!-- 代码版本检测（打开反馈界面即自动检查）：非最新时提示先更新，更新后仍存在问题再反馈 -->
+      <n-alert
+        v-if="codeCheckState === 'checking'"
+        type="info"
+        class="code-check-bar"
+        :show-icon="false"
+      >
+        正在检查当前代码是否为最新...
+      </n-alert>
+      <n-alert
+        v-else-if="codeCheckState === 'outdated'"
+        type="warning"
+        title="当前代码非最新"
+        class="code-check-bar"
+      >
+        <div class="code-check-msg">{{ codeCheckMessage }}</div>
+        <div class="code-check-actions">
+          <n-button size="small" type="primary" @click="openUpdate">去更新</n-button>
+          <n-text depth="3" style="font-size: 12px">
+            若有问题可先尝试更新后看是否解决，未解决再按下方步骤生成反馈包
+          </n-text>
+        </div>
+      </n-alert>
+      <n-alert
+        v-else-if="codeCheckState === 'unknown'"
+        type="default"
+        class="code-check-bar"
+        :show-icon="false"
+      >
+        未能检测当前代码是否为最新（{{ codeCheckMessage }}），可忽略此提示直接生成反馈包
+      </n-alert>
+
       <!-- 顶部：打开本地日志目录（打包反馈前核对日志文件） -->
       <div class="log-dir-bar">
         <n-text depth="3" style="font-size: 12px; flex: 1;">打包前如需核对日志文件，可先在系统文件管理器中打开本地日志目录</n-text>
@@ -104,7 +136,11 @@ const props = defineProps<{
   show: boolean
   configId: string | null
 }>()
-const emit = defineEmits<{ 'update:show': [value: boolean] }>()
+const emit = defineEmits<{
+  'update:show': [value: boolean]
+  // 代码非最新时点「去更新」→ 由父组件打开检查更新窗口
+  'open-update': []
+}>()
 
 const showModel = computed({
   get: () => props.show,
@@ -127,6 +163,16 @@ const progress = ref<{ running: boolean; phase: string; percent: number; message
 })
 
 let pollTimer: ReturnType<typeof setInterval> | null = null
+
+/**
+ * 代码版本检测状态：
+ * - checking 检测中
+ * - latest   已是最新
+ * - outdated 本地提交与更新源分支不一致（需先更新）
+ * - unknown  更新源不可达/请求异常（不打断反馈流程）
+ */
+const codeCheckState = ref<'idle' | 'checking' | 'latest' | 'outdated' | 'unknown'>('idle')
+const codeCheckMessage = ref('')
 
 const showTaskStep = computed(() => !!selectedDate.value && taskOptions.value.length > 0)
 const canSubmit = computed(() => {
@@ -268,6 +314,8 @@ function reset() {
   isPackaging.value = false
   starting.value = false
   openingLogDir.value = false
+  codeCheckState.value = 'idle'
+  codeCheckMessage.value = ''
   progress.value = { running: false, phase: '', percent: 0, message: '', error: '' }
 }
 
@@ -275,9 +323,51 @@ function close() {
   emit('update:show', false)
 }
 
+/** 「去更新」：交给父组件打开检查更新窗口（更新流程由 UpdateDialog 承担） */
+function openUpdate() {
+  emit('open-update')
+}
+
+/**
+ * 打开反馈界面时自动检测当前代码是否为最新（后端对比本地 version.json 与更新源分支）。
+ * 非最新时提示用户先尝试更新，更新后问题仍未解决再反馈；检测失败只轻提示，不阻塞反馈流程。
+ */
+async function checkCodeVersion() {
+  codeCheckState.value = 'checking'
+  codeCheckMessage.value = ''
+  try {
+    const res = await utilsApi.checkUpdate()
+    const data = res.data
+    if (!data?.ok) {
+      codeCheckState.value = 'unknown'
+      codeCheckMessage.value = data?.message || '更新源不可达'
+      return
+    }
+    if (data.update_type && data.update_type !== 'none') {
+      codeCheckState.value = 'outdated'
+      const local = data.local_version
+        || data.current_commit?.short_sha
+        || (data.current_sha ? String(data.current_sha).slice(0, 7) : '')
+      const remote = data.update_type === 'full'
+        ? (data.full?.tag || data.full?.version || '')
+        : (data.latest_sha ? String(data.latest_sha).slice(0, 7) : '')
+      codeCheckMessage.value =
+        `本地版本 ${local || '未知'}，更新源最新 ${remote || '未知'}${data.latest_message ? `（${data.latest_message}）` : ''}`
+      return
+    }
+    codeCheckState.value = 'latest'
+  } catch (e: any) {
+    // 外部更新源不可控：检测失败降级为「无法检测」，不影响用户生成反馈包
+    codeCheckState.value = 'unknown'
+    codeCheckMessage.value = e?.response?.data?.detail || '网络请求失败'
+  }
+}
+
 watch(() => props.show, (v) => {
   if (v) {
     loadOptions()
+    // 打开反馈界面即检测代码是否最新（含从启动引导弹窗跳转过来的场景）
+    checkCodeVersion()
   } else {
     reset()
   }
@@ -326,6 +416,19 @@ onBeforeUnmount(stopPolling)
   padding: 24px 0;
 }
 .progress-card { margin-bottom: 12px; }
+/* 代码版本检测提示条 */
+.code-check-bar { margin-bottom: 12px; }
+.code-check-msg {
+  font-size: 13px;
+  line-height: 1.7;
+  word-break: break-all;
+}
+.code-check-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
 .phase-row {
   display: flex;
   justify-content: space-between;
