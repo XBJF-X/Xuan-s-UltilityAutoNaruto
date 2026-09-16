@@ -261,6 +261,96 @@ def delete_edge(payload: dict):
     return {"ok": True}
 
 
+# ===== 运行时「待补边」清单（识别兜底学到的缺失跳转，人工确认后落库） =====
+def _peek_scene_index():
+    """取已构建的场景候选索引；未构建返回 None（**不触发构建**）。"""
+    from backend.services.scheduler_service import peek_shared_scene_graph
+    from backend.core.legacy.Scene.SceneIndex import peek_scene_index
+    graph = peek_shared_scene_graph()
+    if graph is None:
+        return None
+    return peek_scene_index(graph)
+
+
+@router.get("/scene-edges/pending")
+def list_pending_scene_edges():
+    """运行时学到的「待补边」：数据库里缺失、但识别时实际发生过的场景跳转。
+
+    场景识别按转移图裁剪候选集，候选集未命中会全量兜底并记住实际跳转，使同一处缺边
+    只付一次兜底代价；这里把"建议补上的边"暴露给资源管理器，确认无误后调
+    `POST /scene-edges/pending/apply` 落库（**不会自动写库**：学习边可能来自误判）。
+    """
+    index = _peek_scene_index()
+    if index is None:
+        return {
+            "available": False,
+            "reason": "场景候选索引尚未构建（本次运行还没做过识别兜底）",
+            "count": 0,
+            "edges": [],
+        }
+    pairs = index.pending_edges()
+    return {
+        "available": True,
+        "reason": "",
+        "count": len(pairs),
+        "edges": [{"source": src, "target": dst} for src, dst in pairs],
+    }
+
+
+@router.post("/scene-edges/pending/apply")
+def apply_pending_scene_edges(payload: dict | None = None):
+    """把「待补边」写入场景库（按场景名），成功后从清单移除并失效候选集索引。
+
+    payload.edges 可选：只应用指定子集（``[{"source": ..., "target": ...}]``），缺省全部应用。
+    返回 ``applied`` 条数、``failed`` 明细（多为"边已存在"或场景名不存在）与 ``remaining`` 剩余条数。
+    """
+    index = _peek_scene_index()
+    if index is None:
+        raise HTTPException(status_code=409, detail="场景候选索引尚未构建，无待补边可应用")
+    payload = payload or {}
+    raw = payload.get("edges")
+    if raw is None:
+        pairs = index.pending_edges()
+    else:
+        if not isinstance(raw, list):
+            raise HTTPException(status_code=400, detail="edges 必须是数组")
+        pairs = []
+        for item in raw:
+            item = item or {}
+            source = str(item.get("source", "")).strip()
+            target = str(item.get("target", "")).strip()
+            if not source or not target:
+                raise HTTPException(status_code=400, detail="edges 每项都需要 source 与 target")
+            pairs.append((source, target))
+    if not pairs:
+        return {"ok": True, "applied": 0, "failed": [], "remaining": 0}
+
+    applied: list[dict] = []
+    failed: list[dict] = []
+    for source, target in pairs:
+        try:
+            ok = _db.add_scene_edge(source, target)
+        except Exception as e:
+            logger.error("待补边落库失败: %s -> %s", source, target, exc_info=e)
+            ok = False
+        entry = {"source": source, "target": target}
+        (applied if ok else failed).append(entry)
+
+    if applied:
+        index.clear_pending_edges(
+            [(entry["source"], entry["target"]) for entry in applied])
+        # 边变化后候选集索引必须重建，否则识别仍按旧邻居裁剪
+        _invalidate_graph_edges()
+    if failed:
+        logger.warning("待补边部分落库失败（多为边已存在或场景名不存在）: %s", failed)
+    return {
+        "ok": not failed,
+        "applied": len(applied),
+        "failed": failed,
+        "remaining": len(index.pending_edges()),
+    }
+
+
 # ===== TransitionManager 已实现跳转（供前端场景有向图判断边是否实现，未实现的单向边标红） =====
 _transitions_cache: list[dict] | None = None
 

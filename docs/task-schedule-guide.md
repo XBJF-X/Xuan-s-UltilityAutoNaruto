@@ -253,6 +253,7 @@ source, ignore_window)`：
 | 识别过程日志开关 + 元素查找/OCR 一条总述 | `.venv\Scripts\python.exe test_scene\verify_recognition_and_search_logging.py` |
 | 卡死自救下沉任务线程 + 停止原因驱动重排期 | `.venv\Scripts\python.exe test_scene\verify_task_recovery.py` |
 | 未注册场景分流（图内已知立刻回源）+ 循环退避 | `.venv\Scripts\python.exe test_scene\verify_known_scene_return.py` |
+| 识别缺边收敛（待补边清单 + 落库接口） | `.venv\Scripts\python.exe test_scene\verify_pending_scene_edges.py` |
 
 新增任务的验收清单：
 
@@ -395,6 +396,22 @@ source, ignore_window)`：
 - 不抢目标：任务已挂其它 `next_scene` 时不介入；旧式替身（无 `scene_graph`）自动退化为旧行为。
 - 验证：`test_scene/verify_known_scene_return.py`（确认帧、真未知画面保持旧语义、开关回退、
   无场景图安全、不抢目标、无路交回处理函数、退避次数与开关、回源日志去重）。
+
+### 识别缺边的收敛：待补边清单（2026-09-16）
+
+识别按转移图裁剪候选集，未命中时全量兜底并把"实际发生的跳转"记为学习边——过去这条信息
+只活在内存里，日志只提示"建议在资源管理器中补上该边"，于是同一处缺边反复付出兜底代价，
+且**回源路径变长**（现场：缺少 `组织 -> 主场景-组织` 直连边，回源要走 3 跳 ≈13s）。
+
+- `SceneIndex` 新增「待补边」清单：学到新边时登记（有序去重），`pending_edges()` 读取、
+  `clear_pending_edges(pairs=None)` 清理；索引重建时自动剔除"已被人工落库"与
+  "场景改名/删除后失效"的条目（清单不会无限增长）。
+- 新增 `peek_scene_index(graph)`：只读已构建的索引，**不触发构建**（读清单是轻量操作）。
+- API：`GET /api/resource/scene-edges/pending` 查看、`POST /api/resource/scene-edges/pending/apply`
+  落库（可传 `edges` 子集），成功后自动失效候选集索引并返回 `applied / failed / remaining`。
+  **不自动写库**：学习边可能来自误判，必须人工确认。
+- 验证：`test_scene/verify_pending_scene_edges.py`（清单去重/维护/重建收敛、
+  `peek` 不构建、API 全部应用 / 子集应用 / 400 / 409 / 空清单 no-op）。
 
 
 ---

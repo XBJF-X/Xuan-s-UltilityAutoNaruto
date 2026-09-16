@@ -54,6 +54,9 @@ class SceneIndex:
         self._built = False
         # 运行时学习边：hint -> 实测到的场景（补充数据库里缺失的边）
         self._learned: Dict[str, List[str]] = {}
+        # 「待补边」清单：学习到的、数据库里还没有的边（有序、去重），供资源管理器一键落库。
+        # 只记录不写库——学习边来自识别兜底，可能包含误判，落库必须由人确认。
+        self._pending_edges: List[Tuple[str, str]] = []
         # 统计（供验证脚本/日志观察裁剪效果）
         self.tier1_hits = 0
         self.full_scan_fallbacks = 0
@@ -119,6 +122,11 @@ class SceneIndex:
                 for src, dsts in self._learned.items()
                 if src in known
             }
+            # 待补边同理：场景改名/删除后失效的丢弃；已被人工落库（out_edges 里已有）的也不再提示
+            self._pending_edges = [
+                (src, dst) for src, dst in self._pending_edges
+                if src in known and dst in known and dst not in out_edges.get(src, [])
+            ]
             self.logger.debug(
                 "场景候选索引构建完成：%d 场景 / %d 条边（出度最大 %d）",
                 len(known), len(edges),
@@ -188,10 +196,35 @@ class SceneIndex:
             return False
         with self._lock:
             self._learned.setdefault(hint, []).append(scene_name)
+            if (hint, scene_name) not in self._pending_edges:
+                self._pending_edges.append((hint, scene_name))
         self.logger.debug(
             "场景候选索引学习到新跳转：%s -> %s（建议在资源管理器中补上该边）", hint, scene_name,
         )
         return True
+
+    def pending_edges(self) -> List[Tuple[str, str]]:
+        """「待补边」清单：识别兜底学到的、数据库里还没有的跳转（顺序 = 首次学到顺序）。
+
+        只提示不落库：学习边来自兜底学习，可能包含误判；资源管理器确认后再调
+        `api/resource.py` 的 `/scene-edges/pending/apply` 写库，写完后本清单自动收敛。
+        """
+        self._ensure_built()
+        with self._lock:
+            return list(self._pending_edges)
+
+    def clear_pending_edges(self, pairs: Optional[Sequence[Tuple[str, str]]] = None) -> int:
+        """从待补清单移除指定边（None = 全部清空），返回移除条数。"""
+        with self._lock:
+            if pairs is None:
+                removed = len(self._pending_edges)
+                self._pending_edges = []
+                return removed
+            wanted = {(str(src), str(dst)) for src, dst in pairs}
+            kept = [item for item in self._pending_edges if item not in wanted]
+            removed = len(self._pending_edges) - len(kept)
+            self._pending_edges = kept
+            return removed
 
     def stats(self) -> Dict[str, object]:
         self._ensure_built()
@@ -241,6 +274,15 @@ def invalidate_scene_index(graph) -> bool:
     return True
 
 
+def peek_scene_index(graph) -> Optional[SceneIndex]:
+    """取已构建的索引；未构建时返回 None（**不触发构建**）。
+
+    供"只读待补边清单"这类轻量操作使用：索引没建过说明本次进程还没做过识别兜底学习，
+    没有必要为读一份空清单去构建全量邻接表。
+    """
+    return getattr(graph, _INDEX_ATTR, None)
+
+
 def scene_candidates(
     graph, hint: Optional[str], parent_logger: logging.Logger | str = "",
 ) -> Optional[Tuple[str, ...]]:
@@ -252,6 +294,7 @@ __all__ = [
     "SceneIndex",
     "get_scene_index",
     "invalidate_scene_index",
+    "peek_scene_index",
     "scene_candidates",
 ]
 
