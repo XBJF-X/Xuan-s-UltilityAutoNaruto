@@ -138,6 +138,13 @@ def handle_task_exceptions(func):
     说明：StepFailedError / 未捕获异常过去既不清理也不重排期，而"下次执行时间"仍是
     过期时刻、会被调度器立刻判为到期，导致按扫描间隔（默认 1s）无限重试；现改为
     冷却重试（``error_retry_delay``，任务类可覆盖）。
+
+    场景处理函数的返回值约定（见 `BaseTask.declare_next_scene`）：
+
+    - 返回 ``True`` 或抛 ``TaskCompleted`` → **任务完成**；
+    - 返回**场景名字符串** → 声明落点（``operationer.next_scene``），本轮**不算完成**，
+      下一轮由 `_pending_jump_path` 做"到达即清空 / 未到达按图纠偏 / 连续跳不动则放弃"；
+    - 返回 ``False`` / ``None`` → 继续循环（旧行为，逐字不变）。
     """
 
     @functools.wraps(func)
@@ -1013,8 +1020,9 @@ class BaseTask:
             # 清空上一轮的处理函数位置：出错时 _log_execute_error 只展示本轮位置
             self.transition_return = ""
 
-            # 执行步骤转换（处理函数返回 True 表示任务已完成）
-            if self.transition():
+            # 执行步骤转换：**只有返回 True（或抛 TaskCompleted）才算任务完成**；
+            # 处理函数返回场景名字符串 = 声明落点（由 transition() 归一化，见 declare_next_scene）
+            if self.transition() is True:
                 raise TaskCompleted("任务执行完成")
 
     @handle_transition_exceptions
@@ -1084,7 +1092,7 @@ class BaseTask:
                 result = func(self)
             finally:
                 self._record_transition_source(func)
-            return result
+            return self._normalize_handler_result(result)
         else:
             # 场景图里存在、只是本任务没写处理函数的「公共中转页」（如点 X 后落到的
             # 「组织」「主场景」）：立刻按图回源，不再白等 UNREGISTER_SCENE_MAX_TIME。
@@ -1137,7 +1145,86 @@ class BaseTask:
         # self.logger.debug(f"[{scene_name}]注册函数执行完毕")
         # self.logger.debug(f"Transition的Result：{result}")
         # self.logger.debug(f"Transition的next_scene：{self.operationer.next_scene}")
+        return self._normalize_handler_result(result)
+
+    # ------------------------------------------------------------------ #
+    #            处理函数返回值约定：True/异常 = 完成；字符串 = 落点         #
+    # ------------------------------------------------------------------ #
+    def _normalize_handler_result(self, result):
+        """归一化场景处理函数的返回值（**唯一契约出口**）。
+
+        - ``True`` → 原样返回，由 ``_execute`` 判为**任务完成**（唯一"返回值完成"方式，
+          另一种是抛 ``TaskCompleted``）；
+        - ``str``（场景名，非空白）→ 视为「**声明落点**」：转成
+          ``operationer.next_scene``，并返回 ``False``（**本轮不作完成判定**）——
+          下一轮由 `_pending_jump_path` 负责"到达即清空 / 未到达则按图纠偏 /
+          连续跳不动则放弃并截图"；
+        - ``False`` / ``None`` → 原样返回（继续循环）；
+        - **其它真值**（历史写法如 ``return 1``）→ 按新约定**不视为完成**，记一条
+          WARNING 提示作者改用 ``return True``（不再静默完成，避免"字符串/真值"语义混淆）。
+
+        这样任务作者不用再写 ``self.operationer.next_scene = "X"; return False`` 两行，
+        直接 ``return "X"`` 即可；抛 ``TaskCompleted`` 的完成路径不受影响。
+        """
+        if isinstance(result, str):
+            self.declare_next_scene(result)
+            return False
+        if result is True or result is False or result is None:
+            return result
+        if result:
+            self._log_once(
+                f"handler-result-not-true:{type(result).__name__}",
+                f"处理函数返回了非 True 的真值（{result!r}）：按当前约定**不视为任务完成**，"
+                f"需要结束请改为 return True 或抛 TaskCompleted",
+                logging.WARNING)
+            return False
         return result
+
+    def declare_next_scene(self, scene: str, desc: str = "") -> bool:
+        """声明"本步结束后应当到达的场景"（落点），返回是否声明成功。
+
+        也可由任务直接调用（等价于 ``return "场景名"``）：``self.declare_next_scene("X")``。
+
+        语义与保障（全部基于既有的 ``operationer.next_scene`` + `_pending_jump_path`）：
+
+        - **到达**：下一轮识别到该场景 → 自动清除声明并执行该场景的处理函数；
+        - **未到达但有路**：按转移图寻路纠偏（逐跳执行，受 `JUMP_STALL_LIMIT` 保护）；
+        - **连续跳不动**：放弃目标 + ``JumpStalled`` 错误截图 + 交回当前画面的处理函数；
+        - **当前画面无路可达**：保留声明交给后续帧（画面变化后仍有机会跳过去）。
+
+        安全校验（避免把 declare 写成"送死"）：
+
+        - 非字符串 / 空字符串 → WARNING 并忽略（不改动已有声明）；
+        - 场景名不在 ``scene_graph.scenes`` 里 → WARNING 并忽略：跳转校验会抛
+          ``ValueError`` 走"未捕获异常 → 冷却重试"，比不声明更糟；老式替身
+          （operationer 无 ``scene_graph``）跳过该校验。
+
+        ``desc`` 仅用于日志补充说明（如 ``desc="点X后回到组织"``）。
+        """
+        if not isinstance(scene, str) or not scene.strip():
+            self._log_once(
+                "declare-next-scene-invalid",
+                f"声明落点被忽略：取值非法（{scene!r}，应为非空场景名）",
+                logging.WARNING)
+            return False
+        scene = scene.strip()
+        graph = getattr(self.operationer, "scene_graph", None)
+        scenes = getattr(graph, "scenes", None)
+        if scenes and scene not in scenes:
+            self._log_once(
+                f"declare-next-scene-unknown:{scene}",
+                f"声明落点被忽略：[{scene}] 不在场景库中（拼写错误或场景已改名）",
+                logging.WARNING)
+            return False
+        # 不在声明时重置「跳转未推进」计数：同一 (画面, 目标) 连续跳不动时，计数会累加并
+        # 在超过 JUMP_STALL_LIMIT 后触发放弃 + 截图——这是有意的保护，不能被 declare 洗掉。
+        self.operationer.next_scene = scene
+        suffix = f"（{desc}）" if desc else ""
+        self._log_once(
+            f"declare-next-scene:{scene}",
+            f"声明落点: {scene}{suffix}"
+            f"（到达即清除；未到达按图纠偏，连续跳不动则放弃）")
+        return True
 
     def _confirm_scene(self, scene_name: str) -> str:
         """多帧确认去抖：返回本轮**路由/上报**应当使用的场景名（见 ``scene_confirm_frames``）。

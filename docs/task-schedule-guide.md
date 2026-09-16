@@ -256,6 +256,7 @@ source, ignore_window)`：
 | 识别缺边收敛（待补边清单 + 落库接口） | `.venv\Scripts\python.exe test_scene\verify_pending_scene_edges.py` |
 | 显式等待 / 连点进展信号（卡死判据=无进展） | `.venv\Scripts\python.exe test_scene\verify_wait_and_progress.py` |
 | 场景识别多帧确认去抖 | `.venv\Scripts\python.exe test_scene\verify_scene_confirm.py` |
+| 处理函数返回值约定（字符串=声明落点） | `.venv\Scripts\python.exe test_scene\verify_declare_next_scene.py` |
 
 新增任务的验收清单：
 
@@ -470,6 +471,39 @@ source, ignore_window)`：
 - 验证：`test_scene/verify_scene_confirm.py`（`_confirm_scene` 四种情形、真实
   `transition()` 的处理函数/心跳序列、执行开始复位、默认值）；
   寻路期间不去抖由 `test_scene/verify_transition_stall_guard.py` 的多跳用例覆盖。
+
+### 处理函数返回值约定：字符串 = 声明落点（2026-09-16）
+
+```python
+@TransitionOn("叛忍来袭-未开始")
+def _(self):
+    ...
+    return "主场景-组织"      # ← 声明落点：本步结束后应当到达该场景
+```
+
+| 处理函数返回 | 框架行为 |
+| --- | --- |
+| `True` | **任务完成**（另一种完成方式是抛 `TaskCompleted`） |
+| `"场景名"` | **声明落点**：写入 `operationer.next_scene`，本轮**不算完成** |
+| `False` / `None` | 继续循环（旧行为，逐字不变） |
+| 其它真值（如 `1`） | 不视为完成 + WARNING 提示改用 `return True`（不再静默完成） |
+
+- 声明之后**由既有机制接管**（无需新框架）：
+  - **到达**（下一轮识别到该场景）→ 自动清除声明并执行该场景的处理函数；
+  - **未到达但图上有路** → 按转移图寻路纠偏（逐跳执行，受 `JUMP_STALL_LIMIT` 保护）；
+  - **连续跳不动** → 放弃目标 + `JumpStalled` 错误截图 + 交回当前画面的处理函数；
+  - **当前画面无路可达** → 保留声明给后续帧（画面变化后仍可能跳过去）。
+- 等价写法：`self.declare_next_scene("X", desc="点X后回到组织")`（`desc` 进日志）。
+- 安全校验（避免"声明送死"）：非字符串 / 空白 → WARNING 并忽略；场景名不在
+  `scene_graph.scenes` → WARNING 并忽略（否则跳转校验抛 `ValueError` → 未捕获异常 →
+  冷却重试）；老式替身（无 `scene_graph`）跳过校验。日志按场景去重，不刷屏。
+- 建议：**任何"点了会跳场景"的处理函数都声明落点**——"点完不知道跑到哪"由框架纠偏，
+  不再依赖 `UNREGISTER_SCENE_MAX_TIME` 的 15s 观望兜底。
+- 兼容性：现有任务零改动；`XiaoHaoTiLi.__set_next_scene()` 这类"设 `next_scene` 再
+  `return False`"的既有写法继续有效（`del/` 下的 V1 代码不参与）。
+- 验证：`test_scene/verify_declare_next_scene.py`（24 项：返回值归一化六态、
+  声明校验与去重、两个调用点、声明后四种走向、端到端"字符串不完成 / True 才完成"、
+  既有先例回归、源码防回退）。
 
 
 ---
