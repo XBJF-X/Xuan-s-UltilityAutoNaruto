@@ -10,9 +10,7 @@
   >
     <div class="notice-body">
       <n-text>
-        如果任务执行出现异常，请第一时间打开日志面板右上角的截图开关，完整记录下异常情况后，
-        点击顶部栏右上角的文件夹图标，按照指引检查代码是否为最新，选择日期和对应的任务后生成反馈包，
-        将反馈包发送给开发者即可。
+        如果任务执行出现异常，按照如下指引操作：
       </n-text>
       <div class="notice-steps">
         <div class="step-item">1. 打开日志面板右上角的「截图」开关，完整记录异常过程</div>
@@ -58,7 +56,7 @@ const showModel = computed({
 const message = useMessage()
 
 /** 倒计时秒数：未结束时窗口不可关闭（无关闭叉、遮罩不可点、两个按钮禁用） */
-const COUNTDOWN_SECONDS = 10
+const COUNTDOWN_SECONDS = 15
 const countdown = ref(COUNTDOWN_SECONDS)
 const dontRemind = ref(false)  // 默认不勾选
 const saving = ref(false)
