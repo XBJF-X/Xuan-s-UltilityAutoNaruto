@@ -48,6 +48,7 @@ class PanRenLaiXi(BaseTask):
     schedule = Custom(_panren_windows,
                       cycle=lambda base: base + datetime.timedelta(weeks=1),
                       describe_text="周三/周六叛忍触发窗口 + 下周三兜底")
+    scene_stuck_seconds = 350
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
