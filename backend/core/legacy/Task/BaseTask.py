@@ -314,6 +314,19 @@ class BaseTask:
     每轮都是"截图 + 识别 + 心跳"的高速空转（2026-09-16 日志一秒内 20+ 轮）。
     """
 
+    scene_confirm_frames = 2
+    """场景识别去抖：连续多少帧识别到同一场景才切换路由（默认 2，1 = 关闭去抖）。
+
+    场景名抖动（如「组织」↔「主场景-组织」、「叛忍来袭-即将开始」↔「-进行中」）会让任务
+    在两条流程之间来回跳，并把超时监视器的"停滞计时"反复重置、把回源判定搞乱。
+    开启后：单帧结果不足以切换流程——未达确认帧数时**沿用上一次已确认的场景**继续处理；
+    首帧（还没有任何已确认场景）仍直接用识别结果，避免任务起步被卡住。
+
+    例外：``operationer.next_scene`` 已挂目标（框架/任务正在寻路）时**不做去抖**——
+    待跳转目标是明确意图，去抖只会让逐跳推进每跳慢一拍；此时仍会维护"已确认场景"
+    状态，寻路结束后立即生效。
+    """
+
     JUMP_STALL_LIMIT = 3
     """同一「场景→目标」连续跳转的次数上限（超过即判定跳转未生效）。
 
@@ -486,6 +499,7 @@ class BaseTask:
         self.__dict__["_logged_once_keys"] = set()
         self.__dict__.pop("_last_logged_scene", None)
         self._clear_graph_known_streak()
+        self._clear_scene_confirm()
 
     def _log_once(self, key: str, message: str,
                   level: int = logging.INFO) -> None:
@@ -1019,6 +1033,12 @@ class BaseTask:
         else:
             self.operationer.current_scene = scene
             scene_name = scene.name
+        # 多帧确认去抖：始终维护"已确认场景"，但**寻路期间不做去抖**——
+        # 待跳转目标是框架/任务的明确意图，去抖只会让逐跳推进每跳慢一拍；
+        # 寻路结束后（next_scene 已清空）才用已确认场景路由，抑制单帧误判。
+        confirmed_scene = self._confirm_scene(scene_name)
+        if not self.operationer.next_scene:
+            scene_name = confirmed_scene
         # 场景日志：切换场景时 INFO（用户关心流程走向），持续停留同一场景降为 DEBUG
         # （旧实现每轮循环都打 INFO，长时间任务会刷屏）
         if scene_name != self.__dict__.get("_last_logged_scene"):
@@ -1118,6 +1138,44 @@ class BaseTask:
         # self.logger.debug(f"Transition的Result：{result}")
         # self.logger.debug(f"Transition的next_scene：{self.operationer.next_scene}")
         return result
+
+    def _confirm_scene(self, scene_name: str) -> str:
+        """多帧确认去抖：返回本轮**路由/上报**应当使用的场景名（见 ``scene_confirm_frames``）。
+
+        - 连续确认达到阈值 → 采用新场景（并更新"已确认场景"）；
+        - 未达阈值但已有已确认场景 → **沿用已确认场景**（单帧噪声/抖动不足以改流程）；
+        - 首帧且尚无已确认场景 → 用当前识别结果（否则任务永远无法起步）。
+
+        说明：``operationer.current_scene`` 仍记录本帧识别到的场景对象（供下一帧识别做
+        hint），本方法只影响"这一轮按哪个场景走流程"。
+        """
+        need = max(1, int(getattr(self, "scene_confirm_frames", 1) or 1))
+        if need <= 1:
+            self.__dict__["_confirmed_scene"] = scene_name
+            self.__dict__.pop("_scene_vote", None)
+            return scene_name
+        vote = self.__dict__.get("_scene_vote")
+        count = vote["count"] + 1 if vote and vote.get("scene") == scene_name else 1
+        self.__dict__["_scene_vote"] = {"scene": scene_name, "count": count}
+        confirmed = self.__dict__.get("_confirmed_scene")
+        if count >= need:
+            if confirmed != scene_name and confirmed is not None:
+                self.logger.debug(
+                    f"场景确认：{confirmed} -> {scene_name}（连续 {count} 帧）")
+            self.__dict__["_confirmed_scene"] = scene_name
+            return scene_name
+        if confirmed is None:
+            # 首帧：用识别结果起步（确认帧数只用于"切换"），并把它作为基准场景
+            self.__dict__["_confirmed_scene"] = scene_name
+            return scene_name
+        self.logger.debug(
+            f"场景待确认（{scene_name} {count}/{need} 帧），沿用已确认场景 {confirmed}")
+        return confirmed
+
+    def _clear_scene_confirm(self) -> None:
+        """清空场景确认状态（每次执行开始时调用）。"""
+        self.__dict__.pop("_scene_vote", None)
+        self.__dict__.pop("_confirmed_scene", None)
 
     def _is_graph_known_scene(self, scene_name: str) -> bool:
         """场景名是否存在于场景图（含未被本任务注册处理函数的公共中转页）。"""

@@ -255,6 +255,7 @@ source, ignore_window)`：
 | 未注册场景分流（图内已知立刻回源）+ 循环退避 | `.venv\Scripts\python.exe test_scene\verify_known_scene_return.py` |
 | 识别缺边收敛（待补边清单 + 落库接口） | `.venv\Scripts\python.exe test_scene\verify_pending_scene_edges.py` |
 | 显式等待 / 连点进展信号（卡死判据=无进展） | `.venv\Scripts\python.exe test_scene\verify_wait_and_progress.py` |
+| 场景识别多帧确认去抖 | `.venv\Scripts\python.exe test_scene\verify_scene_confirm.py` |
 
 新增任务的验收清单：
 
@@ -447,6 +448,28 @@ source, ignore_window)`：
   非等待仍 180s、等待期间静止仍判 GAME_FROZEN、等待声明六种清除时机、
   连点进展信号、`wait_for` 四态、真实任务类声明）；
   阈值规则回归 `test_scene/verify_task_scene_stuck_param.py`。
+
+### 场景识别多帧确认去抖（2026-09-16）
+
+识别器偶发把加载/过场画面判成别的场景，日志里也常见场景名在两三个名字之间抖动
+（「组织」↔「主场景-组织」、「叛忍来袭-即将开始」↔「-进行中」）。抖动会让任务在两条
+流程之间来回跳，并把监视器的"停滞计时"、未注册计时、图内已知回源的连续确认计数反复清零。
+
+`transition()` 取到识别结果后先过 `_confirm_scene()`（`scene_confirm_frames`，默认 2）：
+
+| 情形 | 本轮路由与心跳上报 |
+| --- | --- |
+| 连续 N 帧同一场景 | 采用新场景并更新"已确认场景" |
+| 未达 N 帧但有已确认场景 | **沿用已确认场景**（单帧噪声不足以改流程；心跳同样用已确认名，监视器不会看到假切换） |
+| 首帧（无已确认场景） | 用识别结果起步，并把它作为基准场景 |
+| `scene_confirm_frames = 1` | 关闭去抖（逐字等价旧行为） |
+
+- 例外：`operationer.next_scene` 已挂目标（框架/任务正在寻路）时**不做去抖**——
+  待跳转目标是明确意图，逐跳推进不受影响；此时仍维护"已确认场景"，寻路结束立即生效。
+- `_reset_execute_log_state()` 清空确认状态（每次执行重新确认）。
+- 验证：`test_scene/verify_scene_confirm.py`（`_confirm_scene` 四种情形、真实
+  `transition()` 的处理函数/心跳序列、执行开始复位、默认值）；
+  寻路期间不去抖由 `test_scene/verify_transition_stall_guard.py` 的多跳用例覆盖。
 
 
 ---
