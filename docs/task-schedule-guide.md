@@ -251,6 +251,7 @@ source, ignore_window)`：
 | 跨任务激活的窗口守卫（叛忍窗口过期不再激活） | `.venv\Scripts\python.exe test_scene\verify_activation_window_guard.py` |
 | 手动「执行」的窗口校验（拒绝原因 / 强制执行 / API force 透传） | `.venv\Scripts\python.exe test_scene\verify_manual_execute_guard.py` |
 | 识别过程日志开关 + 元素查找/OCR 一条总述 | `.venv\Scripts\python.exe test_scene\verify_recognition_and_search_logging.py` |
+| 卡死自救下沉任务线程 + 停止原因驱动重排期 | `.venv\Scripts\python.exe test_scene\verify_task_recovery.py` |
 
 新增任务的验收清单：
 
@@ -338,6 +339,36 @@ source, ignore_window)`：
 - 验证：`test_scene/verify_transition_stall_guard.py`（8 项：放弃后恢复连点、到达即清空、
   多跳不被打断、无路径保持原行为、强制回源纳入保护、回源无路径不再 KeyError、
   更多玩法对局中不回源 / 未进入对局才回源）。
+
+### 卡死告警的自救下沉任务线程（2026-09-16）
+
+现场（叛忍来袭 2026-09-16 21:10~21:15）：调度器收到 `[SCENE_STUCK]` 后**先** `stop_task`
+（置 `operationer.stop_event`）**再**调用 `_handle_scene_stuck` 点 X 脱困，而
+`Operationer._search_loop` 首轮就 `if self._should_stop(): raise Stop` —— 救援 100% 失败，
+每次告警都留下一条 ERROR traceback；任务被停止后"下次执行时间"仍是过去时刻，
+只要任务仍处于启用状态就会被调度器按扫描间隔立刻重跑。
+
+现在的协议是「**监视器只发信号，任务线程执行自救**」：
+
+| 环节 | 行为 |
+| --- | --- |
+| 监视器 `_raise` | 挂"恢复请求"（`consume_recovery_request` 一次性取走）后再通知调度器 |
+| 任务 `_execute` 循环 | 每轮开头 `_handle_recovery_request()`：取请求 → `recover_from_stuck(scene)` |
+| 任务自救 | **成功** → `notify_recovery_done` 并继续执行（顺带清空跳转未推进计数与未注册计时）；**失败/异常** → 先 `notify_recovery_done` 再抛 `Stop` |
+| 调度器 `_process_freeze_event` | 先等任务应答（`task_recovery_grace()`，配置 `超时检测-任务自恢复宽限秒`，默认 60s）；**未应答**才 `stop_task(reason=...)` + 兜底脱困 |
+| 兜底脱困 `_handle_scene_stuck` | 包在 `Operationer.ignoring_stop()` 内执行（退出时原样恢复停止标志），`Stop` 只记 INFO |
+
+- 默认自救策略 `BaseTask.recover_from_stuck`：**按图回源**（`bfs_shortest_path` 有路 →
+  挂 `next_scene=source_scene` 走 `TransitionManager.transition`）→ 回不了源则
+  **通用退出点击**（X-普通 / X-广告-1 / X-广告-2 → 返回）。任务可覆盖该方法定制脱困方式。
+- 停止原因（`Exceptions.STOP_REASON_*`）：`TaskExecutor.stop_task(task, reason)` →
+  `BaseTask.stop(reason)`；**卡死类**（`STUCK` / `FROZEN`）在 `Stop` 分支走
+  `on_stuck(current_time)`（默认 = `error_retry_delay` 冷却重试，与步骤失败一致），
+  普通停止（抢占 / 手动）保持"按原下次执行时间继续"不变。
+- 旧式对象兼容：只接受无参 `stop()` 的替身 / 第三方实现由 `_request_stop` 按签名判定后无参调用。
+- 验证：`test_scene/verify_task_recovery.py`（原因透传、`ignoring_stop` 恢复语义、
+  兜底脱困在停止标志下仍执行、监视器请求/等待/清理契约、任务自救四种状态、
+  默认自救策略、卡死停止重排期、真实 `_execute` 循环端到端）。
 
 
 ---

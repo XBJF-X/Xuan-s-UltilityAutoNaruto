@@ -1,3 +1,4 @@
+import contextlib
 import logging
 import random as _random  # 方法参数名 random 会遮蔽同名模块，故用别名导入
 import threading
@@ -139,6 +140,26 @@ class Operationer:
         self.logger.info(f"正在停止任务: {self.task_name}")
         # 设置停止标志
         self.stop_event.set()
+
+    @contextlib.contextmanager
+    def ignoring_stop(self):
+        """临时忽略停止标志（**仅用于告警救援**这类"停止之外"的设备操作）。
+
+        背景：卡死处理的旧实现先 ``stop_task``（置 stop_event）再调用
+        ``search_and_click`` 做脱困点击，而 ``_search_loop`` / ``swipe_and_wait``
+        首轮就会 ``raise Stop``（`Operationer.py` 的停止检查），救援必然失败并留下
+        一条 ERROR traceback。
+
+        救援期间用本上下文临时清掉停止标志，退出时**原样恢复**（原本已置位就重新
+        置位），因此任务的停止语义不变——只是让脱困动作真正有机会执行。
+        """
+        was_set = self.stop_event.is_set()
+        self.stop_event.clear()
+        try:
+            yield
+        finally:
+            if was_set:
+                self.stop_event.set()
 
     def get_element(self, element_name, scene_name: str | None = None):
         if scene_name:

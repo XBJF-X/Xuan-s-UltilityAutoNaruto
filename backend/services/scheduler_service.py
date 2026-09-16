@@ -12,6 +12,11 @@ import cv2
 from backend.utils import get_real_path
 from backend.core.config_model import Config
 from backend.core.scene_graph import SceneGraph
+from backend.core.legacy.Exceptions import (
+    STOP_REASON_FROZEN,
+    STOP_REASON_STUCK,
+    Stop,
+)
 
 T = TypeVar('T')
 
@@ -1305,10 +1310,20 @@ class SchedulerService:
 
     def _process_freeze_event(self, event):
         """
-        处理超时监视器上报的卡死事件：
-        1. 停止当前正在执行的任务（任务线程会在下一轮循环感知停止信号）；
-        2. 按级别分发到对应的处理流程；
+        处理超时监视器上报的卡死事件（**先自救、后强制**）：
+
+        1. 监视器在告警时已挂上"恢复请求"，这里先把恢复机会交给**任务线程**
+           （任务在下一轮循环里执行 ``BaseTask.recover_from_stuck``），最多等待
+           ``超时检测-任务自恢复宽限秒``（默认 60s）；
+        2. 宽限内未确认（任务卡在长阻塞里 / 自救失败 / 线程已死）→ 强制停止任务
+           （带停止原因：``STOP_REASON_STUCK`` / ``STOP_REASON_FROZEN``，任务侧据此
+           走 ``on_stuck`` 冷却重试，不会把"下次执行时间"留在过去被立刻重跑），
+           再按级别执行兜底脱困；
         3. 处理完毕后通知监视器解除告警挂起状态。
+
+        旧实现是"先 stop_task（置停止标志）→ 再调 Operationer 去救援"，而
+        `Operationer._search_loop` 首轮就会 ``raise Stop``，救援必然失败且每次告警
+        都留下一条 ERROR traceback（见 2026-09-16 叛忍来袭现场日志）。
         """
         from backend.services.watchdog_service import FreezeLevel
         level_name = {
@@ -1320,6 +1335,7 @@ class SchedulerService:
             f"收到超时监视器告警 [{level_name}] "
             f"任务={event.task_name} 场景={event.scene_name} "
             f"静止={event.static_seconds:.0f}s 详情={event.detail}")
+        handled_by_task = False
         try:
             # 0. 卡死/停滞告警触发时自动截图一次，便于排查（截图失败不阻断处理流程）
             try:
@@ -1327,51 +1343,73 @@ class SchedulerService:
                     self._save_screenshot(event.task_name, "WatchdogFreeze")
             except Exception as _e:
                 self.logger.warning(f"卡死告警截图失败: {_e}")
-            # 1. 停止当前正在执行的任务
-            for task in self.task_queue.get_tasks_by_status(0):
-                self.executor.stop_task(task)
-            # 2. 按级别分发处理流程
-            if event.level == FreezeLevel.SCENE_STUCK:
-                self._handle_scene_stuck(event)
-            elif event.level == FreezeLevel.GAME_FROZEN:
-                self._handle_game_frozen(event)
-            elif event.level == FreezeLevel.EMULATOR_FROZEN:
-                self._handle_emulator_frozen(event)
+            # 1. 先交给任务线程自救（不抢设备、不置停止标志）
+            watchdog = self.watchdog
+            grace = watchdog.task_recovery_grace() if watchdog is not None else 0.0
+            if watchdog is not None and grace > 0:
+                self.logger.info(
+                    f"[{level_name}] 已请求任务 [{event.task_name}] 自行恢复"
+                    f"（场景={event.scene_name}），最多等待 {grace:.0f}s")
+                if watchdog.wait_recovery_done(grace):
+                    handled_by_task = True
+                    self.logger.info(
+                        f"[{level_name}] 任务 [{event.task_name}] 已确认处理告警，"
+                        f"无需强制停止")
+            # 2. 任务未能自行处理 → 强制停止（带原因）+ 兜底脱困
+            if not handled_by_task:
+                reason = (STOP_REASON_STUCK
+                          if event.level == FreezeLevel.SCENE_STUCK
+                          else STOP_REASON_FROZEN)
+                for task in self.task_queue.get_tasks_by_status(0):
+                    self.executor.stop_task(task, reason)
+                if event.level == FreezeLevel.SCENE_STUCK:
+                    self._handle_scene_stuck(event)
+                elif event.level == FreezeLevel.GAME_FROZEN:
+                    self._handle_game_frozen(event)
+                elif event.level == FreezeLevel.EMULATOR_FROZEN:
+                    self._handle_emulator_frozen(event)
         except Exception as e:
             import traceback
             self.logger.error(f"卡死处理流程异常: {e}\n{traceback.format_exc()}")
         finally:
-            # 3. 通知监视器处理完毕，进入恢复宽限期
-            if self.watchdog:
+            # 3. 通知监视器处理完毕，进入恢复宽限期（任务自救成功时已自行通知过）
+            if self.watchdog and not handled_by_task:
                 self.watchdog.notify_recovery_done(event.level)
 
     def _handle_scene_stuck(self, event):
         """
-        场景停滞处理：尝试寻找 X / 返回 / 退出 等元素进行点击，使游戏脱离当前场景。
-        TODO(用户): 按需完善查找的元素范围与点击策略（如返回键、退出按钮等）。
+        场景停滞**兜底脱困**（任务线程自救失败/未响应时才会走到这里）：
+        尝试寻找 X / 返回 等元素点击，使游戏脱离当前场景。
+
+        注意：与旧实现的区别——①任务已停止（stop_event 已置位），而
+        ``Operationer`` 的搜索/滑动首轮就会 ``raise Stop``，所以脱困动作必须包在
+        `Operationer.ignoring_stop()` 里才能真正执行（退出时会原样恢复停止标志）；
+        ②``Stop`` 不再是"处理失败"，只记 INFO（它不是异常，是停止请求的既定语义）。
         """
-        self.logger.info(f"执行场景停滞处理：尝试点击 X 类元素脱离场景 [{event.scene_name}]")
+        self.logger.info(f"执行场景停滞兜底脱困：尝试点击 X 类元素脱离场景 [{event.scene_name}]")
         if not self.operationer:
             return
         try:
-            elements = []
-            for name in ("X-普通", "X-广告-1", "X-广告-2"):
-                el = self.operationer.get_element(name, "主场景")
-                if el is not None:
-                    elements.append(el)
-            if elements and self.operationer.search_and_click(
-                    elements, [], max_attempts=2):
-                self.logger.info("场景停滞处理：已点击 X 元素")
-                return
-            else:
+            with self.operationer.ignoring_stop():
+                elements = []
+                for name in ("X-普通", "X-广告-1", "X-广告-2"):
+                    el = self.operationer.get_element(name, "主场景")
+                    if el is not None:
+                        elements.append(el)
+                if elements and self.operationer.search_and_click(
+                        elements, [], max_attempts=2):
+                    self.logger.info("场景停滞处理：已点击 X 元素")
+                    return
                 self.logger.info("场景停滞处理：未找到可点击的 X 元素")
 
-            # 任何可视元素都未找到，则直接点击可能的坐标
-            x_coor_element= self.operationer.get_element("X", "主场景")
-            self.operationer.click_and_wait(x_coor_element)
-            back_coor_element= self.operationer.get_element("返回", "主场景")
-            self.operationer.click_and_wait(back_coor_element)
+                # 任何可视元素都未找到，则直接点击可能的坐标
+                x_coor_element = self.operationer.get_element("X", "主场景")
+                self.operationer.click_and_wait(x_coor_element)
+                back_coor_element = self.operationer.get_element("返回", "主场景")
+                self.operationer.click_and_wait(back_coor_element)
 
+        except Stop:
+            self.logger.info("场景停滞处理：停止请求已置位，跳过兜底脱困")
         except Exception as e:
             import traceback
             self.logger.error(f"场景停滞处理失败: {e}\n{traceback.format_exc()}")

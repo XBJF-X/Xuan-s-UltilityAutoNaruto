@@ -28,6 +28,7 @@
     超时检测-截图失败上限    int   默认 3（连续失败次数达到即判定模拟器卡死）
     超时检测-升级窗口秒      int   默认 300（重启游戏后该时长内再次卡死则升级为模拟器卡死）
     超时检测-恢复宽限秒      int   默认 60（处理流程执行完毕后的检测宽限期）
+超时检测-任务自恢复宽限秒 int   默认 60（告警后先等任务线程自救的上限；超时才强制停止）
 
 任务级覆盖（BaseTask 类属性，优先级高于上表全局项；见 BaseTask.scene_stuck_seconds）：
     scene_stuck_seconds      float/None  任务类可覆盖「场景停滞」阈值：
@@ -59,12 +60,25 @@ if TYPE_CHECKING:
 # 也是任务类属性 BaseTask.scene_stuck_seconds 为 None（未覆盖）时的兜底。
 DEFAULT_SCENE_STUCK_SECONDS = 180.0
 
+# 告警后"先等任务线程自行恢复"的默认宽限秒数（配置项「超时检测-任务自恢复宽限秒」的缺省值）：
+# 任务在下一轮循环里消费恢复请求并执行 BaseTask.recover_from_stuck；
+# 超过该宽限仍未确认恢复（任务卡在长阻塞里 / 恢复失败 / 线程已死）才强制停止任务。
+DEFAULT_TASK_RECOVERY_GRACE_SECONDS = 60.0
+
 
 class FreezeLevel(IntEnum):
     """卡死级别"""
     SCENE_STUCK = 1      # 场景停滞：画面仍在动，但长时间停留在同一场景
     GAME_FROZEN = 2      # 游戏卡死：画面长时间静止，探针点击后依旧静止
     EMULATOR_FROZEN = 3  # 模拟器卡死：截图持续失败 / 重启游戏后画面仍静止
+
+
+def _level_name(level) -> str:
+    """卡死级别的可读名（取值非法时退化为原值，不因日志格式化抛错）。"""
+    try:
+        return FreezeLevel(level).name
+    except (TypeError, ValueError):
+        return str(level)
 
 
 @dataclass
@@ -130,6 +144,8 @@ class TimeoutWatchdog:
         self._awaiting_recovery = False  # 已发出告警，等待调度器处理完毕
         self._last_game_restart: float = 0.0  # 最近一次"重启游戏"处理完成的时间
         self._grace_until: float = 0.0  # 恢复宽限期截止时间
+        # 待任务侧消费的恢复请求（告警时挂上，由任务线程在循环里取走并自救）
+        self._recovery_request: Optional[FreezeEvent] = None
 
         # ---- 事件历史（供排查，仅保留最近 50 条）----
         self._event_history: List[FreezeEvent] = []
@@ -213,6 +229,22 @@ class TimeoutWatchdog:
     # 生命周期
     # ================================================================
 
+    def task_recovery_grace(self) -> float:
+        """告警后"先等任务线程自行恢复"的宽限秒数（配置项非法时告警一次并回退默认）。
+
+        取值 <= 0 表示不给任务自救机会（等价于旧行为：立即强制停止 + 兜底脱困）。
+        """
+        raw = self._cfg("超时检测-任务自恢复宽限秒",
+                        DEFAULT_TASK_RECOVERY_GRACE_SECONDS)
+        try:
+            return float(raw)
+        except (TypeError, ValueError):
+            self._warn_once(
+                "task-recovery-grace-invalid",
+                f"配置项[超时检测-任务自恢复宽限秒]取值非法（{raw!r}），"
+                f"已回退默认 {DEFAULT_TASK_RECOVERY_GRACE_SECONDS:.0f} 秒")
+            return DEFAULT_TASK_RECOVERY_GRACE_SECONDS
+
     def start(self):
         """启动后台检测线程（幂等）"""
         if self._running:
@@ -232,6 +264,7 @@ class TimeoutWatchdog:
         self._running = False
         with self._lock:
             self._current_task = None
+            self._recovery_request = None
         self.logger.info("超时监视器已停止")
 
     def attach_task(self, task: "BaseTask"):
@@ -249,6 +282,8 @@ class TimeoutWatchdog:
             # 心跳健康状态随任务重置（上一个任务的失败不应影响本任务）
             self._heartbeat_fail_count = 0
             self._scene_stuck_enabled = True
+            # 恢复请求同样随任务重置（旧任务的告警不得被新任务消费）
+            self._recovery_request = None
             # 一次性告警去重也随任务重置（换任务后允许重新提示一次）
             self._warned_keys.clear()
         task.attach_watchdog(self)
@@ -264,6 +299,8 @@ class TimeoutWatchdog:
             was_current = self._current_task is task
             if was_current:
                 self._current_task = None
+                # 任务已被收回：残留的恢复请求不应再交给任何线程执行
+                self._recovery_request = None
             fail_count = self._heartbeat_fail_count
         task.detach_watchdog()
         if was_current and fail_count:
@@ -307,22 +344,56 @@ class TimeoutWatchdog:
                     f"{type(e).__name__}: {e}", exc_info=True)
 
     # ================================================================
+    # 任务侧接口：卡死自救（告警先交给任务线程，调度器不抢设备）
+    # ================================================================
+
+    def consume_recovery_request(self) -> Optional[FreezeEvent]:
+        """任务线程取走当前告警的"恢复请求"（一次性；取走后不再重复返回）。
+
+        为什么要这样分工：调度器线程直接操作设备会与任务线程争用同一个
+        Operationer/Device，且旧实现"先置停止标志再救援"会让救援必然
+        ``raise Stop``。现在监视器只挂请求，**任务在自己的线程内**执行
+        ``BaseTask.recover_from_stuck``，恢复后由任务调用 `notify_recovery_done`。
+        """
+        with self._lock:
+            event = self._recovery_request
+            self._recovery_request = None
+        return event
+
+    def wait_recovery_done(self, timeout: float) -> bool:
+        """等待任务侧确认"告警已处理"（任务自救成功/失败都会通知）。
+
+        Returns:
+            True = 已确认（`_awaiting_recovery` 解除，任务继续或自行停止）；
+            False = 宽限内未确认（任务卡在长阻塞 / 线程已死）→ 调用方应强制停止。
+        """
+        deadline = time.monotonic() + max(0.0, float(timeout))
+        while True:
+            with self._lock:
+                if not self._awaiting_recovery:
+                    return True
+            if time.monotonic() >= deadline:
+                return False
+            time.sleep(0.2)
+
+    # ================================================================
     # 调度器侧接口：恢复通知
     # ================================================================
 
     def notify_recovery_done(self, level: FreezeLevel):
-        """调度器处理流程执行完毕后调用，解除告警挂起并进入宽限期"""
+        """告警处理完毕（任务自救 / 调度器兜底）→ 解除挂起并进入宽限期"""
         now = time.monotonic()
         if level == FreezeLevel.GAME_FROZEN:
             self._last_game_restart = now
         with self._lock:
             self._awaiting_recovery = False
+            self._recovery_request = None
             self._last_frame = None
             self._capture_fail_count = 0
             self._static_since = now
             self._scene_since = now
             self._grace_until = now + float(self._cfg("超时检测-恢复宽限秒", 60))
-        self.logger.info(f"告警 [{FreezeLevel(level).name}] 处理完毕，进入恢复宽限期")
+        self.logger.info(f"告警 [{_level_name(level)}] 处理完毕，进入恢复宽限期")
 
     def get_status(self) -> dict:
         """当前监视状态（供 API/调试使用）"""
@@ -519,6 +590,8 @@ class TimeoutWatchdog:
             self._event_history.append(event)
             if len(self._event_history) > 50:
                 self._event_history = self._event_history[-50:]
+            # 挂上"恢复请求"：由任务线程在下一轮循环里取走并自救（调度器只发信号）
+            self._recovery_request = event
         self.logger.warning(f"[{FreezeLevel(level).name}] {detail}")
         if self.on_freeze:
             try:

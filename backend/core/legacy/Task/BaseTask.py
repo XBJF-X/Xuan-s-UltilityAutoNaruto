@@ -19,6 +19,7 @@ from backend.core.legacy.Exceptions import (
     Stop,
     TaskCompleted,
     TooEarlyToRun,
+    STUCK_STOP_REASONS,
 )
 from backend.core.legacy.Operationer import Operationer
 from backend.core.legacy.Scene.TransitionManager import TransitionManager
@@ -179,9 +180,19 @@ def handle_task_exceptions(func):
             self.schedule_next_with_delay(self.error_retry_delay)
         except Stop:
             reason = "被停止"
-            self.logger.warning(
-                "收到停止请求，正在清理（被抢占/被停止的任务按原下次执行时间继续）")
-            self._cleanup_on_stop()
+            if getattr(self, "stop_reason", "") in STUCK_STOP_REASONS:
+                # 卡死类停止（任务自救失败 / 监视器兜底后强制停止）：
+                # 必须重新排期，否则"下次执行时间"仍停在过去时刻，会被调度器按扫描
+                # 间隔立刻重跑并反复截图。默认与步骤失败一致（冷却重试），任务可覆盖 on_stuck。
+                reason = "卡死停止"
+                self.logger.warning(
+                    "收到卡死类停止请求（自救失败），按 on_stuck 重新排期")
+                self._cleanup_on_stop()
+                self.schedule_next_on_stuck()
+            else:
+                self.logger.warning(
+                    "收到停止请求，正在清理（被抢占/被停止的任务按原下次执行时间继续）")
+                self._cleanup_on_stop()
         except TimeOutDeadLineError as e:
             reason = "窗口超时"
             self.last_execute_error = str(e)
@@ -329,6 +340,8 @@ class BaseTask:
         self._jump_stall = None
         # 最后一次执行是否出错（供调度器向前端透传失败标记）
         self.last_execute_error = None
+        # 停止原因（Exceptions.STOP_REASON_*）：卡死类停止会让 Stop 分支走 on_stuck 重排期
+        self.stop_reason = ""
 
         # 超时监视器（由调度器在任务开始执行前注入，任务结束后收回）
         self.watchdog = None
@@ -540,14 +553,147 @@ class BaseTask:
                                                   daemon=True)
         self._execution_thread.start()
 
-    def stop(self):
-        """发出停止请求（非阻塞）"""
+    def stop(self, reason: str = ""):
+        """发出停止请求（非阻塞）。
+
+        ``reason`` 取 ``Exceptions.STOP_REASON_*``：卡死类停止（STUCK / FROZEN）会让
+        ``Stop`` 分支改走 ``on_stuck`` 冷却重试，而不是把"下次执行时间"留在过去时刻
+        （那会被调度器按扫描间隔立刻重跑）。
+        """
+        self.stop_reason = reason or ""
         self.logger.info(f"正在请求停止任务: {self.task_name}")
         self.operationer.stop_event.set()
 
     def _should_stop(self):
         """检查是否收到停止请求"""
         return self.operationer.stop_event.is_set()
+
+    # ------------------------------------------------------------------ #
+    #                 卡死自救（告警先交给任务线程，调度器不抢设备）          #
+    # ------------------------------------------------------------------ #
+    def _handle_recovery_request(self) -> None:
+        """消费超时监视器的卡死告警：在**任务线程内**执行自救动作。
+
+        分工原因：调度器线程直接操作设备会与任务线程争用同一个 Operationer/Device；
+        旧实现还"先置停止标志再救援"，而 ``_search_loop`` 首轮就 ``raise Stop``，
+        救援 100% 失败并每次留下一条 ERROR traceback。
+
+        现在的协议：监视器只挂"恢复请求" → 任务在每轮循环开头取走并执行
+        `recover_from_stuck` → **成功或失败都** `notify_recovery_done`（让调度器不必
+        再等满宽限期）→ 成功则继续执行，失败则抛 ``Stop`` 交给 ``on_stuck`` 重排期。
+        """
+        watchdog = self.watchdog
+        consume = getattr(watchdog, "consume_recovery_request", None)
+        if not callable(consume):
+            return
+        event = consume()
+        if event is None:
+            return
+        level_name = getattr(getattr(event, "level", None), "name", "?")
+        scene_name = getattr(event, "scene_name", "") or ""
+        detail = getattr(event, "detail", "")
+        self.logger.warning(
+            f"收到卡死告警 [{level_name}]（场景={scene_name or '未知'}"
+            f"{'，' + detail if detail else ''}），尝试在任务内自行恢复")
+
+        recovered = False
+        failed = False
+        try:
+            recovered = bool(self.recover_from_stuck(scene_name))
+        except Stop:
+            # 停止请求优先（用户/调度器已要求停止），照常向上抛出
+            raise
+        except Exception as e:
+            failed = True
+            self.logger.error(f"✖ 卡死自救异常: {_format_exception(e)}",
+                              exc_info=True)
+        # 无论成功/失败/异常都要应答监视器，避免调度器白等满宽限期
+        self._notify_recovery_done(event)
+
+        if not failed and recovered:
+            self.logger.info("卡死自救成功，继续执行任务")
+            self._clear_jump_stall()
+            self.last_unregistered_scene_time = None
+            return
+        reason = "自救异常" if failed else "自救未命中可退出元素"
+        self.logger.warning(f"卡死自救失败（{reason}），停止任务并按 on_stuck 重排期")
+        raise Stop(f"卡死自救失败（场景={scene_name or '未知'}）")
+
+    def _notify_recovery_done(self, event) -> None:
+        """应答监视器"本次告警已处理"（自救成功/失败都必须应答）。"""
+        notify = getattr(self.watchdog, "notify_recovery_done", None)
+        if not callable(notify):
+            return
+        try:
+            notify(getattr(event, "level", None))
+        except Exception as e:
+            self.logger.warning(f"监视器恢复应答失败: {_format_exception(e)}")
+
+    def recover_from_stuck(self, scene_name: str) -> bool:
+        """卡死自救（默认实现：**按图回源 → 通用退出动作**）。
+
+        任务类可覆盖以定制脱困方式（例如返回某个安全场景、点"退出战斗"）。
+        返回 True 表示已执行脱困动作（监视器随即重新开始计时）；返回 False 表示
+        本次未能执行任何有效动作（任务会被停止并按 ``on_stuck`` 重排期）。
+        """
+        source = self.source_scene
+        if source and scene_name and scene_name != source:
+            try:
+                path = self.transition_manager.bfs_shortest_path(scene_name, source)
+            except Exception as e:
+                path = None
+                self.logger.warning(
+                    f"卡死自救：寻路失败（{_format_exception(e)}），改用通用退出动作")
+            if path and len(path) >= 2:
+                self.logger.warning(
+                    f"卡死自救：按图回源 {scene_name} -> {source}"
+                    f"（路径: {' -> '.join(path)}）")
+                self.operationer.next_scene = source
+                try:
+                    self.transition_manager.transition(self.operationer)
+                except Exception as e:
+                    self.logger.warning(
+                        f"卡死自救：回源跳转失败（{_format_exception(e)}），"
+                        f"改用通用退出动作")
+                    return self._escape_by_generic_clicks()
+                return True
+        return self._escape_by_generic_clicks()
+
+    def _escape_by_generic_clicks(self) -> bool:
+        """通用脱困：点 X / 返回（关闭卡住的弹窗或退出滞留界面），命中即视为已尝试。"""
+        elements = []
+        for name in ("X-普通", "X-广告-1", "X-广告-2"):
+            try:
+                element = self.operationer.get_element(name, "主场景")
+            except Exception as e:
+                # 元素表读取失败只影响这一个候选，继续尝试其余候选
+                self.logger.debug(f"卡死自救：读取元素 [{name}] 失败: {_format_exception(e)}")
+                element = None
+            if element is not None:
+                elements.append(element)
+        try:
+            if elements and self.operationer.search_and_click(
+                    elements, [], once_max_attempts=1, max_attempts=1):
+                self.logger.info("卡死自救：已点击 X 元素")
+                return True
+            back = self.operationer.get_element("返回", "主场景")
+            if back is not None and self.operationer.click_and_wait(back):
+                self.logger.info("卡死自救：已点击返回")
+                return True
+        except Stop:
+            raise
+        except Exception as e:
+            self.logger.warning(f"卡死自救点击失败: {_format_exception(e)}")
+        return False
+
+    def on_stuck(self, current_time: datetime.datetime) -> datetime.datetime:
+        """卡死自救失败被停止 → 返回下一次执行时间（默认：冷却重试，同步骤失败）。"""
+        return self.on_delay(current_time, self.error_retry_delay)
+
+    def schedule_next_on_stuck(self) -> tuple[bool, datetime.datetime | None]:
+        current_time = datetime.datetime.now(self.tz_info)
+        next_execute_time = self.on_stuck(current_time)
+        return self._save_next_execute_time(next_execute_time)
 
     def _ensure_tz_aware(self, dt: datetime.datetime) -> datetime.datetime:
         """将datetime标准化为任务时区的有时区对象。"""
@@ -686,6 +832,9 @@ class BaseTask:
             # 检查停止信号
             if self._should_stop():
                 raise Stop("任务被停止")
+
+            # 卡死告警（若监视器已发出）：在**本线程内**自行脱困
+            self._handle_recovery_request()
 
             current_time = datetime.datetime.now(self.tz_info)
             if not self._should_skip_window_check():
