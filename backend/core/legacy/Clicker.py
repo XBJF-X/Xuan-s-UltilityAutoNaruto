@@ -182,19 +182,25 @@ class Clicker:
     def _refresh_minitouch_instance(self, control_manager) -> bool:
         """刷新 MiniTouch 实例（防模拟器杀服务 + 降低高频启停开销）。
 
-        顺序至关重要：**先抬起触点、再新建实例**。``create_control_instance()``
-        内部的 ``minidevice.MiniTouchCore`` 构造会 kill 掉设备端 minitouch 进程，
-        旧连接在其后发 ``u`` 必定失败（WinError 10053），此刻仍按下的 slot 会
-        永久残留在设备端（v0.17.46 修复）。
+        顺序至关重要（v0.17.49 修正）：**先抬起并释放旧实例，再新建实例**。
+        设备端只有一个 minitouch 进程，新建实例（``MiniTouchCore.__init__``）与
+        释放旧实例（``MiniTouchCore.stop``）都会 ``pidof minitouch`` 把它 kill；
+        若先建新实例再释放旧实例，旧实例的释放会把**新实例刚启动**的设备端进程
+        一起杀掉，下一次点击即 WinError 10053 → 每点一次就重建一次
+        （现场日志：每 6~7 秒一轮「重连 + 残留清理」）。
 
         :return: True=实例已刷新且触点已确认抬起
         """
         old_control = control_manager.get_current_control()
 
+        lift_supported = (old_control is not None
+                          and hasattr(old_control, "up_all_contacts"))
         lifted = True
         if old_control is not None:
-            if hasattr(old_control, "up_all_contacts"):
+            if lift_supported:
                 try:
+                    # up_all_contacts() 内部已在抬起失败时走裸 evdev 兜底，
+                    # 这里不再重复清理（否则一次刷新要跑两轮秒级 adb 命令）
                     lifted = bool(old_control.up_all_contacts())
                 except Exception as e:
                     lifted = False
@@ -202,20 +208,20 @@ class Clicker:
             else:
                 # 无法在旧实例上抬起（不支持该接口）→ 交给裸 evdev 兜底
                 lifted = False
+            try:
+                old_control.release()
+            except Exception as e:
+                self.logger.warning(f"释放旧 MiniTouch 实例失败: {e}")
 
         new_control = control_manager.create_control_instance()
         if new_control is None:
-            self.logger.warning("MiniTouch 刷新失败，继续使用旧实例")
+            self.logger.warning(
+                "MiniTouch 刷新失败（旧实例已释放），等待下一次重建或调度器重启")
         else:
-            replaced = control_manager.replace_current_control(new_control)
+            control_manager.replace_current_control(new_control)
             self.last_minitouch_create_time = time.perf_counter()
-            if replaced and replaced is not new_control:
-                try:
-                    replaced.release()
-                except Exception as e:
-                    self.logger.warning(f"释放旧 MiniTouch 实例失败: {e}")
 
-        if not lifted:
+        if not lifted and not lift_supported:
             if not touch_residue.clean_stale_contacts(
                     self.device_serial, logger=self.logger,
                     reason="MiniTouch 刷新前抬起失败"):
@@ -230,6 +236,11 @@ class Clicker:
         control = None
         try:
             control_manager = self.operationer.device.control_manager
+            # 任务启动边界：补执行此前挂起的残留清理（重连热路径为不阻塞连点而挂起，
+            # v0.17.49）；无挂起时零开销、不访问设备，不影响连点节奏
+            touch_residue.flush_pending_cleanup(
+                self.device_serial, logger=self.logger,
+                reason="连点启动前补清理挂起的残留触点")
             if time.perf_counter() - self.last_minitouch_create_time > MINITOUCH_MAX_LIFETIME:
                 if not self._refresh_minitouch_instance(control_manager):
                     self.logger.warning("MiniTouch 刷新期间触点未确认抬起，继续执行连点")

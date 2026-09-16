@@ -63,32 +63,44 @@ class ControlManager:
             self.logger.info(f"已经是[{new_mode.name}]模式")
             return
 
-        # 先抬起旧实例的触点：``create_control_instance()`` 内部的 MiniTouchCore
-        # 构造会 kill 设备端 minitouch 进程，之后旧连接再抬必定失败，此刻仍按下的
-        # slot 会永久残留（v0.17.46 修复）
+        # 顺序铁律（v0.17.49 修正）：先抬起并释放旧实例，再创建新实例。
+        # 设备端只有一个 minitouch 进程，``MiniTouch.release()``（停旧）与
+        # ``MiniTouchCore.__init__``（建新）都会 kill 它：若先建新实例再释放旧实例，
+        # 旧实例的释放会把新实例刚启动的设备端进程一起杀掉，之后每次触摸发包都是
+        # WinError 10053（每点一次就重建一次）。
         with self._control_lock:
             previous = self.current_control
-        if previous is not None and hasattr(previous, "up_all_contacts"):
+            self.current_control = None
+        if previous is not None:
+            if hasattr(previous, "up_all_contacts"):
+                try:
+                    previous.up_all_contacts()
+                except Exception as e:
+                    self.logger.warning(f"切换控制模式前抬起触点失败: {e}")
             try:
-                previous.up_all_contacts()
+                previous.release()
             except Exception as e:
-                self.logger.warning(f"切换控制模式前抬起触点失败: {e}")
+                self.logger.warning(f"切换控制模式时释放旧实例失败: {e}")
 
-        # 先创建新实例，再原子替换，避免 current_control 短暂为空
         old_mode = self.control_mode
         self.control_mode = new_mode
         new_control = self.create_control_instance()
         if new_control is None:
+            # 新实例创建失败：回滚控制模式，并尝试按原模式恢复一个可用实例
+            self.logger.warning("控制实例创建失败，回滚控制模式并尝试恢复原实例")
             self.control_mode = old_mode
+            restored = self.create_control_instance()
+            with self._control_lock:
+                self.current_control = restored
+            if restored is None:
+                self.logger.error(
+                    f"控制实例不可用（[{old_mode.name}] 恢复失败），请检查串口与模拟器状态")
             return
 
         with self._control_lock:
-            old_control = self.current_control
             self.current_control = new_control
 
         self.config.set_config('控制模式', self.control_mode.value)
-        if old_control:
-            old_control.release()
 
     def release(self):
         """释放当前实例"""

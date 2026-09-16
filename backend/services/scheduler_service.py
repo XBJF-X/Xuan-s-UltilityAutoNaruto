@@ -421,6 +421,9 @@ class SchedulerService:
         连点期间设备端 minitouch 进程一旦在「触点仍按下」时被终止，evdev 的
         MT slot 不会自动抬起，此后任何一次点击都会把残留坐标一并上报
         （表现为「点一下同时触发所有预设连点坐标」，旧版本只能重启模拟器）。
+
+        v0.17.49：调度器启动/停止是任务边界，这里同时补执行连点期间为不阻塞任务
+        而**挂起**的残留清理（`touch_residue.flush_pending_cleanup`，无挂起时零开销）。
         """
         serial = self._device_serial()
         if not serial:
@@ -428,6 +431,9 @@ class SchedulerService:
             return False
         from backend.core.legacy.Control import touch_residue
         try:
+            touch_residue.flush_pending_cleanup(
+                serial, logger=self.logger,
+                reason=f"{reason}｜补清理挂起的残留触点")
             return touch_residue.ensure_no_stale_contacts(
                 serial, logger=self.logger, reason=reason)
         except Exception as e:

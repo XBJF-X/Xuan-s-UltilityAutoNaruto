@@ -20,11 +20,21 @@ Android 的 ``MotionEvent`` 当成同一手势，把残留的 pointer 一起上�
 注意：清理会抬起设备上**所有** MT slot，因此若用户正用手指触摸模拟器窗口，
 该次触摸也会被抬起（需要重新按下）。仅在允许的时间点调用（停止连点后、释放
 控制实例后、调度器启动前）。
+
+清理时机（v0.17.49）
+--------------------
+``clean_stale_contacts`` 要走 ``getevent -pl`` + ``sendevent``（实测 4~6 秒），
+放在**连点热路径**（`MiniTouch._reconnect` 每次重连）上会把连点拖成「点一次卡
+几秒」。因此热路径只 ``mark_pending_cleanup`` 挂标记，真正的清理交给**任务边界**
+（连点启动前 / 控制实例释放 / 调度器启停自检）的 ``flush_pending_cleanup``，
+并对同一串口做最小间隔节流；无挂起时零开销（不访问设备）。
 """
 from __future__ import annotations
 
 import logging
 import re
+import threading
+import time
 
 # evdev 事件编码（linux/input-event-codes.h）
 EV_SYN = 0
@@ -35,6 +45,15 @@ ABS_MT_TRACKING_ID = 57
 
 # 设备未声明 ABS_MT_SLOT 上限时的兜底 slot 数（Android 常见 10 指；雷电实测 16）
 DEFAULT_MAX_SLOT = 15
+
+# 挂起的残留清理（v0.17.49）：键为串口，值为「已挂起」标记。
+# 重连时旧连接已断、抬起失败 → 设备端可能残留按下中的触点，但裸 evdev 清理
+# 耗时数秒，不能放在连点热路径上，只登记在这里由任务边界统一执行。
+_pending_lock = threading.Lock()
+_pending_serials: set[str] = set()
+# 同一串口两次挂起清理的最小间隔（秒）：避免频繁清理把任务拖慢
+_PENDING_CLEAN_MIN_INTERVAL = 30.0
+_last_pending_clean_at: dict[str, float] = {}
 
 _ADD_DEVICE_LINE = re.compile(r"add device \d+:\s*", re.I)
 _MT_SLOT_MAX = re.compile(r"ABS_MT_SLOT\s*:.*?max\s+(\d+)", re.I)
@@ -142,6 +161,80 @@ def detect_touch_state(serial: str, logger=None) -> dict:
                 "raw_pointer_count": 0, "points": []}
 
 
+def _normalize_serial(serial) -> str:
+    """统一串口写法（去空白 + 全角冒号转半角），保证挂起/清理的键一致。"""
+    return str(serial or "").strip().replace("：", ":")
+
+
+def mark_pending_cleanup(serial: str, logger=None, reason: str = "") -> bool:
+    """挂起一次残留触点清理（**不在热路径执行**，交给任务边界）。
+
+    用于 `MiniTouch._reconnect`：旧连接已断、抬起命令发不出去时，设备端可能残留
+    按下中的触点，但裸 evdev 清理要跑 `getevent -pl` + `sendevent`（秒级），
+    放在连点热路径上会把连点拖成「点一次卡几秒」。
+
+    :return: True=本次是新挂起（调用方可据此只告警一次）
+    """
+    serial = _normalize_serial(serial)
+    if not serial:
+        return False
+    with _pending_lock:
+        if serial in _pending_serials:
+            return False
+        _pending_serials.add(serial)
+    log = logger or logging.getLogger(__name__)
+    log.debug(
+        f"已挂起残留触点清理（{reason or '无原因标记'}），"
+        f"将在连点启动/结束、调度器启停等任务边界执行")
+    return True
+
+
+def has_pending_cleanup(serial: str) -> bool:
+    """是否存在挂起的残留触点清理（供自检/测试查询）。"""
+    serial = _normalize_serial(serial)
+    if not serial:
+        return False
+    with _pending_lock:
+        return serial in _pending_serials
+
+
+def flush_pending_cleanup(serial: str, logger=None, reason: str = "") -> bool:
+    """在**任务边界**执行挂起的残留清理；无挂起时零开销（不访问设备）。
+
+    节流：同一串口 `_PENDING_CLEAN_MIN_INTERVAL` 秒内最多清理一次，超限时保留
+    挂起标记等下一次边界（防止「抬起一直失败 → 每个边界都跑几秒 adb 命令」）。
+    清理只消费一次标记：失败也不重挂，避免反复阻塞任务（日志会提示手动清理）。
+
+    :return: True=本次执行了清理且成功
+    """
+    serial = _normalize_serial(serial)
+    if not serial:
+        return False
+    log = logger or logging.getLogger(__name__)
+    now = time.monotonic()
+    with _pending_lock:
+        if serial not in _pending_serials:
+            return False
+        last = _last_pending_clean_at.get(serial, 0.0)
+        if now - last < _PENDING_CLEAN_MIN_INTERVAL:
+            log.debug(
+                f"挂起的残留触点清理被节流跳过（距上次 "
+                f"{now - last:.1f}s < {_PENDING_CLEAN_MIN_INTERVAL:.0f}s），"
+                f"保留至下一次任务边界")
+            return False
+        _pending_serials.discard(serial)
+        _last_pending_clean_at[serial] = now
+
+    cleaned = clean_stale_contacts(
+        serial, logger=log,
+        reason=reason or "任务边界补清理挂起的残留触点")
+    if not cleaned:
+        log.warning(
+            "挂起的残留触点清理未成功；若模拟器出现「一次点击触发多个坐标」的异常，"
+            "可在「助手设置 → 串口列表」点「清理残留触点」，或重启模拟器")
+    return cleaned
+
+
 def clean_stale_contacts(serial: str, logger=None, reason: str = "") -> bool:
     """抬起设备端所有 MT slot，清除残留触点（幂等）。
 
@@ -176,6 +269,9 @@ def clean_stale_contacts(serial: str, logger=None, reason: str = "") -> bool:
 
     if not cleaned:
         return False
+    # 清理成功即视为挂起诉求已满足（用户手动清理/启停自检同样覆盖）
+    with _pending_lock:
+        _pending_serials.discard(_normalize_serial(serial))
     log.info(
         f"已清理设备端残留触点（{reason or '无原因标记'}）: {', '.join(cleaned)}"
     )
