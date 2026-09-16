@@ -255,7 +255,6 @@ source, ignore_window)`：
 | 未注册场景分流（图内已知立刻回源）+ 循环退避 | `.venv\Scripts\python.exe test_scene\verify_known_scene_return.py` |
 | 识别缺边收敛（待补边清单 + 落库接口） | `.venv\Scripts\python.exe test_scene\verify_pending_scene_edges.py` |
 | 显式等待 / 连点进展信号（卡死判据=无进展） | `.venv\Scripts\python.exe test_scene\verify_wait_and_progress.py` |
-| 场景识别多帧确认去抖 | `.venv\Scripts\python.exe test_scene\verify_scene_confirm.py` |
 | 处理函数返回值约定（字符串=声明落点） | `.venv\Scripts\python.exe test_scene\verify_declare_next_scene.py` |
 
 新增任务的验收清单：
@@ -450,38 +449,31 @@ source, ignore_window)`：
   连点进展信号、`wait_for` 四态、真实任务类声明）；
   阈值规则回归 `test_scene/verify_task_scene_stuck_param.py`。
 
-### 场景识别多帧确认去抖（2026-09-16，2026-09-17 修补）
+### 场景识别去抖：已移除（2026-09-16 引入，2026-09-17 移除）
 
-识别器偶发把加载/过场画面判成别的场景，日志里也常见场景名在两三个名字之间抖动
-（「组织」↔「主场景-组织」、「叛忍来袭-即将开始」↔「-进行中」）。抖动会让任务在两条
-流程之间来回跳，并把监视器的"停滞计时"、未注册计时、图内已知回源的连续确认计数反复清零。
+曾经的做法：`transition()` 取到识别结果后先过一道 `_confirm_scene()`（`scene_confirm_frames=2`），
+单帧不足以切换流程就**沿用上一次已确认的场景**。**该机制已于 v0.17.59 整体移除**，路由回到
+**本帧识别结果**（"看到什么画面就走哪个流程"，等价 v0.17.55 语义）。
 
-`transition()` 取到识别结果后先过 `_confirm_scene()`（`scene_confirm_frames`，默认 2）：
+- **移除原因（2026-09-17 实机）**：去抖让"路由场景"与 `operationer.current_scene`（本帧识别）
+  不一致，而处理函数里的 `click_and_wait` / `detect_element` 只按 `current_scene` 解析元素
+  → 拿 A 场景的路由去 B 场景找元素 → `StepFailedError: 元素 [X] 未定义`（消耗体力
+  00:15:38 / 00:21:48、情报站 00:00:09 / 00:15:11 / 00:21:19，共 5 次同型崩溃）。
+  慢循环任务（每轮数秒才识别一帧）下画面在帧间真实变化（装备 → 装备-材料详情 …），
+  去抖票数被反复清零，陈旧确认场景被一直沿用（实测跨 4 个真实场景、约 14 秒仍按旧场景跑流程）。
+- **移除的代价（原先要抑制的问题会回来，需知悉）**：
+  - 场景名抖动（「组织」↔「主场景-组织」、「叛忍来袭-即将开始」↔「-进行中」）时，任务会在
+    两条流程之间来回跳；
+  - `declare_waiting` 的等待保护与监视器的"停滞计时"都以**场景名变化**为界
+    （`Watchdog.heartbeat()`：`scene_name != _last_scene` → 结束等待 + `_scene_since = now`），
+    抖动一帧就可能让等待声明失效、把停滞计时清零（合法长等待有被判 `SCENE_STUCK` 的风险）；
+  - 「图内已知→立刻回源」要求连续 `graph_known_scene_confirm_frames` 帧命中，也易被抖动打断。
+  - 若后续复现这类问题，**优先从识别侧收敛抖动**（标志元素 / ROI / 阈值 / 底图），
+    而不是在路由层做多帧确认（那会让路由与元素解析脱节）。
+- 注意：`graph_known_scene_confirm_frames`（图内已知回源的连续确认帧数，见上文）**与本次移除无关**，保留。
+- 验证：`test_scene/verify_scene_confirm.py` 已随机制一并删除；图内已知回源由
+  `test_scene/verify_known_scene_return.py` 覆盖。
 
-| 情形 | 本轮路由与心跳上报 |
-| --- | --- |
-| 连续 N 帧同一场景 | 采用新场景并更新"已确认场景" |
-| 未达 N 帧但有已确认场景 | **沿用已确认场景**（单帧噪声不足以改流程；心跳同样用已确认名，监视器不会看到假切换） |
-| 沿用超限（`scene_confirm_stale_frames` 默认 3 帧 / `scene_confirm_stale_seconds` 默认 10s） | 放弃沿用，改按**本帧识别**结果走流程（并把本帧场景记为已确认场景） |
-| 首帧（无已确认场景） | 用识别结果起步，并把它作为基准场景 |
-| `scene_confirm_frames = 1` | 关闭去抖（逐字等价旧行为） |
-
-- 例外：`operationer.next_scene` 已挂目标（框架/任务正在寻路）时**不做去抖**——
-  待跳转目标是明确意图，逐跳推进不受影响；此时仍维护"已确认场景"，寻路结束立即生效。
-- **路由场景与 `current_scene` 必须一致（2026-09-17 修补）**：处理函数里的
-  `click_and_wait` / `detect_element` 只按 `operationer.current_scene` 解析元素
-  （`Operationer.get_element` 不传 `scene_name` 时），而 `current_scene` 记的是**本帧**
-  识别结果。去抖"沿用"时二者不同 → 拿 A 场景的路由去 B 场景里找元素 →
-  `StepFailedError: 元素 [X] 未定义`（2026-09-17 消耗体力 00:15:38/00:21:48、情报站
-  00:00:09/00:15:11/00:21:19 实测，共 5 次）。现在沿用旧场景时由 `_align_current_scene()`
-  把 `current_scene` 对齐到路由场景（老式替身无 `get_scene`、或场景图查不到该名字时跳过）。
-- **沿用必须有时限**：去抖要求"连续 N 帧识别到同一场景"，但慢循环任务每轮数秒才识别一帧，
-  画面在帧间真实变化（装备 → 装备-材料详情 …）时票数被反复清零，已确认场景会被一直沿用
-  （实测跨 4 个真实场景、约 14 秒仍按旧场景跑流程）。超过上限即改按本帧识别走流程。
-- `_reset_execute_log_state()` 清空确认状态（每次执行重新确认，含沿用计数）。
-- 验证：`test_scene/verify_scene_confirm.py`（`_confirm_scene` 四种情形、沿用上限/超时、
-  路由与 `current_scene` 对齐、真实 `transition()` 的处理函数/心跳序列、执行开始复位、
-  默认值）；寻路期间不去抖由 `test_scene/verify_transition_stall_guard.py` 的多跳用例覆盖。
 
 
 ### 处理函数返回值约定：字符串 = 声明落点（2026-09-16）
