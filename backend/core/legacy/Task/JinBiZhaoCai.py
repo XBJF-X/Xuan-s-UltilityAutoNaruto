@@ -17,33 +17,45 @@ class JinBiZhaoCai(BaseTask):
 
     @TransitionOn()
     def _(self):
-        # 分别识别两个区域
-        round_ocr = self.operationer.ocr_recognize("招财轮次")
-        coin_ocr = self.operationer.ocr_recognize("累积投币")
-
-        if not round_ocr or not coin_ocr:
-            raise StepFailedError("识别已招财次数失败：OCR 结果为空")
-
-        # 提取数字对的正则
         pattern = re.compile(r'(\d+)\s*/\s*(\d+)')
 
-        def extract_single_pair(ocr_list):
-            """从 OCR 结果中提取唯一的数字对，返回 (int, int)，失败返回 None"""
+        def extract_pairs(ocr_list):
+            """从 OCR 结果中提取所有数字对"""
             pairs = []
+            if not ocr_list:
+                return pairs
             for item in ocr_list:
-                matches = pattern.findall(item.text)
-                for m in matches:
+                for m in pattern.findall(item.text):
                     pairs.append((int(m[0]), int(m[1])))
-            if len(pairs) != 1:
-                return None
-            return pairs[0]
+            return pairs
 
-        round_pair = extract_single_pair(round_ocr)
-        coin_pair = extract_single_pair(coin_ocr)
+        def try_single(region_name):
+            """单区域识别，要求唯一数字对，否则返回 None"""
+            pairs = extract_pairs(self.operationer.ocr_recognize(region_name))
+            return pairs[0] if len(pairs) == 1 else None
+
+        round_pair = None
+        coin_pair = None
+
+        # ---------- 第一层：识别合并区域 ----------
+        combined_pairs = extract_pairs(self.operationer.ocr_recognize("已招财次数"))
+        if len(combined_pairs) == 2:
+            # 合并区域通常按 y 坐标从上到下返回，即 轮次在前、投币在后
+            round_pair, coin_pair = combined_pairs[0], combined_pairs[1]
+            self.logger.debug(f"合并区域一次命中: round={round_pair}, coin={coin_pair}")
+        elif len(combined_pairs) == 1:
+            # 只拿到一个，归属不明，走子区域兜底
+            self.logger.debug(f"合并区域仅识别到 1 个数字对: {combined_pairs[0]}")
+
+        # ---------- 第二层：单区域兜底 ----------
+        if round_pair is None:
+            round_pair = try_single("招财轮次")
+        if coin_pair is None:
+            coin_pair = try_single("累积投币")
 
         if round_pair is None or coin_pair is None:
             self.logger.error(f"轮次数字对: {round_pair}, 投币数字对: {coin_pair}")
-            raise StepFailedError("识别已招财次数失败，未找到唯一数字对")
+            raise StepFailedError("识别已招财次数失败，未找到完整数字对")
 
         current_round, total_round = round_pair
         current_coin, total_coin = coin_pair
@@ -58,27 +70,3 @@ class JinBiZhaoCai(BaseTask):
             self.operationer.click_and_wait("金币招财")
             self.logger.info(f"已招财 {self.process_times + 1} 次")
             return False
-    
-
-    # @TransitionOn("二级密码")
-    # def _(self):
-    #     self.logger.debug("出现二级密码窗口")
-    #     passward = self.config.get_config("二级密码")
-    #     if len(passward) != 6:
-    #         raise StepFailedError("请检查二级密码是否留空或漏位！")
-    #     # 输入操作
-    #     self.operationer.click_and_input(
-    #         self.operationer.get_element("输入框"),
-    #         passward
-    #     )
-    #     # 点击二级密码-确定
-    #     if not self.operationer.click_and_wait(self.operationer.get_element("确定")):
-    #         raise StepFailedError("二级密码验证失败")
-
-    #     self.process_times -= 1
-    #     self.logger.info(f"招财次数回退，已招财 {self.process_times} 次")
-    #     return False
-
-    # def reset_task_exe_prog(self) -> bool:
-    #     self.config.set_task_exe_prog("金币招财", "已招财次数", 0)
-    #     return True
