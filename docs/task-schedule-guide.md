@@ -254,6 +254,7 @@ source, ignore_window)`：
 | 卡死自救下沉任务线程 + 停止原因驱动重排期 | `.venv\Scripts\python.exe test_scene\verify_task_recovery.py` |
 | 未注册场景分流（图内已知立刻回源）+ 循环退避 | `.venv\Scripts\python.exe test_scene\verify_known_scene_return.py` |
 | 识别缺边收敛（待补边清单 + 落库接口） | `.venv\Scripts\python.exe test_scene\verify_pending_scene_edges.py` |
+| 显式等待 / 连点进展信号（卡死判据=无进展） | `.venv\Scripts\python.exe test_scene\verify_wait_and_progress.py` |
 
 新增任务的验收清单：
 
@@ -412,6 +413,40 @@ source, ignore_window)`：
   **不自动写库**：学习边可能来自误判，必须人工确认。
 - 验证：`test_scene/verify_pending_scene_edges.py`（清单去重/维护/重建收敛、
   `peek` 不构建、API 全部应用 / 子集应用 / 400 / 409 / 空清单 no-op）。
+
+### 显式等待与「无进展」卡死判定（2026-09-16）
+
+现场：叛忍来袭在「叛忍来袭-即将开始」合法等待活动开启，停在同场景超过 180 秒被判
+`[SCENE_STUCK]` → 停任务。当时的临时办法是任务级阈值（叛忍 350s / 更多玩法 600s）——
+粒度粗（整个任务一起放宽）、靠人工调参、真实卡死也被一起延后。
+
+现在判据是**无进展**而不是"场景名未变"：
+
+| 情形 | 判定阈值 |
+| --- | --- |
+| 普通状态（无等待声明、连点未运行） | 任务类 `scene_stuck_seconds` > 全局「超时检测-场景停滞秒数」 > 180s |
+| 任务声明等待（`declare_waiting` / `wait_for`） | 「超时检测-等待超时秒」（默认 1800s） |
+| **连点进行中**（`Clicker.running`） | 同上 —— 连点＝任务在持续操作、画面在变，是"有进展"的直接证据 |
+
+- 任务侧 API：
+  - `declare_waiting(desc)` / `end_wait()`：显式声明"我在等"；**作用域限于当前场景**，
+    场景切换或 `end_wait()` 后自动失效（避免新场景被一直当成等待中而漏判真卡死）。
+    场景轮询型等待（处理函数每轮都会被重新调用，如"叛忍来袭-即将开始"）用它即可；
+  - `wait_for(desc, condition, timeout=None, interval=1.0)`：自带循环的等待
+    （每轮声明等待 + 检查条件；超时返回 False；收到停止请求抛 `Stop`）。
+- 监视器：`heartbeat(scene, waiting=..., desc=...)`，等待信息进 `get_status()`；
+  场景切换 / `end_wait` / 告警处理完毕 / attach / detach / stop 都会清除等待声明；
+  旧式监视器（`heartbeat` 只接受场景名）自动退回旧调用。
+- 真实卡死不会被"等待"掩盖：等待期间的**画面静止类判定照旧**（静止 60s → 探针 →
+  GAME_FROZEN；截图连续失败 → EMULATOR_FROZEN），等待超过「等待超时」也照样告警。
+- 已撤销任务级补丁：`GengDuoWanFa.scene_stuck_seconds = 600` 与
+  `PanRenLaiXi.scene_stuck_seconds = 350` 均删除（更多玩法靠"连点进行中"＋
+  匹配中/匹配成功声明等待；叛忍来袭靠"即将开始"声明等待）。`scene_stuck_seconds`
+  属性本身保留，供确有需要的任务整体放宽。
+- 验证：`test_scene/verify_wait_and_progress.py`（等待阈值/可配性/非法值回退、
+  非等待仍 180s、等待期间静止仍判 GAME_FROZEN、等待声明六种清除时机、
+  连点进展信号、`wait_for` 四态、真实任务类声明）；
+  阈值规则回归 `test_scene/verify_task_scene_stuck_param.py`。
 
 
 ---

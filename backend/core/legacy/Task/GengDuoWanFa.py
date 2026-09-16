@@ -13,10 +13,10 @@ class GengDuoWanFa(BaseTask):
     # 每周任务：窗口 [本周一 5:01, 下周一 5:01)，本周内可补跑
     schedule = Weekly(Weekday.MON)
 
-    # 绝迹战场 / 大蛇丸试炼是完整对局：进入「-副本内」后一局可持续数分钟，期间画面
-    # 因连点持续变化但场景名不变，用全局默认的 180 秒会误判「场景停滞」并中断任务。
-    # 这里放宽到 600 秒（只影响场景停滞判定；游戏卡死/模拟器卡死检测仍按全局阈值）。
-    scene_stuck_seconds = 600
+    # 注：绝迹战场 / 大蛇丸试炼是完整对局，进入「-副本内」后一局可持续数分钟，期间画面
+    # 因连点持续变化但场景名不变。旧做法是把整任务的场景停滞阈值抬到 600s；现在由框架的
+    # 「进展信号」接管——**连点进行中**即视为有意等待（改用「超时检测-等待超时秒」），
+    # 匹配中/匹配成功另用 declare_waiting 显式声明，因此不再需要任务级覆盖。
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -104,12 +104,15 @@ class GengDuoWanFa(BaseTask):
     def _(self):
         self.bool_click = True
         self.operationer.clicker.stop()
+        # 匹配耗时不可控（等对手/等系统），显式声明等待，避免被停滞判定误杀
+        self.declare_waiting("更多玩法匹配中")
         return False
 
     @TransitionOn("更多玩法-匹配成功")
     def _(self):
         self.bool_click = True
         self.operationer.clicker.stop()
+        self.declare_waiting("更多玩法匹配成功")
         self.operationer.click_and_wait("准备就绪")
         return False
 

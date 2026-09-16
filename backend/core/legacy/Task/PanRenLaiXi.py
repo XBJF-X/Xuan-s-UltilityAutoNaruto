@@ -48,7 +48,6 @@ class PanRenLaiXi(BaseTask):
     schedule = Custom(_panren_windows,
                       cycle=lambda base: base + datetime.timedelta(weeks=1),
                       describe_text="周三/周六叛忍触发窗口 + 下周三兜底")
-    scene_stuck_seconds = 350
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -91,6 +90,10 @@ class PanRenLaiXi(BaseTask):
 
     @TransitionOn("叛忍来袭-即将开始")
     def _(self):
+        # 等活动真正开启：开启时刻不由任务决定（可能持续数分钟），显式声明"我在等"，
+        # 否则会被「场景停滞」判定误杀（旧办法是把整任务的阈值抬到 350s，粒度太粗，
+        # 真卡死也要等 350s 才发现）。声明随场景切换自动失效。
+        self.declare_waiting("叛忍来袭即将开启")
         time.sleep(3)
         self.logger.info("叛忍来袭即将开始")
         return False

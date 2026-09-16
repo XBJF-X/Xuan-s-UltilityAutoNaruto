@@ -1,5 +1,6 @@
 import datetime
 import functools
+import inspect
 import logging
 import threading
 import time
@@ -271,11 +272,13 @@ class BaseTask:
     scene_stuck_seconds: Optional[float] = None
     """场景停滞判定阈值（秒），由超时监视器（TimeoutWatchdog）读取，任务类可覆盖。
 
+    优先用**更精确的** `declare_waiting` / `wait_for` 声明"我在等"（等待期间自动改用
+    「超时检测-等待超时秒」，粒度到场景、且不会把真实卡死一起延后）；本属性只在需要
+    整体放宽某任务的停滞判定时才用。
+
     - ``None``（默认）：沿用全局配置 ``超时检测-场景停滞秒数``（默认 180 秒），
       即与旧行为逐字等价；
-    - ``> 0``：该任务在同一场景停留超过此秒数才判定「场景停滞」。长对局任务
-      （如更多玩法/绝迹战场整局耗时远超 180 秒）必须在此覆盖，否则会被误判为
-      停滞并被中断、截图、走自救流程；
+    - ``> 0``：该任务在同一场景停留超过此秒数才判定「场景停滞」；
     - ``<= 0``：该任务不做「场景停滞」判定（心跳失效时的临时关闭语义一致）。
 
     仅作用于「场景停滞」，不影响画面静止类判定（游戏卡死/模拟器卡死），
@@ -716,6 +719,131 @@ class BaseTask:
         """卡死自救失败被停止 → 返回下一次执行时间（默认：冷却重试，同步骤失败）。"""
         return self.on_delay(current_time, self.error_retry_delay)
 
+    # ------------------------------------------------------------------ #
+    #              显式等待（合法长等待不应被判"场景停滞"）                  #
+    # ------------------------------------------------------------------ #
+    def declare_waiting(self, desc: str = "") -> None:
+        """声明"任务正在有意等待"：本场景内的等待按「等待超时」判定，不再算场景停滞。
+
+        用于"等活动开启 / 等匹配 / 等对局结束"这类**合法长等待**——游戏何时响应不由任务
+        决定，停在同一场景十几分钟是正常的；旧办法是把整个任务的
+        ``scene_stuck_seconds`` 抬到几百秒，粒度粗且会一起延后真实卡死的发现。
+
+        声明作用域**限于当前场景**：场景切换或 `end_wait()` 后自动失效（否则新场景会被
+        一直当成"等待中"，反而漏判真卡死）。等待期间的阈值取全局配置
+        ``超时检测-等待超时秒``（默认 1800 秒）；画面静止类判定不受影响，真卡死仍能发现。
+        """
+        scene = self.__dict__.get("_current_scene_name")
+        text = desc or scene or "等待"
+        self.__dict__["_declared_waiting"] = {"scene": scene, "desc": text}
+        heartbeat = getattr(self.watchdog, "heartbeat", None)
+        if not callable(heartbeat):
+            return
+        try:
+            if self._watchdog_accepts_waiting():
+                heartbeat(scene, waiting=True, desc=text)
+            else:
+                heartbeat(scene)
+        except Exception as e:
+            self._log_once("watchdog-declare-wait-failed",
+                           f"等待声明上报失败: {_format_exception(e)}",
+                           logging.WARNING)
+
+    def end_wait(self) -> None:
+        """结束"有意等待"声明，恢复普通场景停滞判定。"""
+        self.__dict__.pop("_declared_waiting", None)
+        end = getattr(self.watchdog, "end_wait", None)
+        if not callable(end):
+            return
+        try:
+            end()
+        except Exception as e:
+            self._log_once("watchdog-end-wait-failed",
+                           f"等待结束上报失败: {_format_exception(e)}",
+                           logging.WARNING)
+
+    def wait_for(self, desc: str, condition, timeout: float | None = None,
+                 interval: float = 1.0) -> bool:
+        """显式等待原语：等 `condition()` 成立；期间声明等待，不会被判场景停滞。
+
+        Args:
+            desc: 等待说明（写入日志与监视器，便于排查"卡在哪一步"）。
+            condition: 返回 True 表示等待目标达成。
+            timeout: 最长等待秒数；``None`` = 不设上限（仍受任务的
+                ``task_max_duration`` 与监视器的等待超时约束）。
+            interval: 轮询间隔（默认 1s）。
+
+        Returns:
+            True = 条件满足；False = 超时。收到停止请求时抛 ``Stop``。
+
+        场景轮询型等待（处理函数每轮都会被重新调用，如"叛忍来袭-即将开始"）只需在
+        处理函数里调 `declare_waiting`，不必用本方法。
+        """
+        deadline = None if timeout is None else time.perf_counter() + float(timeout)
+        while True:
+            if self._should_stop():
+                raise Stop("等待期间收到停止请求")
+            self.declare_waiting(desc)
+            try:
+                if condition():
+                    return True
+            except Exception as e:
+                # 条件检查失败不该把任务打死：记一条 WARNING 后继续等下一轮
+                self.logger.warning(f"等待「{desc}」条件检查异常: {_format_exception(e)}")
+            if deadline is not None and time.perf_counter() >= deadline:
+                self.logger.info(f"等待「{desc}」超时（{float(timeout):.0f}s）")
+                return False
+            time.sleep(max(0.05, float(interval)))
+
+    def _waiting_state(self, scene_name: str) -> tuple[bool, str]:
+        """本轮是否处于"有意等待"：(是否等待, 说明)。
+
+        - 任务显式声明（`declare_waiting`）：作用域限于声明时的场景，离开即失效；
+        - **连点进行中**：连点本身就是"任务在持续操作、有进展"的证据（画面因连点不断
+          变化、场景名却不变，如整局对局），同样按等待处理——否则一局几分钟的对局会被
+          普通的 180s 停滞阈值判死（这正是"更多玩法"当初抬高到 600s 的原因）。
+        """
+        declared = self.__dict__.get("_declared_waiting")
+        if declared:
+            if declared.get("scene") in (None, scene_name):
+                return True, declared.get("desc") or scene_name
+            # 已离开声明等待时所在的场景 → 声明失效（避免新场景被一直当作等待中）
+            self.__dict__.pop("_declared_waiting", None)
+        if self._clicker_running():
+            return True, "连点进行中"
+        return False, ""
+
+    def _clicker_running(self) -> bool:
+        """连点线程是否在运行（兼容旧式 Clicker：无 ``running`` 时看线程存活）。"""
+        clicker = getattr(self.operationer, "clicker", None)
+        if clicker is None:
+            return False
+        running = getattr(clicker, "running", None)
+        if running is not None:
+            return bool(running)
+        thread = getattr(clicker, "_thread", None)
+        return bool(thread is not None and getattr(thread, "is_alive", lambda: False)())
+
+    def _watchdog_accepts_waiting(self) -> bool:
+        """监视器的 ``heartbeat`` 是否支持等待声明参数（旧式实现只接受场景名）。
+
+        结果按方法对象缓存（每轮循环都会调用，避免重复解析签名）。
+        """
+        heartbeat = getattr(self.watchdog, "heartbeat", None)
+        if not callable(heartbeat):
+            return False
+        cache = self.__dict__.get("_watchdog_waiting_support")
+        if cache and cache[0] is heartbeat:
+            return cache[1]
+        try:
+            params = inspect.signature(heartbeat).parameters
+        except (TypeError, ValueError):
+            params = {}
+        supported = "waiting" in params or any(
+            p.kind is inspect.Parameter.VAR_KEYWORD for p in params.values())
+        self.__dict__["_watchdog_waiting_support"] = (heartbeat, supported)
+        return supported
+
     def schedule_next_on_stuck(self) -> tuple[bool, datetime.datetime | None]:
         current_time = datetime.datetime.now(self.tz_info)
         next_execute_time = self.on_stuck(current_time)
@@ -903,9 +1031,17 @@ class BaseTask:
         # 且必须提示（不再静默吞掉）——心跳失效会导致卡死判定失真。
         # 注意不在此丢弃 self.watchdog：丢掉了也阻止不了监视器误判，真正有效的降级
         # 在监视器侧（_scene_stuck_enabled），这里保留引用便于监视器继续被调度器收回。
+        # 留档本次识别的场景名：处理函数里的 declare_waiting() 需要知道"在哪个场景等待"
+        self.__dict__["_current_scene_name"] = scene_name
         if self.watchdog is not None:
             try:
-                self.watchdog.heartbeat(scene_name)
+                waiting, wait_desc = self._waiting_state(scene_name)
+                if self._watchdog_accepts_waiting():
+                    self.watchdog.heartbeat(scene_name, waiting=waiting,
+                                            desc=wait_desc)
+                else:
+                    # 旧式监视器只接受场景名（无等待声明能力）→ 退回旧调用
+                    self.watchdog.heartbeat(scene_name)
             except Exception as e:
                 self._log_once(
                     "watchdog-heartbeat-failed",

@@ -29,6 +29,7 @@
     超时检测-升级窗口秒      int   默认 300（重启游戏后该时长内再次卡死则升级为模拟器卡死）
     超时检测-恢复宽限秒      int   默认 60（处理流程执行完毕后的检测宽限期）
 超时检测-任务自恢复宽限秒 int   默认 60（告警后先等任务线程自救的上限；超时才强制停止）
+超时检测-等待超时秒      int   默认 1800（任务声明"有意等待"/连点进行中时的停滞阈值）
 
 任务级覆盖（BaseTask 类属性，优先级高于上表全局项；见 BaseTask.scene_stuck_seconds）：
     scene_stuck_seconds      float/None  任务类可覆盖「场景停滞」阈值：
@@ -64,6 +65,11 @@ DEFAULT_SCENE_STUCK_SECONDS = 180.0
 # 任务在下一轮循环里消费恢复请求并执行 BaseTask.recover_from_stuck；
 # 超过该宽限仍未确认恢复（任务卡在长阻塞里 / 恢复失败 / 线程已死）才强制停止任务。
 DEFAULT_TASK_RECOVERY_GRACE_SECONDS = 60.0
+
+# 任务声明"有意等待"/连点进行中时的场景停滞阈值（配置项「超时检测-等待超时秒」的缺省值）。
+# "有进展的等待"（等活动开启、对局连点中）不应按普通停滞阈值（180s）判死；真实卡死仍由
+# 画面静止类判定（GAME_FROZEN / EMULATOR_FROZEN）兜住。
+DEFAULT_WAIT_TIMEOUT_SECONDS = 1800.0
 
 
 class FreezeLevel(IntEnum):
@@ -128,6 +134,10 @@ class TimeoutWatchdog:
         self._last_scene: Optional[str] = None
         self._scene_since: float = time.monotonic()
         self._last_activity: float = time.monotonic()
+        # ---- "有意等待"声明（任务置位；等待期间用「超时检测-等待超时秒」判定）----
+        self._waiting: bool = False
+        self._waiting_desc: str = ""
+        self._waiting_since: float = time.monotonic()
 
         # ---- 心跳健康状态（任务侧上报）----
         # 心跳失败会让"场景停滞"判定的时间基准失真（可能误判卡死 → 停任务/重启游戏/
@@ -245,6 +255,18 @@ class TimeoutWatchdog:
                 f"已回退默认 {DEFAULT_TASK_RECOVERY_GRACE_SECONDS:.0f} 秒")
             return DEFAULT_TASK_RECOVERY_GRACE_SECONDS
 
+    def _wait_timeout_seconds(self) -> float:
+        """任务声明等待 / 连点进行中时的场景停滞阈值（配置值非法时告警一次并回退默认）。"""
+        raw = self._cfg("超时检测-等待超时秒", DEFAULT_WAIT_TIMEOUT_SECONDS)
+        try:
+            return float(raw)
+        except (TypeError, ValueError):
+            self._warn_once(
+                "wait-timeout-invalid",
+                f"配置项[超时检测-等待超时秒]取值非法（{raw!r}），"
+                f"已回退默认 {DEFAULT_WAIT_TIMEOUT_SECONDS:.0f} 秒")
+            return DEFAULT_WAIT_TIMEOUT_SECONDS
+
     def start(self):
         """启动后台检测线程（幂等）"""
         if self._running:
@@ -265,6 +287,7 @@ class TimeoutWatchdog:
         with self._lock:
             self._current_task = None
             self._recovery_request = None
+            self._end_wait_locked()
         self.logger.info("超时监视器已停止")
 
     def attach_task(self, task: "BaseTask"):
@@ -284,6 +307,10 @@ class TimeoutWatchdog:
             self._scene_stuck_enabled = True
             # 恢复请求同样随任务重置（旧任务的告警不得被新任务消费）
             self._recovery_request = None
+            # 等待声明随任务重置（新任务不得继承上个任务的"我在等"）
+            self._waiting = False
+            self._waiting_desc = ""
+            self._waiting_since = now
             # 一次性告警去重也随任务重置（换任务后允许重新提示一次）
             self._warned_keys.clear()
         task.attach_watchdog(self)
@@ -301,6 +328,8 @@ class TimeoutWatchdog:
                 self._current_task = None
                 # 任务已被收回：残留的恢复请求不应再交给任何线程执行
                 self._recovery_request = None
+                # 等待声明同理：旧任务的"我在等"不得影响下一个任务
+                self._end_wait_locked()
             fail_count = self._heartbeat_fail_count
         task.detach_watchdog()
         if was_current and fail_count:
@@ -313,10 +342,15 @@ class TimeoutWatchdog:
     # 任务侧接口：心跳上报
     # ================================================================
 
-    def heartbeat(self, scene_name: Optional[str] = None):
+    def heartbeat(self, scene_name: Optional[str] = None,
+                  waiting: bool = False, desc: str = ""):
         """
-        任务每轮场景识别后调用，上报当前场景。
-        场景名变化会重置场景停滞计时；任何心跳都会刷新活动时间和截图失败计数关联。
+        任务每轮场景识别后调用，上报当前场景与"是否在有意等待"。
+        场景名变化会重置场景停滞计时（并结束等待声明）；任何心跳都会刷新活动时间。
+
+        - ``waiting=True``：任务声明"我在等"（等活动开启 / 连点在跑），此时场景停滞判定
+          改用「超时检测-等待超时秒」（默认 1800s），不会因为"停在同一个场景"被误杀；
+        - 场景切换时等待声明自动结束（等待目标已达成/已离开该场景）。
 
         本方法**不向外抛异常**：心跳失败会破坏"场景停滞"判定的时间基准（可能导致误判
         卡死 → 停任务/重启游戏/重启模拟器），因此这里自行捕获并留痕——首次失败记录
@@ -332,6 +366,16 @@ class TimeoutWatchdog:
                     self.logger.debug(f"场景切换: {self._last_scene} -> {scene_name}")
                     self._last_scene = scene_name
                     self._scene_since = now
+                    # 场景变了说明等待结束（等待的往往是"本场景不要变"/"等到新场景"）
+                    self._end_wait_locked()
+                if waiting:
+                    if not self._waiting:
+                        self._waiting_since = now
+                    self._waiting = True
+                    if desc:
+                        self._waiting_desc = desc
+                    elif not self._waiting_desc:
+                        self._waiting_desc = scene_name or ""
                 self._last_activity = now
         except Exception as e:
             with self._lock:
@@ -342,6 +386,22 @@ class TimeoutWatchdog:
                 self.logger.error(
                     f"心跳上报失败，已临时关闭场景停滞判定（避免误判卡死）: "
                     f"{type(e).__name__}: {e}", exc_info=True)
+
+    def end_wait(self) -> None:
+        """结束"有意等待"声明，恢复普通场景停滞判定（任务侧 ``BaseTask.end_wait()`` 调用）。"""
+        with self._lock:
+            self._end_wait_locked()
+
+    def _end_wait_locked(self) -> None:
+        """（需持锁）清除等待声明；若此前在等待，留一条 DEBUG 说明等待时长。"""
+        if not self._waiting:
+            self._waiting_desc = ""
+            return
+        waited = time.monotonic() - self._waiting_since
+        desc = self._waiting_desc or "未知"
+        self._waiting = False
+        self._waiting_desc = ""
+        self.logger.debug(f"结束等待「{desc}」（等待 {waited:.0f}s），恢复场景停滞判定")
 
     # ================================================================
     # 任务侧接口：卡死自救（告警先交给任务线程，调度器不抢设备）
@@ -392,6 +452,8 @@ class TimeoutWatchdog:
             self._capture_fail_count = 0
             self._static_since = now
             self._scene_since = now
+            # 告警处理完毕：等待声明一并清掉（任务已重新开始计时）
+            self._end_wait_locked()
             self._grace_until = now + float(self._cfg("超时检测-恢复宽限秒", 60))
         self.logger.info(f"告警 [{_level_name(level)}] 处理完毕，进入恢复宽限期")
 
@@ -406,6 +468,10 @@ class TimeoutWatchdog:
                 "last_scene": self._last_scene,
                 "scene_seconds": round(now - self._scene_since, 1),
                 "static_seconds": round(now - self._static_since, 1),
+                "waiting": self._waiting,
+                "waiting_desc": self._waiting_desc,
+                "waiting_seconds": (round(now - self._waiting_since, 1)
+                                    if self._waiting else 0.0),
                 "awaiting_recovery": self._awaiting_recovery,
                 "recent_events": [{
                     "level": FreezeLevel(e.level).name,
@@ -458,26 +524,35 @@ class TimeoutWatchdog:
         small = self._normalize_frame(frame)
         static_seconds = self._update_static_state(small, now)
 
-        # ---- 3. 场景停滞判定（画面仍在动，但场景长时间未变）----
-        # 阈值优先级：任务类属性 scene_stuck_seconds > 全局配置 > 默认 180 秒；
-        # 任务侧显式关闭（<=0）时跳过（scene_stuck_seconds > 0 才判定）
-        scene_stuck_seconds = self._scene_stuck_seconds(
-            self._global_scene_stuck_seconds())
+        # ---- 3. 场景停滞判定（无进展：画面仍在动，但场景长时间未变且任务未声明在等待）----
+        # 普通状态：阈值优先级 = 任务类属性 scene_stuck_seconds > 全局配置 > 默认 180 秒；
+        # 等待状态（任务声明"有意等待"，或连点进行中＝任务在主动操作、有进展）：
+        #   改用「超时检测-等待超时秒」（默认 1800 秒）——"有进展的等待"不应被判停滞；
+        #   真实卡死仍由画面静止类判定（GAME_FROZEN / EMULATOR_FROZEN）兜住。
         freeze_seconds = float(self._cfg("超时检测-画面静止秒数", 60))
         with self._lock:
             scene_unchanged = now - self._scene_since
             scene_name = self._last_scene
             scene_stuck_enabled = self._scene_stuck_enabled
+            waiting = self._waiting
+            waiting_desc = self._waiting_desc
+        if waiting:
+            threshold = self._wait_timeout_seconds()
+            label = f"等待「{waiting_desc or scene_name or '未知'}」"
+        else:
+            threshold = self._scene_stuck_seconds(
+                self._global_scene_stuck_seconds())
+            label = f"任务停滞在场景 [{scene_name}]"
         # 心跳失效时该判定的时间基准不可信（会误判卡死），故跳过；
         # 游戏卡死/模拟器卡死（画面静止）判定不受心跳影响，照常执行
         if (scene_stuck_enabled
-                and scene_stuck_seconds > 0
+                and threshold > 0
                 and scene_name is not None
-                and scene_unchanged >= scene_stuck_seconds
+                and scene_unchanged >= threshold
                 and static_seconds < freeze_seconds):
             self._raise(
                 FreezeLevel.SCENE_STUCK,
-                detail=f"任务停滞在场景 [{scene_name}] 已超过 {scene_stuck_seconds:.0f} 秒")
+                detail=f"{label} 已超过 {threshold:.0f} 秒")
             return
 
         # ---- 4. 游戏卡死判定（画面静止超时 → 探针点击验证）----
