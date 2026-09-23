@@ -177,6 +177,7 @@ class MiJingTanXian(BaseTask):
 
     @TransitionOn("秘境探险-匹配-继续挑战确认")
     def _(self):
+        self.operationer.clicker.stop()
         self.bool_click = False
         self.operationer.click_and_wait("今日不再提示")
         self.operationer.click_and_wait("确定")
@@ -184,6 +185,7 @@ class MiJingTanXian(BaseTask):
     
     @TransitionOn("秘境探险-匹配-只获得忍具确认")
     def _(self):
+        self.operationer.clicker.stop()
         self.bool_click = False
         self.operationer.click_and_wait("本周不再提示")
         self.operationer.click_and_wait("确定")
@@ -201,21 +203,13 @@ class MiJingTanXian(BaseTask):
                 self.operationer.get_element("水牢秘境"),
                 self.operationer.get_element("毒风秘境"),
                 self.operationer.get_element("罡体秘境"),
-            ], [],
-                                                      once_max_attempts=1,
-                                                      max_attempts=1,
-                                                      wait_time=0)
-            # if flag == 1:
-            #     self.logger.info("检测到落岩秘境，开始战斗")
-            #     # 检测到[落岩秘境]，开始走两步开始连点，停止条件为[胜利/返回图标出现]
-            #     joystick_coordinate = self.config.get_config("键位")[KEY_INDEX.JoyStick]
-            #     self.operationer.long_press(joystick_coordinate[0] + 60, joystick_coordinate[1], 1.5)
-            #     self.fighting = True
-            #     self.operationer.clicker.start()
+            ], 
+            [],
+            once_max_attempts=1,
+            max_attempts=1,
+            wait_time=0)
             if flag in [4, 5, 7]:
                 self.logger.info("检测到可连点过的秘境，开始战斗")
-                # joystick_coordinate = self.config.get_config("键位")[KEY_INDEX.JoyStick]
-                # self.operationer.long_press(joystick_coordinate[0] + 60, joystick_coordinate[1], 1.5)
                 self.fighting = True
                 self.operationer.clicker.start()
             else:
@@ -223,10 +217,13 @@ class MiJingTanXian(BaseTask):
                 # 点暂停，退出，确认
                 self.operationer.clicker.stop()
                 self.operationer.click_and_wait("暂停")
+
+        self.operationer.clicker.start()
         return False
 
     @TransitionOn("副本内-暂停")
     def _(self):
+        self.operationer.clicker.stop()
         self.bool_click = True
         self.fighting = False
         self.operationer.click_and_wait("退出战斗")
@@ -234,6 +231,7 @@ class MiJingTanXian(BaseTask):
 
     @TransitionOn("副本内-暂停-退出战斗确认")
     def _(self):
+        self.operationer.clicker.stop()
         self.bool_click = True
         self.fighting = False
         self.operationer.click_and_wait("确定")
@@ -241,6 +239,7 @@ class MiJingTanXian(BaseTask):
     
     @TransitionOn("离开队伍-确认")
     def _(self):
+        self.operationer.clicker.stop()
         self.bool_click = False
         self.fighting = False
         self.operationer.click_and_wait("确定")
