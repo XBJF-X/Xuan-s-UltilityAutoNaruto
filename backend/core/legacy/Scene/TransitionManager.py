@@ -323,10 +323,6 @@ class TransitionManager:
         @self.register("决斗场-首页", "更多玩法")
         @self.register("试炼之地", "生存挑战")
         @self.register("试炼之地", "修行之路")
-        @self.register("招募", "普通招募")
-        @self.register("招募", "高级招募")
-        @self.register("普通招募", "高级招募")
-        @self.register("高级招募", "普通招募")
         @self.register("重返木叶", "重返木叶-忍界指引")
         def _(operationer: Operationer, *args, **kwargs):
             """通用跳转函数，点击[传入的目标ID]"""
@@ -846,6 +842,23 @@ class TransitionManager:
             operationer.click_and_wait("功能入口")
             operationer.click_and_wait("下一列",click_times=5)
             operationer.click_and_wait("心悦会员")
+
+        @self.register("招募", "普通招募")
+        @self.register("招募", "高级招募")
+        @self.register("普通招募", "高级招募")
+        @self.register("高级招募", "普通招募")
+        def _(operationer: Operationer, *args, **kwargs):
+            operationer.search_and_click(
+                [kwargs.get("target_id")],
+                [{
+                    "swipe": {
+                        "start_coordinate": [104, 825],
+                        "end_coordinate": [118, 212],
+                        "duration": 0.5
+                    }
+                }],
+                max_attempts=3,
+            )   
 if __name__ == "__main__":
     TM = TransitionManager(None)
     print(TM.bfs_shortest_path("主场景", "心悦俱乐部"))
