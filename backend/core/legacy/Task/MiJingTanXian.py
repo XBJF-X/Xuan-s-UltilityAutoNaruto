@@ -208,11 +208,13 @@ class MiJingTanXian(BaseTask):
                 self.logger.info("检测到可连点过的秘境，开始战斗")
                 self.fighting = True
                 self.operationer.clicker.start()
+                return False
             else:
                 self.logger.info("不是可连点过的秘境，退出战斗")
                 # 点暂停，退出，确认
                 self.operationer.clicker.stop()
                 self.operationer.click_and_wait("暂停")
+                return False
 
         self.operationer.clicker.start()
         return False
