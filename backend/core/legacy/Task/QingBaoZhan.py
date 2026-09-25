@@ -12,9 +12,6 @@ class QingBaoZhan(BaseTask):
     # 情报站按自然日刷新（0:00 日界），不是游戏日 5:01
     schedule = Daily(boundary=time(0, 0))
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.reset_task_exe_prog()
     def run(self):
         self.hydz_num=None
         self.reward_40=False

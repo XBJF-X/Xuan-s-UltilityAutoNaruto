@@ -9,12 +9,13 @@ class XiaoDuiTuXi(BaseTask):
     source_scene = "小队突袭"
     task_max_duration = timedelta(minutes=10)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        
+    def run(self):
         self.zhuzhan_reward_collected = False
         self.four_reward_times = self.config.get_task_exe_param(self.task_name, "四倍奖励次数")
         self.four_reward_collected_times = 0
         self.finished = False
+        return super().run()
 
     @TransitionOn("小队突袭")
     def _(self):

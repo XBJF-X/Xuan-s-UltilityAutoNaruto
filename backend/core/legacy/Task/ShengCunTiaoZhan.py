@@ -7,12 +7,11 @@ from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
 class ShengCunTiaoZhan(BaseTask):
     source_scene = "生存挑战"
     task_max_duration = timedelta(minutes=2)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        
+    def run(self):
         self.check_need_reset = False  # 标志是否需要检查重置
         self.bool_start = False  # 标志是否已开始扫荡
-
+        return super().run()
     @TransitionOn()
     def _(self):
         if not self.bool_start:

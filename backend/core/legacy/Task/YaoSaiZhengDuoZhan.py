@@ -35,12 +35,10 @@ class YaoSaiZhengDuoZhan(BaseTask):
                       cycle=lambda base: base + datetime.timedelta(weeks=1),
                       describe_text="每周六 20:00 起（终点受叛忍参数影响）")
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fight_sum = 0
-        self.joystick = self.config.get_config("键位")[KEY_INDEX.JoyStick]
 
     def run(self):
+        self.fight_sum = 0
+        self.joystick = self.config.get_config("键位")[KEY_INDEX.JoyStick]
         self.operationer.clicker.update_coordinates([
             self.config.get_config("键位")[KEY_INDEX.BasicAttack],
             self.config.get_config("键位")[KEY_INDEX.FirstSkill],

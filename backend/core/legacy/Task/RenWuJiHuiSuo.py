@@ -10,10 +10,11 @@ class RenWuJiHuiSuo(BaseTask):
     source_scene = "任务集会所"
     task_max_duration = timedelta(minutes=5)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.task_sum = 0
 
+    def run(self):
+        self.task_sum = 0
+        return super().run()
+    
     @TransitionOn()
     def _(self):
         self.logger.info("开始领取任务奖励")

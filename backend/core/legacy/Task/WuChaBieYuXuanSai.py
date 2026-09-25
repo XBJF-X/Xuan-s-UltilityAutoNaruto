@@ -14,12 +14,9 @@ class WuChaBieYuXuanSai(BaseTask):
     schedule = Daily(at=datetime.time(18, 0), until=datetime.time(22, 0))
     task_max_duration = timedelta(hours=4)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def run(self):
         self.checked = False
         self.finished = False
-
-    def run(self):
         self.operationer.clicker.update_coordinates([
             self.config.get_config("键位")[KEY_INDEX.BasicAttack],
             self.config.get_config("键位")[KEY_INDEX.FirstSkill],

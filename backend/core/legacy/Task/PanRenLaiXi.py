@@ -49,13 +49,13 @@ class PanRenLaiXi(BaseTask):
                       cycle=lambda base: base + datetime.timedelta(weeks=1),
                       describe_text="周三/周六叛忍触发窗口 + 下周三兜底")
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def run(self):
         self.auto = False
         self.check = False
         self.decrease_difficulty = True
         self.find_time = 0
         self.find_direction = 1
+        return super().run()
 
     @TransitionOn()
     def _(self):

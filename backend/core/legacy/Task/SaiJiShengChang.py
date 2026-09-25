@@ -39,9 +39,7 @@ class SaiJiShengChang(MeiRiShengChang):
                       cycle=lambda base: base.replace(day=28) + timedelta(days=4),
                       describe_text="每月倒数第 N 天 5:01 起 2 天（默认倒数第 2 天）")
 
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def run(self):
         self.checked = False
         self.finished = False
         self.operationer.clicker.update_coordinates([
@@ -53,7 +51,7 @@ class SaiJiShengChang(MeiRiShengChang):
             self.config.get_config("键位")[KEY_INDEX.Summon],
             self.config.get_config("键位")[KEY_INDEX.Substitution]
         ])
-
+        return super().run()
     @TransitionOn()
     def _(self):
         self.bool_click = False

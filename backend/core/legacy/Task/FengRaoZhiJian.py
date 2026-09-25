@@ -12,12 +12,9 @@ class FengRaoZhiJian(BaseTask):
     source_scene = "丰饶之间"
     task_max_duration = timedelta(minutes=10)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def run(self):
         self.free_tried = False
         self.finished = False
-        
-    def run(self):
         self.operationer.clicker.update_coordinates([
                     self.config.get_config("键位")[KEY_INDEX.BasicAttack],
                     self.config.get_config("键位")[KEY_INDEX.FirstSkill],

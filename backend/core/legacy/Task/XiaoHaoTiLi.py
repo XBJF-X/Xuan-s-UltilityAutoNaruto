@@ -27,8 +27,7 @@ class XiaoHaoTiLi(BaseTask):
     source_scene = "主场景"
     task_max_duration = timedelta(minutes=10)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def run(self):
         self.current_task = ""
         self.execute_progress={
             "精英副本": {
@@ -45,9 +44,6 @@ class XiaoHaoTiLi(BaseTask):
                 "场景":"装备",
             },
         }
-        self.execute_order = []
-
-    def run(self):
         self.check=False
         self.execute_order = task_execute_order[self.config.get_task_exe_param(self.task_name, "体力消耗方式", 0)].split(">")
         return super().run()

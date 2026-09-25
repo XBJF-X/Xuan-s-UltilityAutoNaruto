@@ -10,11 +10,9 @@ class MeiRiShengChang(BaseTask):
     source_scene = "忍术对战"
     task_max_duration = timedelta(hours=2)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.checked = False
 
     def run(self):
+        self.checked = False
         self.operationer.clicker.update_coordinates([
             self.config.get_config("键位")[KEY_INDEX.BasicAttack],
             self.config.get_config("键位")[KEY_INDEX.FirstSkill],

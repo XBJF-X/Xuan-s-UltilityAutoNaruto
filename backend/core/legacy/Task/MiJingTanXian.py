@@ -10,12 +10,8 @@ class MiJingTanXian(BaseTask):
     source_scene = "秘境探险-首页"
     task_max_duration = timedelta(hours=4)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fighting = False
-        self.reset_task_exe_prog()
-
     def run(self):
+        self.fighting = False
         self.first_fight=False
         self.bool_sd=False
         self.operationer.clicker.update_coordinates([

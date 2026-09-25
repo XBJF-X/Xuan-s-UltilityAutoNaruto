@@ -17,13 +17,10 @@ class GengDuoWanFa(BaseTask):
     # 因连点持续变化但场景名不变。旧做法是把整任务的场景停滞阈值抬到 600s；现在由框架的
     # 「进展信号」接管——**连点进行中**即视为有意等待（改用「超时检测-等待超时秒」），
     # 匹配中/匹配成功另用 declare_waiting 显式声明，因此不再需要任务级覆盖。
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.checked = False
-        self.finished = False
         
     def run(self):
+        self.checked = False
+        self.finished = False
         self.operationer.clicker.update_coordinates([
                     self.config.get_config("键位")[KEY_INDEX.BasicAttack],
                     self.config.get_config("键位")[KEY_INDEX.FirstSkill],

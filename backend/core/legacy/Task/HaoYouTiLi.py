@@ -8,10 +8,10 @@ class HaoYouTiLi(BaseTask):
     source_scene = "好友"
     task_max_duration = timedelta(minutes=2)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def run(self):
         self.flag_1 = False
         self.flag_2 = False
+        return super().run()
 
     @TransitionOn("好友")
     def _(self):

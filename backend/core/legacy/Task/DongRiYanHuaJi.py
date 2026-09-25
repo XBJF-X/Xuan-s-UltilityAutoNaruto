@@ -11,11 +11,8 @@ class DongRiYanHuaJi(BaseTask):
     schedule = Daily(at=time(19, 0), until=time(22, 0))
     task_max_duration = timedelta(hours=3)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.bool_light_fireworks = False
-        
     def run(self):
+        self.bool_light_fireworks = False
         receive_btn = self.operationer.get_element("领取", "冬日烟花季-主页")
         close_red_packet_btn = self.operationer.get_element("关闭红包", "冬日烟花季-主页")
         if receive_btn is None or close_red_packet_btn is None:

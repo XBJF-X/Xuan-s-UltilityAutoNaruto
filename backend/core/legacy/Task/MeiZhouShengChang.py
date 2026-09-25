@@ -36,9 +36,8 @@ class MeiZhouShengChang(MeiRiShengChang):
                       cycle=lambda base: base + timedelta(weeks=1),
                       describe_text="每周所选星期几 5:01 起整周（默认周一）")
 
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        
+    def run(self):
         self.checked = False
         self.finished = False
         self.operationer.clicker.update_coordinates([
@@ -50,6 +49,7 @@ class MeiZhouShengChang(MeiRiShengChang):
             self.config.get_config("键位")[KEY_INDEX.Summon],
             self.config.get_config("键位")[KEY_INDEX.Substitution]
         ])
+        return super().run()
 
     @TransitionOn()
     def _(self):

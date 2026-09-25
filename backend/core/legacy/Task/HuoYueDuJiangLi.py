@@ -9,10 +9,10 @@ class HuoYueDuJiangLi(BaseTask):
     source_scene = "奖励"
     task_max_duration = timedelta(minutes=3)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        
+    def run(self):
         self.finished = False
-
+        return super().run()
     @TransitionOn()
     def _(self):
         if self.finished:

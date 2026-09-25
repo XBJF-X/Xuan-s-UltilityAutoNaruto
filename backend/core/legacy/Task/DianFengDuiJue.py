@@ -31,14 +31,11 @@ class DianFengDuiJue(BaseTask):
                       cycle=lambda base: base + timedelta(weeks=1),
                       describe_text="每周三 21:00 起（终点受叛忍参数影响）")
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def run(self):
         self.guwu_done = False
         self.fighted = False
         self.last_check_reward_time = time.perf_counter()
         self.choose = self.config.get_task_exe_param(self.task_name, "选择战场", 0)
-
-    def run(self):
         self.operationer.clicker.update_coordinates([
                     self.config.get_config("键位")[KEY_INDEX.BasicAttack],
                     self.config.get_config("键位")[KEY_INDEX.FirstSkill],
