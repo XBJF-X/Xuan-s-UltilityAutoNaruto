@@ -1,9 +1,11 @@
 from datetime import timedelta, datetime
+import time
 from zoneinfo import ZoneInfo
 
 from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
 
+MAX_TRY_TIME=10
 
 class HuoYueDuJiangLi(BaseTask):
     source_scene = "奖励"
@@ -11,35 +13,37 @@ class HuoYueDuJiangLi(BaseTask):
 
         
     def run(self):
-        self.finished = False
+        self.hyd_num=0
+        self.weekly_check=False
         return super().run()
+
     @TransitionOn()
     def _(self):
-        if self.finished:
-            if self.reset_task_exe_prog():
-                raise TaskCompleted("活跃度奖励领取完成")
-            else:
-                self.schedule_next_with_delay(timedelta(hours=3))
-                raise TaskCompleted("活跃度不足，延迟重试")
-            
-        hyd=self.operationer.ocr_recognize("活跃度")
-        hyd_num=hyd.get_first_number() or 100
-
-        TIERS=[10,40,80,100]
-
-        filter_tiers=[x for x in TIERS if x <= hyd_num]
-        
-        for tier in filter_tiers:
-            self.operationer.click_and_wait(f"每日活跃度-{tier}-待领取",wait_time=1,max_time=1.5,click_times=2,click_interval=1)
-            if self.operationer.detect_element(f"每日活跃度-{tier}-已领取",wait_time=0, max_time=1):
-                self.config.set_task_exe_prog(self.task_name, f"{tier}活跃度已领取", True)
-
-        if not self.config.get_task_exe_prog(self.task_name, f"周活跃礼已领取", False):
+        if not self.config.get_task_exe_prog(self.task_name, f"周活跃礼已领取", False) and not self.weekly_check:
             self.operationer.click_and_wait("周活跃礼")
             return False
         
-        self.finished = True
-        return False
+        hyd=self.operationer.ocr_recognize("活跃度")
+        self.hyd_num=hyd.get_first_number() or 100
+        self.logger.debug(f"当前活跃度：{self.hyd_num}")
+
+        TIERS=[10,40,80,100]
+
+        filter_tiers=[x for x in TIERS if x <= self.hyd_num]
+        
+        for tier in filter_tiers:
+            start_time=time.perf_counter()
+            while time.perf_counter()-start_time<MAX_TRY_TIME:
+                self.operationer.click_and_wait(f"每日活跃度-{tier}-待领取",wait_time=1,max_time=1.5)
+                if self.operationer.detect_element(f"每日活跃度-{tier}-已领取",wait_time=0, max_time=1):
+                    self.config.set_task_exe_prog(self.task_name, f"{tier}活跃度已领取", True)
+                    break
+
+        if self.hyd_num>=100:
+            raise TaskCompleted("活跃度奖励领取完成")
+        else:
+            self.schedule_next_with_delay(timedelta(hours=3))
+            raise TaskCompleted("活跃度不足，延迟重试")
 
     @TransitionOn("周活跃大礼")
     def _(self):
@@ -47,11 +51,8 @@ class HuoYueDuJiangLi(BaseTask):
             self.config.set_task_exe_prog(self.task_name, f"周活跃礼已领取", True)
             self.logger.info("周活跃奖励领取成功")
         self.operationer.click_and_wait("X")
-        self.finished = True
+        self.weekly_check=True
         return False
-
-        
-
 
     def reset_task_exe_prog(self) -> bool:
         self.finished = False
@@ -71,7 +72,7 @@ class HuoYueDuJiangLi(BaseTask):
         self.config.set_task_exe_prog(self.task_name, f"100活跃度已领取", False)
         if flag:
             self.logger.debug("所有活跃度奖励已领取")
-            return True
         else:
             self.logger.debug("存在未领取活跃度奖励")
-            return False
+        return True
+
