@@ -158,18 +158,21 @@ function comboWidth(detail: any): number {
 function updateTaskField(field: string, value: boolean | number) {
   if (!currentTaskName.value || !rawTasks.value[currentTaskName.value]) return
   rawTasks.value[currentTaskName.value][field] = value
-  // 保存到后端配置文件（失败必须提示：旧实现 .catch(() => {}) 静默吞掉，用户以为已保存）
-  configApi
-    .updateTask(appStore.activeConfigId!, currentTaskName.value, field, value)
-    .catch((e) => message.error(`保存「${field}」失败：${errorMessage(e)}`))
-  // 通知父组件任务启用状态变化，以便刷新树节点指示灯
   if (field === '是否启用') {
-    emit('task-enabled-changed', currentTaskName.value, value as boolean)
-    // 同时通知调度器（运行中时同步任务队列/快照，并触发 Dashboard 刷新）
+    // 阶段 5：单一写端点 —— 调度的启用状态只写这一处。
+    // 后端该端点已保证"有调度器实例 → 同步队列/快照并写配置；没有实例 → 只写配置"，
+    // 因此不再额外调 configApi.updateTask（旧实现两个写入口、且会顺带创建调度器实例）。
     schedulerApi
       .toggleActivation(appStore.activeConfigId!, currentTaskName.value, value as boolean)
       .catch((e) => message.error(`切换任务启用状态失败：${errorMessage(e)}`))
+    // 通知父组件任务启用状态变化，以便刷新树节点指示灯
+    emit('task-enabled-changed', currentTaskName.value, value as boolean)
+    return
   }
+  // 其余字段仍写配置文件（失败必须提示：旧实现 .catch(() => {}) 静默吞掉，用户以为已保存）
+  configApi
+    .updateTask(appStore.activeConfigId!, currentTaskName.value, field, value)
+    .catch((e) => message.error(`保存「${field}」失败：${errorMessage(e)}`))
 }
 
 function updateExecParam(paramName: string, value: boolean | number | string) {

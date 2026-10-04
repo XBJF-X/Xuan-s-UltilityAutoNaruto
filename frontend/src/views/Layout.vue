@@ -570,8 +570,9 @@ const unsubSchedulerStatus = onMessage((msg) => {
     schedulerRunning.value = !!msg.data?.running
   }
   // 调度器完整状态快照：按 config_id 存到 AppStore（Dashboard/PresetEditor 据此零轮询）
+  // 阶段 5：统一走 applySnapshot（带 seq 去旧帧），不再直接写 schedulerSnapshots
   if (msg.type === 'scheduler_snapshot' && msg.config_id) {
-    appStore.schedulerSnapshots[msg.config_id] = msg.data
+    appStore.applySnapshot(msg.config_id, msg.data, { seq: msg.seq, source: 'ws' })
     if (msg.config_id === appStore.activeConfigId) {
       schedulerRunning.value = !!msg.data?.running
     }

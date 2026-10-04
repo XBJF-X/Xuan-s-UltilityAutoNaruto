@@ -393,7 +393,22 @@ def execute_task(config_id: str, task_name: str, force: bool = False):
 
 @router.put("/tasks/{config_id}/{task_name}/activation", response_model=OkResponse)
 def toggle_task_activation(config_id: str, task_name: str, state: bool):
-    """切换任务启用状态（同步路由：会写配置文件并更新快照）"""
-    sched = _get_scheduler(config_id)
+    """切换任务启用状态（**「是否启用」的单一写端点**：持久化 + 运行中调度器同步）。
+
+    阶段 5：改前这里走 `_get_scheduler()`（必要时创建 SchedulerService 实例），于是
+    前端为了"调度器没运行时也能保存"又额外调了一次 `PUT /configs/{id}/task/{name}`——
+    同一状态两个写入口，且点一下复选框就会常驻一个调度器对象（与 GET 端点当初的
+    "读一次就建实例"是同类问题，见 `peek_scheduler` 的说明）。
+
+    现在：**有实例** → 交给它同步队列与快照（它内部也会写配置）；**没有实例** → 只写配置，
+    不创建实例。返回值 `synced` 标识是否走了运行中调度器同步。
+    """
+    sched = peek_scheduler(config_id)
+    if sched is None:
+        cfg = _config_service.get_config(config_id)
+        if not cfg:
+            raise HTTPException(status_code=404, detail="配置不存在")
+        cfg.set_task_base_config(task_name, "是否启用", state)
+        return {"ok": True, "synced": False}
     sched.toggle_task_activation(task_name, state)
-    return {"ok": True}
+    return {"ok": True, "synced": True}

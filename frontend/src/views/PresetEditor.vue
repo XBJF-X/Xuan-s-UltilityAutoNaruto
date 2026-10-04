@@ -190,11 +190,9 @@ async function refreshStatus() {
     try {
       const t = await schedulerApi.getTasks(props.configId)
       // 统一写入 AppStore 快照（ws scheduler_snapshot 持续覆盖，本轮询仅作兜底）
-      const prev = appStore.schedulerSnapshots[props.configId] || {
-        running: true,
-        mode: 'once',
-      }
-      appStore.schedulerSnapshots[props.configId] = { ...prev, tasks: t.data || [] }
+      // 阶段 5：走唯一写入口；mergeTasks 只覆盖 tasks
+      appStore.applySnapshot(props.configId, { tasks: t.data || [] },
+        { mergeTasks: true, source: 'poll' })
     } catch {
       // 拉取失败保留现有快照
     }
@@ -270,7 +268,9 @@ async function toggleScheduler() {
     if (schedulerRunning.value) {
       await schedulerApi.stop(props.configId)
       schedulerRunning.value = false
-      appStore.schedulerSnapshots[props.configId] = { running: false, mode: 'once', tasks: [] }
+      // 阶段 5：走唯一写入口（重置快照）
+      appStore.applySnapshot(props.configId,
+        { running: false, mode: 'once', tasks: [] }, { source: 'reset' })
     } else {
       // 启动前快速预检：串口（已配置/格式/占用/在线）与 MuMu/LD 截图路径环境，
       // 避免参数错误时进入耗时的设备连接导致界面长时间无响应
@@ -298,7 +298,8 @@ const { onMessage } = useWebSocket()
 const unsub = onMessage((msg) => {
   // 完整状态快照已直接写入 AppStore（runningTasks 由 computed 读取），无需再拉取
   if (msg.type === 'scheduler_snapshot' && msg.config_id === props.configId) {
-    appStore.schedulerSnapshots[props.configId] = msg.data
+    // 阶段 5：走唯一写入口（带 seq 去旧帧）
+    appStore.applySnapshot(props.configId, msg.data, { seq: msg.seq, source: 'ws' })
     schedulerRunning.value = !!msg.data?.running
     return
   }

@@ -172,11 +172,9 @@ async function loadTaskStatus() {
     const res = await schedulerApi.getTasks(appStore.activeConfigId);
     const raw = res.data || [];
     // 统一写入 AppStore 快照（ws scheduler_snapshot 持续覆盖，本轮询仅作兜底）
-    const prev = appStore.schedulerSnapshots[appStore.activeConfigId] || {
-      running: false,
-      mode: "persistent",
-    };
-    appStore.schedulerSnapshots[appStore.activeConfigId] = { ...prev, tasks: raw };
+    // 阶段 5：走唯一写入口；mergeTasks 只覆盖 tasks，保留 WS 推送的 running/mode
+    appStore.applySnapshot(appStore.activeConfigId, { tasks: raw },
+      { mergeTasks: true, source: "poll" });
   } catch {
     // 拉取失败保留现有快照，不覆盖
   } finally {
