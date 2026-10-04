@@ -5,6 +5,11 @@ import logging
 from fastapi import APIRouter, HTTPException
 
 from backend.services.config_service import shared_config_service as config_service
+from backend.api.schemas import (
+    AdbRestartResponse,
+    SerialListResponse,
+    StaleContactsResponse,
+)
 
 router = APIRouter()
 logger = logging.getLogger("DeviceAPI")
@@ -287,14 +292,14 @@ def check_environment(config_id: str):
     return result
 
 
-@router.get("/{config_id}/serial-list")
+@router.get("/{config_id}/serial-list", response_model=SerialListResponse)
 def get_serial_list(config_id: str):
     """获取已连接的 ADB 设备串口列表（同步路由：adb 子进程调用）"""
     serials = get_adb_serials()
     return {"serials": serials}
 
 
-@router.post("/{config_id}/adb-restart")
+@router.post("/{config_id}/adb-restart", response_model=AdbRestartResponse)
 def restart_adb(config_id: str):
     """重启 ADB 服务并重新枚举设备（同步路由：重启 adb server 秒级阻塞）"""
     ok = restart_adb_server()
@@ -302,7 +307,7 @@ def restart_adb(config_id: str):
     return {"ok": ok, "serials": serials}
 
 
-@router.post("/{config_id}/clean-stale-contacts")
+@router.post("/{config_id}/clean-stale-contacts", response_model=StaleContactsResponse)
 def clean_stale_contacts(config_id: str):
     """清理设备端残留触点（粘滞多点触摸）。
 

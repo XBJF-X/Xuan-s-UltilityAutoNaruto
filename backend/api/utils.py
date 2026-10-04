@@ -20,6 +20,7 @@ from fastapi import APIRouter
 from backend.utils import get_real_path
 from backend.services.config_service import shared_config_service
 from backend.runtime.paths import is_within, safe_component
+from backend.api.schemas import VersionResponse
 
 router = APIRouter()
 
@@ -804,7 +805,7 @@ def dependency_check():
     return result
 
 
-@router.get("/version")
+@router.get("/version", response_model=VersionResponse)
 async def get_local_version():
     """读取随包分发的 _version.py 版本号（供前端展示"当前客户端版本"）。
 

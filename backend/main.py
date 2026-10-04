@@ -27,6 +27,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from backend.runtime.paths import safe_join_path
+from backend.api.schemas import HealthResponse
 
 # 逐个导入 API 路由模块并容错：任一模块因依赖缺失（如热更新后缺少新版安装包中的依赖）
 # 导入失败时，跳过该模块并记录，保证应用仍能启动（前端界面可显示、检查更新可用）。
@@ -375,7 +376,7 @@ if frontend_dist.exists():
     app.add_middleware(SPAMiddleware)
 
 
-@app.get("/api/health")
+@app.get("/api/health", response_model=HealthResponse)
 async def health_check():
     """健康检查"""
     return {"status": "ok", "version": "2.0.0"}

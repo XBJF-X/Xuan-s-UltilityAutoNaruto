@@ -8,6 +8,7 @@ import time
 from fastapi import APIRouter, HTTPException
 from backend.services.config_service import shared_config_service as _config_service
 from backend.api.utils import _read_local_version, _read_min_release_tag, _version_gt
+from backend.api.schemas import OkResponse, SchedulerStatus, TaskRuntimeItem
 
 router = APIRouter()
 _schedulers: dict[str, object] = {}
@@ -303,7 +304,7 @@ def precheck_scheduler(config_id: str):
     return result
 
 
-@router.post("/start/{config_id}")
+@router.post("/start/{config_id}", response_model=OkResponse)
 def start_scheduler(config_id: str):
     """启动调度器。
 
@@ -334,7 +335,7 @@ def start_scheduler(config_id: str):
     return {"ok": True}
 
 
-@router.post("/stop/{config_id}")
+@router.post("/stop/{config_id}", response_model=OkResponse)
 def stop_scheduler(config_id: str):
     """停止调度器（同步路由：`stop()` 含连点线程等待、任务线程 join、adb 自检等阻塞动作）"""
     sched = _get_scheduler(config_id)
@@ -342,7 +343,7 @@ def stop_scheduler(config_id: str):
     return {"ok": True}
 
 
-@router.get("/status/{config_id}")
+@router.get("/status/{config_id}", response_model=SchedulerStatus)
 async def get_scheduler_status(config_id: str):
     """调度器状态（只读，不创建调度器实例）"""
     sched = peek_scheduler(config_id)
@@ -356,7 +357,7 @@ async def get_scheduler_status(config_id: str):
             "mode": "once" if cfg.config_type == "临时" else "persistent"}
 
 
-@router.get("/tasks/{config_id}")
+@router.get("/tasks/{config_id}", response_model=list[TaskRuntimeItem])
 async def get_tasks(config_id: str):
     """任务状态快照（只读，不创建调度器实例）"""
     sched = peek_scheduler(config_id)
@@ -379,7 +380,7 @@ def execute_task(config_id: str, task_name: str, force: bool = False):
     return sched.execute_task_now(task_name, ignore_window=force)
 
 
-@router.put("/tasks/{config_id}/{task_name}/activation")
+@router.put("/tasks/{config_id}/{task_name}/activation", response_model=OkResponse)
 def toggle_task_activation(config_id: str, task_name: str, state: bool):
     """切换任务启用状态（同步路由：会写配置文件并更新快照）"""
     sched = _get_scheduler(config_id)
