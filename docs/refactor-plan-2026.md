@@ -430,11 +430,11 @@ DeviceRuntime → PresetRunner → IdleNotifier → ActivationManager → ScanLo
 `inspect.getsource` 断言（`verify_touch_residue_fix.py:814`、`verify_task_scene_stuck_param.py:294`、
 `verify_recognizer_pruning.py:517`）改写为行为断言。
 
-**C. 阶段 5（前端数据层）**：`api/http.ts`（已有）+ `api/endpoints/*` + `stores/*` 目录化；
-`Layout.vue`(1072 行) 拆 `useConfigs/useSchedulerControl/useTaskTree/useStartupChecks`；
-接入 `abortAllInFlight()`（http.ts 已提供）到切配置；快照唯一写入口
-`schedulerStore.applySnapshot(configId, seq, payload)`（当前 3 处写入，其中 Dashboard/PresetEditor
-无 seq 保护）；「是否启用」收敛为单一写端点（现在 `TaskConfigPanel` 同时写 config 与 activation）。
+**C. 阶段 5（前端数据层）**：`api/http.ts`（已有）+ `api/endpoints/*` + `stores/*` 目录化（⏳）；
+`Layout.vue`(1073 行) 拆 `useConfigs/useSchedulerControl/useTaskTree/useStartupChecks`（⏳）；
+接入 `abortAllInFlight()`（http.ts 已提供）到切配置（✅ §7.19-二）；
+快照唯一写入口 `schedulerStore.applySnapshot(configId, seq, payload)`（✅ §7.19-一）；
+「是否启用」收敛为单一写端点（✅ §7.19-三，含后端端点改为 `peek_scheduler`）。
 
 **D. 阶段 3 收尾可选（低优先）**：`services/{update_service,feedback_service,log_service}.py`
 （把 `api/utils/{update,logs,feedback}.py` 的业务逻辑再下沉，路由只做参数映射）——当前 3.4
@@ -574,13 +574,54 @@ DeviceRuntime → PresetRunner → IdleNotifier → ActivationManager → ScanLo
 6. 4.5 首版把 `run_once` 分支挪到 `try` 之外（不再置 `scanning=True`）→ 并发重入会重复启动
    预设任务；已按原结构放回 `try` 内（`scanning` 在 try 前置位、finally 复位）。
 
-### 7.11 事故与恢复记录（重要）
+### 7.19 阶段 5 实施记录（一）：快照唯一写入口 / 切配置取消在途 / 单一启用写端点
 
-### 7.11 事故与恢复记录（重要）
+**一、快照唯一写入口 `applySnapshot`**
+- 新增 `frontend/src/stores/snapshot.ts`：纯函数 `computeSnapshotWrite(prev, snapshot, appliedSeq, opts)`
+  —— 整体替换 / `mergeTasks` 只覆盖 tasks（未给 tasks 时保留旧列表）/ `seq` 单调递增丢弃过期帧
+  （同 seq 幂等、NaN 视为未提供）/ 不修改入参。抽成无依赖纯模块是为了可用
+  `node --experimental-strip-types` 直跑单测（store 依赖 pinia 与 `@/` 别名）
+- `stores/app.ts`：新增 `applySnapshot(configId, snapshot, {seq, source, mergeTasks})`、
+  `snapshotSeq`、`dropSnapshot(configId)`
+- 改前 5 处直接写 `schedulerSnapshots[configId]`：`Layout.vue`(WS)、`Dashboard.vue`(轮询)、
+  `PresetEditor.vue`(轮询/重置/WS) —— 语义各不相同，且**都没有 seq 保护**：一次慢的旧帧
+  或旧轮询响应会把新状态盖回去（切配置时表现为"切了却显示上个配置的数据"）。现已全部改走唯一入口
+
+**二、切配置取消在途请求**
+- `setActiveConfig(id)` 在配置真正变化时调用 `abortAllInFlight('config-switch')`
+  （复用 `api/http.ts` 的在途登记表与拦截器），避免上个配置的慢响应在切换后写入界面；
+  与既有 `configSwitching` 禁用右侧面板配合
+
+**三、「是否启用」收敛为单一写端点（前后端各改一处）**
+- 根因：后端 `PUT /scheduler/tasks/{id}/{name}/activation` 走 `_get_scheduler()` ——
+  **没有调度器实例时会创建一个**（注册 logger handler、进注册表、构造 planner/executor）。
+  前端为了"调度器没运行时也能保存"于是又调了一次 `PUT /configs/{id}/task/{name}`：
+  同一状态两个写入口，且勾一下复选框就常驻一个调度器对象（与 GET 端点当初
+  "读一次就建实例"是同类问题）
+- 后端：该端点改用 `peek_scheduler()`；**有实例** → 交给它同步队列/快照（内部也会写配置）并返回
+  `{"ok": True, "synced": True}`；**无实例** → 只写配置并返回 `synced: False`；配置不存在仍 404
+- 前端：`TaskConfigPanel.updateTaskField` 的 `是否启用` 分支只调 `toggleActivation` 并在
+  写配置之前 `return`；其余字段仍走 `configApi.updateTask`
+
+**验证**
+- `test_scene/verify_snapshot_store.ts`（8 组断言）+ `test_scene/verify_enable_single_write.py`
+  （7 项：无实例不创建且落盘 / 404 / 有实例委托 / 前后端源码防回退）
+- 回归批 **37/37 PASS**；`tsc` OK；`vite build` OK
+- ⚠ 过程记录：本轮首次验证曾直接调用端点函数（真实配置目录），因 Phase 0 引入的
+  "无变化不落盘"保护未产生任何写入（`Config_1.json` mtime 保持调用前时刻）；
+  **此后所有涉及配置写入的验证一律使用替身 Config / 临时目录**
 
 ### 7.11 事故与恢复记录（重要）
 
 - **事故**：用 PowerShell 5.1 批量替换 `backend/api/device.py` / `backend/api/utils.py` 的 `async def` → `def` 时，`Get-Content`/`Set-Content` 按系统 ANSI（GBK）读写 UTF-8 文件，导致大量中文与部分 ASCII（含引号）字节丢失，两文件语法损坏。
 - **恢复**：`device.py` 在损坏前无未提交改动 → `git checkout` 从 HEAD 恢复并重做 6 处签名改动；`utils.py` 有 WIP → 以 HEAD 为基底重放本会话改动，并从**损坏前编译产物** `__pycache__/utils.cpython-312.pyc` 精确恢复 WIP 内容（3 个新函数 `_get_github_pat` / `_platform_headers` / `_github_pat_configured` + 5 处调用点改为 `_platform_headers(pf)`），随后用 .pyc 的**全部代码对象 (firstlineno, 字符串常量)** 逐项校验，50/50 完全一致后才写盘。
 - **教训（已写入工程约束）**：禁止用 PowerShell 文本 cmdlet 改写含中文的源码文件；批量改动一律用 `edit` 工具或 Python（显式 `encoding="utf-8"`）。恢复脚本执行后已删除（一次性脚本，不留在仓库）。
+- **补充事故（2026-10-04，阶段 4/5）**：
+  1. PowerShell 双引号 here-string 里包含 `\b`/`\r` 转义序列的 Python 源码会被吞字符
+     （`backend` → `ackend`），且含三引号代码块的脚本会出现 `unterminated triple-quoted string`；
+     → **多行代码改动一律用 `edit` 工具，不用 PowerShell 传 Python 源码**。
+  2. 阶段 5 首次验证"单一启用写端点"时直接调用了真实配置目录上的端点函数；
+     因 Phase 0 的"无变化不落盘"保护未产生写入（文件 mtime 未变），未造成数据损坏；
+     → 涉及配置写入的验证必须使用替身 Config 或临时目录（`verify_enable_single_write.py` 已照此实现）。
+  3. 文档自身曾因反复以 `### 7.11` 作为插入锚点而出现三份重复标题，已合并为一份（本节）。
 
