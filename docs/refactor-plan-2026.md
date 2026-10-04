@@ -611,6 +611,41 @@ DeviceRuntime → PresetRunner → IdleNotifier → ActivationManager → ScanLo
   "无变化不落盘"保护未产生任何写入（`Config_1.json` mtime 保持调用前时刻）；
   **此后所有涉及配置写入的验证一律使用替身 Config / 临时目录**
 
+### 7.20 阶段 5 实施记录（二）：Layout.vue 拆出三个 composable
+
+`Layout.vue` 的 `<script setup>` 原 503 行、混着四件事（配置 CRUD / 任务树 / 调度器启停 /
+启动检查）。本轮抽出三块到 `frontend/src/composables/`：
+
+| composable | 职责 | 关键点 |
+|---|---|---|
+| `useTaskTree.ts` | 任务数据与 schema、分组与启用列表派生、`loadTaskData`、`onTaskEnabledChanged` | 与其它块唯一耦合点是 `appStore.activeConfigId`；拉取失败清空并 `console.error` 留痕 |
+| `useSchedulerControl.ts` | 启停按钮状态与动作；`status`（旧协议）与 `scheduler_snapshot`（v1）两条 WS 路径同步按钮；`onBeforeUnmount` 自动退订 | 快照走阶段 5 唯一写入口 `applySnapshot`（带 seq）；`stopScheduler` 保留"停止失败不弹窗"语义（幂等操作，仅 console 留痕并写明理由） |
+| `useStartupChecks.ts` | 启动引导、依赖/OCR 加速检查、自动更新检查、截图与反馈入口 | 三处"静默 catch"改为 `console.warn` 留痕，用户可见行为不变（启动期检查失败不打扰用户） |
+
+结果：**Layout.vue 1073 → 848 行**，script 段 **503 → 277 行**；模板只改为消费 composable
+暴露的状态。新增 `test_scene/verify_layout_composables.py`（8 项，含"WS 订阅只存在于
+composable"、"Layout 必须仍保留 `openResourceGraph` 与 `onMounted` 编排"、"无残留未用 import"、
+"script 段规模区间"）。
+
+**过程事故（已修，记入 §7.11）**：用脚本删除"启动检查"区块时，结束边界写成"下一个只含 `}` 的行"，
+把 `</script>`、`<style scoped>` 与首条 CSS 规则一并删除，并顺带吞掉 `openResourceGraph`
+与 `onMounted`。用 `git show HEAD:frontend/src/views/Layout.vue` 精确重建尾部并校验
+**style 段与 HEAD 逐字一致**后恢复；两处职责已补回，并有测试兜住。
+
+**阶段 5 剩余**：`useConfigs`（配置列表/CRUD/右键菜单/切换编排——与任务树、调度器状态、
+视图状态相互耦合，需以回调注入的方式抽取）与 `api/`+`stores/` 目录化（`api/http/`、
+`api/ws/`、`api/endpoints/`）。 `backend/api/device.py` / `backend/api/utils.py` 的 `async def` → `def` 时，`Get-Content`/`Set-Content` 按系统 ANSI（GBK）读写 UTF-8 文件，导致大量中文与部分 ASCII（含引号）字节丢失，两文件语法损坏。
+- **恢复**：`device.py` 在损坏前无未提交改动 → `git checkout` 从 HEAD 恢复并重做 6 处签名改动；`utils.py` 有 WIP → 以 HEAD 为基底重放本会话改动，并从**损坏前编译产物** `__pycache__/utils.cpython-312.pyc` 精确恢复 WIP 内容（3 个新函数 `_get_github_pat` / `_platform_headers` / `_github_pat_configured` + 5 处调用点改为 `_platform_headers(pf)`），随后用 .pyc 的**全部代码对象 (firstlineno, 字符串常量)** 逐项校验，50/50 完全一致后才写盘。
+- **教训（已写入工程约束）**：禁止用 PowerShell 文本 cmdlet 改写含中文的源码文件；批量改动一律用 `edit` 工具或 Python（显式 `encoding="utf-8"`）。恢复脚本执行后已删除（一次性脚本，不留在仓库）。
+- **补充事故（2026-10-04，阶段 4/5）**：
+  1. PowerShell 双引号 here-string 里包含 `\b`/`\r` 转义序列的 Python 源码会被吞字符
+     （`backend` → `ackend`），且含三引号代码块的脚本会出现 `unterminated triple-quoted string`；
+     → **多行代码改动一律用 `edit` 工具，不用 PowerShell 传 Python 源码**。
+  2. 阶段 5 首次验证"单一启用写端点"时直接调用了真实配置目录上的端点函数；
+     因 Phase 0 的"无变化不落盘"保护未产生写入（文件 mtime 未变），未造成数据损坏；
+     → 涉及配置写入的验证必须使用替身 Config 或临时目录（`verify_enable_single_write.py` 已照此实现）。
+  3. 文档自身曾因反复以 `### 7.11` 作为插入锚点而出现三份重复标题，已合并为一份（本节）。
+
 ### 7.11 事故与恢复记录（重要）
 
 - **事故**：用 PowerShell 5.1 批量替换 `backend/api/device.py` / `backend/api/utils.py` 的 `async def` → `def` 时，`Get-Content`/`Set-Content` 按系统 ANSI（GBK）读写 UTF-8 文件，导致大量中文与部分 ASCII（含引号）字节丢失，两文件语法损坏。
@@ -624,4 +659,3 @@ DeviceRuntime → PresetRunner → IdleNotifier → ActivationManager → ScanLo
      因 Phase 0 的"无变化不落盘"保护未产生写入（文件 mtime 未变），未造成数据损坏；
      → 涉及配置写入的验证必须使用替身 Config 或临时目录（`verify_enable_single_write.py` 已照此实现）。
   3. 文档自身曾因反复以 `### 7.11` 作为插入锚点而出现三份重复标题，已合并为一份（本节）。
-
