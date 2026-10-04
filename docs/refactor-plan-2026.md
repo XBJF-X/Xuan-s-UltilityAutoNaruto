@@ -506,15 +506,24 @@ DeviceRuntime → PresetRunner → IdleNotifier → ActivationManager → ScanLo
 每一步都是"搬方法体 + 加 1 行转发 + 跑全批"，转发保证 13 个私有方法与 1 处源码断言
 全部继续成立，任一步可独立回退。
 
-| 步骤 | 新模块（`backend/services/runtime/`） | 搬走的方法 | 依赖注入 |
+| 步骤 | 新模块（实际落在 `backend/services/scheduler/`，比原计划的 `services/runtime/` 更贴近"调度器内部"） | 搬走的方法 | 状态 |
 |---|---|---|---|
-| 4.1 | `device_runtime.py` | `_device_serial` `_shutdown_clicker_engine` `_ensure_no_stale_contacts` `_wait_clicker_stopped` `_wait_device_ready` | 持服务引用（`config`/`device`/`operationer`/`logger`） |
-| 4.2 | `preset_runner.py` | `_init_once_pending` `_reset_once_progress` `_execute_done_callback` + `_completed_count`/`_preset_total` 计数器 | 同上 |
-| 4.3 | `idle_notifier.py` | `_notifications_enabled` `_notify_user` `_notify_preset_finished` `_notify_account_idle` | `notify_service` 注入 |
-| 4.4 | `activation_manager.py` | `toggle_task_activation` `_ensure_task_runnable` `_restore_all_temp_activations` `_restore_temp_activation` `execute_task_now` `_reject_manual_execute_outside_window` `_on_task_activate_request` `_schedule_task_activation` `_process_pending_activations` `_skip_expired_activation` | 同上（最大一步，含 6 个测试脚本的覆盖点） |
-| 4.5 | `scan_loop.py` | `_start_scan_loop` `_scan_loop` `_report_loop_death` `scan` `_scan_once` + RLock；`scan()` 内部改为 `plan → execute(commands)` | 服务引用 + 任务状态存储 |
-| 4.6 | `freeze_handler.py` | `_on_watchdog_freeze` `_process_freeze_event` `_handle_scene_stuck` `_handle_game_frozen` `_handle_emulator_frozen` | watchdog 事件对象 |
-| 4.7 | `task_state_store.py` | `get_status` `get_tasks_status` `_update_task_status` `_push_snapshot` `_sync_task_state` + 状态字典 | 订阅式（`on_change` 回调给 WS 推送） |
+| 4.0 | `constants.py` | `IDLE_NOTIFY_THRESHOLD`（协作者需要常量而服务需要 import 协作者 → 放同模块会循环导入） | ✅ |
+| 4.1 | `device_runtime.py` | `_device_serial` `_shutdown_clicker_engine` `_ensure_no_stale_contacts` `_wait_clicker_stopped` `_wait_device_ready` | ✅ |
+| 4.2 | `preset_runner.py` | `_init_once_pending` `_reset_once_progress` + **持有** `pending_once_tasks`/`_preset_total`/`_completed_count` | ✅ |
+| 4.3 | `idle_notifier.py` | `_notifications_enabled` `_notify_user` `_notify_preset_finished` `_notify_account_idle` + **持有** `_idle_notified` | ✅ |
+| 4.4 | `activation_manager.py` | `toggle_task_activation` `_ensure_task_runnable` `_restore_all_temp_activations` `_restore_temp_activation` `execute_task_now` `_reject_manual_execute_outside_window` `_on_task_activate_request` `_schedule_task_activation` `_process_pending_activations` `_skip_expired_activation`（最大一步，6 个测试脚本覆盖） | ⏳ |
+| 4.5 | `scan_loop.py` | `_start_scan_loop` `_scan_loop` `_report_loop_death` `scan` `_scan_once` + RLock（`scan()` 改 `plan → execute(commands)`） | ⏳ |
+| 4.6 | `freeze_handler.py` | `_on_watchdog_freeze` `_process_freeze_event` `_handle_scene_stuck` `_handle_game_frozen` `_handle_emulator_frozen` | ⏳ |
+| 4.7 | `task_state_store.py` | `get_status` `get_tasks_status` `_update_task_status` `_push_snapshot` `_sync_task_state` + 状态字典（订阅式 `on_change`） | ⏳ |
+
+**已落地的两条兼容手法（4.1~4.3 验证有效，后续步骤沿用）**
+1. **同名转发方法 + 同名 property**：搬走的方法在服务侧保留 3 行转发；搬走的状态
+   （`pending_once_tasks` / `_preset_total` / `_completed_count` / `_idle_notified`）在服务侧
+   以 property（含 setter）暴露 —— 既有读写点与测试的直接赋值逐字不变。
+2. **保留 monkeypatch 扩展点**：`_notify_user` 这类会被测试用实例属性替换的方法，
+   协作者内部必须**回调服务方法**（`service._notify_user`），而不是直接调用自己的同名实现；
+   否则 `sched._notify_user = ...` 的捕获写法会静默失效（4.3 首版即踩此坑，已修）。
 
 **收尾（4.8）**：把 `verify_touch_residue_fix.py:812-817` 的源码断言改写为行为断言
 （`assertLogs` 捕获"启动前自检/停止后自检"+ 替身 `device_runtime` 断言 `wait_clicker_stopped` 被调用），
@@ -522,6 +531,26 @@ DeviceRuntime → PresetRunner → IdleNotifier → ActivationManager → ScanLo
 
 **回归门**：每步跑 `test_scene/_run_verify_batch.py`（34 个脚本），4.4 与 4.5 完成后额外跑
 `--full`（含 HEAVY）与 `verify_ws_dual_write_e2e.py`。
+
+### 7.18 阶段 4 进度快照（2026-10-04，4.1~4.3 已完成）
+
+| 项 | 数值 |
+|---|---|
+| `SchedulerService` 行数 | **1604 → 1476**（−128） |
+| 新协作者模块 | `services/scheduler/{constants,device_runtime,preset_runner,idle_notifier}.py`（+`__init__.py` 门面） |
+| 服务侧保留 | 11 个同名转发方法 + 5 个同名 property（`pending_once_tasks`/`_preset_total`/`_completed_count`/`_idle_notified`） |
+| 测试面 | 零改动（含 `sched._notify_user = ...` 捕获、`sched.pending_once_tasks = [...]` 直写、`inspect.getsource` 源码断言） |
+| 回归 | 每步后全批 **34/34 PASS**；`compileall` OK |
+| 提交 | `3d856096`(4.1) → `6085a244`(4.2) → `78b1ee17`(4.3) |
+
+**踩坑记录（供后续步骤复用）**
+1. 4.2 首版遗漏了测试对 `sched.pending_once_tasks = [...]` 的**直接赋值** → property 必须配 setter。
+2. 4.3 首版把 `notify_preset_finished` 的文案改成"拼接 suffix + lstrip('，')"，与原文案不等价
+   （丢逗号）→ 已改回逐字原文；**搬文案时不要做"等价改写"**。
+3. 4.3 首版漏掉 `self.idle_notifier = IdleNotifier(self)` 装配 → 15 个用例报
+   `AttributeError`；搬走方法后必须同步在 `__init__` 装配协作者。
+4. 4.3 首版让协作者直接调用自己的 `notify_user` → 3 个用 `sched._notify_user = ...` 捕获通知的
+   测试静默失败（0 != 1）；改为回调 `service._notify_user` 后恢复。
 
 ### 7.11 事故与恢复记录（重要）
 
