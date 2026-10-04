@@ -123,7 +123,10 @@ class UpdateSecurityTest(unittest.TestCase):
         import re
         from backend.api import utils as utils_api
         self.assertIs(utils_api._UPDATE_VERIFY_TLS, True)
-        src = (Path(_PROJECT_ROOT) / "backend" / "api" / "utils.py").read_text(encoding="utf-8")
+        # 阶段 3.4：backend/api/utils.py 已拆分为包，检查整包源码（更新链路在 update.py）
+        utils_pkg = Path(_PROJECT_ROOT) / "backend" / "api" / "utils"
+        src = "\n".join(p.read_text(encoding="utf-8")
+                        for p in sorted(utils_pkg.glob("*.py")))
         # 去掉注释后再找所有 verify= 实参，确保没有裸 False（注释里提到旧实现不算）
         code = "\n".join(line.split("#", 1)[0] for line in src.splitlines())
         values = set(re.findall(r"verify=([\w.]+)", code))
@@ -132,28 +135,37 @@ class UpdateSecurityTest(unittest.TestCase):
 
     def test_integrity_binds_to_commit(self):
         from backend.api import utils as utils_api
+        # 阶段 3.4：_verify_update_integrity 与 _get_latest_sha 都在
+        # backend.api.utils.update 里，patch 必须落在该子模块命名空间
+        # （在包上赋值不会影响已定义函数内部的全局查找）
+        from backend.api.utils import update as update_mod
         tmp = Path(tempfile.mkdtemp(prefix="xuan_update_"))
         try:
             sha = "a1b2c3d4e5f60718293a4b5c6d7e8f9012345678"
             good = tmp / f"repo-{sha[:7]}"
             good.mkdir()
-            orig = utils_api._get_latest_sha
-            utils_api._get_latest_sha = lambda: sha
+            orig = update_mod._get_latest_sha
+            update_mod._get_latest_sha = lambda: sha
             try:
-                utils_api._verify_update_integrity(good, {"key": "github", "label": "GitHub"})
+                update_mod._verify_update_integrity(good, {"key": "github", "label": "GitHub"})
                 bad = tmp / "repo-fffffff"
                 bad.mkdir()
                 with self.assertRaises(RuntimeError):
-                    utils_api._verify_update_integrity(bad, {"key": "github", "label": "GitHub"})
+                    update_mod._verify_update_integrity(
+                        bad, {"key": "github", "label": "GitHub"})
                 # 目录名不含 sha（Gitee archive）→ 只告警放行，不阻断更新
                 plain = tmp / "repo-v17"
                 plain.mkdir()
-                utils_api._verify_update_integrity(plain, {"key": "github", "label": "GitHub"})
+                update_mod._verify_update_integrity(
+                    plain, {"key": "github", "label": "GitHub"})
             finally:
-                utils_api._get_latest_sha = orig
+                update_mod._get_latest_sha = orig
         finally:
             import shutil
             shutil.rmtree(tmp, ignore_errors=True)
+        # 包级再导出仍可用（旧调用点兼容）
+        self.assertIs(utils_api._verify_update_integrity,
+                      update_mod._verify_update_integrity)
 
 
 class FeedbackPathTest(unittest.TestCase):

@@ -141,7 +141,10 @@ class PatStatusWiringTest(unittest.TestCase):
         self.assertIsInstance(result["github_pat_configured"], bool)
         blob = str(result)
         self.assertNotIn("ghp_", blob, "接口响应绝不能包含 token 本身")
-        src = (_PROJECT_ROOT / "backend" / "api" / "utils.py").read_text(encoding="utf-8")
+        # 阶段 3.4：utils 已拆包，读整包源码（/dependency-check 在 update.py）
+        utils_pkg = _PROJECT_ROOT / "backend" / "api" / "utils"
+        src = "\n".join(p.read_text(encoding="utf-8")
+                        for p in sorted(utils_pkg.glob("*.py")))
         self.assertIn("result[\"github_pat_configured\"] = _github_pat_configured()", src)
 
 

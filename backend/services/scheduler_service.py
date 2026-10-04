@@ -13,6 +13,8 @@ import cv2
 from backend.utils import get_real_path
 from backend.core.config_model import Config
 from backend.core.scene_graph import SceneGraph
+# 阶段 3.4：旁路日志 handler 走注册表（services 不再反向 import api.ws）
+from backend.runtime.log_sinks import get_handlers
 from backend.core.legacy.Exceptions import (
     STOP_REASON_FROZEN,
     STOP_REASON_STUCK,
@@ -177,11 +179,13 @@ class SchedulerService:
         self._config_file_handler = get_config_file_handler(username)
         if self._config_file_handler not in self.logger.handlers:
             self.logger.addHandler(self._config_file_handler)
-        # 前端实时日志推送（全局共享 handler，与 root logger 共用，避免重复创建）
-        from backend.api.ws import get_ws_log_handler
-        self._ws_handler = get_ws_log_handler()
-        if self._ws_handler not in self.logger.handlers:
-            self.logger.addHandler(self._ws_handler)
+        # 前端实时日志推送：旁路 handler 由组合根 main.py 注册到 runtime.log_sinks
+        # （阶段 3.4：services 不再反向 import api.ws）
+        registered_sinks = get_handlers()
+        self._ws_handler = registered_sinks[0] if registered_sinks else None
+        for sink in registered_sinks:
+            if sink not in self.logger.handlers:
+                self.logger.addHandler(sink)
         # config 专属日志只写入专属文件（log/<用户>/<日期>/Xuan.log）并推送前端，
         # 不再传播到 root logger，避免大量 config 日志混入 Main.log（Main.log 只留主程序级日志）
         self.logger.propagate = False
@@ -486,7 +490,11 @@ class SchedulerService:
         # 依赖库版本拦截（兜底：API 层 start_scheduler 已拦截，这里防止绕过 API 直接调用，
         # 保证任何入口都不会在依赖库版本不满足时启动调度器）
         try:
-            from backend.api.utils import _read_local_version, _read_min_release_tag, _version_gt
+            from backend.core.version_info import (  # 阶段 3.4：服务层不再依赖 api 层
+    read_client_version as _read_local_version,
+    read_min_release_tag as _read_min_release_tag,
+    version_gt as _version_gt,
+)
             local_version = _read_local_version()
             required_tag, required_version = _read_min_release_tag()
             if required_version and local_version and _version_gt(required_version, local_version):

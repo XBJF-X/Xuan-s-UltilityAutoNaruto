@@ -152,7 +152,7 @@ def get_shared_onnx_ocr() -> "OnnxOcr":
             if _shared_onnx_ocr is None:
                 use_gpu = True
                 try:
-                    from backend.services.settings_service import SettingsService
+                    from backend.core.settings_store import SettingsService
                     use_gpu = SettingsService().getboolean(
                         "助手设置", "OCR加速", default=True)
                 except Exception:

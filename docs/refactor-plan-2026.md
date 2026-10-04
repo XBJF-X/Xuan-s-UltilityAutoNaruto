@@ -414,7 +414,7 @@ frontend/src/
 | 3.1 删死代码 | ✅ | 删文件：`core/exceptions.py`（0 引用 + `Stop` 重复定义两次）、`legacy/Setting.py`（0 引用，缺 `optionxform` 会小写化键名）、`core/recognizer_engine.py`（4 行转发壳）。删方法/接口：`PriorityQueue.{dequeue,peek,reheapify,refresh_task}`、`_cancel_scan_loop`（空实现）、`/api/configs/{id}/task-priorities` 三层死链（路由 + `UpdateTaskPrioritiesRequest` + `ConfigService.{set,get}_task_priorities` + `get_task_order` + 前端 `configApi.updateTaskPriorities`）、重复的 `/api/utils/serial-list`、`_RELEASES_URL`、`_BINARY_FIELDS`。`_github_pat_configured` 从死函数接线到 `/api/utils/dependency-check`（返回布尔、不回传 token）。验证：`verify_module_consolidation.py`（13 项） |
 | 3.2 同义模块收敛 | ✅ | `core/enums.py` / `core/config_model.py` / `core/scene_graph.py` 成为唯一实现，`legacy/{Enums,Config}.py` 与 `legacy/Scene/SceneGraph.py` 改为再导出（两条 import 路径 `is` 同一对象）；异常类保留 `legacy/Exceptions.py` 为唯一实现。验证同上（含 SceneGraph 的 `bgra=None` 内存优化防回退断言） |
 | 3.3 模拟器路径单点化 | ✅ | 新增 `core/emulator_env.py`（候选清单 / 文件检查 / `MuMuManager info -v` 与 `ldconsole list2` 解析 / 16:9 判定）；改写 `validate.py`、`device.py::check_environment`、`api/scheduler.py::_precheck_screenshot_path`、`scheduler_service.py::_pre_start_environment_check`、`Screen/MuMu.py`（用户可见文案保持原样）。验证：`verify_emulator_env.py`（12 项，含"除 emulator_env 外不得再出现带目录的候选字面量 / 旧内联元组 / 重复 16:9 判定式"的防回退检查） |
-| 3.4 `api/utils.py` 拆分 + 消除反向 import | ⏳ 未做 | 设计见 §7.13 |
+| 3.4 `api/utils.py` 拆分 + 消除反向 import | ✅ | `backend/api/utils.py`(1550 行 / 12 路由) → 包：`common.py`(共享状态与日志解析/平台与版本) `deps.py`(依赖与 OCR 探测) `logs.py` `/update.py`(648 行，更新链路) `feedback.py` `system.py` + `__init__.py` 门面（聚合 4 个子路由 + 逐一再导出旧模块全部 90 个名字）。分层倒置全部消除：新增 `runtime/log_sinks.py`（WS handler 注册表，core/services 不再 import `api.ws`）、`core/settings_store.py`（`SettingsService` 实现下沉，services 再导出）、`core/version_info.py`（版本工具唯一实现，`runtime_info` 改为委托）、`runtime/module_registry.py`（`api` 不再 import `main`）。验证：`verify_layering_rules.py`（16 项：ast 级分层规则 + 包等价性 + 注册表 + 版本比较行为） |
 | 3.5 BaseTask 收敛 | ✅ | 21 个内置 `@TransitionOn` 处理函数（方法名全是 `_`）从 `BaseTask` 类体外移到 `Task/default_transitions.py`（普通函数 + `DEFAULT_TRANSITION_HANDLERS` 表 + `install_default_handlers`），BaseTask 1712 → 1589 行；五个同体 `_cleanup_on_*` 合并为 `_cleanup(reason)` + 5 个别名（"停止连点"实现 5 处 → 1 处）。验证：`verify_base_task_consolidation.py`（8 项，含 MRO 合并语义与源码防回退） |
 
 回归批：**33/33 PASS**（30 → +`verify_module_consolidation` +`verify_emulator_env` +`verify_base_task_consolidation`）。
@@ -422,29 +422,9 @@ frontend/src/
 
 ### 7.13 下一步实施单
 
-**A. 阶段 3.4（`api/utils.py` 拆分 + 分层倒置）**
-1. `backend/api/utils.py`(1541 行) → 包 `backend/api/utils/`：
-   `__init__.py`（聚合 router + 再导出既有被 import 的名字，保证 `main.py` 的
-   `importlib.import_module("backend.api.utils")` 与测试的 `mock.patch("backend.api.utils.requests.get")` 不变）、
-   `common.py`（状态锁/状态字典/`_get_config_username`/`_read_tail`/`parse_log_lines`/日期目录）、
-   `logs.py`（`/log-history`）、`update.py`（version/dependency-check/check-update/apply-*/update-status + 平台与 TLS/完整性）、
-   `feedback.py`（feedback options/package/status + browse-folder + open-log-dir）。
-   注意：`requests` 必须在包命名空间可见（`__init__` 里 `import requests`），否则既有 patch 失效。
-2. 消除反向依赖：
-   - 新增 `backend/runtime/log_sinks.py`（配置日志 handler 注册表）：`core/config_model.py`
-     与 `legacy/Config` 不再 `from backend.api.ws import get_ws_log_handler`，改由 lifespan
-     （`main.py`）注册 WS handler；须确认没有 Config 在 lifespan 之前被构造（当前无）。
-   - `core/config_model.py` 的 `from backend.services.settings_service import ...` →
-     改为 `core` 内的设置存储（`setting_model` 已在 core），`services/settings_service.py`
-     再导出以保持既有 API。
-   - `services/scheduler_service.py` 的 `from backend.api.utils import _read_local_version, ...`
-     → 下沉到 `core/version_info.py`；`from backend.api.ws import ...` 改走 log_sinks。
-   - `api/utils.py` 不再 `import backend.main`（`_FAILED_API_MODULES` 改由
-     `runtime/module_registry.py` 提供）。
-3. 回归：`verify_api_event_loop_safety` / `verify_security_hardening` / `verify_api_contracts` /
-   `verify_module_consolidation` / `verify_emulator_env` + 全批。
+**A. 阶段 3.4（`api/utils.py` 拆分 + 分层倒置）— 已完成，见 §7.12 / §7.15**
 
-**B. 阶段 4（`SchedulerService` 1534 行拆分，高风险）**：按 §4 顺序
+**B. 阶段 4（`SchedulerService` 1600 行拆分，高风险）**：按 §4 顺序
 DeviceRuntime → PresetRunner → IdleNotifier → ActivationManager → ScanLoop+RLock（`scan()` 改
 `plan → execute(commands)`）→ FreezeIncidentHandler → TaskStateStore 订阅化；同步把 3 处
 `inspect.getsource` 断言（`verify_touch_residue_fix.py:814`、`verify_task_scene_stuck_param.py:294`、
@@ -456,6 +436,10 @@ DeviceRuntime → PresetRunner → IdleNotifier → ActivationManager → ScanLo
 `schedulerStore.applySnapshot(configId, seq, payload)`（当前 3 处写入，其中 Dashboard/PresetEditor
 无 seq 保护）；「是否启用」收敛为单一写端点（现在 `TaskConfigPanel` 同时写 config 与 activation）。
 
+**D. 阶段 3 收尾可选（低优先）**：`services/{update_service,feedback_service,log_service}.py`
+（把 `api/utils/{update,logs,feedback}.py` 的业务逻辑再下沉，路由只做参数映射）——当前 3.4
+只做了"按职责拆包 + 分层倒置"，业务逻辑仍在 api 层；以及 §7.7 敏感设置掩码。
+
 ### 7.10 阶段 2 收尾清单（仍未实施）
 
 1. `api/utils.py`（1495 行 / 13 端点）拆为 `api/utils/{logs,update,feedback,system}.py` +
@@ -466,13 +450,43 @@ DeviceRuntime → PresetRunner → IdleNotifier → ActivationManager → ScanLo
 4. 敏感设置掩码（§7.7 第 1 条；`_github_pat_configured` 已接线，前端掩码与 reveal 接口未做）。
 5. `SchedulerService` 拆分（阶段 4，见 §4 阶段 4 的顺序与风险）。
 
-### 7.14 阶段 3 回归验证快照（2026-10-04）
+### 7.15 阶段 3.4 实施细节与"patch 目标"迁移说明（2026-10-04）
 
-- `compileall backend` OK；回归批 `test_scene/_run_verify_batch.py` **33/33 PASS**
-  （28 个 Python `verify_*.py` + 2 个 TS 脚本由 node 直跑；新增 3 个脚本共 33 项断言）
-- 既有滞后脚本失败数未变：`verify_transition_stall_guard.py` 2 / `verify_declare_next_scene.py` 1 /
-  `verify_startup_notice.py` 2（均记入 `_run_verify_batch.py::KNOWN_STALE` 并附证据）
-- 本轮提交（按顺序）：`7c92b32d`(3.1+3.2) → `2cb2bad1`(3.3) → `8c56d3b0`(3.5)
+**拆分映射**（机械搬运，一次性脚本校验：切片可独立 `ast.parse`、68 个顶层名字恰好落到唯一模块、
+旧模块 90 个名字（含 import）全部仍可从包访问）：
+
+| 新模块 | 行数 | 内容 |
+|---|---|---|
+| `api/utils/__init__.py` | 135 | 聚合 4 个子路由 + 逐一再导出旧模块所有名字 + `import requests`（patch 目标）+ `logger` |
+| `api/utils/common.py` | 313 | `_UPDATE_STATUS`/`_FEEDBACK_STATUS`/`_STATUS_LOCK`、`_read_tail`/`parse_log_lines`、`_get_config_username`、更新源平台与 PAT、`_DATE_DIR_RE` |
+| `api/utils/deps.py` | 214 | `check_ocr_accel` / `_probe_onnxruntime_providers` / `check_dependency` |
+| `api/utils/logs.py` | 104 | `GET /log-history` |
+| `api/utils/update.py` | 648 | `/version` `/dependency-check` `/check-update` `/apply-update` `/apply-release-update` `/update-status` + 完整性校验/备份/重启请求 |
+| `api/utils/feedback.py` | 239 | `/feedback/options` `/feedback/package` `/feedback/package-status` |
+| `api/utils/system.py` | 92 | `/browse-folder` `/open-log-dir` + `_latest_log_date_dir` |
+
+**测试 patch 目标迁移**（拆包/下沉改变了"函数体内的全局查找"位置，属必要适配，覆盖未削弱）：
+- `verify_ocr_cpu_fallback.py`：`utils_mod.get_real_path` / `utils_mod._get_config_username`
+  → `backend.api.utils.system.*`（`open_log_dir` 已迁至 system；`os.startfile` 仍是 `os` 模块属性，无需改）
+- `verify_security_hardening.py`：`utils_api._get_latest_sha` → `backend.api.utils.update._get_latest_sha`
+- `verify_browse_folder_fix.py` / `verify_module_consolidation.py` / `verify_security_hardening.py`：
+  源码级断言改为读整包（`backend/api/utils/*.py`）
+- 未改动的既有用法仍成立：`mock.patch("backend.api.utils.requests.get")`（patch 的是 requests
+  模块对象属性）、`assertLogs("backend.api.utils")`（6 个子模块 logger 同名）、
+  `utils_mod.os.startfile`、`utils_api.browse_folder/_extract_browse_pidl/open_log_dir`（包级再导出）
+
+**遗留**：`api/utils/{update,feedback,logs}.py` 的业务逻辑尚未下沉到 `services/*_service.py`
+（§7.13-D）；`api/utils/update.py` 648 行仍是最大的单文件。
+
+### 7.16 阶段 3 最终回归快照（2026-10-04）
+
+- `compileall backend` OK；回归批 **34/34 PASS**（新增 `verify_layering_rules.py` 16 项）
+- `verify_ws_dual_write_e2e.py` 3/3 OK（**证明 `runtime/log_sinks` 注册表端到端有效**：
+  config 日志经 main.py 注册的 WS handler 推送前端）
+- 分层规则（ast 精确判定）：`core/**`→`api|services` **0 处**、`services/**`→`api` **0 处**、
+  `api/**`→`main` **0 处**
+- 既有滞后脚本失败数未变（2 / 1 / 2）
+- 本轮提交：`7c92b32d`(3.1+3.2) → `2cb2bad1`(3.3) → `8c56d3b0`(3.5) → 3.4（拆包 + 分层）
 
 ### 7.11 事故与恢复记录（重要）
 

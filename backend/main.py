@@ -48,15 +48,19 @@ _API_ROUTERS_SPEC = [
 
 # 各路由模块导入结果（导入失败为 None）
 _API_MODULES: dict[str, object] = {}
-# 导入失败的模块及原因（供 /api/utils/dependency-check 汇总展示）
-_FAILED_API_MODULES: list[str] = []
+# 导入失败的模块及原因：写入 runtime.module_registry 供 api 层读取
+# （阶段 3.4：api 不再 `import backend.main` 来取这份清单，消除 api → main → api 隐式循环）
+from backend.runtime import module_registry as _module_registry  # noqa: E402
 
 for _mod_name, _prefix, _tag in _API_ROUTERS_SPEC:
     try:
         _API_MODULES[_mod_name] = importlib.import_module(f"backend.api.{_mod_name}")
     except Exception as _e:
         _API_MODULES[_mod_name] = None
-        _FAILED_API_MODULES.append(f"{_mod_name}: {_e}")
+        _module_registry.record_failed_module(f"{_mod_name}: {_e}")
+
+# 兼容既有引用（历史名字，内容与登记表保持一致）
+_FAILED_API_MODULES: list[str] = _module_registry.failed_modules()
 
 # ===== 全局崩溃捕获 =====
 # 将未捕获的异常也通过 logging 发送到 WebSocket（而不只是 stderr）
@@ -120,6 +124,10 @@ async def lifespan(app: FastAPI):
             root_logger = logging.getLogger()
             if ws_handler not in root_logger.handlers:
                 root_logger.addHandler(ws_handler)
+            # 阶段 3.4：把 WS handler 注册到 runtime.log_sinks，供 core/services 的
+            # config logger 自行挂载（它们不再反向 import api.ws）
+            from backend.runtime.log_sinks import register_handler as _register_log_sink
+            _register_log_sink(ws_handler)
             logging.getLogger("WebSocket").info("WebSocket 日志推送已启动")
         except Exception as e:
             logging.getLogger("WebSocket").warning("WebSocket 日志推送初始化失败: %s", e)

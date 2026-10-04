@@ -104,6 +104,9 @@ finally:
 # ============ 2. open-log-dir：目录层级解析 + os.startfile 打开 ============
 print("[2] open-log-dir 目录解析与打开")
 import backend.api.utils as utils_mod
+# 阶段 3.4：open_log_dir 迁到 backend.api.utils.system，函数体在 system 命名空间
+# 里查 get_real_path/_get_config_username，因此 patch 目标随之改变（os.startfile 仍是 os 模块属性）
+import backend.api.utils.system as utils_system
 
 _tmp = Path(tempfile.mkdtemp(prefix="xuan_verify_log_"))
 _log_root = _tmp / "log"
@@ -117,16 +120,16 @@ _log_root = _tmp / "log"
 (_log_root / "TestUser" / "screenshot").mkdir(parents=True, exist_ok=True)
 
 _opened: list = []
-_orig_get_real_path = utils_mod.get_real_path
-_orig_get_username = utils_mod._get_config_username
+_orig_get_real_path = utils_system.get_real_path
+_orig_get_username = utils_system._get_config_username
 _orig_startfile = utils_mod.os.startfile
 utils_mod.os.startfile = lambda p: _opened.append(Path(p))
 
 
 def _reset(username_map=None):
     _opened.clear()
-    utils_mod.get_real_path = lambda key: str(_log_root if key == "log" else _tmp)
-    utils_mod._get_config_username = lambda cid: (username_map or {}).get(cid, "")
+    utils_system.get_real_path = lambda key: str(_log_root if key == "log" else _tmp)
+    utils_system._get_config_username = lambda cid: (username_map or {}).get(cid, "")
 
 
 try:
@@ -162,8 +165,8 @@ try:
     latest2 = utils_mod._latest_log_date_dir(_log_root / "NewUser")
     check(latest2 is None, "无日期目录时 _latest_log_date_dir 返回 None")
 finally:
-    utils_mod.get_real_path = _orig_get_real_path
-    utils_mod._get_config_username = _orig_get_username
+    utils_system.get_real_path = _orig_get_real_path
+    utils_system._get_config_username = _orig_get_username
     utils_mod.os.startfile = _orig_startfile
 
 print(f"\nALL PASS ({_PASS[0]} 项)")

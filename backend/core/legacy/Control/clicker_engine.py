@@ -73,7 +73,7 @@ def _resolve_tap_interval_seconds() -> float:
     """读取全局设置里的连点间隔（毫秒），失败/非法时用默认值并夹到安全区间。"""
     ms: Optional[float] = None
     try:
-        from backend.services.settings_service import SettingsService
+        from backend.core.settings_store import SettingsService
         raw = SettingsService().get(_SETTING_SECTION, _SETTING_TAP_INTERVAL_MS) or ""
         value = float(str(raw).strip())
         # 兼容"填成秒"的写法：< 5 视为秒（例如填 0.3 秒），否则视为毫秒

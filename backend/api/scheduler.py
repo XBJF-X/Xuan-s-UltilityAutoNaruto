@@ -6,7 +6,12 @@ import threading
 import time
 from fastapi import APIRouter, HTTPException
 from backend.services.config_service import shared_config_service as _config_service
-from backend.api.utils import _read_local_version, _read_min_release_tag, _version_gt
+# 阶段 3.4：版本工具的唯一实现在 core/version_info（不再经由 api.utils 中转）
+from backend.core.version_info import (
+    read_client_version as _read_local_version,
+    read_min_release_tag as _read_min_release_tag,
+    version_gt as _version_gt,
+)
 from backend.api.schemas import OkResponse, SchedulerStatus, TaskRuntimeItem
 
 router = APIRouter()

@@ -40,7 +40,7 @@ class Config:
         供 WebSocketLogHandler 按 config_id 归类。
         """
         from backend.log_setup import get_config_file_handler, bind_config_id
-        from backend.api.ws import get_ws_log_handler
+        from backend.runtime.log_sinks import get_handlers
 
         # 显式绑定 config_id（副本配置 id 形如 Config_1_副本，靠 logger 名正则会被错判成
         # 源配置；绑定后 WebSocket 推送直接读 record.config_id，正则仅作兜底）
@@ -49,9 +49,11 @@ class Config:
         file_handler = get_config_file_handler(username)
         if file_handler not in self.logger.handlers:
             self.logger.addHandler(file_handler)
-        ws_handler = get_ws_log_handler()
-        if ws_handler not in self.logger.handlers:
-            self.logger.addHandler(ws_handler)
+        # 旁路 handler（前端实时日志推送）由组合根 main.py 注册到 runtime.log_sinks；
+        # 领域层不再反向 import api.ws（阶段 3.4 分层修正）
+        for sink in get_handlers():
+            if sink not in self.logger.handlers:
+                self.logger.addHandler(sink)
         self.logger.setLevel(logging.DEBUG)
         self.logger.propagate = False
 
@@ -71,7 +73,7 @@ class Config:
         if key in self._GLOBAL_BOOL_KEYS:
             # 全局键统一从 setting.ini [助手设置] 读取，不读 config JSON
             try:
-                from backend.services.settings_service import SettingsService
+                from backend.core.settings_store import SettingsService
                 return SettingsService().getboolean("助手设置", key, default=bool(empty))
             except Exception as e:
                 self.logger.warning(f"读取 setting.ini 中 {key} 失败: {e}")
@@ -80,7 +82,7 @@ class Config:
             # 安装路径只从 setting.ini [助手设置] 读取，不读 config JSON
             # （参数迁移后旧 JSON 参数不再支持，避免残留旧路径覆盖设置中的新路径）
             try:
-                from backend.services.settings_service import SettingsService
+                from backend.core.settings_store import SettingsService
                 value = SettingsService().get("助手设置", key)
                 return value if value else empty
             except Exception as e:
@@ -92,7 +94,7 @@ class Config:
         if key in self._GLOBAL_BOOL_KEYS:
             # 全局布尔键：只写 setting.ini，不落 config JSON
             try:
-                from backend.services.settings_service import SettingsService
+                from backend.core.settings_store import SettingsService
                 SettingsService().set("助手设置", key, bool(value))
             except Exception as e:
                 self.logger.warning(f"写入 setting.ini 中 {key} 失败: {e}")
@@ -101,7 +103,7 @@ class Config:
         if key in self._PATH_KEYS:
             # 安装路径只写 setting.ini [助手设置]，不落 config JSON
             try:
-                from backend.services.settings_service import SettingsService
+                from backend.core.settings_store import SettingsService
                 SettingsService().set("助手设置", key, value)
             except Exception as e:
                 self.logger.warning(f"写入 setting.ini 中 {key} 失败: {e}")

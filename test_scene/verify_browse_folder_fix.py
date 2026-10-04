@@ -178,8 +178,10 @@ class BrowseFolderFixTest(unittest.TestCase):
 
     # ---------------- 7. 源码级防回退 ----------------
     def test_source_no_longer_indexes_result_directly(self):
-        source = (Path(_PROJECT_ROOT) / "backend" / "api" / "utils.py").read_text(
-            encoding="utf-8")
+        # 阶段 3.4：backend/api/utils.py 已拆分包，读整包源码（browse-folder 在 system.py）
+        utils_pkg = Path(_PROJECT_ROOT) / "backend" / "api" / "utils"
+        source = "\n".join(p.read_text(encoding="utf-8")
+                           for p in sorted(utils_pkg.glob("*.py")))
         self.assertNotIn("folder_selected[0]", source,
                          "不得再用 folder_selected[0] 取 PIDL（取消时是 None）")
         self.assertIn("_extract_browse_pidl", source)

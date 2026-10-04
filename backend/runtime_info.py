@@ -21,17 +21,13 @@ _logger = logging.getLogger(__name__)
 
 
 def get_client_version() -> str:
-    """读取 _version.py 中的客户端版本号；失败返回 'unknown'。"""
-    try:
-        vf = Path(get_real_path("_version.py"))
-        if vf.exists():
-            text = vf.read_text(encoding="utf-8", errors="ignore")
-            m = re.search(r'__version__\s*=\s*["\']([^"\']+)["\']', text)
-            if m:
-                return m.group(1).strip()
-    except Exception as e:
-        _logger.debug("读取 _version.py 失败: %s", e)
-    return "unknown"
+    """读取 _version.py 中的客户端版本号；失败返回 'unknown'。
+
+    阶段 3.4：解析逻辑的唯一实现是 `core/version_info.read_client_version`
+    （原先本函数与 `api/utils` 里的实现是两份重复代码）。
+    """
+    from backend.core.version_info import read_client_version
+    return read_client_version() or "unknown"
 
 
 def get_build_info() -> dict:
