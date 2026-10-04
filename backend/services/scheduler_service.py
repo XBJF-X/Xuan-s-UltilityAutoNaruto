@@ -15,6 +15,8 @@ from backend.core.config_model import Config
 from backend.core.scene_graph import SceneGraph
 # 阶段 3.4：旁路日志 handler 走注册表（services 不再反向 import api.ws）
 from backend.runtime.log_sinks import get_handlers
+# 阶段 4.1：设备/连点引擎运行时协作者
+from backend.services.scheduler.device_runtime import DeviceRuntime
 from backend.core.legacy.Exceptions import (
     STOP_REASON_FROZEN,
     STOP_REASON_STUCK,
@@ -189,6 +191,9 @@ class SchedulerService:
         # config 专属日志只写入专属文件（log/<用户>/<日期>/Xuan.log）并推送前端，
         # 不再传播到 root logger，避免大量 config 日志混入 Main.log（Main.log 只留主程序级日志）
         self.logger.propagate = False
+
+        # 阶段 4.1：设备/连点引擎运行时协作者（同名转发方法见下方"设备运行时"小节）
+        self.device_runtime = DeviceRuntime(self)
 
         self.logger.info("SchedulerService 初始化完成")
 
@@ -401,81 +406,26 @@ class SchedulerService:
                 timeout, still_alive)
         return still_alive
 
-    def _shutdown_clicker_engine(self):
-        """关闭本设备的长驻连点引擎（调度器停止路径专用）。
+    # ================================================================
+    # 设备运行时（实现见 services/scheduler/device_runtime.py，阶段 4.1 抽出）
+    # 保留同名转发：API 与 14 个测试脚本的调用点无需改动
+    # ================================================================
 
-        连点引擎自 v0.17.60 起是按设备串口全局唯一、线程长驻的执行体：任务级
-        ``stop()`` 只失效会话、不销毁线程，因此调度器停止时必须显式关闭，否则
-        线程与其持有的控制实例会被保留到进程结束。
-        """
-        serial = self._device_serial()
-        if not serial:
-            return
-        try:
-            from backend.core.legacy.Control.clicker_engine import (
-                shutdown_device_clickers,
-            )
-            shutdown_device_clickers(serial, self.logger)
-        except Exception as e:
-            self.logger.debug(f"关闭连点引擎失败（不影响停止流程）: {e}")
+    def _shutdown_clicker_engine(self):
+        """关闭本设备的长驻连点引擎（调度器停止路径专用）"""
+        return self.device_runtime.shutdown_clicker_engine()
 
     def _device_serial(self) -> str:
         """当前配置的串口（供残留触点自检/清理使用，取不到时返回空串）。"""
-        serial = ""
-        try:
-            serial = self.config.get_config("串口", "") or ""
-        except Exception:
-            serial = ""
-        if not serial:
-            device = getattr(self, "device", None)
-            if device is not None:
-                try:
-                    control = device.control_manager.get_current_control()
-                except Exception:
-                    control = None
-                serial = getattr(control, "serial", "") or ""
-        return str(serial).strip().replace("：", ":")
+        return self.device_runtime.device_serial()
 
     def _ensure_no_stale_contacts(self, reason: str) -> bool:
-        """设备端残留触点自检 + 裸 evdev 兜底清理（v0.17.46）。
-
-        连点期间设备端 minitouch 进程一旦在「触点仍按下」时被终止，evdev 的
-        MT slot 不会自动抬起，此后任何一次点击都会把残留坐标一并上报
-        （表现为「点一下同时触发所有预设连点坐标」，旧版本只能重启模拟器）。
-
-        v0.17.49：调度器启动/停止是任务边界，这里同时补执行连点期间为不阻塞任务
-        而**挂起**的残留清理（`touch_residue.flush_pending_cleanup`，无挂起时零开销）。
-        """
-        serial = self._device_serial()
-        if not serial:
-            self.logger.debug(f"残留触点自检跳过（{reason}）：未配置串口")
-            return False
-        from backend.core.legacy.Control import touch_residue
-        try:
-            touch_residue.flush_pending_cleanup(
-                serial, logger=self.logger,
-                reason=f"{reason}｜补清理挂起的残留触点")
-            return touch_residue.ensure_no_stale_contacts(
-                serial, logger=self.logger, reason=reason)
-        except Exception as e:
-            self.logger.warning(f"残留触点自检异常（忽略，继续调度流程）: {e}")
-            return False
+        """设备端残留触点自检 + 裸 evdev 兜底清理（v0.17.46）"""
+        return self.device_runtime.ensure_no_stale_contacts(reason)
 
     def _wait_clicker_stopped(self, task, timeout: float = 3.0) -> bool:
-        """等待任务内的连点线程真正退出。
-
-        停止调度器时必须先让连点线程收尾、再释放控制实例：否则在途的
-        ``multi_tap`` 批次会被「抬起命令 + 杀进程」打断，设备端 slot 永久停在
-        按下态（v0.17.46 修复的根因之一）。
-        """
-        clicker = getattr(getattr(task, "operationer", None), "clicker", None)
-        if clicker is None or not hasattr(clicker, "wait_stopped"):
-            return True
-        try:
-            return bool(clicker.wait_stopped(timeout))
-        except Exception as e:
-            self.logger.warning(f"等待连点线程退出出错（继续停止流程）: {e}")
-            return False
+        """等待任务内的连点线程真正退出"""
+        return self.device_runtime.wait_clicker_stopped(task, timeout)
 
     # ================================================================
     # 公开接口
@@ -1588,17 +1538,5 @@ class SchedulerService:
             self.logger.error(f"模拟器重启流程异常: {e}\n{traceback.format_exc()}")
 
     def _wait_device_ready(self, timeout: int = 120):
-        """等待设备重新就绪（轮询截图能力，间隔 5s）"""
-        waited = 0
-        while waited < timeout:
-            try:
-                if (self.device and self.device.device_ready
-                        and self.device.screen_cap() is not None):
-                    self.logger.info("设备已恢复就绪")
-                    return True
-            except Exception:
-                pass
-            time.sleep(5)
-            waited += 5
-        self.logger.warning(f"等待设备恢复超时（{timeout}s）")
-        return False
+        """等待设备重新就绪（轮询截图能力，间隔 5s）——实现见 DeviceRuntime"""
+        return self.device_runtime.wait_device_ready(timeout)
