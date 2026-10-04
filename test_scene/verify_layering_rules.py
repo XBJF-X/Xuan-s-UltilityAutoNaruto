@@ -205,6 +205,57 @@ class InversionFixesTest(unittest.TestCase):
         self.assertNotIn("from backend.api.ws import", src)
 
 
+class ServiceLayerSinkingTest(unittest.TestCase):
+    """阶段 3.4（后半）：api 层只做参数映射，业务逻辑下沉 services
+
+    首个落地：`services/log_service.py`（日志尾部读取/行解析/按配置汇总），
+    `api/utils/logs.py` 退化为 3 行适配；`api/utils/common.py` 以同名再导出保持
+    既有 import 路径（`from backend.api.utils import parse_log_lines` 等）与测试 patch 目标。
+    """
+
+    def test_log_service_exists_and_exports(self):
+        path = _PROJECT_ROOT / "backend" / "services" / "log_service.py"
+        self.assertTrue(path.exists())
+        from backend.services import log_service
+        for name in ("get_config_username", "read_tail", "parse_log_lines",
+                     "read_log_history"):
+            with self.subTest(name=name):
+                self.assertTrue(hasattr(log_service, name), f"log_service 缺少 {name}")
+
+    def test_route_is_thin_adapter(self):
+        src = (_PROJECT_ROOT / "backend" / "api" / "utils" / "logs.py").read_text(
+            encoding="utf-8")
+        self.assertIn("from backend.services.log_service import read_log_history", src)
+        # 解析/汇总逻辑不得再留在路由里（只查代码，文档字符串里的说明不算）
+        code = "\n".join(line.split("#", 1)[0] for line in src.splitlines())
+        code = code.split('"""')
+        code = "".join(code[i] for i in range(0, len(code), 2))
+        for moved in ("def parse_log_lines", "def _read_tail", 'glob("Main.log',
+                      "parse_log_lines("):
+            with self.subTest(moved=moved):
+                self.assertNotIn(moved, code, f"{moved} 应已下沉到 log_service")
+        # 路由应只剩参数映射（imports + logger + router + 装饰器 + 函数签名 + return）
+        self.assertLessEqual(len(code.splitlines()), 25,
+                             f"路由仍偏厚：{len(code.splitlines())} 行代码")
+
+    def test_api_reexports_service_functions(self):
+        from backend.api.utils import common
+        from backend.services import log_service
+        self.assertIs(common.parse_log_lines, log_service.parse_log_lines)
+        self.assertIs(common._read_tail, log_service.read_tail)
+        self.assertIs(common._get_config_username, log_service.get_config_username)
+
+    def test_service_does_not_import_api(self):
+        """下沉后的服务不得反向依赖 api（与 LayeringRulesTest 同源，此处针对新模块）"""
+        from collections import defaultdict
+        offenders = defaultdict(list)
+        for path in _py_files(_PROJECT_ROOT / "backend" / "services"):
+            for mod in _imported_modules(path):
+                if mod.startswith("backend.api"):
+                    offenders[str(path.relative_to(_PROJECT_ROOT))].append(mod)
+        self.assertEqual(dict(offenders), {})
+
+
 class DependencyCheckRegistryTest(unittest.TestCase):
     """接口行为：#/dependency-check 从登记表读失败模块"""
 

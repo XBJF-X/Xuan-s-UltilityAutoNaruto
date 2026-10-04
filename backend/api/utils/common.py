@@ -118,78 +118,13 @@ def _browse_folder(title: str):
     return path
 
 
-def _get_config_username(config_id: str) -> str:
-    """根据 config_id 获取配置用户名（用于定位日志目录）"""
-    try:
-        data = shared_config_service.get_config_full(config_id)
-        return data.get("username", "") if data else ""
-    except Exception:
-        return ""
-
-
-def _read_tail(file_path, max_lines: int = 1000) -> str:
-    """高效读取文件末尾最多 max_lines 行（大文件从尾部按块读取）"""
-    try:
-        size = os.path.getsize(file_path)
-    except OSError:
-        return ""
-    if size == 0:
-        return ""
-    block_size = 8192
-    with open(file_path, "rb") as f:
-        data = b""
-        pos = size
-        # 从尾部读取直到攒够足够行或读完整文件
-        while pos > 0 and data.count(b"\n") < max_lines + 1:
-            read_size = min(block_size, pos)
-            pos -= read_size
-            f.seek(pos)
-            chunk = f.read(read_size)
-            data = chunk + data
-            if len(data) > max_lines * 512:  # 防超长单行无限增长
-                break
-    text = data.decode("utf-8", errors="ignore")
-    lines = text.splitlines()
-    return "\n".join(lines[-max_lines:])
-
-
-def parse_log_lines(text: str, default_config_id: str = "") -> list[dict]:
-    """把日志文本解析为标准日志条目列表
-
-    日志格式: 2026-08-01 18:52:18 [INFO] SchedulerService_Config_1 | message
-    兼容无 logger 前缀的行（[INFO] message）。
-    """
-    # config_id 兜底正则（含副本后缀）：副本配置 id 形如 Config_1_副本 / Config_1_副本2，
-    # 旧的非锚定 `(Config_\d+)` 会把副本日志错判成源配置（副本面板永远空白）
-    from backend.log_setup import extract_config_id
-
-    entries = []
-    for line in text.splitlines():
-        line = line.rstrip()
-        if not line:
-            continue
-        m = re.match(r"^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\s+\[(\w+)\]\s+(.*)$", line)
-        if not m:
-            continue
-        ts_str, level, rest = m.group(1), m.group(2), m.group(3)
-        # rest 可能为 "logger | message" 或直接 "message"
-        if " | " in rest:
-            logger_name, message = rest.split(" | ", 1)
-        else:
-            logger_name, message = "", rest
-        try:
-            ts = datetime.strptime(ts_str, "%Y-%m-%d %H:%M:%S").timestamp() * 1000
-        except ValueError:
-            continue
-        cid = extract_config_id(logger_name=logger_name) or default_config_id
-        entries.append({
-            "level": level,
-            "message": message,
-            "ts": int(ts),
-            "config_id": cid,
-            "logger_name": logger_name,
-        })
-    return entries
+# 阶段 3.4（后半）：日志相关的业务逻辑已下沉到 services/log_service.py（路由只做参数映射；
+# api → services 允许，反向不允许）。这里保留同名再导出，既有调用点与测试 import 路径不变。
+from backend.services.log_service import (  # noqa: F401
+    get_config_username as _get_config_username,
+    parse_log_lines,
+    read_tail as _read_tail,
+)
 
 
 # ============================================================
