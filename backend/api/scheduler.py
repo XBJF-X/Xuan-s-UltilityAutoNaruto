@@ -3,6 +3,7 @@ import asyncio
 import logging
 import os
 import re
+import threading
 import time
 from fastapi import APIRouter, HTTPException
 from backend.services.config_service import shared_config_service as _config_service
@@ -10,12 +11,18 @@ from backend.api.utils import _read_local_version, _read_min_release_tag, _versi
 
 router = APIRouter()
 _schedulers: dict[str, object] = {}
+# 注册表锁：`_get_scheduler` 是 check-then-create，两个并发请求（Dashboard 轮询 +
+# 用户点启动）会各建一个 SchedulerService → 两次设备/串口初始化，且后被覆盖者为
+# 无法停止的孤儿（同串口双连接）。
+_schedulers_lock = threading.RLock()
 
 # precheck 结果 TTL 缓存（秒）：避免短时间内重复启动触发多次 adb 查询
 _PRECheck_TTL = 5.0
 _precheck_cache: dict[str, tuple[float, dict]] = {}
 
-# 存储主线程事件循环引用（用于后台线程安全地推送异步事件）
+# 存储主循环事件循环引用（用于后台线程安全地推送异步事件）。
+# 由 lifespan 在启动时显式注入（`bind_main_loop`）：把阻塞端点挪到线程池后，
+# `asyncio.get_event_loop()` 在工作线程会抛 RuntimeError，必须走注入的 loop。
 _main_loop: asyncio.AbstractEventLoop | None = None
 
 _logger = logging.getLogger("SchedulerAPI")
@@ -23,16 +30,52 @@ _logger = logging.getLogger("SchedulerAPI")
 # 串口格式：127.0.0.1:xxxxx 或 emulator-xxxx
 _SERIAL_RE = re.compile(r"^(\d{1,3}\.){3}\d{1,3}:\d+$|^emulator-\d+$", re.IGNORECASE)
 
+# 优雅停机预算（秒）：程序退出时等待各调度器停止并收尾的总时长
+SHUTDOWN_TIMEOUT = 5.0
 
-def _get_main_loop() -> asyncio.AbstractEventLoop:
+
+def bind_main_loop(loop: asyncio.AbstractEventLoop) -> None:
+    """由 lifespan 注入主事件循环（后台线程推送状态的前提）"""
     global _main_loop
-    if _main_loop is None or _main_loop.is_closed():
-        _main_loop = asyncio.get_event_loop()
+    _main_loop = loop
+    _logger.debug("调度器事件循环已注入")
+
+
+def _get_main_loop_or_none() -> asyncio.AbstractEventLoop | None:
+    """取主事件循环；取不到返回 None（调用方丢弃该次推送，不抛异常）。
+
+    正常路径由 lifespan 注入；`asyncio.get_running_loop()` 兜底覆盖"在事件循环线程内
+    首次调用"的场景（旧实现在任意线程调 `get_event_loop()`，3.12 下工作线程会抛
+    RuntimeError 并丢掉状态推送）。
+    """
+    global _main_loop
+    if _main_loop is not None and not _main_loop.is_closed():
+        return _main_loop
+    try:
+        _main_loop = asyncio.get_running_loop()
+    except RuntimeError:
+        return None
     return _main_loop
 
 
+def peek_scheduler(config_id: str):
+    """只读获取已创建的调度器实例（**不创建**，无副作用）。
+
+    GET /status、GET /tasks 曾走 `_get_scheduler()`：一次「读状态」就会实例化
+    SchedulerService（挂 logger handler、进注册表、构造 planner/executor），而
+    Dashboard 5s 轮询会让每个被看过的配置常驻对象；销毁只在删配置时发生。
+    """
+    with _schedulers_lock:
+        return _schedulers.get(config_id)
+
+
 def _get_scheduler(config_id: str):
-    if config_id not in _schedulers:
+    """取（必要时创建）指定配置的调度器实例 —— 仅限有副作用的写/启动路径调用。"""
+    with _schedulers_lock:
+        sched = _schedulers.get(config_id)
+        if sched is not None:
+            return sched
+
         from backend.services.scheduler_service import SchedulerService
         from backend.api.ws import manager
 
@@ -56,23 +99,25 @@ def _get_scheduler(config_id: str):
             msg["config_id"] = config_id
             await manager.broadcast_snapshot(msg)
 
+        def _submit(coro) -> None:
+            """把状态推送投递到主事件循环（投递失败只告警，不影响任务执行）"""
+            loop = _get_main_loop_or_none()
+            if loop is None:
+                _logger.warning("主事件循环未就绪，丢弃一次 WebSocket 状态推送")
+                return
+            try:
+                asyncio.run_coroutine_threadsafe(coro, loop)
+            except RuntimeError as e:
+                _logger.warning("投递 WebSocket 状态推送失败: %s", e)
+
         def sync_on_status(status: dict):
-            loop = _get_main_loop()
-            asyncio.run_coroutine_threadsafe(
-                on_status_change(status), loop
-            )
+            _submit(on_status_change(status))
 
         def sync_on_task(task_data: dict):
-            loop = _get_main_loop()
-            asyncio.run_coroutine_threadsafe(
-                on_task_state_change(task_data), loop
-            )
+            _submit(on_task_state_change(task_data))
 
         def sync_on_snapshot(snapshot: dict):
-            loop = _get_main_loop()
-            asyncio.run_coroutine_threadsafe(
-                on_snapshot(snapshot), loop
-            )
+            _submit(on_snapshot(snapshot))
 
         _schedulers[config_id] = SchedulerService(
             cfg,
@@ -80,7 +125,7 @@ def _get_scheduler(config_id: str):
             on_task_state_change=sync_on_task,
             on_snapshot=sync_on_snapshot,
         )
-    return _schedulers[config_id]
+        return _schedulers[config_id]
 
 
 def destroy_scheduler(config_id: str):
@@ -89,7 +134,8 @@ def destroy_scheduler(config_id: str):
     调度器持有设备/控制/截图连接（含串口占用），若只删配置文件不销毁调度器，
     旧连接不会被释放，导致后续使用同一串口的配置无法连接。
     """
-    sched = _schedulers.pop(config_id, None)
+    with _schedulers_lock:
+        sched = _schedulers.pop(config_id, None)
     if sched is None:
         return
     try:
@@ -98,6 +144,39 @@ def destroy_scheduler(config_id: str):
         _logger.info(f"已销毁配置 {config_id} 的调度器实例")
     except Exception as e:
         _logger.error(f"销毁配置 {config_id} 的调度器实例失败: {e}")
+
+
+def shutdown_all_schedulers(timeout: float = SHUTDOWN_TIMEOUT) -> list[str]:
+    """停止全部调度器实例（程序退出路径），返回未能正常收尾的 config_id 列表。
+
+    旧实现没有任何退出清理：带运行中调度器关闭程序时，任务线程被硬杀在 multi_tap
+    半途 → 设备端 evdev MT slot 停在按下态（v0.17.46 记录的"残留触点"故障），只能
+    靠下次启动时的自检兜底。
+    """
+    with _schedulers_lock:
+        items = list(_schedulers.items())
+    if not items:
+        return []
+    deadline = time.time() + max(0.0, timeout)
+    failed: list[str] = []
+    for config_id, sched in items:
+        try:
+            if getattr(sched, "running", False):
+                sched.stop("程序退出")
+            scan_thread = getattr(sched, "_scan_thread", None)
+            while scan_thread is not None and scan_thread.is_alive() \
+                    and time.time() < deadline:
+                time.sleep(0.1)
+            if scan_thread is not None and scan_thread.is_alive():
+                failed.append(config_id)
+        except Exception as e:
+            _logger.error("停止配置 %s 的调度器失败: %s", config_id, e, exc_info=e)
+            failed.append(config_id)
+    if failed:
+        _logger.warning("以下调度器未在 %.1fs 内完成收尾: %s", timeout, failed)
+    else:
+        _logger.info("已停止 %d 个调度器实例", len(items))
+    return failed
 
 
 def _precheck_serial(cfg) -> tuple[list[str], list[str]]:
@@ -189,12 +268,15 @@ def _precheck_screenshot_path(cfg) -> list[str]:
 
 
 @router.post("/precheck/{config_id}")
-async def precheck_scheduler(config_id: str):
+def precheck_scheduler(config_id: str):
     """启动/键位配置前的快速预检：串口与 MuMu/LD 截图路径环境。
 
     目的：在进入耗时的设备连接前把常见参数问题暴露给用户，避免长时间阻塞界面。
     串口同一时刻只能被一个调度器连接（占用检查）。
     结果带 5s TTL 缓存，避免短时间内重复请求重复触发 adb 查询。
+
+    同步路由：内部有 `ensure_adb_device(timeout=5.0)` 与 `adb devices` 子进程调用，
+    不能跑在事件循环线程上。
     """
     now = time.monotonic()
     cached = _precheck_cache.get(config_id)
@@ -222,7 +304,15 @@ async def precheck_scheduler(config_id: str):
 
 
 @router.post("/start/{config_id}")
-async def start_scheduler(config_id: str):
+def start_scheduler(config_id: str):
+    """启动调度器。
+
+    注意是**同步** `def`：`sched.start()` 会做秒级阻塞工作（`_lazy_init` 建设备、
+    环境预检里的 `subprocess.run(timeout=15)`、adb 残留触点自检、共享 SceneGraph
+    首次解码 ~845 张图）。旧的 `async def` 会把这些跑在事件循环线程上，冻结整个
+    服务（含 WS 日志 30ms 批量推送）——用户感受为"点启动后界面卡死、日志停更"。
+    同步路由由 FastAPI 自动投递到 anyio 线程池。
+    """
     # 依赖库版本硬拦截：本 commit 需要的最旧依赖库 ReleaseTag（MIN_RELEASE_TAG）不满足时
     # 禁止启动调度器——热更新只替换代码、不携带依赖库（OCR 模型/DLL 等），若本地 _version.py
     # 低于所需版本，运行期可能因代码依赖新依赖库出现恶性 BUG，必须走 Release 完整安装包更新。
@@ -245,7 +335,8 @@ async def start_scheduler(config_id: str):
 
 
 @router.post("/stop/{config_id}")
-async def stop_scheduler(config_id: str):
+def stop_scheduler(config_id: str):
+    """停止调度器（同步路由：`stop()` 含连点线程等待、任务线程 join、adb 自检等阻塞动作）"""
     sched = _get_scheduler(config_id)
     sched.stop("用户手动停止")
     return {"ok": True}
@@ -253,32 +344,44 @@ async def stop_scheduler(config_id: str):
 
 @router.get("/status/{config_id}")
 async def get_scheduler_status(config_id: str):
-    sched = _get_scheduler(config_id)
-    return sched.get_status()
+    """调度器状态（只读，不创建调度器实例）"""
+    sched = peek_scheduler(config_id)
+    if sched is not None:
+        return sched.get_status()
+    cfg = _config_service.get_config(config_id)
+    if not cfg:
+        raise HTTPException(status_code=404, detail="配置不存在")
+    # 未创建调度器：返回与 SchedulerState.get_status() 同形状的"未运行"快照
+    return {"running": False, "task_count": 0,
+            "mode": "once" if cfg.config_type == "临时" else "persistent"}
 
 
 @router.get("/tasks/{config_id}")
 async def get_tasks(config_id: str):
-    sched = _get_scheduler(config_id)
-    if not sched.running:
+    """任务状态快照（只读，不创建调度器实例）"""
+    sched = peek_scheduler(config_id)
+    if sched is None or not sched.running:
         return []
     return sched.get_tasks_status()
 
 
 @router.post("/tasks/{config_id}/{task_name}/execute")
-async def execute_task(config_id: str, task_name: str, force: bool = False):
+def execute_task(config_id: str, task_name: str, force: bool = False):
     """立即执行任务。
 
     - 默认受任务**自身排期窗口**约束：当前不在可执行窗口内（已过期/未开始）时不做任何
       改动，返回 `{ok: False, reason, window_state, schedule}` 供前端提示；
     - `force=True`：用户在二次确认弹窗中选择「忽略窗口强制执行」时传入。
+
+    同步路由：可能触发一次 `scan()`（启动任务线程、写配置）与窗口探测（读 config）。
     """
     sched = _get_scheduler(config_id)
     return sched.execute_task_now(task_name, ignore_window=force)
 
 
 @router.put("/tasks/{config_id}/{task_name}/activation")
-async def toggle_task_activation(config_id: str, task_name: str, state: bool):
+def toggle_task_activation(config_id: str, task_name: str, state: bool):
+    """切换任务启用状态（同步路由：会写配置文件并更新快照）"""
     sched = _get_scheduler(config_id)
     sched.toggle_task_activation(task_name, state)
     return {"ok": True}

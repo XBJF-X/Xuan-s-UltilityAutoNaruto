@@ -3,10 +3,36 @@ import asyncio
 import json
 import logging
 import threading
+from urllib.parse import urlparse
+
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 router = APIRouter()
 logger = logging.getLogger("WebSocket")
+
+# ===== 连接来源校验 =====
+# WebSocket **不受 CORS 约束**：旧实现无任何校验，任意网站都能
+# `new WebSocket("ws://127.0.0.1:4199/ws/logs")` 读取全部日志（含用户名、串口、
+# 安装路径、异常堆栈）。这里按 Origin 主机白名单放行（严格解析 host，避免
+# `http://127.0.0.1.evil.com` 这类前缀欺骗）：
+#   - 同源（生产：SPA 由后端自己托管，Origin 即 http://127.0.0.1:<端口>）
+#   - 本地开发服务器（vite dev server 直连场景）
+# 浏览器一定会带 Origin；无 Origin 的非浏览器客户端（测试脚本/CLI）放行但留痕。
+_ALLOWED_ORIGIN_HOSTS = {"127.0.0.1", "localhost", "::1"}
+_ALLOWED_ORIGIN_SCHEMES = {"http", "https"}
+
+
+def _origin_allowed(origin: str | None) -> bool:
+    if not origin:
+        return True
+    try:
+        parts = urlparse(origin)
+    except ValueError:
+        return False
+    if parts.scheme not in _ALLOWED_ORIGIN_SCHEMES:
+        return False
+    host = (parts.hostname or "").lower()
+    return host in _ALLOWED_ORIGIN_HOSTS
 
 
 class ConnectionManager:
@@ -86,14 +112,22 @@ class WebSocketLogHandler(logging.Handler):
         self._flush_task = None
 
     @staticmethod
-    def _extract_config_id(logger_name: str) -> str:
-        """从 logger name 中提取 config_id"""
-        # 匹配类似 Service_Config_1, SchedulerService_Config_10 等模式
-        import re
-        match = re.search(r'(Config_\d+)', logger_name)
-        if match:
-            return match.group(1)
-        return ""
+    def _extract_config_id(record_or_name) -> str:
+        """取 config_id：显式绑定（record.config_id）优先，其次从 logger 名兜底解析。
+
+        参数兼容两种形态：`logging.LogRecord`（emit 路径）或 logger 名字符串（旧调用形态）。
+        兜底正则必须覆盖副本配置 id（`Config_1_副本` / `Config_1_副本2`），否则副本日志
+        会被错判成源配置（详情见 backend/log_setup.py::extract_config_id）。
+        """
+        from backend.log_setup import extract_config_id
+        if record_or_name is None:
+            return ""
+        if isinstance(record_or_name, str):
+            return extract_config_id(logger_name=record_or_name)
+        return extract_config_id(
+            explicit=getattr(record_or_name, "config_id", "") or "",
+            logger_name=getattr(record_or_name, "name", "") or "",
+        )
 
     def set_loop(self, loop: asyncio.AbstractEventLoop):
         """设置主事件循环引用并启动批量刷新协程"""
@@ -108,7 +142,7 @@ class WebSocketLogHandler(logging.Handler):
             return
         try:
             msg = self.format(record)
-            config_id = self._extract_config_id(record.name)
+            config_id = self._extract_config_id(record)
             with self._batch_lock:
                 self._batch.append({
                     "type": "log",
@@ -152,9 +186,23 @@ class WebSocketLogHandler(logging.Handler):
             manager.disconnect(conn)
 
 
+async def _reject_if_origin_denied(websocket: WebSocket) -> bool:
+    """Origin 不在白名单时拒绝连接（返回 True=已拒绝）"""
+    origin = websocket.headers.get("origin")
+    if _origin_allowed(origin):
+        if not origin:
+            logger.debug("WebSocket 连接无 Origin 头（非浏览器客户端），按放行处理")
+        return False
+    logger.warning("拒绝非白名单 Origin 的 WebSocket 连接: %s", origin)
+    await websocket.close(code=1008)
+    return True
+
+
 @router.websocket("/logs")
 async def websocket_logs(websocket: WebSocket):
     """实时日志流"""
+    if await _reject_if_origin_denied(websocket):
+        return
     await manager.connect(websocket)
     try:
         while True:
@@ -169,6 +217,8 @@ async def websocket_logs(websocket: WebSocket):
 @router.websocket("/status")
 async def websocket_status(websocket: WebSocket):
     """任务/设备状态流"""
+    if await _reject_if_origin_denied(websocket):
+        return
     await manager.connect(websocket)
     try:
         while True:

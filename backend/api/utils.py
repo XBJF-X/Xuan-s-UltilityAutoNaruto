@@ -19,6 +19,7 @@ from fastapi import APIRouter
 
 from backend.utils import get_real_path
 from backend.services.config_service import shared_config_service
+from backend.runtime.paths import is_within, safe_component
 
 router = APIRouter()
 
@@ -46,6 +47,12 @@ _FEEDBACK_STATUS: dict = {
 }
 
 _STATUS_LOCK = threading.Lock()
+
+# 更新链路必须校验 TLS 证书：旧实现全部 `verify=False`，而热更新会下载 zip →
+# 解压 → 覆盖 backend/ 与 frontend/dist → 写 restart 请求触发重启；关闭证书校验
+# 意味着任何能劫持 DNS/代理/局域网的人都能让客户端执行任意代码。
+# 保留常量便于企业内网/自签代理场景显式调整（改这里即可，不要散落 verify=）。
+_UPDATE_VERIFY_TLS = True
 
 
 # ============================================================
@@ -145,20 +152,16 @@ def _read_tail(file_path, max_lines: int = 1000) -> str:
     return "\n".join(lines[-max_lines:])
 
 
-_LOG_LINE_RE = re.compile(
-    r"^(?P<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\s+"
-    r"\[(?P<level>\w+)\]\s+"
-    r"(?P<logger>[^\s|]+(?:\s*\|\s*)?)?"
-    r""
-)
-
-
 def parse_log_lines(text: str, default_config_id: str = "") -> list[dict]:
     """把日志文本解析为标准日志条目列表
 
     日志格式: 2026-08-01 18:52:18 [INFO] SchedulerService_Config_1 | message
     兼容无 logger 前缀的行（[INFO] message）。
     """
+    # config_id 兜底正则（含副本后缀）：副本配置 id 形如 Config_1_副本 / Config_1_副本2，
+    # 旧的非锚定 `(Config_\d+)` 会把副本日志错判成源配置（副本面板永远空白）
+    from backend.log_setup import extract_config_id
+
     entries = []
     for line in text.splitlines():
         line = line.rstrip()
@@ -177,10 +180,7 @@ def parse_log_lines(text: str, default_config_id: str = "") -> list[dict]:
             ts = datetime.strptime(ts_str, "%Y-%m-%d %H:%M:%S").timestamp() * 1000
         except ValueError:
             continue
-        cid = default_config_id
-        m2 = re.search(r"(Config_\d+)", logger_name)
-        if m2:
-            cid = m2.group(1)
+        cid = extract_config_id(logger_name=logger_name) or default_config_id
         entries.append({
             "level": level,
             "message": message,
@@ -195,7 +195,7 @@ def parse_log_lines(text: str, default_config_id: str = "") -> list[dict]:
 # 1. 历史日志恢复
 # ============================================================
 @router.get("/log-history")
-async def get_log_history(config_id: str = "", limit: int = 500):
+def get_log_history(config_id: str = "", limit: int = 500):
     """读取历史日志文件供前端刷新/重连后恢复展示
 
     - config_id 为空或 "__global__"：读取 Main.log*，仅返回无归属(config_id=="")的程序日志
@@ -331,6 +331,41 @@ def _get_update_source() -> str:
     except Exception:
         pass
     return "auto"
+
+
+def _get_github_pat() -> str:
+    """读取 [助手设置] GithubPAT（默认为空 = 匿名调用）。
+
+    GitHub 对未认证请求限流很严（匿名 60 次/小时/IP），多人共用出口 IP 时
+    「检查更新」很容易被 403 限流。填 PAT 后带 ``Authorization`` 头即可把额度
+    提升到 5000 次/小时。空值/读取失败一律视为未配置。
+
+    注意：本函数的返回值**绝不允许**写入日志或接口响应。
+    """
+    try:
+        from backend.services.settings_service import SettingsService
+        return (SettingsService().get("助手设置", "GithubPAT") or "").strip()
+    except Exception:
+        return ""
+
+
+def _platform_headers(platform: dict) -> dict:
+    """构造请求头：GitHub 平台在配置了 PAT 时附加认证头。
+
+    Gitee 走匿名（其 OpenAPI 无需 token 即可读公开仓库），只有 GitHub 需要。
+    """
+    headers = dict(platform.get("headers") or {})
+    if platform.get("key") == "github":
+        pat = _get_github_pat()
+        if pat:
+            headers["Authorization"] = f"Bearer {pat}"
+    return headers
+
+
+def _github_pat_configured() -> bool:
+    """当前是否已配置 GitHub PAT（供状态展示，不泄露 token 本身）。"""
+    return bool(_get_github_pat())
+
 
 
 def _select_platforms() -> list:
@@ -643,7 +678,7 @@ def _check_full_update(local_version: str, platform: dict = None) -> dict:
         try:
             resp = requests.get(
                 _api_url(pf, "releases/latest"),
-                headers=pf["headers"], verify=False, timeout=15,
+                headers=_platform_headers(pf), verify=_UPDATE_VERIFY_TLS, timeout=15,
             )
             if resp.status_code == 404:
                 continue  # 该平台尚未发布 Release，降级尝试下一个平台
@@ -751,7 +786,7 @@ def _read_local_sha() -> Optional[str]:
 
 
 @router.get("/dependency-check")
-async def dependency_check():
+def dependency_check():
     """依赖健康检查：版本是否满足 MIN_RELEASE_TAG + 关键模块是否缺失。
 
     前端启动时调用，发现异常时弹窗引导用户前往 Release 更新。
@@ -780,7 +815,7 @@ async def get_local_version():
 
 
 @router.get("/check-update")
-async def check_update():
+def check_update():
     """检查更新：对比本地 version.json 与 GitHub v17 分支，返回云端提交历史"""
     current_sha = _read_local_sha()
     # 本地版本：既用于大更新/依赖库版本判定，也随响应返回供前端展示（各分支都要带上）
@@ -795,7 +830,7 @@ async def check_update():
             try:
                 resp = requests.get(
                     _api_url(pf, f"branches/{_BRANCH}"),
-                    headers=pf["headers"], verify=False, timeout=15,
+                    headers=_platform_headers(pf), verify=_UPDATE_VERIFY_TLS, timeout=15,
                 )
             except Exception:
                 continue
@@ -811,7 +846,7 @@ async def check_update():
                 commits_resp = requests.get(
                     _api_url(pf, "commits"),
                     params={"sha": _BRANCH, "per_page": 20},
-                    headers=pf["headers"], verify=False, timeout=15,
+                    headers=_platform_headers(pf), verify=_UPDATE_VERIFY_TLS, timeout=15,
                 )
                 if commits_resp.status_code == 200:
                     for c in json.loads(commits_resp.content.decode("utf-8")):
@@ -835,7 +870,7 @@ async def check_update():
                     try:
                         c_resp = requests.get(
                             _api_url(pf, f"commits/{current_sha}"),
-                            headers=pf["headers"], verify=False, timeout=15,
+                            headers=_platform_headers(pf), verify=_UPDATE_VERIFY_TLS, timeout=15,
                         )
                         if c_resp.status_code == 200:
                             c = json.loads(c_resp.content.decode("utf-8"))
@@ -939,6 +974,41 @@ def _set_update_status(**kwargs):
         _UPDATE_STATUS.update(kwargs)
 
 
+_SHA_SUFFIX_RE = re.compile(r"-(?P<sha>[0-9a-f]{7,40})$")
+
+
+def _verify_update_integrity(src_dir: Path, platform: dict) -> None:
+    """把解压出的源码目录钉到"已确认的云端提交 SHA"上。
+
+    GitHub 的 zipball 顶层目录名为 ``{repo}-{commit_sha}``，因此可以用它做内容绑定：
+    下载 → 解压后若目录名里的 sha 与 `_get_latest_sha()` 查到的提交不一致，说明
+    （在已启用 TLS 校验的前提下）内容被替换或更新源发生了漂移 → 中止更新并保留
+    `.update_backup`，绝不覆盖 backend/ 与 frontend/dist。
+
+    Gitee 的 archive 目录名是 ``{repo}-{branch}``（不含 sha），只能依赖 TLS；
+    目录名无法识别时记 WARNING 放行，避免因命名差异把正常更新卡死。
+    """
+    match = _SHA_SUFFIX_RE.search(src_dir.name)
+    if not match:
+        logger.warning(
+            "更新包目录名 %r 不含提交 SHA，跳过完整性绑定（依赖 TLS 校验）", src_dir.name)
+        return
+    got = match.group("sha")
+    if platform.get("key") != "github":
+        logger.info("更新源 %s 的目录 SHA 前缀=%s（非 GitHub，未做提交比对）",
+                    platform.get("label"), got)
+        return
+    expected = _get_latest_sha()
+    if not expected:
+        logger.warning("无法获取云端最新提交 SHA，跳过完整性绑定（依赖 TLS 校验）")
+        return
+    if not expected.startswith(got) and not got.startswith(expected):
+        raise RuntimeError(
+            f"更新包完整性校验失败：下载内容的提交 {got} 与云端最新提交 "
+            f"{expected[:7]} 不一致，已中止更新（未修改任何程序文件）")
+    logger.info("更新包完整性校验通过（提交 %s）", got[:7])
+
+
 @router.post("/apply-update")
 async def apply_update():
     """下载并应用云端最新版本（后台线程执行，进度通过 /utils/update-status 轮询）"""
@@ -969,7 +1039,7 @@ def _do_apply_update():
         for pf in _select_platforms():
             zip_url = pf["zip_url"].format(owner=pf["owner"], repo=pf["repo"], branch=_BRANCH)
             try:
-                with requests.get(zip_url, verify=False, timeout=60, stream=True) as r:
+                with requests.get(zip_url, verify=_UPDATE_VERIFY_TLS, timeout=60, stream=True) as r:
                     r.raise_for_status()
                     # Gitee 匿名下载 archive 可能触发机器验证：返回 200 + HTML 验证页而非 zip。
                     # 先根据 Content-Type 识别非 zip 响应，直接降级到下一个平台（如 GitHub）。
@@ -1011,6 +1081,8 @@ def _do_apply_update():
         if not top_dirs:
             raise RuntimeError("更新包结构异常：未找到源码目录")
         src_dir = top_dirs[0]
+        # ---- 2-1. 完整性绑定：把解压内容钉到"已确认的云端提交"上 ----
+        _verify_update_integrity(src_dir, pf)
 
         # ---- 2.4 热更新前备份 backend + frontend/dist（失败可回滚）----
         _backup_for_hot_update(project_root)
@@ -1116,7 +1188,7 @@ def _do_apply_release_update():
 
         # ---- 1. 下载安装包（stream + 进度）----
         _set_update_status(phase="downloading-installer", percent=2, message="正在下载新版本安装包...")
-        with requests.get(download_url, verify=False, timeout=60, stream=True) as r:
+        with requests.get(download_url, verify=_UPDATE_VERIFY_TLS, timeout=60, stream=True) as r:
             r.raise_for_status()
             total = int(r.headers.get("Content-Length", 0))
             downloaded = 0
@@ -1170,7 +1242,7 @@ def _get_latest_sha() -> Optional[str]:
         try:
             resp = requests.get(
                 _api_url(pf, f"branches/{_BRANCH}"),
-                headers=pf["headers"], verify=False, timeout=15,
+                headers=_platform_headers(pf), verify=_UPDATE_VERIFY_TLS, timeout=15,
             )
             if resp.status_code == 200:
                 return json.loads(resp.content.decode("utf-8"))["commit"]["sha"]
@@ -1190,7 +1262,7 @@ async def update_status():
 # 4. 反馈打包
 # ============================================================
 @router.get("/feedback/options")
-async def feedback_options(config_id: str = "", date: str = ""):
+def feedback_options(config_id: str = "", date: str = ""):
     """根据当前配置用户名的日志目录结构，生成反馈选择项
 
     进入反馈流程先强制 flush 所有日志 handler，确保实时日志写回本地硬盘，
@@ -1215,7 +1287,12 @@ async def feedback_options(config_id: str = "", date: str = ""):
         logger.warning("反馈选项请求配置不存在（config_id=%s），无法定位日志目录", config_id)
         return {"ok": False, "message": "配置不存在，无法定位日志目录"}
     log_root = Path(get_real_path("log"))
+    # 用户名进路径前统一清洗（防 `PUT /api/configs/{id}/rename` 写入越界名）
+    username = safe_component(username, fallback="unknown")
     user_dir = log_root / username
+    if not is_within(log_root, user_dir):
+        logger.warning("反馈选项请求的用户名越界（config_id=%s）", config_id)
+        return {"ok": False, "message": "配置用户名非法"}
     if not user_dir.exists():
         return {"ok": True, "username": username, "dates": [], "screenshots": {}}
 
@@ -1294,6 +1371,15 @@ def _do_feedback_package(config_id: str, date: str, task_names: list[str], save_
 
         username = _get_config_username(config_id)
         log_root = Path(get_real_path("log"))
+        # 路径安全：username 可经 PUT /api/configs/{id}/rename 被写成 `..\..` 之类，
+        # date/task_names/save_path 也全部来自客户端 → 旧实现直接当路径分量，
+        # 可收集 log/ 之外的文件（task_name="..\.."）并把 zip 写到任意位置。
+        username = safe_component(username, fallback="unknown")
+        date = safe_component(date, fallback="")
+        if not _DATE_DIR_RE.match(date):
+            _set_feedback_status(phase="error", percent=0, running=False,
+                                 message=f"日期格式非法: {date}", error="bad_date")
+            return
         user_dir = log_root / username
         date_dir = user_dir / date
 
@@ -1317,19 +1403,33 @@ def _do_feedback_package(config_id: str, date: str, task_names: list[str], save_
         # 3. screenshot/<任务名>/*
         shot_root = date_dir / "screenshot" if date_dir.exists() else None
         if shot_root and shot_root.exists():
-            for task_name in task_names:
+            # 只接受"目录里真实存在"的任务名：客户端传 `..\..` 之类越界名时，
+            # safe_component 清洗后已不可能逃出 shot_root，这里再与目录枚举求交集
+            existing_tasks = {d.name for d in shot_root.iterdir() if d.is_dir()}
+            for raw_name in task_names:
+                task_name = safe_component(raw_name, fallback="")
+                if not task_name or task_name not in existing_tasks:
+                    continue
                 task_dir = shot_root / task_name
-                if not task_dir.exists() or not task_dir.is_dir():
+                if not is_within(shot_root, task_dir):
                     continue
                 for fp in sorted(task_dir.rglob("*")):
                     if fp.is_file():
                         files.append((fp, f"{username}/{date}/screenshot/{task_name}/{fp.name}"))
+
+        # 3-1. 兜底断言：所有待打包文件必须位于 log/ 之内
+        files = [(fp, arc) for fp, arc in files if is_within(log_root, fp)]
 
         if not files:
             _set_feedback_status(phase="error", percent=0, running=False, message="未找到任何可打包的日志文件", error="empty")
             return
 
         total = len(files)
+        save_path = str(save_path or "").strip()
+        if not save_path:
+            _set_feedback_status(phase="error", percent=0, running=False,
+                                 message="未选择保存位置", error="bad_save_path")
+            return
         os.makedirs(save_path, exist_ok=True)
         date_compact = date.replace("-", "")
         zip_name = f"XuanFeedBook_{username}_{date_compact}.zip"
@@ -1372,7 +1472,7 @@ async def feedback_package_status():
 # 原有设备/文件夹接口
 # ============================================================
 @router.get("/serial-list")
-async def get_serial_list():
+def get_serial_list():
     """通过 adb devices 枚举当前连接的设备串口列表"""
     try:
         result = subprocess.run(

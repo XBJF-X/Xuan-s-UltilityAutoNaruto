@@ -26,6 +26,8 @@ from fastapi.responses import FileResponse, JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 
+from backend.runtime.paths import safe_join_path
+
 # 逐个导入 API 路由模块并容错：任一模块因依赖缺失（如热更新后缺少新版安装包中的依赖）
 # 导入失败时，跳过该模块并记录，保证应用仍能启动（前端界面可显示、检查更新可用）。
 import importlib
@@ -112,7 +114,7 @@ async def lifespan(app: FastAPI):
         try:
             ws_handler = ws_module.get_ws_log_handler()
             ws_handler.setFormatter(logging.Formatter("%(message)s"))
-            ws_handler.set_loop(asyncio.get_event_loop())
+            ws_handler.set_loop(asyncio.get_running_loop())
             ws_handler.setLevel(logging.DEBUG)
             root_logger = logging.getLogger()
             if ws_handler not in root_logger.handlers:
@@ -123,12 +125,28 @@ async def lifespan(app: FastAPI):
     else:
         logging.getLogger("WebSocket").warning("ws 模块导入失败，跳过 WebSocket 日志推送")
 
+    # 2-1. 把主事件循环注入调度器 API 层：阻塞型端点（start/stop/precheck…）改由
+    #      FastAPI 线程池执行后，后台线程推送状态必须用显式注入的 loop，不能再靠
+    #      `asyncio.get_event_loop()`（3.12 下工作线程会抛 RuntimeError 并丢推送）。
+    scheduler_module = _API_MODULES.get("scheduler")
+    bind_loop = getattr(scheduler_module, "bind_main_loop", None)
+    if bind_loop is not None:
+        try:
+            bind_loop(asyncio.get_running_loop())
+        except Exception as e:
+            logging.getLogger("WebSocket").warning("调度器事件循环注入失败: %s", e)
+
     # 3. 清理过期日志
     _clean_old_logs()
 
     yield  # 应用运行期间
 
     # ---- 关闭逻辑 ----
+    # 先停调度器（停任务 → 等连点/任务线程收尾 → 释放设备并清残留触点），
+    # 再释放数据库引擎；否则任务线程会被硬杀在连点批次中途，设备端 evdev MT slot
+    # 停在按下态（表现为"之后点一下屏幕就同时触发所有预设坐标"）。
+    _shutdown_schedulers()
+    _dispose_resource_db()
     # 记录退出横幅（退出时间/原因），写入 Main.log 并 print 到 stdout（backend.log）
     from backend.runtime_info import build_exit_banner
     exit_banner = build_exit_banner("Xuan Backend", reason="正常退出")
@@ -137,6 +155,42 @@ async def lifespan(app: FastAPI):
     logging.getLogger("WebSocket").info("应用关闭")
     # 程序退出时清理 adb server（issue #4：避免退出后残留 adb 进程）
     _shutdown_adb_server()
+
+
+def _shutdown_schedulers():
+    """停止全部调度器实例，返回未能正常收尾的 config_id 列表。
+
+    兜底逻辑：launcher 关窗口时用 terminate 强杀后端，此处仅在优雅退出时生效。
+    """
+    sched_module = _API_MODULES.get("scheduler")
+    shutdown = getattr(sched_module, "shutdown_all_schedulers", None)
+    if shutdown is None:
+        return []
+    try:
+        failed = shutdown()
+        if failed:
+            logging.getLogger("Shutdown").warning("未完成收尾的调度器: %s", failed)
+        return failed
+    except Exception as e:
+        logging.getLogger("Shutdown").warning("停止调度器失败: %s", e, exc_info=e)
+        return []
+
+
+def _dispose_resource_db():
+    """释放资源库 SQLAlchemy 引擎（否则热更新覆盖 src/database.db 时文件被占用）。
+
+    过去这刀是在热更新流程里手工补的（见 api/utils.py 的 ResourceDBManager.engine
+    释放），说明生命周期缺少统一出口。
+    """
+    try:
+        from backend.tools.resource_db import ResourceDBManager
+        engine = getattr(ResourceDBManager, "engine", None)
+        if engine is not None:
+            engine.dispose()
+            logging.getLogger("Shutdown").info("资源库数据库引擎已释放")
+    except Exception as e:
+        logging.getLogger("Shutdown").warning("释放资源库引擎失败: %s", e)
+
 
 
 def _shutdown_adb_server():
@@ -263,12 +317,24 @@ class JsSafeStaticFiles(StaticFiles):
         return response
 
 
-# CORS - 允许前端 localhost 开发服务器
+# CORS - 仅放行本地开发服务器（Vite dev server 直连场景）。
+# 生产由同一后端托管 SPA（同源），dev 走 vite proxy（同源），**都不需要 CORS**；
+# 旧实现的 `allow_origins=["*"] + allow_credentials=True` 会被 starlette 回显任意
+# Origin（实测 cors.py: "if allow_all_origins and allow_credentials: allow_explicit_origin"），
+# 等于"任何网站都能调用本地 127.0.0.1:4199 的写接口"（apply-update / 删配置 / 启停调度器 /
+# os.startfile 打开日志目录），WebSocket 还完全不受 CORS 约束。这里改为显式白名单。
+_DEV_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:4199",
+    "http://127.0.0.1:4199",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 开发阶段放开，生产环境限定 localhost
+    allow_origins=_DEV_ORIGINS,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -296,8 +362,12 @@ if frontend_dist.exists():
                     and response.status_code == 404
                     and not request.url.path.startswith("/api/")
                     and not request.url.path.startswith("/ws/")):
-                file_path = frontend_dist / request.url.path.lstrip("/")
-                if file_path.exists() and file_path.is_file():
+                # 路径穿越防护：`request.url.path` 已由 ASGI 层百分号解码，
+                # 旧实现直接 `frontend_dist / path.lstrip("/")` → `/..%2f..%2fsetting.ini`
+                # 可读到 dist 之外（含 GithubPAT 的 setting.ini、config/*.json、
+                # src/database.db）。safe_join_path 越界时返回 None。
+                file_path = safe_join_path(frontend_dist, request.url.path)
+                if file_path is not None and file_path.is_file():
                     return FileResponse(file_path)
                 return FileResponse(frontend_dist / "index.html")
             return response

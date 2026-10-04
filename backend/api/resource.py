@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Optional
 
 from fastapi import APIRouter, HTTPException, UploadFile, File
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import Response
 
 from backend.tools.resource_db import ResourceDBManager
@@ -28,6 +29,9 @@ router = APIRouter()
 logger = logging.getLogger("ResourceAPI")
 
 _TEST_SCENE_DIR = str(Path(__file__).resolve().parent.parent.parent / "test_scene")
+
+# 上传图片大小上限（10MB）：旧实现无限制地 `await file.read()` 整份进内存后再解码
+_MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 
 # Windows 文件名非法字符（含控制字符）
 _WINDOWS_INVALID_CHARS = re.compile(r'[<>:"/\\|?*\x00-\x1f]')
@@ -66,12 +70,26 @@ def get_element_image(element_id: str):
 
 @router.post("/elements/{element_id}/image")
 async def upload_element_image(element_id: str, file: UploadFile = File(...)):
-    """上传/替换元素图像（原始 PNG 字节直接存 bgra，gray/mask 运行时推导），支持 PNG/JPG 等格式"""
+    """上传/替换元素图像（原始 PNG 字节直接存 bgra，gray/mask 运行时推导），支持 PNG/JPG 等格式
+
+    只读文件是异步的；落库与共享 SceneGraph 同步（cv2 重算 gray/mask，甚至首次构建
+    整张场景图 ~1.3s）投递到线程池执行——否则会阻塞事件循环（WS 日志推送同 loop）。
+    """
     if _db.get_element_by_id(element_id) is None:
         raise HTTPException(status_code=404, detail="元素不存在")
     data = await file.read()
     if not data:
         raise HTTPException(status_code=400, detail="文件为空")
+    if len(data) > _MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"图片过大（{len(data) // 1024}KB），上限 {_MAX_UPLOAD_BYTES // 1024}KB")
+    await run_in_threadpool(_apply_element_image_upload, element_id, data)
+    return {"ok": True}
+
+
+def _apply_element_image_upload(element_id: str, data: bytes) -> None:
+    """元素图像落库 + 同步共享 SceneGraph（在线程池执行）"""
     ok = _db.update_element_by_id(element_id, bgra=data)
     if not ok:
         raise HTTPException(status_code=500, detail="图像保存失败")
@@ -79,7 +97,6 @@ async def upload_element_image(element_id: str, file: UploadFile = File(...)):
     updated = _db.get_element_by_id(element_id)
     if updated is not None:
         _sync_graph_element(updated, refresh_image=True)
-    return {"ok": True}
 
 
 @router.get("/scenes/{scene_id}/base_image")
@@ -114,13 +131,27 @@ def get_scene_base_image(scene_id: str):
 
 @router.post("/scenes/{scene_id}/base_image")
 async def upload_scene_base_image(scene_id: str, file: UploadFile = File(...)):
-    """上传/替换场景底图：统一转为 PNG 并保存为 test_scene/{场景名}.png"""
+    """上传/替换场景底图：统一转为 PNG 并保存为 test_scene/{场景名}.png
+
+    cv2 解码/编码 + 落盘在线程池执行（大图编解码可达秒级，不能阻塞事件循环）。
+    """
     scene = _db.get_scene_by_id(scene_id)
     if scene is None:
         raise HTTPException(status_code=404, detail="场景不存在")
     data = await file.read()
     if not data:
         raise HTTPException(status_code=400, detail="文件为空")
+    if len(data) > _MAX_UPLOAD_BYTES:
+        raise HTTPException(
+            status_code=413,
+            detail=f"图片过大（{len(data) // 1024}KB），上限 {_MAX_UPLOAD_BYTES // 1024}KB")
+    safe_name = await run_in_threadpool(
+        _store_scene_base_image, scene.name, data)
+    return {"ok": True, "path": f"test_scene/{safe_name}.png"}
+
+
+def _store_scene_base_image(scene_name: str, data: bytes) -> str:
+    """把上传字节统一转 PNG 并落盘，返回安全文件名（在线程池执行）"""
     try:
         import numpy as np
         import cv2
@@ -135,14 +166,13 @@ async def upload_scene_base_image(scene_id: str, file: UploadFile = File(...)):
         data = png.tobytes()
     except ImportError:
         # 无 cv2 环境时降级：仅接受原始 PNG 字节原样保存（注明影响范围）
-        if not data[:8] == b"\x89PNG\r\n\x1a\n":
+        if data[:8] != b"\x89PNG\r\n\x1a\n":
             raise HTTPException(status_code=400, detail="缺少 cv2 环境，仅支持上传 PNG")
-    safe_name = _safe_scene_filename(scene.name)
+    safe_name = _safe_scene_filename(scene_name)
     dest_dir = Path(_TEST_SCENE_DIR)
     dest_dir.mkdir(parents=True, exist_ok=True)
-    dest = dest_dir / f"{safe_name}.png"
-    dest.write_bytes(data)
-    return {"ok": True, "path": f"test_scene/{safe_name}.png"}
+    (dest_dir / f"{safe_name}.png").write_bytes(data)
+    return safe_name
 
 _db = ResourceDBManager()
 

@@ -109,8 +109,12 @@ def _frame_to_png_base64(frame) -> str:
 
 
 @router.get("/{config_id}/screenshot")
-async def get_screenshot(config_id: str):
-    """获取模拟器截图，返回 base64 PNG 图片数据（供键位配置使用）"""
+def get_screenshot(config_id: str):
+    """获取模拟器截图，返回 base64 PNG 图片数据（供键位配置使用）
+
+    同步路由：`_capture_frame` 走 adb/模拟器截图（数百 ms~数秒）再 base64 编码，
+    不能跑在事件循环线程上（会冻结 WS 日志推送与其它接口）。
+    """
     cfg = config_service.get_config(config_id)
     if cfg is None:
         raise HTTPException(status_code=404, detail="配置不存在")
@@ -128,8 +132,8 @@ async def get_screenshot(config_id: str):
 
 
 @router.post("/{config_id}/save-screenshot")
-async def save_screenshot(config_id: str):
-    """截图并保存到 log/<用户名>/<日期>/screenshot/用户截图/<时间戳>.png"""
+def save_screenshot(config_id: str):
+    """截图并保存到 log/<用户名>/<日期>/screenshot/用户截图/<时间戳>.png（同步路由：含截图与落盘）"""
     cfg = config_service.get_config(config_id)
     if cfg is None:
         raise HTTPException(status_code=404, detail="配置不存在")
@@ -167,8 +171,11 @@ async def save_screenshot(config_id: str):
 
 
 @router.post("/{config_id}/check-environment")
-async def check_environment(config_id: str):
-    """检测模拟器运行环境（截图路径文件 / 实例状态 / 分辨率16:9 / 后台保活）"""
+def check_environment(config_id: str):
+    """检测模拟器运行环境（截图路径文件 / 实例状态 / 分辨率16:9 / 后台保活）
+
+    同步路由：内部有 `MuMuManager info -v` / `ldconsole list2` 子进程调用（timeout=15s）。
+    """
     cfg = config_service.get_config(config_id)
     if cfg is None:
         raise HTTPException(status_code=404, detail="配置不存在")
@@ -281,22 +288,22 @@ async def check_environment(config_id: str):
 
 
 @router.get("/{config_id}/serial-list")
-async def get_serial_list(config_id: str):
-    """获取已连接的 ADB 设备串口列表"""
+def get_serial_list(config_id: str):
+    """获取已连接的 ADB 设备串口列表（同步路由：adb 子进程调用）"""
     serials = get_adb_serials()
     return {"serials": serials}
 
 
 @router.post("/{config_id}/adb-restart")
-async def restart_adb(config_id: str):
-    """重启 ADB 服务并重新枚举设备"""
+def restart_adb(config_id: str):
+    """重启 ADB 服务并重新枚举设备（同步路由：重启 adb server 秒级阻塞）"""
     ok = restart_adb_server()
     serials = get_adb_serials()
     return {"ok": ok, "serials": serials}
 
 
 @router.post("/{config_id}/clean-stale-contacts")
-async def clean_stale_contacts(config_id: str):
+def clean_stale_contacts(config_id: str):
     """清理设备端残留触点（粘滞多点触摸）。
 
     连点过程中设备端 minitouch 进程若在「触点仍按下」时被终止（例如用户触摸屏幕
