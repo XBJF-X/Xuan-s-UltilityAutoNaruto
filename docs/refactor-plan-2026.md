@@ -658,3 +658,42 @@ composable"、"Layout 必须仍保留 `openResourceGraph` 与 `onMounted` 编排
   5. （阶段 5-二）新增文档章节时又用 `### 7.11` 作锚点，导致该章节被顶掉、残留半截正文；
      已从 HEAD 精确恢复并重建文档尾部。
      → **教训**：文档插入一律"追加到末尾"或用唯一小节标题作锚点，不用固定章节标题。
+
+### 7.21 阶段 5 实施记录（三）：useConfigs 抽出 + API 层目录化（阶段 5 收官）
+
+**一、`Layout.vue` 抽出最后一块 `composables/useConfigs.ts`（234 行）**
+- 负责配置列表/类型页签、新建/复制/重命名/删除、右键菜单，以及"切换配置"编排：
+  `selectConfig` + 内部 `watch(activeConfigId)` + `_switchSeq` 丢过期响应 + `configSwitching` 遮罩
+- 与其它 composable 的耦合一律**回调注入**（`switchToOverview` / `loadTaskData` /
+  `schedulerRunning`）——测试断言"不得直接调用其它 composable"（查前先剥离块注释）
+- `Layout.vue` 最终 **1073 → 684 行**（script 段 **503 → 113 行**）；四个 composable 合计 591 行：
+  `useTaskTree` 107 / `useSchedulerControl` 94 / `useStartupChecks` 156 / `useConfigs` 234
+
+**二、API 层目录化（既有 import 路径零改动）**
+- `api/client.ts` **120 → 21 行**，退化为 barrel；端点对象拆到 `api/endpoints/`：
+  `configs.ts`（configApi/tasksApi 35 行）、`scheduler.ts`（schedulerApi 25 行）、
+  `system.ts`（settingsApi/deviceApi/utilsApi/healthApi 75 行）
+- `api/resource.ts`（150 行）并入 `api/endpoints/resource.ts`，4 个引用点同步更新
+- 新增 `test_scene/verify_api_endpoints_split.py`（6 项：client.ts 只做再导出、每个 endpoints
+  模块导出预期对象、barrel 覆盖全部导出名、resource 无残留旧路径引用、typecheck 白名单仍覆盖）
+
+**三、测试适配**
+- 三处"前端源码级接线断言"（`verify_module_consolidation` 的 `updateTaskOrder:`、
+  `verify_consume_stamina_params` 的 `localVersion:`、`verify_manual_execute_guard` 的
+  `force = false`）原本直接读 `api/client.ts`，方法搬走后改为读 `client.ts` + `endpoints/*.ts` 拼接
+- `verify_layout_composables.py` 扩展到四块抽取（新增 `useConfigs` API/注入项断言、被搬走实现清单、
+  script 段规模区间、"Layout 自身职责必须保留"）
+
+**四、阶段 5 完成度**
+| 目标项 | 状态 |
+|---|---|
+| `api/` 目录化（endpoints + barrel） | ✅ |
+| `stores/` 目录化 | ⏭ 有意不做：仅 `app.ts`(130) + `snapshot.ts`(47)，拆目录无收益；`snapshot.ts` 已按"可测纯逻辑"独立 |
+| `http`/`ws` 目录化 | ⏭ 有意不做：`ws.ts`(308) 是带重连的 WS 客户端，拆 `ws/{client,protocol}` 属另一次重构，收益低于风险 |
+| `Layout.vue` 拆 composable | ✅ 四块全部抽出 |
+| `AbortController` 切配置取消在途 | ✅ §7.19-二 |
+| 快照唯一写入口 `applySnapshot` | ✅ §7.19-一（含 seq 去旧帧 + 纯函数单测） |
+| 「是否启用」单一写端点 | ✅ §7.19-三（后端端点改 `peek_scheduler`，不再创建实例） |
+
+**验证**：`tsc` OK、`vite build` OK、回归批 **39/39 PASS**、`compileall` OK；
+HEAVY 基线脚本 `verify_touch_residue_fix.py` 始终 2 failures / 23 errors（与阶段 4 起点一致）。
