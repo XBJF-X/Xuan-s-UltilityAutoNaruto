@@ -119,56 +119,103 @@ class ScanLoop:
             if service.run_once:
                 self.scan_once()
                 return
-            # ---- 1. 扫描等待队列(2) → 就绪队列(1) ----
-            waiting_tasks = service.task_queue.get_tasks_by_status(2)
             now = datetime.now(ZoneInfo("Asia/Shanghai"))
-            for task in waiting_tasks:
-                # TaskPlanner 纯逻辑判断：已启用且下次执行时间已到
-                if not service.planner.is_due(task, now):
-                    continue
+            self.execute(self.plan(now))
+        finally:
+            self.scanning = False
+
+    # ---------------- 决策与执行分离（阶段 4 收尾） ----------------
+
+    def plan(self, now: datetime) -> list[tuple]:
+        """**只做决策、不改任何状态**，返回本轮要执行的命令列表。
+
+        命令形态（`execute` 依序消费）：
+        - `("mark_ready", task)`：等待队列(2) → 就绪队列(1)
+        - `("start", task)`：就绪(1) → 执行(0) 并拉起执行线程
+        - `("preempt", running_task, next_task)`：抢占正在执行的任务
+        - `("notify_idle", now)`：空闲判定与通知
+
+        等价性关键：原实现是"先把到点的等待任务置为就绪，再 `get_tasks_by_status(1)`
+        取就绪集合交给 `planner.pick_next`"，因此**本 tick 刚转就绪的任务也会参与本轮挑选**。
+        这里用局部 `due_tasks` 模拟这次状态迁移，使 `pick_next` 看到的集合与原实现一致
+        （唯一的理论差异：优先级与 create_time 完全相同的两个任务之间的先后，属不可达场景）。
+        """
+        service = self.service
+        commands: list[tuple] = []
+
+        # ---- 1. 等待队列(2) → 就绪队列(1)：先判定，不落状态 ----
+        due_tasks = []
+        for task in service.task_queue.get_tasks_by_status(2):
+            # TaskPlanner 纯逻辑判断：已启用且下次执行时间已到
+            if service.planner.is_due(task, now):
+                due_tasks.append(task)
+                commands.append(("mark_ready", task))
+
+        # ---- 2. 就绪队列(1) → 执行(0)：模拟迁移后的就绪集合 ----
+        ready_tasks = list(service.task_queue.get_tasks_by_status(1)) + due_tasks
+        # TaskPlanner 选择：优先立即执行标记，否则按优先级取最高
+        next_task = service.planner.pick_next(ready_tasks)
+        if next_task is not None:
+            running_tasks = service.task_queue.get_tasks_by_status(0)
+            if not running_tasks:
+                # 没有正在执行的任务 → 直接执行。
+                # 注意：不在进入执行队列时清除 force_execute_now（"立即执行"）标记，
+                # 标记保留到任务完成回调统一清除——使 should_preempt 能识别
+                # "立即执行启动"的任务，保护其不被普通任务抢占（见 TaskPlanner）。
+                commands.append(("start", next_task))
+            else:
+                # 有正在执行的任务 → 检查抢占（更高优先级，或被选中的任务带"立即执行"标记）
+                running_task = running_tasks[0]
+                if service.planner.should_preempt(running_task, next_task):
+                    commands.append(("preempt", running_task, next_task))
+
+        # ---- 3. 空闲判定：执行告一段落时通知用户（仅账号配置模式）----
+        commands.append(("notify_idle", now))
+        return commands
+
+    def execute(self, commands: list[tuple]) -> None:
+        """依序执行 `plan` 产出的命令（日志顺序与回调时机与原实现一致）"""
+        service = self.service
+        for command in commands:
+            kind = command[0]
+
+            if kind == "mark_ready":
+                task = command[1]
                 if service._update_task_status(task.task_name, 1):
                     self.logger.info(
                         f"[{task.task_name}]-[{task.base_priority}] 进入就绪队列"
                     )
 
-            # ---- 2. 就绪队列(1) → 执行(0) ----
-            ready_tasks = service.task_queue.get_tasks_by_status(1)
-            # TaskPlanner 选择：优先立即执行标记，否则按优先级取最高
-            next_task = service.planner.pick_next(ready_tasks)
-            if next_task is not None:
-                running_tasks = service.task_queue.get_tasks_by_status(0)
-                if not running_tasks:
-                    # 没有正在执行的任务 → 直接执行。
-                    # 注意：不在进入执行队列时清除 force_execute_now（"立即执行"）标记，
-                    # 标记保留到任务完成回调统一清除——使 should_preempt 能识别
-                    # "立即执行启动"的任务，保护其不被普通任务抢占（见 TaskPlanner）。
-                    if service._update_task_status(next_task.task_name, 0):
-                        self.logger.info(
-                            f"[{next_task.task_name}]-[{next_task.base_priority}] 进入执行队列"
-                        )
-                        if service.on_task_state_change:
-                            service.on_task_state_change({
-                                "name": next_task.task_name,
-                                "status": 0,
-                                "action": "start",
-                            })
-                        # 通过执行层启动：接管超时监视器 + 开始执行线程
-                        service.executor.start_task(next_task)
-                        service._push_snapshot()
-                else:
-                    # 有正在执行的任务 → 检查抢占（更高优先级，或被选中的任务带"立即执行"标记）
-                    running_task = running_tasks[0]
-                    if service.planner.should_preempt(running_task, next_task):
-                        self.logger.info(
-                            f"[{running_task.task_name}] 被 [{next_task.task_name}] 抢占"
-                        )
-                        # 执行层停止被抢占任务（交还超时监视器 + 停止线程）
-                        service.executor.stop_task(running_task)
+            elif kind == "start":
+                task = command[1]
+                if service._update_task_status(task.task_name, 0):
+                    self.logger.info(
+                        f"[{task.task_name}]-[{task.base_priority}] 进入执行队列"
+                    )
+                    if service.on_task_state_change:
+                        service.on_task_state_change({
+                            "name": task.task_name,
+                            "status": 0,
+                            "action": "start",
+                        })
+                    # 通过执行层启动：接管超时监视器 + 开始执行线程
+                    service.executor.start_task(task)
+                    service._push_snapshot()
 
-            # ---- 3. 空闲判定：执行告一段落时通知用户（仅账号配置模式）----
-            service._notify_account_idle(now)
-        finally:
-            self.scanning = False
+            elif kind == "preempt":
+                running_task, next_task = command[1], command[2]
+                self.logger.info(
+                    f"[{running_task.task_name}] 被 [{next_task.task_name}] 抢占"
+                )
+                # 执行层停止被抢占任务（交还超时监视器 + 停止线程）
+                service.executor.stop_task(running_task)
+
+            elif kind == "notify_idle":
+                service._notify_account_idle(command[1])
+
+            else:  # pragma: no cover - 规划器只产出上面几种命令
+                raise ValueError(f"未知的扫描命令: {kind!r}")
+
 
     def scan_once(self) -> None:
         """临时预设模式：按任务执行顺序逐一执行，失败/超时也跳过继续，全部跑完后自动关闭调度器"""
