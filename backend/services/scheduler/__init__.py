@@ -7,7 +7,9 @@
 `SchedulerService` 侧保留同名转发方法，使 13 个私有方法/7 个公开方法的既有调用点
 （API 与 14 个测试脚本）无需改动；协作者稳定后再在收尾步骤删除转发。
 """
+from backend.services.scheduler.constants import IDLE_NOTIFY_THRESHOLD
 from backend.services.scheduler.device_runtime import DeviceRuntime
+from backend.services.scheduler.idle_notifier import IdleNotifier
 from backend.services.scheduler.preset_runner import PresetRunner
 
-__all__ = ["DeviceRuntime", "PresetRunner"]
+__all__ = ["DeviceRuntime", "IdleNotifier", "PresetRunner", "IDLE_NOTIFY_THRESHOLD"]

@@ -19,6 +19,8 @@ from backend.runtime.log_sinks import get_handlers
 from backend.services.scheduler.device_runtime import DeviceRuntime
 # 阶段 4.2：临时预设运行器
 from backend.services.scheduler.preset_runner import PresetRunner
+# 阶段 4.3：桌面通知（空闲/预设完成）
+from backend.services.scheduler.idle_notifier import IdleNotifier
 from backend.core.legacy.Exceptions import (
     STOP_REASON_FROZEN,
     STOP_REASON_STUCK,
@@ -32,9 +34,9 @@ _CONTROL_MODE_NAMES = {0: "MiniTouch", 1: "U2"}
 _SCREEN_MODE_NAMES = {0: "DroidCastRaw", 1: "WindowCapture", 2: "U2", 3: "MuMu", 4: "LD"}
 
 # ===== 账号配置模式“告一段落”判定 =====
-# 执行队列与就绪队列均为空，且最早的等待任务排期也在该阈值之后时，
-# 视为本段时间的执行告一段落，向用户发送一次桌面通知
-IDLE_NOTIFY_THRESHOLD = timedelta(hours=1)
+# 阈值常量的唯一实现已移至 services/scheduler/constants.py（阶段 4.3：避免
+# "协作者 ← 服务"的循环导入）；此处保留同名引用，既有调用点与文档不受影响
+from backend.services.scheduler.constants import IDLE_NOTIFY_THRESHOLD  # noqa: E402
 
 # ===== 立即执行的触发来源 =====
 # 用户点「执行」（手动）：默认做**窗口预检**，窗口外拒绝并返回原因（可显式强制忽略）
@@ -171,8 +173,7 @@ class SchedulerService:
         self._stop_reason = ""
 
         # 桌面通知（仅 Windows）：预设跑完 / 账号配置模式告一段落时提醒用户
-        # _idle_notified 为“同一段空闲只通知一次”的去抖标记
-        self._idle_notified = False
+        # 去抖标记 _idle_notified 自阶段 4.3 起由 IdleNotifier 持有（同名 property）
         # 已执行完任务数与预设任务总数：阶段 4.2 起由 PresetRunner 持有（同名 property）
 
         # 为当前 config 添加专属文件处理器（log/<用户名>/<日期>/Xuan.log）
@@ -196,6 +197,8 @@ class SchedulerService:
         self.device_runtime = DeviceRuntime(self)
         # 阶段 4.2：临时预设运行器（同名转发方法 + 状态 property 见"临时预设"小节）
         self.preset_runner = PresetRunner(self)
+        # 阶段 4.3：桌面通知（同名转发方法 + _idle_notified property）
+        self.idle_notifier = IdleNotifier(self)
 
         self.logger.info("SchedulerService 初始化完成")
 
@@ -502,8 +505,8 @@ class SchedulerService:
         # 清空临时启用登记（跨轮次的临时启用不应影响本轮判定）
         self._temp_activated_tasks.clear()
         # 通知去抖标记与执行计数按本轮重置（避免上一轮的“已通知”状态影响本轮）；
-        # 计数由 PresetRunner 持有（阶段 4.2）
-        self._idle_notified = False
+        # 计数由 PresetRunner 持有（阶段 4.2），去抖标记由 IdleNotifier 持有（4.3）
+        self.idle_notifier.idle_notified = False
         self.preset_runner.reset_counters()
         self._log_start_banner()
 
@@ -1084,100 +1087,33 @@ class SchedulerService:
     # ================================================================
 
     def _notifications_enabled(self) -> bool:
-        """[助手设置] 任务通知 开关（默认开启）。"""
-        try:
-            from backend.services.settings_service import SettingsService
-            return SettingsService().getboolean("助手设置", "任务通知", default=True)
-        except Exception as e:
-            # setting.ini 属外部依赖：读取失败按“开启”处理并留痕，不影响调度
-            self.logger.warning(f"读取[助手设置]任务通知失败，按开启处理: {e}")
-            return True
+        """[助手设置] 任务通知 开关（默认开启）——实现见 IdleNotifier"""
+        return self.idle_notifier.notifications_enabled()
 
     def _notify_user(self, title: str, message: str) -> None:
-        """向用户发送桌面系统通知（仅 Windows）。
+        """向用户发送桌面系统通知（仅 Windows）——底层实现在 IdleNotifier.send
 
-        开关关闭 / 平台不支持时跳过；发送失败只记录日志，不影响调度循环。
+        保留本方法作为**扩展点**：既有测试/调用方通过替换实例属性
+        `sched._notify_user` 捕获通知，因此上层判定仍回调本方法。
         """
-        if not self._notifications_enabled():
-            self.logger.debug("任务通知开关已关闭，跳过本次通知")
-            return
-        from backend.services.notify_service import is_supported, notify_async
-        if not is_supported():
-            self.logger.debug("当前平台不支持桌面通知（仅 Windows），跳过本次通知")
-            return
-        self.logger.info(f"发送桌面通知：{title} | {message}")
-        notify_async(title, message, logger=self.logger)
+        return self.idle_notifier.send(title, message)
 
     def _notify_preset_finished(self) -> None:
-        """临时预设模式：预设任务全部执行完毕后通知用户。"""
-        username = self.config.get_config("用户名", "未知用户")
-        self._notify_user(
-            "玄的日常助手 · 预设执行完毕",
-            f"{username}：预设任务已全部执行完毕"
-            f"（共 {self._preset_total} 个任务），调度器已自动停止")
+        """临时预设模式：预设任务全部执行完毕后通知用户——实现见 IdleNotifier"""
+        return self.idle_notifier.notify_preset_finished()
 
     def _notify_account_idle(self, now: datetime) -> None:
-        """账号配置模式：执行告一段落时通知用户。
+        """账号配置模式：执行告一段落时通知用户——实现见 IdleNotifier"""
+        return self.idle_notifier.notify_account_idle(now)
 
-        判定（与需求一致）：执行队列与就绪队列均为空，且最早的等待队列项
-        （仅统计已启用的任务）排期也在 ``IDLE_NOTIFY_THRESHOLD``（1 小时）之后；
-        队列里已无待执行任务时同样视为告一段落。
+    @property
+    def _idle_notified(self) -> bool:
+        """空闲通知去抖标记（阶段 4.3 起由 IdleNotifier 持有）"""
+        return self.idle_notifier.idle_notified
 
-        去抖：同一段空闲只通知一次（``_idle_notified``）；一旦有任务进入执行/就绪
-        队列即重新武装，便于下一次告一段落再次提醒。另外，本次启动后尚未执行过
-        任何任务（刚启动）时不通知，避免刚打开就弹窗。
-
-        时机：本方法在扫描末尾（任务入队/抢占判定之后）与任务完成回调中
-        （``_process_pending_activations`` 之后）都会被调用。若回调里还有登记的
-        待激活任务（``_pending_activate_tasks``）尚未落地，此刻队列虽空但马上会有
-        任务替补进就绪/执行队列，因此直接按"尚未告一段落"处理，不发通知。
-        """
-        if self.run_once:
-            return
-        if self._pending_activate_tasks:
-            # 待激活任务尚未处理：不能判定为空闲（否则通知刚发出任务就补位）
-            self._idle_notified = False
-            return
-        if (self.task_queue.get_tasks_by_status(0)
-                or self.task_queue.get_tasks_by_status(1)):
-            # 有任务在执行/待执行 → 重新武装通知
-            self._idle_notified = False
-            return
-        if self._completed_count == 0:
-            return
-        if self._idle_notified:
-            return
-
-        upcoming = []
-        for task in self.task_queue.get_tasks_by_status(2):
-            if not getattr(task, "is_activated", False):
-                continue
-            next_execute = getattr(task, "next_execute_time", None)
-            if isinstance(next_execute, datetime):
-                upcoming.append(task)
-
-        username = self.config.get_config("用户名", "未知用户")
-        if not upcoming:
-            self._idle_notified = True
-            self._notify_user(
-                "玄的日常助手 · 任务告一段落",
-                f"{username}：所有任务已执行完毕，当前没有待执行的任务"
-                "（1 小时内无排期），助手已进入空闲状态")
-            return
-
-        earliest = min(upcoming, key=lambda t: t.next_execute_time)
-        if earliest.next_execute_time <= now + IDLE_NOTIFY_THRESHOLD:
-            # 1 小时内有任务要跑，不算告一段落
-            self._idle_notified = False
-            return
-        self._idle_notified = True
-        hours = (earliest.next_execute_time - now).total_seconds() / 3600
-        self._notify_user(
-            "玄的日常助手 · 任务告一段落",
-            f"{username}：当前所有任务已执行完毕，下一个任务"
-            f"「{earliest.task_name}」将于 "
-            f"{earliest.next_execute_time.strftime('%m-%d %H:%M')} 执行"
-            f"（约 {hours:.1f} 小时后）")
+    @_idle_notified.setter
+    def _idle_notified(self, value: bool) -> None:
+        self.idle_notifier.idle_notified = value
 
     # ================================================================
     # 回调：任务完成
