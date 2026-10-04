@@ -12,6 +12,7 @@ from backend.services.scheduler.constants import IDLE_NOTIFY_THRESHOLD
 from backend.services.scheduler.device_runtime import DeviceRuntime
 from backend.services.scheduler.idle_notifier import IdleNotifier
 from backend.services.scheduler.preset_runner import PresetRunner
+from backend.services.scheduler.scan_loop import ScanLoop
 
 __all__ = ["ActivationManager", "DeviceRuntime", "IdleNotifier", "PresetRunner",
-           "IDLE_NOTIFY_THRESHOLD"]
+           "ScanLoop", "IDLE_NOTIFY_THRESHOLD"]
