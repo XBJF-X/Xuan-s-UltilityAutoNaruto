@@ -221,23 +221,6 @@ class ConfigService:
         self._instances[new_id].logger.info(f"已复制配置 {config_id} → {new_id}")
         return new_id
 
-    def set_task_priorities(self, config_id: str, ordered_task_names: list[str]) -> bool:
-        """按传入顺序设置任务优先级（存储任务名列表到配置中）"""
-        cfg = self.get_config(config_id)
-        if not cfg:
-            return False
-        cfg.setting_dics["任务优先级顺序"] = ordered_task_names
-        cfg.save_config_to_file()
-        cfg.logger.debug(f"已更新配置 {config_id} 的任务优先级顺序: {ordered_task_names}")
-        return True
-
-    def get_task_priorities(self, config_id: str) -> list[str]:
-        """获取任务优先级顺序列表"""
-        cfg = self.get_config(config_id)
-        if not cfg:
-            return []
-        return cfg.setting_dics.get("任务优先级顺序", [])
-
     def set_task_order(self, config_id: str, ordered_task_names: list[str]) -> bool:
         """按顺序保存任务执行顺序（临时预设使用）"""
         cfg = self.get_config(config_id)
@@ -247,13 +230,6 @@ class ConfigService:
         cfg.save_config_to_file()
         cfg.logger.debug(f"已更新配置 {config_id} 的任务执行顺序: {ordered_task_names}")
         return True
-
-    def get_task_order(self, config_id: str) -> list[str]:
-        """获取任务执行顺序列表"""
-        cfg = self.get_config(config_id)
-        if not cfg:
-            return []
-        return cfg.setting_dics.get("任务执行顺序", [])
 
     def rename_config(self, config_id: str, new_username: str) -> bool:
         cfg = self.get_config(config_id)

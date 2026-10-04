@@ -33,10 +33,6 @@ class UpdateConfigRequest(BaseModel):
     value: Any
 
 
-class UpdateTaskPrioritiesRequest(BaseModel):
-    tasks: list[str]
-
-
 class UpdateTaskOrderRequest(BaseModel):
     tasks: list[str]
 
@@ -91,15 +87,6 @@ async def update_task(config_id: str, task_name: str, req: UpdateConfigRequest):
 @router.put("/{config_id}/task/{task_name}/param/{param_name}")
 async def update_task_param(config_id: str, task_name: str, param_name: str, req: UpdateConfigRequest):
     ok = config_service.set_task_exe_param(config_id, task_name, param_name, req.value)
-    if not ok:
-        raise HTTPException(status_code=400, detail="更新失败")
-    return {"ok": True}
-
-
-@router.put("/{config_id}/task-priorities")
-async def update_task_priorities(config_id: str, req: UpdateTaskPrioritiesRequest):
-    """批量更新任务优先级（按传入顺序分配优先级值）"""
-    ok = config_service.set_task_priorities(config_id, req.tasks)
     if not ok:
         raise HTTPException(status_code=400, detail="更新失败")
     return {"ok": True}

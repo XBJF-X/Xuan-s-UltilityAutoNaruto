@@ -16,8 +16,9 @@ export const configApi = {
     client.put(`/configs/${id}/task/${taskName}`, { key, value }),
   updateTaskParam: (id: string, taskName: string, paramName: string, value: any) =>
     client.put(`/configs/${id}/task/${taskName}/param/${paramName}`, { key: paramName, value }),
-  updateTaskPriorities: (id: string, orderedTaskNames: string[]) =>
-    client.put(`/configs/${id}/task-priorities`, { tasks: orderedTaskNames }),
+  // 说明：原「批量更新任务优先级」接口已删除——前端方法 / 后端路由 / ConfigService
+  // 方法三层均无调用方，实际优先级由每个任务的「基础优先级」决定
+  // （ConfigDetail.vue 保存时逐个写入）。
   updateTaskOrder: (id: string, orderedTaskNames: string[]) =>
     client.put(`/configs/${id}/task-order`, { tasks: orderedTaskNames }),
   duplicate: (id: string) => client.post(`/configs/${id}/duplicate`),

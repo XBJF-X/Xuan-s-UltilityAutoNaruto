@@ -64,7 +64,11 @@ def peek_shared_scene_graph() -> Optional[SceneGraph]:
 
 
 class PriorityQueue(Generic[T]):
-    """基于 heapq 的优先级队列"""
+    """基于 heapq 的优先级队列（最小堆：`__lt__` 决定优先级与下次执行时间顺序）
+
+    阶段 3 清理：删除了 4 个全库无调用点的方法（`dequeue` / `peek` / `reheapify` /
+    `refresh_task`）—— 任务出队由"三态扫描"改写 `current_status` 完成，从不真正 pop。
+    """
 
     def __init__(self):
         self.heap: List[T] = []
@@ -74,36 +78,11 @@ class PriorityQueue(Generic[T]):
         heapq.heappush(self.heap, item)
         self.task_dic[item.task_name] = item
 
-    def dequeue(self):
-        if not self.is_empty():
-            item = heapq.heappop(self.heap)
-            del self.task_dic[item.task_name]
-            return item
-        return None
-
     def is_empty(self) -> bool:
         return len(self.heap) == 0
 
-    def peek(self) -> List[T]:
-        return self.heap.copy()
-
     def get_task(self, task_name: str) -> Optional[T]:
         return self.task_dic.get(task_name)
-
-    def reheapify(self):
-        tasks = self.heap.copy()
-        self.heap = []
-        for task in tasks:
-            heapq.heappush(self.heap, task)
-
-    def refresh_task(self, task_name: str) -> bool:
-        if task_name not in self.task_dic:
-            return False
-        task = self.task_dic[task_name]
-        self.heap.remove(task)
-        heapq.heapify(self.heap)
-        heapq.heappush(self.heap, task)
-        return True
 
     def update_task_status(self, task_name: str, new_status: int) -> bool:
         if task_name not in self.task_dic:
@@ -1013,9 +992,8 @@ class SchedulerService:
             # 上报失败不能再次抛出（否则异常会吞掉循环死亡的现场）
             self.logger.warning("上报 %s 异常退出失败: %s", loop_name, e)
 
-    def _cancel_scan_loop(self):
-        """停止扫描循环"""
-        pass  # 线程是 daemon 的，退出时自动结束
+    # 阶段 3 清理：原 `_cancel_scan_loop()`（空实现、全库无调用点）已删除。
+    # 扫描线程通过 `self.running = False` 退出（daemon 线程随进程结束）。
 
     # ================================================================
     # 核心扫描逻辑（严格遵循原版 Scheduler.scan）

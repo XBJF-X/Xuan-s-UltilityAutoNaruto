@@ -176,9 +176,6 @@ def _store_scene_base_image(scene_name: str, data: bytes) -> str:
 
 _db = ResourceDBManager()
 
-# 该字段会随元素批量返回，前端无需接收（gray/mask 已废弃，仅 bgra）
-_BINARY_FIELDS = ("bgra",)
-
 
 # ===== 状态 =====
 @router.get("/status")

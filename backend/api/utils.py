@@ -318,9 +318,6 @@ _PLATFORMS = {"github": _PLATFORM_GITHUB, "gitee": _PLATFORM_GITEE}
 # auto 时按此顺序尝试（github 优先；失败自动降级 gitee 兜底）
 _AUTO_PLATFORM_ORDER = ("github", "gitee")
 
-# 兼容旧引用（GitHub Releases 页面地址）
-_RELEASES_URL = _PLATFORM_GITHUB["releases_url"]
-
 
 def _get_update_source() -> str:
     """读取 [助手设置] 更新源：github / gitee / auto（默认 auto）。"""
@@ -791,6 +788,9 @@ def dependency_check():
     """依赖健康检查：版本是否满足 MIN_RELEASE_TAG + 关键模块是否缺失。
 
     前端启动时调用，发现异常时弹窗引导用户前往 Release 更新。
+    另外附带 `github_pat_configured`（**只报"是否已配置"，不回传 token 本身**）：
+    `GET /api/settings/` 会明文返回整段 `[助手设置]`（含 GithubPAT / 二级密码），
+    因此状态展示不该依赖它（见 docs/refactor-plan-2026.md §7.7）。
     """
     result = check_dependency(include_ocr=True)
     # 汇总后端启动时导入失败的路由模块（main.py 逐个导入容错收集，保证界面可用）
@@ -800,8 +800,14 @@ def dependency_check():
         if failed:
             result["missing_modules"] = list(result["missing_modules"]) + list(failed)
             result["ok"] = False
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("汇总路由模块导入失败清单时出错: %s", e)
+    # 更新源 PAT 配置状态（布尔值；token 本身绝不进入接口响应或日志）
+    try:
+        result["github_pat_configured"] = _github_pat_configured()
+    except Exception as e:
+        logger.warning("读取 GithubPAT 配置状态失败: %s", e)
+        result["github_pat_configured"] = False
     return result
 
 
@@ -1472,26 +1478,9 @@ async def feedback_package_status():
 # ============================================================
 # 原有设备/文件夹接口
 # ============================================================
-@router.get("/serial-list")
-def get_serial_list():
-    """通过 adb devices 枚举当前连接的设备串口列表"""
-    try:
-        result = subprocess.run(
-            ["adb", "devices"], capture_output=True, text=True, timeout=10,
-            encoding="utf-8", errors="ignore",
-        )
-        output = result.stdout or ""
-        serials = []
-        for line in output.strip().splitlines()[1:]:
-            parts = line.split()
-            if len(parts) >= 2 and parts[-1] == "device":
-                serials.append(parts[0])
-        return {"serials": serials}
-    except Exception:
-        logger.warning("adb devices 枚举失败，返回空列表")
-        return {"serials": []}
-
-
+# 说明：原 `GET /api/utils/serial-list` 已删除 —— 与 `GET /api/device/{config_id}/serial-list`
+# 重复实现（后者走 adbutils 且前端实际只用它），且调用方会 `subprocess adb devices`
+# 手工解析输出。串口枚举统一由 api/device.py 提供。
 @router.post("/browse-folder")
 def browse_folder(payload: dict):
     """弹出文件夹选择对话框（pywin32），并把选取的文件夹路径返回给前端"""

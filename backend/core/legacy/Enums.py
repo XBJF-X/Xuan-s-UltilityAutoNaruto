@@ -1,39 +1,10 @@
-import enum
+"""枚举定义（**唯一实现**在 ``backend/core/enums.py``，本模块仅保留旧 import 路径）
 
+阶段 3 去重：改前 ``core/enums.py`` 与 ``legacy/Enums.py`` 各自定义了一套取值逐字相同的
+``ElementType`` / ``MatchType`` / ``KEY_INDEX``（新层 3 处引用、旧层 15 处），任何一处
+改动都要双改。现在本模块只做再导出，``from backend.core.legacy.Enums import ElementType``
+等 15 处调用点无需改动即可继续工作。
+"""
+from backend.core.enums import ElementType, KEY_INDEX, MatchType  # noqa: F401
 
-class ElementType(enum.IntEnum):
-    """元素类型"""
-    IMG = 0
-    COORDINATE = 1
-    OCR_AREA = 2
-
-
-class MatchType(enum.IntEnum):
-    """图像匹配类型"""
-    TEMPLATE = 0
-    SIFT = 1
-
-
-# 按钮列表，ID等于索引+1
-class KEY_INDEX(enum.IntEnum):
-    """按键类型枚举"""
-    BasicAttack = 0
-    """平A"""
-    FirstSkill = 1
-    """一技能"""
-    SecondSkill = 2
-    """二技能"""
-    UltimateSkill = 3
-    """奥义"""
-    LeftSubSkill = 4
-    """左子技能"""
-    RightSubSkill = 5
-    """右子技能"""
-    Substitution = 6
-    """替身"""
-    SecretScroll = 7
-    """秘卷"""
-    Summon = 8
-    """通灵"""
-    JoyStick = 9
-    """摇杆"""
+__all__ = ["ElementType", "MatchType", "KEY_INDEX"]
