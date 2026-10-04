@@ -53,7 +53,7 @@ function check(cond: boolean, msg: string) {
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 async function main() {
-  const ws = await import('../frontend/src/api/ws.ts')
+  const ws = await import('../frontend/src/api/ws/index.ts')
   const { logMap } = ws.useWebSocket()
   const mergeHistory = ws.mergeHistory
 

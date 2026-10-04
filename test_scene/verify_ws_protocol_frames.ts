@@ -1,5 +1,5 @@
 /**
- * 验证前端 WS 帧解析（frontend/src/api/wsProtocol.ts）—— v1 统一信封 + legacy 兼容。
+ * 验证前端 WS 帧解析（frontend/src/api/ws/protocol.ts）—— v1 统一信封 + legacy 兼容。
  *
  * 背景：改前解析逻辑散落在 ws.ts 的 if/else 里（`Array.isArray(data) && data[0]==='log'`
  * 特判 + 把 `data.config_id` 拍到顶层的 hack）。现在三种帧形态统一走 parseFrame：
@@ -11,7 +11,7 @@
  *
  * 运行：node --experimental-strip-types test_scene/verify_ws_protocol_frames.ts
  */
-import { buildSubscribeFrame, parseFrame } from '../frontend/src/api/wsProtocol.ts'
+import { buildSubscribeFrame, parseFrame } from '../frontend/src/api/ws/protocol.ts'
 
 let failures = 0
 function check(cond: boolean, msg: string) {

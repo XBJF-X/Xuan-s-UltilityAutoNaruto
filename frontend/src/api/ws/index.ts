@@ -18,10 +18,10 @@ import {
   parseFrame,
   type LogEntry,
   type WSMessage,
-} from './wsProtocol.ts'
+} from './protocol.ts'
 
 // 向后兼容的再导出（LogPanel 等仍从 '@/api/ws' 取类型）
-export type { LogEntry, WSMessage } from './wsProtocol.ts'
+export type { LogEntry, WSMessage } from './protocol.ts'
 
 type MessageHandler = (msg: WSMessage) => void
 

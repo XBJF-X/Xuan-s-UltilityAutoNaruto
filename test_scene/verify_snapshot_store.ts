@@ -8,7 +8,7 @@
  *
  * 运行：node --experimental-strip-types test_scene/verify_snapshot_store.ts
  */
-import { computeSnapshotWrite } from '../frontend/src/stores/snapshot.ts'
+import { computeSnapshotWrite } from '../frontend/src/stores/app/snapshot.ts'
 
 let failures = 0
 function check(cond: boolean, msg: string) {
