@@ -371,7 +371,71 @@ frontend/src/
 2. **`adb kill-server` 的副作用**：lifespan 关闭段与 `atexit` 都会执行 `adb kill-server`（issue #4 的清理）。副作用：任何"短命的后端实例"（例如本次冒烟、或将来 CI）退出时都会杀掉**用户正在运行的实例**所依赖的 adb server。建议加"仅在无其他后端实例/无运行中调度器时才 kill"的判定，或改为由 launcher 独占负责。
 3. **`api/utils.py` 仍在事件循环里做文件/JSON 之外的重活**：`/feedback/package` 起线程（OK），但 `_do_apply_update` 的批量 `shutil.copy2`（数千文件）在后台线程里逐文件写 `_UPDATE_STATUS`（有锁）——可接受但应改为 job + 进度事件（阶段 2 未完成项 ③）。
 
-### 7.8 事故与恢复记录（重要）
+### 7.9 下一步实施单：WS 统一信封（v1 协议，含旧帧兼容）
+
+> 状态：设计已定，**未实施**（本轮上下文预算用尽，留给下一轮按此单执行）。
+
+**目标**：把 4 类消息 + 数组帧 + 前端归一化 hack 收敛为统一信封；**不破坏旧前端 dist**。
+
+**信封（所有服务端帧）**
+```json
+{"v":1,"type":"scheduler.snapshot","seq":118,"ts":1730000000000,"config_id":"Config_1","payload":{...}}
+```
+不变式：`config_id` 只在顶层；`payload` 形状由 `type` 唯一决定；`seq` 每连接单调递增；
+未知 `type` 必须被忽略；`hello` 协商能力。
+
+**消息类型表**
+
+| type | 方向 | payload | 现状对应 |
+|---|---|---|---|
+| `hello` | S→C | `{server_version, protocol, caps:{subscribe,backpressure}}` | 新增（连接首帧，旧前端会忽略未知 type） |
+| `subscribe` | C→S | `{protocol:1, config_ids?:[...]}` | 新增：收到即把该连接标记为 v1 并只发新帧 |
+| `log.batch` | S→C | `{entries:[{id,ts,level,logger,config_id,message}], dropped}` | 替代 `["log",[...]]` 与单条 `log` |
+| `scheduler.snapshot` | S→C | `{running,mode,task_count,tasks:[...]}` | 同名，但移入 `payload` |
+| `task.state` | S→C | `{name,status,action,error}` | 同上 |
+| `status` | S→C | `{running,task_count}` | 保留（兼容），v1 用 snapshot |
+| `ping`/`pong` | 双向 | — | 保留（文本帧） |
+| `error` / `log.truncated` | S→C | `{code,message}` / `{dropped}` | 新增（背压/协议错误） |
+
+**后端改动（`backend/api/ws.py`）**
+1. `ConnectionManager` 的 `active_connections: list` → `dict[WebSocket, ConnState{seq, protocol}]`；
+   `broadcast_*` 内部按连接 `protocol` 选择帧格式（**v1 发信封，旧连接发旧帧**）。
+2. 新增 `send_hello(ws)`（accept 后立即发）；`websocket_logs/status` 增加接收分支：
+   `{"type":"subscribe","protocol":1,...}` → 置 `protocol=1`（其余文本仍按 ping 处理）。
+3. `WebSocketLogHandler._flush_batch`：对 v1 连接发 `log.batch`（每帧 ≤200 条，超出截断并
+   带 `dropped`），对旧连接保持现有 `["log",batch]`/单条对象逻辑。
+4. `seq` 单调递增（每连接一个计数器，锁内自增）。
+5. 背压：每连接有界队列（溢出丢最旧 + `log.truncated`）；`send_json` 包 `wait_for(2s)`，
+   超时判慢客户端并 `disconnect`。
+
+**前端改动**
+1. 新增 `frontend/src/api/ws/protocol.ts`：帧类型定义 + `parseFrame(raw): Frame|null`——同时
+   识别 v1 信封（有 `v`/`payload`）、旧对象帧（顶层 `type`）、旧数组帧（`["log",[...]]`）。
+2. `frontend/src/api/ws.ts`：`connect()` 成功后发 `{"type":"subscribe","protocol":1}`；
+   分发改为 `on(type, handler)` 注册表；`log` 处理统一走 `parseFrame`。
+3. 保持既有 `reconnected` 伪消息与 `mergeHistory` 去重逻辑不变（历史日志仍是秒级 ts）。
+
+**测试（新增 `test_scene/verify_ws_protocol_v1.py`）**
+- 信封字段齐全且 `config_id` 仅在顶层；`seq` 严格递增；
+- 旧连接收到的仍是旧帧（数组帧/单条对象/旧 `status`），**逐字面量比对**；
+- 收到 `subscribe{protocol:1}` 后切换为新帧，且不再发旧帧；
+- `log.batch` 超过 200 条时截断并给出 `dropped`；
+- 未知 `type` 不被前端解析器当成 `log`（`parseFrame` 返回 null 或 passthrough）。
+
+**发布顺序（硬约束）**：后端双写 → 前端切换 → 观察 ≥2 个 release → 删旧帧。
+禁止"前端先发新 dist、后端后热更"（用户机上 dist 与 backend 可能不同版本）。
+
+### 7.10 仍未实施（阶段 2 收尾清单）
+
+1. `api/utils.py`（1495 行 / 13 端点）拆为 `api/utils/{logs,update,feedback,system}.py` +
+   `services/{update_service,feedback_service,log_service}.py`。
+2. `runtime/events.py` 事件总线：消除 `core`/`services` 对 `api.ws` 的反向依赖
+   （`core/config_model.py:39`、`services/scheduler_service.py:197/495`）。
+3. `services/scheduler_registry.py`：把 `api/scheduler._schedulers` 收敛为带生命周期的注册表。
+4. 敏感设置掩码（§7.7 第 1 条）。
+5. `SchedulerService` 拆分（阶段 4，见 §4 阶段 4 的顺序与风险）。
+
+### 7.11 事故与恢复记录（重要）
 
 - **事故**：用 PowerShell 5.1 批量替换 `backend/api/device.py` / `backend/api/utils.py` 的 `async def` → `def` 时，`Get-Content`/`Set-Content` 按系统 ANSI（GBK）读写 UTF-8 文件，导致大量中文与部分 ASCII（含引号）字节丢失，两文件语法损坏。
 - **恢复**：`device.py` 在损坏前无未提交改动 → `git checkout` 从 HEAD 恢复并重做 6 处签名改动；`utils.py` 有 WIP → 以 HEAD 为基底重放本会话改动，并从**损坏前编译产物** `__pycache__/utils.cpython-312.pyc` 精确恢复 WIP 内容（3 个新函数 `_get_github_pat` / `_platform_headers` / `_github_pat_configured` + 5 处调用点改为 `_platform_headers(pf)`），随后用 .pyc 的**全部代码对象 (firstlineno, 字符串常量)** 逐项校验，50/50 完全一致后才写盘。
