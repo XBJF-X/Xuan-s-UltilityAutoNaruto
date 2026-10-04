@@ -513,7 +513,7 @@ DeviceRuntime → PresetRunner → IdleNotifier → ActivationManager → ScanLo
 | 4.2 | `preset_runner.py` | `_init_once_pending` `_reset_once_progress` + **持有** `pending_once_tasks`/`_preset_total`/`_completed_count` | ✅ |
 | 4.3 | `idle_notifier.py` | `_notifications_enabled` `_notify_user` `_notify_preset_finished` `_notify_account_idle` + **持有** `_idle_notified` | ✅ |
 | 4.4 | `activation_manager.py` | `toggle_task_activation` `_ensure_task_runnable` `_restore_all_temp_activations` `_restore_temp_activation` `_reject_manual_execute_outside_window`（4.4a）+ `_on_task_activate_request` `_schedule_task_activation` `_process_pending_activations` `_skip_expired_activation` + 持有 `_temp_activated_tasks`/`_pending_activate_tasks`（4.4b） | ✅ 分两次提交 |
-| 4.5 | `scan_loop.py` | `_start_scan_loop` `_scan_loop` `_report_loop_death` `scan` `_scan_once` + RLock（`scan()` 改 `plan → execute(commands)`） | ⏳ |
+| 4.5 | `scan_loop.py` | `_start_scan_loop` `_scan_loop` `_report_loop_death` `scan` `_scan_once` + RLock（`scan()` 改 `plan → execute(commands)`）。侦察：`_scanning`(159/900/903/957) 与 `_scan_thread`(161/839-841) 是扫描循环私有状态可一并搬走；`_lock`(160) 被 `start()`(493)/`stop()`(621) 用于生命周期，**留在服务**或随协作者搬走二选一（搬走需改这 2 处）；注意 `activation_manager` 会回调 `service.scan()`，而 `scan()` 靠 `_scanning` 提前返回防重入（不是锁），重构时不能改变这个语义 | ⏳ |
 | 4.6 | `freeze_handler.py` | `_on_watchdog_freeze` `_process_freeze_event` `_handle_scene_stuck` `_handle_game_frozen` `_handle_emulator_frozen` | ⏳ |
 | 4.7 | `task_state_store.py` | `get_status` `get_tasks_status` `_update_task_status` `_push_snapshot` `_sync_task_state` + 状态字典（订阅式 `on_change`） | ⏳ |
 
