@@ -27,6 +27,8 @@ from backend.services.scheduler.activation_manager import ActivationManager
 from backend.services.scheduler.scan_loop import ScanLoop
 # 阶段 4.6：卡死告警处理（先自救、后强制 + 兜底脱困）
 from backend.services.scheduler.freeze_handler import FreezeIncidentHandler
+# 阶段 4.7：任务状态存储（快照读写 + 推送 + 订阅）
+from backend.services.scheduler.task_state_store import TaskStateStore
 # 说明：`STOP_REASON_STUCK` / `STOP_REASON_FROZEN` / `Stop` 的使用点已随卡死处理搬到
 # freeze_handler（阶段 4.6），本模块不再需要这些导入
 
@@ -150,7 +152,7 @@ class SchedulerService:
 
         # 中间派重构组件：状态快照 / 纯逻辑决策 / 执行层
         from backend.core.scheduler import SchedulerState, TaskPlanner, TaskExecutor
-        self.state = SchedulerState()
+        # 内存状态快照自阶段 4.7 起由 TaskStateStore 持有（同名 property，含 setter）
         self.planner = TaskPlanner()
         self.executor = TaskExecutor(logger=self.logger)
 
@@ -446,6 +448,21 @@ class SchedulerService:
         return self._collaborator("_activation_manager_instance", ActivationManager)
 
     @property
+    def task_state_store(self) -> TaskStateStore:
+        """任务状态存储：快照读写 + 推送 + 订阅（阶段 4.7）"""
+        return self._collaborator("_task_state_store_instance", TaskStateStore)
+
+    @property
+    def state(self) -> "SchedulerState":
+        """内存状态快照（阶段 4.7 起由 TaskStateStore 持有；既有读写不变）"""
+        return self.task_state_store.state
+
+    @state.setter
+    def state(self, value) -> None:
+        # 既有测试会整体替换（verify_task_schedules / verify_touch_residue_fix）
+        self.task_state_store.state = value
+
+    @property
     def freeze_handler(self) -> FreezeIncidentHandler:
         """卡死告警处理（阶段 4.6）"""
         return self._collaborator("_freeze_handler_instance", FreezeIncidentHandler)
@@ -631,8 +648,8 @@ class SchedulerService:
                 "running": True,
                 "task_count": len(self.task_queue.heap)
             })
-        # 更新内存快照并推送（前端据此零轮询）
-        self.state.set_running(
+        # 更新内存快照并推送（前端据此零轮询）——状态写入统一走 TaskStateStore（阶段 4.7）
+        self.task_state_store.mark_running(
             True, len(self.task_queue.heap),
             mode="once" if self.run_once else "persistent")
         self._push_snapshot()
@@ -736,9 +753,9 @@ class SchedulerService:
         self.logger.info("调度器已完全停止")
         if self.on_status_change:
             self.on_status_change({"running": False})
-        # 更新内存快照并推送
-        self.state.set_running(False)
-        self.state.reset_tasks()
+        # 更新内存快照并推送（状态写入统一走 TaskStateStore，阶段 4.7）
+        self.task_state_store.mark_running(False)
+        self.task_state_store.reset_tasks()
         self._push_snapshot()
         # 内存优化：显式释放任务执行相关引用，便于 GC 回收任务对象与设备连接
         # （共享 SceneGraph / OnnxOcr 为全局单例，保留复用；截图接口已判空 sched.device）
@@ -750,43 +767,28 @@ class SchedulerService:
         return True
 
     def get_status(self) -> dict:
-        # 直接读内存快照（O(1)，不遍历队列/不读 config）
-        return self.state.get_status()
+        """直接读内存快照（O(1)，不遍历队列/不读 config）——实现见 TaskStateStore"""
+        return self.task_state_store.get_status()
 
     def get_tasks_status(self) -> list[dict]:
-        # 直接读内存快照（O(1)，不遍历 heap/不读 config）
-        return self.state.get_tasks()
+        """直接读内存快照（O(1)，不遍历 heap/不读 config）——实现见 TaskStateStore"""
+        return self.task_state_store.get_tasks_status()
 
     # ================================================================
-    # 状态快照同步（中间派 SchedulerState）
+    # 状态快照同步（中间派 SchedulerState；实现见 TaskStateStore，阶段 4.7）
     # ================================================================
 
     def _sync_task_state(self, task):
-        """把任务对象的关键字段写入内存快照。"""
-        next_execute = getattr(task, "next_execute_time", None)
-        self.state.upsert_task(
-            task.task_name,
-            status=getattr(task, "current_status", 2),
-            priority=getattr(task, "current_priority", 0),
-            base_priority=getattr(task, "base_priority", 0),
-            activated=bool(getattr(task, "is_activated", False)),
-            next_execute=next_execute.strftime("%Y-%m-%d %H:%M:%S")
-            if next_execute else None,
-        )
+        """把任务对象的关键字段写入内存快照——实现见 TaskStateStore"""
+        return self.task_state_store.sync_task_state(task)
 
     def _update_task_status(self, task_name: str, new_status: int) -> bool:
-        """更新队列中的任务状态并同步到内存快照。"""
-        ok = self.task_queue.update_task_status(task_name, new_status)
-        if ok:
-            task = self.task_queue.get_task(task_name)
-            if task:
-                self._sync_task_state(task)
-        return ok
+        """更新队列中的任务状态并同步到内存快照——实现见 TaskStateStore"""
+        return self.task_state_store.update_task_status(task_name, new_status)
 
     def _push_snapshot(self):
-        """推送完整状态快照到前端（WS scheduler_snapshot，前端据此零轮询）。"""
-        if self.on_snapshot:
-            self.on_snapshot(self.state.get_snapshot())
+        """推送完整状态快照到前端（WS scheduler_snapshot）——实现见 TaskStateStore"""
+        return self.task_state_store.push_snapshot()
 
     def toggle_task_activation(self, task_name: str, state: bool):
         """切换启用/禁用——实现见 ActivationManager.toggle"""

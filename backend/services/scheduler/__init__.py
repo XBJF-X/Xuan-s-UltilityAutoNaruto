@@ -14,6 +14,7 @@ from backend.services.scheduler.freeze_handler import FreezeIncidentHandler
 from backend.services.scheduler.idle_notifier import IdleNotifier
 from backend.services.scheduler.preset_runner import PresetRunner
 from backend.services.scheduler.scan_loop import ScanLoop
+from backend.services.scheduler.task_state_store import TaskStateStore
 
 __all__ = ["ActivationManager", "DeviceRuntime", "IdleNotifier", "PresetRunner",
            "ScanLoop", "IDLE_NOTIFY_THRESHOLD"]
