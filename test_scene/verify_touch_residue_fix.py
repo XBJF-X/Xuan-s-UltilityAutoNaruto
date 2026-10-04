@@ -809,12 +809,30 @@ class SchedulerResidueTest(unittest.TestCase):
         svc.device = None
         self.assertEqual(svc._device_serial(), "")
 
-    def test_start_and_stop_wire_self_check(self):
+    def test_stop_wires_self_check_by_behavior(self):
+        """行为断言（替代源码文本断言，阶段 4 收尾）：stop() 必须做"停止后自检"。
+
+        `_make_service()` 已把 `_ensure_no_stale_contacts` 换成记录器（写入 self.log），
+        因此这里直接驱动 `stop()` 观察真实调用，而不是 grep 源码文本。
+        连点收尾（`_wait_clicker_stopped`）的先后顺序由同文件的
+        `test_stop_waits_clicker_before_releasing_control` 覆盖。
+        """
+        svc = self._make_service()
+        svc.stop()
+        reasons = [entry[1] for entry in self.log if entry[0] == "ensure_no_stale"]
+        self.assertIn("调度器停止后自检", reasons,
+                      "stop() 必须把设备残留触点自检接进停止流程")
+
+    def test_start_wires_self_check_by_source(self):
+        """start() 的"启动前自检"仍用源码断言（**有意保留**）。
+
+        原因：`start()` 是集成路径（需要真实配置/设备/执行层装配，127 行），
+        在 HEAVY 单测里驱动它会拉起真实线程与设备连接；其行为面由端到端冒烟
+        （`verify_ws_dual_write_e2e.py` 启动真实后端）与 `verify_phase0_hardening.py`
+        的扫描循环用例覆盖。此处只保证"自检调用点没有被删除"。
+        """
         import inspect
         self.assertIn("调度器启动前自检", inspect.getsource(SchedulerService.start))
-        stop_source = inspect.getsource(SchedulerService.stop)
-        self.assertIn("调度器停止后自检", stop_source)
-        self.assertIn("_wait_clicker_stopped", stop_source)
 
 
 if __name__ == "__main__":

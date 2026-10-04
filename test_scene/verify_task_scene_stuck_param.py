@@ -288,15 +288,12 @@ class SceneStuckThresholdTest(unittest.TestCase):
         watchdog._check_once()
         self.assertEqual(self._levels(watchdog), [FreezeLevel.SCENE_STUCK])
 
-    # ---------------- 9. 源码级防回退 ----------------
-    def test_source_uses_task_aware_threshold(self):
-        source = (Path(_PROJECT_ROOT) / "backend" / "services"
-                  / "watchdog_service.py").read_text(encoding="utf-8")
-        self.assertIn("self._scene_stuck_seconds(", source,
-                      "场景停滞判定必须走任务感知的阈值")
-        self.assertIn("DEFAULT_SCENE_STUCK_SECONDS", source)
-        self.assertNotIn('self._cfg("超时检测-场景停滞秒数", 180)', source,
-                         "不得再硬编码读取 180（任务覆盖会失效）")
+    # ---------------- 9. 行为覆盖说明（阶段 4 收尾） ----------------
+    # 原 `test_source_uses_task_aware_threshold`（读 watchdog_service.py 源码断言
+    # `self._scene_stuck_seconds(` / `DEFAULT_SCENE_STUCK_SECONDS` / 不含硬编码 180）
+    # 已删除：同一行为上面 9 个用例已用真实 Watchdog + 任务/全局配置矩阵覆盖
+    # （默认 180、任务覆盖 600、任务覆盖全局、0 禁用场景停滞、非法值回退并告警一次、
+    # 旧任务对象无属性时的兼容、真实任务类阈值），源码断言属冗余且会阻碍重构。
 
 
 if __name__ == "__main__":
