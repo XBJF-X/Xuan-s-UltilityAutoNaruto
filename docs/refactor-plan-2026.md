@@ -748,3 +748,42 @@ update_service 平台知识导出/状态与锁同一对象）。
 继续搬进 `services/update_service.py`，`update.py` 收敛为薄路由 + 再导出；
 迁移要点：`_UPDATE_EXCLUDE_DIRS`/`_UPDATE_EXCLUDE_FILES`/`_SHA_SUFFIX_RE` 随逻辑走，
 `requests` 仍须在 `backend.api.utils` 命名空间可见（既有 `mock.patch("backend.api.utils.requests.get")`）。
+
+### 7.24 阶段 3.4（后半）收官：更新链路全部下沉
+
+| 项 | 变化 |
+|---|---|
+| `services/update_service.py` | 累计 **750 行**：检查更新（`check_update` / `check_full_update` / `read_local_sha`）、应用更新（`start_apply_update` / `start_apply_release_update` / `do_apply_update` / `do_apply_release_update`）、完整性（`verify_update_integrity` / `get_latest_sha` / `_SHA_SUFFIX_RE`）、重启与备份（`write_restart_request` / `backup_for_hot_update`）、平台/PAT/状态（见 §7.23） |
+| `api/utils/update.py` | 649 → **111 行**（代码 93 行）：6 个薄路由 + 再导出 |
+| `api/utils/common.py` | 313 → 162 行（§7.23） |
+| `api/utils/feedback.py` | 239 → 53 行（§7.23）；`api/utils/logs.py` 104 → 29 行（§7.22） |
+
+**测试适配（随逻辑下沉的 patch / 扫描目标）**
+- `verify_security_hardening.py`：TLS `verify=` 扫描范围扩到 `services/update_service.py`
+  （断言改为"非空且全部落在常量白名单内"，兼容 `UPDATE_VERIFY_TLS` / `_UPDATE_VERIFY_TLS` 两种别名）；
+  完整性绑定测试改为 patch `services.update_service.get_latest_sha` 并调用 `verify_update_integrity`
+
+**守门**：`verify_layering_rules.py` 扩到 **28 项**（update_service 完整 API、路由薄壳：
+无 `requests.get(`/`zipfile`/`shutil.copy2`/apply 线程体、10 个再导出对象 `is` 同一）
+
+**阶段 3.4 收尾状态**：`api` 层只剩路由适配与再导出；
+`services/{log,feedback,update}_service.py` 三块全部落地；
+`services → api` 依赖为 0（测试守护）；回归批 39/39 PASS。
+
+### 7.25 仍未完成的两个显式条目（含可执行方案）
+
+1. **阶段 4 `scan()` 改 `plan → execute(commands)`**：直接拆会让"本 tick 刚转为就绪的任务"
+   延迟一个扫描周期（默认 1s）才启动 —— 行为可观测变化。**等价实现方案**：
+   `plan(now)` 内部**模拟状态迁移**（用局部 `ready_names` 集合：先按 `planner.is_due` 收集
+   本轮转就绪的等待任务，再把它与现有就绪任务合并交给 `planner.pick_next`，
+   最后按"就绪转换 → 启动/抢占"的顺序产出命令列表），`execute(commands)` 依序执行并保持
+   原有日志顺序与 `on_task_state_change` 回调时机；验收看 `verify_force_preempt`(12)、
+   `verify_task_schedules`(22)、`verify_phase0_hardening`(16) 与全批。
+2. **3 处 `inspect.getsource` 断言改行为断言**：实测只有 1 处针对 `SchedulerService`
+   （`verify_touch_residue_fix.py:812-817`），另两处分别针对 `watchdog_service.py` 与
+   `api/resource.py`（本次重构未触及）。该脚本因用户 WIP 的 Control 层接口不一致
+   （`Clicker._minitouch_click_worker` / `MiniTouch.max_contacts` 等）**基线即为 2 failures /
+   23 errors**，在红文件里改写断言拿不到端到端信号；而它的源码断言目前**经转发层仍然通过**。
+   → 结论：等该脚本修复后再改写；改为行为断言的做法是复用文件内 `_make_service()`
+   替身、替换 `_ensure_no_stale_contacts` / `_wait_clicker_stopped` 为记录器后调用
+   `start()` / `stop()` 断言调用顺序与原因字符串，并用单测名单独运行验证。
