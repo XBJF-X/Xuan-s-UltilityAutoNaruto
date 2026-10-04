@@ -424,7 +424,7 @@ frontend/src/
 
 **A. 阶段 3.4（`api/utils.py` 拆分 + 分层倒置）— 已完成，见 §7.12 / §7.15**
 
-**B. 阶段 4（`SchedulerService` 1600 行拆分，高风险）**：按 §4 顺序
+**B. 阶段 4（`SchedulerService` 1432 行 / 47 方法拆分，高风险；方案见 §7.17）**：按 §4 顺序
 DeviceRuntime → PresetRunner → IdleNotifier → ActivationManager → ScanLoop+RLock（`scan()` 改
 `plan → execute(commands)`）→ FreezeIncidentHandler → TaskStateStore 订阅化；同步把 3 处
 `inspect.getsource` 断言（`verify_touch_residue_fix.py:814`、`verify_task_scene_stuck_param.py:294`、
@@ -487,6 +487,41 @@ DeviceRuntime → PresetRunner → IdleNotifier → ActivationManager → ScanLo
   `api/**`→`main` **0 处**
 - 既有滞后脚本失败数未变（2 / 1 / 2）
 - 本轮提交：`7c92b32d`(3.1+3.2) → `2cb2bad1`(3.3) → `8c56d3b0`(3.5) → 3.4（拆包 + 分层）
+
+### 7.17 阶段 4 执行方案（`SchedulerService` 1432 行 / 47 方法，2026-10-04 侦察）
+
+**约束（侦察所得，决定拆分策略）**
+- 面向测试的私有方法（必须继续可从实例调用）：`_device_serial`、`_ensure_no_stale_contacts`、
+  `_execute_done_callback`、`_handle_scene_stuck`、`_join_task_threads`、`_notifications_enabled`、
+  `_notify_account_idle`、`_on_task_activate_request`、`_process_pending_activations`、`_scan_loop`、
+  `_scan_once`、`_sync_task_state`、`_update_task_status`
+- 面向 API/测试的公开面：`start` / `stop` / `scan` / `get_status` / `get_tasks_status` /
+  `execute_task_now` / `toggle_task_activation`（调用次数：stop 30、execute_task_now 17、scan 12、start 9）
+- 源码级断言**只有 1 处真正针对本类**：`verify_touch_residue_fix.py:812-817` 断言
+  `SchedulerService.start` 源码含"调度器启动前自检"、`stop` 源码含"调度器停止后自检" 与
+  `_wait_clicker_stopped`（另两处 §4 提到的断言实际在 `watchdog_service.py` / `api/resource.py`）
+- 测试构造方式：`SchedulerService(config=<fake cfg>)`，随后直接替身 `svc.config` / `svc.device`
+
+**策略：先"抽协作者 + 保留同名转发"，再在收尾阶段改写测试并删除转发。**
+每一步都是"搬方法体 + 加 1 行转发 + 跑全批"，转发保证 13 个私有方法与 1 处源码断言
+全部继续成立，任一步可独立回退。
+
+| 步骤 | 新模块（`backend/services/runtime/`） | 搬走的方法 | 依赖注入 |
+|---|---|---|---|
+| 4.1 | `device_runtime.py` | `_device_serial` `_shutdown_clicker_engine` `_ensure_no_stale_contacts` `_wait_clicker_stopped` `_wait_device_ready` | 持服务引用（`config`/`device`/`operationer`/`logger`） |
+| 4.2 | `preset_runner.py` | `_init_once_pending` `_reset_once_progress` `_execute_done_callback` + `_completed_count`/`_preset_total` 计数器 | 同上 |
+| 4.3 | `idle_notifier.py` | `_notifications_enabled` `_notify_user` `_notify_preset_finished` `_notify_account_idle` | `notify_service` 注入 |
+| 4.4 | `activation_manager.py` | `toggle_task_activation` `_ensure_task_runnable` `_restore_all_temp_activations` `_restore_temp_activation` `execute_task_now` `_reject_manual_execute_outside_window` `_on_task_activate_request` `_schedule_task_activation` `_process_pending_activations` `_skip_expired_activation` | 同上（最大一步，含 6 个测试脚本的覆盖点） |
+| 4.5 | `scan_loop.py` | `_start_scan_loop` `_scan_loop` `_report_loop_death` `scan` `_scan_once` + RLock；`scan()` 内部改为 `plan → execute(commands)` | 服务引用 + 任务状态存储 |
+| 4.6 | `freeze_handler.py` | `_on_watchdog_freeze` `_process_freeze_event` `_handle_scene_stuck` `_handle_game_frozen` `_handle_emulator_frozen` | watchdog 事件对象 |
+| 4.7 | `task_state_store.py` | `get_status` `get_tasks_status` `_update_task_status` `_push_snapshot` `_sync_task_state` + 状态字典 | 订阅式（`on_change` 回调给 WS 推送） |
+
+**收尾（4.8）**：把 `verify_touch_residue_fix.py:812-817` 的源码断言改写为行为断言
+（`assertLogs` 捕获"启动前自检/停止后自检"+ 替身 `device_runtime` 断言 `wait_clicker_stopped` 被调用），
+然后删除 13 个转发方法；同步更新 `verify_*` 里对私有方法的直接调用改为针对协作者。
+
+**回归门**：每步跑 `test_scene/_run_verify_batch.py`（34 个脚本），4.4 与 4.5 完成后额外跑
+`--full`（含 HEAVY）与 `verify_ws_dual_write_e2e.py`。
 
 ### 7.11 事故与恢复记录（重要）
 
