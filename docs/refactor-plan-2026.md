@@ -513,9 +513,10 @@ DeviceRuntime → PresetRunner → IdleNotifier → ActivationManager → ScanLo
 | 4.2 | `preset_runner.py` | `_init_once_pending` `_reset_once_progress` + **持有** `pending_once_tasks`/`_preset_total`/`_completed_count` | ✅ |
 | 4.3 | `idle_notifier.py` | `_notifications_enabled` `_notify_user` `_notify_preset_finished` `_notify_account_idle` + **持有** `_idle_notified` | ✅ |
 | 4.4 | `activation_manager.py` | `toggle_task_activation` `_ensure_task_runnable` `_restore_all_temp_activations` `_restore_temp_activation` `_reject_manual_execute_outside_window`（4.4a）+ `_on_task_activate_request` `_schedule_task_activation` `_process_pending_activations` `_skip_expired_activation` + 持有 `_temp_activated_tasks`/`_pending_activate_tasks`（4.4b） | ✅ 分两次提交 |
-| 4.5 | `scan_loop.py` | `_start_scan_loop` `_scan_loop` `_report_loop_death` `scan` `_scan_once` + RLock（`scan()` 改 `plan → execute(commands)`）。侦察：`_scanning`(159/900/903/957) 与 `_scan_thread`(161/839-841) 是扫描循环私有状态可一并搬走；`_lock`(160) 被 `start()`(493)/`stop()`(621) 用于生命周期，**留在服务**或随协作者搬走二选一（搬走需改这 2 处）；注意 `activation_manager` 会回调 `service.scan()`，而 `scan()` 靠 `_scanning` 提前返回防重入（不是锁），重构时不能改变这个语义 | ⏳ |
-| 4.6 | `freeze_handler.py` | `_on_watchdog_freeze` `_process_freeze_event` `_handle_scene_stuck` `_handle_game_frozen` `_handle_emulator_frozen` | ⏳ |
-| 4.7 | `task_state_store.py` | `get_status` `get_tasks_status` `_update_task_status` `_push_snapshot` `_sync_task_state` + 状态字典（订阅式 `on_change`） | ⏳ |
+| 4.5 | `scan_loop.py` | `_start_scan_loop` `_scan_loop` `_report_loop_death` `scan` `_scan_once` + 持有 `_scanning`/`_scan_thread`（`_lock` 留在服务） | ✅ |
+| 4.6 | `freeze_handler.py` | `_on_watchdog_freeze` `_process_freeze_event` `_handle_scene_stuck` `_handle_game_frozen` `_handle_emulator_frozen` | ✅ |
+| 4.7 | `task_state_store.py` | `get_status` `get_tasks_status` `_update_task_status` `_push_snapshot` `_sync_task_state` + 持有 `SchedulerState`（订阅式 `on_change`）。注意 `state` 与三个回调（`on_status_change`/`on_task_state_change`/`on_snapshot`）被测试与 API 直接赋值/传参，须保留同名可写属性 | ⏳ |
+| 4.8（可选收尾） | — | 删除 20 个转发方法并把 14 个测试脚本改为针对协作者；实测 §4 提到的 3 处 `inspect.getsource` 断言中**只有 1 处针对本类**（`verify_touch_residue_fix.py:812-817`），另两处在 `watchdog_service.py` / `api/resource.py`；转发层存在时该断言无需改写 | ⏳ |
 
 **已落地的两条兼容手法（4.1~4.3 验证有效，后续步骤沿用）**
 1. **同名转发方法 + 同名 property**：搬走的方法在服务侧保留 3 行转发；搬走的状态
@@ -532,16 +533,22 @@ DeviceRuntime → PresetRunner → IdleNotifier → ActivationManager → ScanLo
 **回归门**：每步跑 `test_scene/_run_verify_batch.py`（34 个脚本），4.4 与 4.5 完成后额外跑
 `--full`（含 HEAVY）与 `verify_ws_dual_write_e2e.py`。
 
-### 7.18 阶段 4 进度快照（2026-10-04，4.1~4.4 已完成）
+### 7.18 阶段 4 进度快照（2026-10-04，4.1~4.6 已完成）
 
 | 项 | 数值 |
 |---|---|
-| `SchedulerService` 行数 | **1604 → 1335**（−269，−17%） |
-| 新协作者模块 | `services/scheduler/{constants,device_runtime,preset_runner,idle_notifier,activation_manager}.py`（+`__init__.py` 门面） |
-| 服务侧保留 | 20 个同名转发方法 + 7 个同名 property（`pending_once_tasks`/`_preset_total`/`_completed_count`/`_idle_notified`/`_temp_activated_tasks`/`_pending_activate_tasks`） |
-| 测试面 | 零改动（含 `sched._notify_user = ...` 捕获、`sched.pending_once_tasks = [...]`、`sched._pending_activate_tasks.append(...)`、`svc._temp_activated_tasks = {}`、`from ...scheduler_service import SOURCE_*`、`inspect.getsource` 源码断言） |
-| 回归 | 每步后全批 **34/34 PASS**；7 个激活相关脚本全 OK；`compileall` OK |
-| 提交 | `3d856096`(4.1) → `6085a244`(4.2) → `78b1ee17`(4.3) → `59f488b2`(4.4a) → `a4f40ab3`(4.4b) |
+| `SchedulerService` 行数 | **1604 → 1063**（−541，−34%） |
+| 新协作者模块 | `services/scheduler/{constants,device_runtime,preset_runner,idle_notifier,activation_manager,scan_loop,freeze_handler}.py`（+`__init__.py` 门面） |
+| 服务侧保留 | 25 个同名转发方法 + 9 个同名 property（`pending_once_tasks`/`_preset_total`/`_completed_count`/`_idle_notified`/`_temp_activated_tasks`/`_pending_activate_tasks`/`_scanning`/`_scan_thread`；另 5 个协作者只读 property） |
+| 测试面 | 零改动（含 `sched._notify_user = ...`、`sched._report_loop_death = ...`（`verify_phase0_hardening`）、`sched.scan()`、`sched._scan_loop()`、`sched.pending_once_tasks = [...]`、`sched._pending_activate_tasks.append(...)`、`svc._temp_activated_tasks = {}`、`from ...scheduler_service import SOURCE_*`、`inspect.getsource`） |
+| 回归 | 每步后全批 **34/34 PASS**；卡死/激活/扫描相关 10 个脚本全 OK；`compileall` OK |
+| 提交 | `3d856096`(4.1) `6085a244`(4.2) `78b1ee17`(4.3) `59f488b2`(4.4a) `a4f40ab3`(4.4b) `51a07966`(4.5) `399033b4`(4.6) |
+
+**4.5 有意未做的部分（语义陷阱）**：`scan()` 的 `plan → execute(commands)` 重构。
+原实现第 1 阶段把等待队列任务转就绪后，第 2 阶段的 `pick_next(get_tasks_by_status(1))`
+**能看到本 tick 刚就绪的任务**并立刻启动；改成"先规划命令、再统一执行"会让规划阶段看到旧
+状态，退化成下一 tick 才启动（默认 1s 延迟）——属可观测行为变化。要做必须让 plan 阶段
+模拟状态迁移，风险与收益不成正比，故只做等价搬运。
 
 **协作者访问方式（阶段 4 定稿）**：`_collaborator(attr, factory)` + 同名只读 property **懒加载**。
 起因：HEAVY 脚本 `verify_touch_residue_fix.py` 用 `object.__new__(SchedulerService)` 绕过
@@ -551,7 +558,7 @@ DeviceRuntime → PresetRunner → IdleNotifier → ActivationManager → ScanLo
 **HEAVY 脚本基线核对方法（可复用）**：`git worktree add <tmp> <重构前的 commit>` →
 在临时工作区跑脚本 → `git worktree remove`。据此确认 `verify_touch_residue_fix.py`
 在阶段 4 起点即为 **2 failures / 23 errors**（Control 层与用户 WIP 不一致），
-当前数值与基线**完全一致**；基线已写入 `_run_verify_batch.py` 的 HEAVY 条目注释。
+每步重构后数值均与基线**完全一致**；基线已写入 `_run_verify_batch.py` 的 HEAVY 条目注释。
 
 **踩坑记录（供后续步骤复用）**
 1. 4.2 首版遗漏了测试对 `sched.pending_once_tasks = [...]` 的**直接赋值** → property 必须配 setter。
@@ -560,10 +567,14 @@ DeviceRuntime → PresetRunner → IdleNotifier → ActivationManager → ScanLo
 3. 4.3 首版漏掉 `self.idle_notifier = IdleNotifier(self)` 装配 → 15 个用例报
    `AttributeError`；4.4 起改懒加载后该类问题不再可能出现。
 4. 4.3 首版让协作者直接调用自己的 `notify_user` → 3 个用 `sched._notify_user = ...` 捕获通知的
-   测试静默失败（0 != 1）；改为回调 `service._notify_user` 后恢复。
-5. 4.4b 把 `SOURCE_MANUAL`/`SOURCE_ACTIVATION` 移入 `constants.py`：协作者需要它们，
-   若从 `scheduler_service` 导入会形成循环导入；测试从 `scheduler_service` 导入的写法靠
-   同名再导出保持。
+   测试静默失败（0 != 1）；改为回调 `service._notify_user` 后恢复。**同类扩展点还有
+   `_report_loop_death`（`verify_phase0_hardening` 替换它），协作者必须回调服务方法。**
+5. 4.4b 把 `SOURCE_MANUAL`/`SOURCE_ACTIVATION` 移入 `constants.py`；4.6 搬走卡死处理后
+   `STOP_REASON_*`/`Stop` 在服务侧不再需要，已一并删除导入。
+6. 4.5 首版把 `run_once` 分支挪到 `try` 之外（不再置 `scanning=True`）→ 并发重入会重复启动
+   预设任务；已按原结构放回 `try` 内（`scanning` 在 try 前置位、finally 复位）。
+
+### 7.11 事故与恢复记录（重要）
 
 ### 7.11 事故与恢复记录（重要）
 
