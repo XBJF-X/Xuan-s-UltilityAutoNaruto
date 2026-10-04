@@ -634,17 +634,7 @@ composable"、"Layout 必须仍保留 `openResourceGraph` 与 `onMounted` 编排
 
 **阶段 5 剩余**：`useConfigs`（配置列表/CRUD/右键菜单/切换编排——与任务树、调度器状态、
 视图状态相互耦合，需以回调注入的方式抽取）与 `api/`+`stores/` 目录化（`api/http/`、
-`api/ws/`、`api/endpoints/`）。 `backend/api/device.py` / `backend/api/utils.py` 的 `async def` → `def` 时，`Get-Content`/`Set-Content` 按系统 ANSI（GBK）读写 UTF-8 文件，导致大量中文与部分 ASCII（含引号）字节丢失，两文件语法损坏。
-- **恢复**：`device.py` 在损坏前无未提交改动 → `git checkout` 从 HEAD 恢复并重做 6 处签名改动；`utils.py` 有 WIP → 以 HEAD 为基底重放本会话改动，并从**损坏前编译产物** `__pycache__/utils.cpython-312.pyc` 精确恢复 WIP 内容（3 个新函数 `_get_github_pat` / `_platform_headers` / `_github_pat_configured` + 5 处调用点改为 `_platform_headers(pf)`），随后用 .pyc 的**全部代码对象 (firstlineno, 字符串常量)** 逐项校验，50/50 完全一致后才写盘。
-- **教训（已写入工程约束）**：禁止用 PowerShell 文本 cmdlet 改写含中文的源码文件；批量改动一律用 `edit` 工具或 Python（显式 `encoding="utf-8"`）。恢复脚本执行后已删除（一次性脚本，不留在仓库）。
-- **补充事故（2026-10-04，阶段 4/5）**：
-  1. PowerShell 双引号 here-string 里包含 `\b`/`\r` 转义序列的 Python 源码会被吞字符
-     （`backend` → `ackend`），且含三引号代码块的脚本会出现 `unterminated triple-quoted string`；
-     → **多行代码改动一律用 `edit` 工具，不用 PowerShell 传 Python 源码**。
-  2. 阶段 5 首次验证"单一启用写端点"时直接调用了真实配置目录上的端点函数；
-     因 Phase 0 的"无变化不落盘"保护未产生写入（文件 mtime 未变），未造成数据损坏；
-     → 涉及配置写入的验证必须使用替身 Config 或临时目录（`verify_enable_single_write.py` 已照此实现）。
-  3. 文档自身曾因反复以 `### 7.11` 作为插入锚点而出现三份重复标题，已合并为一份（本节）。
+`api/ws/`、`api/endpoints/`）。
 
 ### 7.11 事故与恢复记录（重要）
 
@@ -659,3 +649,12 @@ composable"、"Layout 必须仍保留 `openResourceGraph` 与 `onMounted` 编排
      因 Phase 0 的"无变化不落盘"保护未产生写入（文件 mtime 未变），未造成数据损坏；
      → 涉及配置写入的验证必须使用替身 Config 或临时目录（`verify_enable_single_write.py` 已照此实现）。
   3. 文档自身曾因反复以 `### 7.11` 作为插入锚点而出现三份重复标题，已合并为一份（本节）。
+  4. （阶段 5-二）用脚本删除 `Layout.vue` 的"启动检查"区块时，把结束边界写成"下一个只含 `}` 的行"，
+     结果连 `</script>`、`<style scoped>` 与首条 CSS 规则一并删除，并吞掉 `openResourceGraph`
+     与 `onMounted`；已用 `git show HEAD:frontend/src/views/Layout.vue` 精确重建尾部（校验 style 段
+     与 HEAD 逐字一致）并补回两处职责，同时新增 `verify_layout_composables.py` 兜住。
+     → **教训**：脚本删除代码块时结束边界必须匹配明确锚点（函数签名/标记行），
+     不要匹配"看起来像收尾"的通用模式；改完立即用结构断言与 diff 校验。
+  5. （阶段 5-二）新增文档章节时又用 `### 7.11` 作锚点，导致该章节被顶掉、残留半截正文；
+     已从 HEAD 精确恢复并重建文档尾部。
+     → **教训**：文档插入一律"追加到末尾"或用唯一小节标题作锚点，不用固定章节标题。
