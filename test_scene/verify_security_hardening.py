@@ -109,8 +109,12 @@ class WsOriginTest(unittest.TestCase):
 
     def test_endpoints_call_guard(self):
         src = (Path(_PROJECT_ROOT) / "backend" / "api" / "ws.py").read_text(encoding="utf-8")
-        self.assertEqual(src.count("await _reject_if_origin_denied(websocket)"), 2,
-                         "两个 WS 端点都必须做 Origin 校验")
+        # 两个 WS 端点统一走 _serve()，Origin 校验在 _serve 内（v1 协议改造后合并为一处）
+        self.assertEqual(src.count("await _serve(websocket)"), 2,
+                         "两个端点都必须走 _serve()")
+        self.assertEqual(
+            src.count("if await _reject_if_origin_denied(websocket):"), 1,
+            "_serve() 必须做 Origin 校验")
 
 
 class UpdateSecurityTest(unittest.TestCase):

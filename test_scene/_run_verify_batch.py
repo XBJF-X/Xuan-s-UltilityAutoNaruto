@@ -16,6 +16,7 @@
 """
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 
@@ -24,7 +25,7 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 TEST_DIR = os.path.join(ROOT, "test_scene")
 
-# 需要实机设备 / ONNX 模型 / 全量底图的重型脚本（--full 时才跑）
+# 需要实机设备 / ONNX 模型 / 全量底图 / 自行拉起服务端的重型脚本（--full 时才跑）
 HEAVY = {
     "verify_recognizer_pruning.py",
     "verify_ocr_robustness.py",
@@ -33,6 +34,7 @@ HEAVY = {
     "verify_clicker_batching.py",
     "verify_touch_residue_fix.py",
     "verify_adb_bootstrap.py",
+    "verify_ws_dual_write_e2e.py",
 }
 
 # 已滞后于当前代码的既有失败（**与本次重构无关**，修好前不纳入门槛；每项都给出证据）
@@ -51,6 +53,8 @@ KNOWN_STALE = {
 }
 
 PER_SCRIPT_TIMEOUT = 300
+# 前端脚本用 node --experimental-strip-types 直跑 TS（与 verify_log_dedupe.ts 同约定）
+NODE_REQUIRED_HINT = "未找到 node（前端 TS 测试跳过；CI 上由 GitHub runner 自带 node）"
 
 
 def discover(include_heavy: bool, include_stale: bool) -> list[str]:
@@ -64,6 +68,28 @@ def discover(include_heavy: bool, include_stale: bool) -> list[str]:
             continue
         out.append(name)
     return out
+
+
+def discover_ts() -> list[str]:
+    return sorted(n for n in os.listdir(TEST_DIR)
+                  if n.startswith("verify_") and n.endswith(".ts"))
+
+
+def run_ts(name: str) -> tuple[bool, str]:
+    node = shutil.which("node")
+    if node is None:
+        return True, NODE_REQUIRED_HINT
+    path = os.path.join(TEST_DIR, name)
+    try:
+        proc = subprocess.run([node, "--experimental-strip-types", path],
+                              capture_output=True, cwd=ROOT,
+                              timeout=PER_SCRIPT_TIMEOUT)
+    except subprocess.TimeoutExpired:
+        return False, f"超时(>{PER_SCRIPT_TIMEOUT}s)"
+    text = (proc.stdout + proc.stderr).decode("utf-8", errors="replace")
+    ok = proc.returncode == 0
+    tail = "全部通过" if ok else "\n".join(text.splitlines()[-6:])
+    return ok, tail
 
 
 def run(name: str) -> tuple[bool, str]:
@@ -88,9 +114,12 @@ def main() -> int:
     args = parser.parse_args()
 
     scripts = discover(args.full, args.stale)
+    ts_scripts = discover_ts()
     if args.list:
         for name in scripts:
             print(name)
+        for name in ts_scripts:
+            print(name + "   (node --experimental-strip-types)")
         return 0
 
     failed: list[str] = []
@@ -99,8 +128,14 @@ def main() -> int:
         print(f"{name}: {'PASS' if ok else 'FAIL'} | {detail}")
         if not ok:
             failed.append(name)
+    for name in ts_scripts:
+        ok, detail = run_ts(name)
+        print(f"{name}: {'PASS' if ok else 'FAIL'} | {detail}")
+        if not ok:
+            failed.append(name)
 
-    print(f"\n汇总: {len(scripts) - len(failed)}/{len(scripts)} PASS")
+    total = len(scripts) + len(ts_scripts)
+    print(f"\n汇总: {total - len(failed)}/{total} PASS")
     if failed:
         print("失败:", ", ".join(failed))
     return 1 if failed else 0

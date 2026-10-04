@@ -200,7 +200,15 @@ def _shutdown_adb_server():
     兜底逻辑：launcher 关闭窗口时用 terminate 强杀后端，atexit/lifespan
     仅在优雅退出时触发；主清理已由 launcher.stop_adb_server() 承担。
     清理失败不阻塞退出，但记录日志供排查。
+
+    例外：`XUAN_SKIP_ADB_CLEANUP=1` 时跳过。用途是**测试/工具/临时实例**——
+    它们退出时不应该杀掉用户正在运行的那个实例所依赖的 adb server
+    （本会话的端到端冒烟就踩到过：临时实例退出把 adb server 带走了）。
     """
+    if os.environ.get("XUAN_SKIP_ADB_CLEANUP"):
+        logging.getLogger("Shutdown").info(
+            "已按 XUAN_SKIP_ADB_CLEANUP 跳过 adb server 清理")
+        return
     try:
         result = subprocess.run(
             ["adb", "kill-server"], capture_output=True, text=True, timeout=15,

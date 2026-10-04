@@ -3,42 +3,39 @@
  *
  * 日志按 config_id 分别存储，前端 LogPanel 通过 props 选择要显示的日志流。
  * 后端 WebSocketLogHandler 从 logger name 中提取 config_id 并附加到每条日志消息。
+ *
+ * 协议（阶段 2）：连接成功后发送 `{type:'subscribe', protocol:1}` 协商 v1 统一信封；
+ * 帧解析一律走 `wsProtocol.parseFrame`，因此**新旧帧都支持**（旧后端仍发
+ * `["log", batch]` 数组帧与顶层字段对象帧，行为不变）。
  */
 
 import { ref } from 'vue'
+// 注意：显式带 .ts 扩展名——`tsconfig.json` 已开 allowImportingTsExtensions，
+// vite 与 tsc 都能解析；这样 test_scene 下用 `node --experimental-strip-types`
+// 直跑本模块的测试时不会被 Node 的 ESM 解析器拒绝。
+import {
+  buildSubscribeFrame,
+  parseFrame,
+  type LogEntry,
+  type WSMessage,
+} from './wsProtocol.ts'
 
-export type WSMessage = {
-  /** `reconnected` 是**前端本地伪消息**（重连成功时由 ws.ts 自己派发，服务端不发），
-   *  之前它不在联合类型里，导致 `h({type:'reconnected'})` 属类型错误、消费端只能靠
-   *  `(msg as any).type` 绕过 —— 类型检查形同虚设。 */
-  type: 'log' | 'status' | 'task_state' | 'scheduler_snapshot' | 'reconnected'
-  level?: string
-  message?: string
-  config_id?: string
-  logger_name?: string
-  /** 服务端日志生成时刻（毫秒，record.created）——仅 log 帧携带 */
-  ts?: number
-  name?: string
-  status?: number
-  action?: string
-  error?: string
-  data?: any
-}
-
-export type LogEntry = {
-  level: string
-  message: string
-  /** 日志记录生成时刻（毫秒）。实时日志取自后端 record.created（服务端时间），
-   *  历史日志取自日志文件解析（精确到秒）——两者同源，便于 mergeHistory 去重。 */
-  ts: number
-  config_id?: string
-  logger_name?: string
-}
+// 向后兼容的再导出（LogPanel 等仍从 '@/api/ws' 取类型）
+export type { LogEntry, WSMessage } from './wsProtocol.ts'
 
 type MessageHandler = (msg: WSMessage) => void
 
 const _handlers = new Set<MessageHandler>()
+/** 按 type 注册的处理器（新代码用；与 onMessage 并存，渐进迁移） */
+const _typedHandlers = new Map<string, Set<MessageHandler>>()
 const connected = ref(false)
+/** 已协商的协议版本（1 = v1 信封；0 = legacy，仅用于状态展示） */
+const protocolVersion = ref(0)
+/** 服务端能力（hello 帧携带） */
+const serverCaps = ref<Record<string, unknown> | null>(null)
+
+/** 尚未识别的服务端消息类型（每个类型只提示一次，避免刷屏） */
+const _unknownTypes = new Set<string>()
 
 /** 所有日志按 config_id 分组存储，key="" 表示无归属的全局日志 */
 const logMap = ref<Record<string, LogEntry[]>>({})
@@ -95,9 +92,24 @@ function flushLogs() {
   }, 200)
 }
 
-/** 服务端日志时间戳（毫秒）：取后端附带 ts；缺失（旧后端）时退回接收时刻 */
-function serverTs(item: { ts?: unknown }): number {
-  return typeof item.ts === 'number' && item.ts > 0 ? item.ts : Date.now()
+/** 统一分发：广播给全部订阅者 + 类型订阅者（取快照，避免回调里增删订阅者导致漏发） */
+function dispatch(msg: WSMessage) {
+  for (const handler of Array.from(_handlers)) {
+    try {
+      handler(msg)
+    } catch (e) {
+      console.error('[ws] 消息处理器异常:', msg.type, e)
+    }
+  }
+  const typed = _typedHandlers.get(msg.type)
+  if (!typed) return
+  for (const handler of Array.from(typed)) {
+    try {
+      handler(msg)
+    } catch (e) {
+      console.error('[ws] 类型处理器异常:', msg.type, e)
+    }
+  }
 }
 
 function pushLog(level: string, message: string, config_id?: string, logger_name?: string, ts?: number) {
@@ -176,41 +188,56 @@ export function useWebSocket() {
     _ws.onopen = () => {
       connected.value = true
       if (_reconnectTimer) { clearTimeout(_reconnectTimer); _reconnectTimer = null }
+      // 协商 v1 统一信封（后端在收到 subscribe 前只发 legacy 帧，保证旧 dist 兼容）
+      try {
+        _ws?.send(buildSubscribeFrame())
+      } catch (e) {
+        console.warn('[ws] 协议协商帧发送失败，继续使用 legacy 帧:', e)
+      }
       _pingTimer = setInterval(() => {
         if (_ws?.readyState === WebSocket.OPEN) _ws.send('ping')
       }, 30000)
       // 通知各订阅者连接（含重连）成功，便于重新拉取历史日志补齐缺口
-      for (const h of _handlers) h({ type: 'reconnected' })
+      dispatch({ type: 'reconnected' })
     }
 
     _ws.onmessage = (event) => {
+      let raw: unknown
       try {
-        const data = JSON.parse(event.data)
-
-        if (Array.isArray(data) && data[0] === 'log') {
-          const batch: any[] = data[1]
-          for (const item of batch) {
-            if (item.type === 'log') {
-              pushLog(item.level || 'INFO', item.message || '', item.config_id,
-                item.logger_name, serverTs(item))
-            }
-            for (const h of _handlers) h(item)
+        raw = JSON.parse(event.data)
+      } catch (e) {
+        // 服务端可能发文本帧（pong）：解析失败只留痕，不影响实时流
+        console.debug('[ws] 非 JSON 帧（忽略）:', event.data, e)
+        return
+      }
+      for (const frame of parseFrame(raw)) {
+        if (frame.kind === 'logs') {
+          for (const entry of frame.entries) {
+            pushLog(entry.level, entry.message, entry.config_id,
+              entry.logger_name, entry.ts)
+            // 保持既有契约：每条日志也作为 type='log' 的消息派发
+            dispatch({ type: 'log', ...entry })
           }
-        } else {
-          const msg = data as WSMessage
-          if (msg.type === 'log') {
-            pushLog(msg.level || 'INFO', msg.message || '', msg.config_id,
-              msg.logger_name, serverTs(msg))
-          } else if (msg.type === 'status' || msg.type === 'task_state' || msg.type === 'scheduler_snapshot') {
-            // broadcast_status/broadcast_task_state/broadcast_snapshot 把 config_id
-            // 包在 data 内，归一化到顶层，各监听者统一用 msg.config_id 过滤
-            if (!msg.config_id && msg.data && typeof msg.data === 'object') {
-              msg.config_id = msg.data.config_id
-            }
+          if (frame.dropped > 0) {
+            console.warn(`[ws] 服务端丢弃了 ${frame.dropped} 条日志（单帧上限）`)
+            dispatch({ type: 'log.truncated', dropped: frame.dropped })
           }
-          for (const h of _handlers) h(msg)
+          continue
         }
-      } catch { /* ignore */ }
+        if (frame.kind === 'message') {
+          if (frame.message.type === 'hello') {
+            protocolVersion.value = frame.message.protocol || 0
+            serverCaps.value = (frame.message.caps as Record<string, unknown>) || null
+          }
+          dispatch(frame.message)
+          continue
+        }
+        // 未知 type：必须忽略（前向兼容），每个类型只提示一次
+        if (!_unknownTypes.has(frame.type)) {
+          _unknownTypes.add(frame.type)
+          console.debug('[ws] 忽略未知服务端消息类型:', frame.type)
+        }
+      }
     }
 
     _ws.onclose = () => {
@@ -250,6 +277,14 @@ export function useWebSocket() {
     return () => _handlers.delete(handler)
   }
 
+  /** 按消息类型订阅（新代码用；内部与 onMessage 同一分发路径） */
+  function on(type: WSMessage['type'], handler: MessageHandler) {
+    if (!_typedHandlers.has(type)) _typedHandlers.set(type, new Set())
+    const set = _typedHandlers.get(type)!
+    set.add(handler)
+    return () => set.delete(handler)
+  }
+
   function clearLogs() {
     logMap.value = {}
     syncGlobalLogs()
@@ -257,5 +292,17 @@ export function useWebSocket() {
 
   connect()
 
-  return { connected, logMessages, logMap, connect, disconnect, onMessage, clearLogs, clearLogsByConfig }
+  return {
+    connected,
+    protocolVersion,
+    serverCaps,
+    logMessages,
+    logMap,
+    connect,
+    disconnect,
+    onMessage,
+    on,
+    clearLogs,
+    clearLogsByConfig,
+  }
 }
