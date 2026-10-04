@@ -9,8 +9,9 @@
 /log/
 # 全局设置（模拟器安装路径等，含环境信息）
 /setting.ini
-# 场景识别底图（运行时资源，图片量大）
-/test_scene/
+# 场景识别底图（运行时资源，图片量大）；但**保留回归脚本**（CI 需要它们）
+/test_scene/*
+!/test_scene/*.py
 
 # ---------- 旧版本资源暂存（V1 遗留，测试稳定后手动删除） ----------
 /del/
@@ -20,7 +21,9 @@
 
 # ---------- 本地工具 / 文档（不共享仓库，保留本地） ----------
 .clineignore
-.github/
+# .github 下仅保留 CI 工作流（其余为本地工具：hooks / copilot-instructions.md）
+.github/*
+!.github/workflows/
 V2-CHANGELOG.md
 memory-bank/
 version.json

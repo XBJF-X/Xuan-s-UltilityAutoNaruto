@@ -98,8 +98,9 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
+import { useMessage } from 'naive-ui'
 import { useAppStore } from '@/stores/app'
-import { configApi, schedulerApi } from '@/api/client'
+import { configApi, schedulerApi, errorMessage } from '@/api/client'
 
 const props = defineProps<{
   taskName: string | null
@@ -110,6 +111,7 @@ const emit = defineEmits<{
 }>()
 
 const appStore = useAppStore()
+const message = useMessage()
 const loadedConfig = ref<any>(null)
 const rawTasks = ref<Record<string, any>>({})
 
@@ -156,13 +158,17 @@ function comboWidth(detail: any): number {
 function updateTaskField(field: string, value: boolean | number) {
   if (!currentTaskName.value || !rawTasks.value[currentTaskName.value]) return
   rawTasks.value[currentTaskName.value][field] = value
-  // 保存到后端配置文件
-  configApi.updateTask(appStore.activeConfigId!, currentTaskName.value, field, value).catch(() => {})
+  // 保存到后端配置文件（失败必须提示：旧实现 .catch(() => {}) 静默吞掉，用户以为已保存）
+  configApi
+    .updateTask(appStore.activeConfigId!, currentTaskName.value, field, value)
+    .catch((e) => message.error(`保存「${field}」失败：${errorMessage(e)}`))
   // 通知父组件任务启用状态变化，以便刷新树节点指示灯
   if (field === '是否启用') {
     emit('task-enabled-changed', currentTaskName.value, value as boolean)
-    // 同时也通知调度器（发送 WebSocket 消息触发 Dashboard 刷新）
-    schedulerApi.toggleActivation(appStore.activeConfigId!, currentTaskName.value, value as boolean).catch(() => {})
+    // 同时通知调度器（运行中时同步任务队列/快照，并触发 Dashboard 刷新）
+    schedulerApi
+      .toggleActivation(appStore.activeConfigId!, currentTaskName.value, value as boolean)
+      .catch((e) => message.error(`切换任务启用状态失败：${errorMessage(e)}`))
   }
 }
 
@@ -172,7 +178,9 @@ function updateExecParam(paramName: string, value: boolean | number | string) {
   if (param) {
     param.当前值 = value
   }
-  configApi.updateTaskParam(appStore.activeConfigId!, currentTaskName.value, paramName, value).catch(() => {})
+  configApi
+    .updateTaskParam(appStore.activeConfigId!, currentTaskName.value, paramName, value)
+    .catch((e) => message.error(`保存参数「${paramName}」失败：${errorMessage(e)}`))
 }
 
 function onParamChange(paramName: string, value: boolean | number | string) {

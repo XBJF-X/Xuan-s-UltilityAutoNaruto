@@ -220,15 +220,18 @@ function onDrop(idx: number) {
   persistOrder()
 }
 function persistOrder() {
-  configApi.updateTaskOrder(props.configId, taskOrder.value).catch(() => {
-    message.warning('执行顺序保存失败')
+  configApi.updateTaskOrder(props.configId, taskOrder.value).catch((e) => {
+    message.warning(`执行顺序保存失败：${errorMessage(e)}`)
   })
 }
 
 // ---- 任务勾选 ----
 function toggleTask(name: string, enabled: boolean) {
   if (tasks.value[name]) tasks.value[name]['是否启用'] = enabled
-  configApi.updateTask(props.configId, name, '是否启用', enabled).catch(() => {})
+  // 预设模式同样必须提示失败：旧实现 .catch(() => {}) 会让用户以为勾选已保存
+  configApi
+    .updateTask(props.configId, name, '是否启用', enabled)
+    .catch((e) => message.error(`保存任务勾选失败：${errorMessage(e)}`))
 }
 
 function toggleExpand(name: string) {
@@ -255,7 +258,9 @@ function onParamChange(taskName: string, paramName: string, value: any) {
   if (tasks.value[taskName]?.['执行参数']?.[paramName]) {
     tasks.value[taskName]['执行参数'][paramName]['当前值'] = value
   }
-  configApi.updateTaskParam(props.configId, taskName, paramName, value).catch(() => {})
+  configApi
+    .updateTaskParam(props.configId, taskName, paramName, value)
+    .catch((e) => message.error(`保存参数「${paramName}」失败：${errorMessage(e)}`))
 }
 
 // ---- 调度器启动/停止 ----

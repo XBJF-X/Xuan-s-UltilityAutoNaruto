@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: ["*"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  backend:
+    name: 后端（编译 + 回归）
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: 编译检查（compileall）
+        run: python -m compileall -q backend
+
+      - name: 回归脚本（快速集）
+        run: python -X utf8 test_scene/_run_verify_batch.py
+
+      - name: 关键模块导入
+        run: |
+          python -c "import backend.main; print('backend.main import OK')"
+          python -c "import backend.services.scheduler_service; print('scheduler import OK')"
+
+  frontend:
+    name: 前端（类型检查 + 构建）
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 安装依赖
+        run: |
+          corepack enable
+          pnpm install --frozen-lockfile || npm install
+
+      - name: 类型检查（api / types / stores 白名单）
+        run: npx tsc -p tsconfig.typecheck.json
+
+      - name: 构建（产物 frontend/dist 由热更新分发，这里只验证可构建）
+        run: npx vite build

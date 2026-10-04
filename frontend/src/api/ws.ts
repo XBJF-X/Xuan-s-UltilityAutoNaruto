@@ -8,11 +8,16 @@
 import { ref } from 'vue'
 
 export type WSMessage = {
-  type: 'log' | 'status' | 'task_state' | 'scheduler_snapshot'
+  /** `reconnected` 是**前端本地伪消息**（重连成功时由 ws.ts 自己派发，服务端不发），
+   *  之前它不在联合类型里，导致 `h({type:'reconnected'})` 属类型错误、消费端只能靠
+   *  `(msg as any).type` 绕过 —— 类型检查形同虚设。 */
+  type: 'log' | 'status' | 'task_state' | 'scheduler_snapshot' | 'reconnected'
   level?: string
   message?: string
   config_id?: string
   logger_name?: string
+  /** 服务端日志生成时刻（毫秒，record.created）——仅 log 帧携带 */
+  ts?: number
   name?: string
   status?: number
   action?: string

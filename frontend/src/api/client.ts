@@ -1,23 +1,8 @@
-import axios from 'axios'
-import type { AxiosInstance } from 'axios'
-
-const API_BASE = '/api'
-
-const client: AxiosInstance = axios.create({
-  baseURL: API_BASE,
-  timeout: 30000,
-  headers: { 'Content-Type': 'application/json' },
-})
-
-client.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error('API Error:', error.response?.data || error.message)
-    return Promise.reject(error)
-  },
-)
+import client from './http'
 
 export default client
+export { client, ApiError, errorMessage, isApiError, normalizeError, request, requestRaw, abortAllInFlight, inFlightCount } from './http'
+export type { ApiErrorKind } from './http'
 
 // ===== 配置管理 API =====
 export const configApi = {
