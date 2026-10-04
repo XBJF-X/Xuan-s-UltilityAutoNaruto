@@ -279,9 +279,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useMessage } from 'naive-ui'
 import {
   RefreshOutlined, SettingsOutlined, SystemUpdateOutlined,
   FolderOpenOutlined, HelpOutlineOutlined, CameraOutlined, HubOutlined,
@@ -289,7 +288,6 @@ import {
 import githubIcon from '@/assets/GithubIcon.png'
 import asdsIcon from '@/assets/ASDS.ico'
 import { useAppStore } from '@/stores/app'
-import { configApi, schedulerApi } from '@/api/client'
 import TaskConfigPanel from '@/components/TaskConfigPanel.vue'
 import LogPanel from '@/components/LogPanel.vue'
 import AssistantSettingsPanel from '@/components/AssistantSettingsPanel.vue'
@@ -297,14 +295,15 @@ import UpdateDialog from '@/components/UpdateDialog.vue'
 import FeedbackDialog from '@/components/FeedbackDialog.vue'
 import StartupNoticeDialog from '@/components/StartupNoticeDialog.vue'
 import PresetEditor from '@/views/PresetEditor.vue'
-// 阶段 5：把任务树 / 调度器控制 / 启动检查三块职责抽成 composable（Layout 只做编排与模板）
+// 阶段 5：把任务树 / 调度器控制 / 启动检查 / 配置列表与切换四块职责抽成 composable
+// （Layout 只做编排与模板）
 import { useTaskTree } from '@/composables/useTaskTree'
 import { useSchedulerControl } from '@/composables/useSchedulerControl'
 import { useStartupChecks } from '@/composables/useStartupChecks'
+import { useConfigs } from '@/composables/useConfigs'
 
 const router = useRouter()
 const appStore = useAppStore()
-const message = useMessage()
 
 // ---- 任务树（任务数据 / 分组 / 启用状态同步）----
 const {
@@ -324,64 +323,23 @@ const {
   handleStartupGoFeedback, handleScreenshot, openFeedback,
 } = useStartupChecks()
 
-const showCreateDialog = ref(false)
-const newUsername = ref('')
-const creating = ref(false)
-
 const currentView = ref<'overview' | 'task' | 'globallog' | 'assistant' | 'preset'>('overview')
 const currentTaskName = ref<string | null>(null)
 
-// 配置列表类型切换：账号配置（持久）/ 任务预设（临时）
-const configTab = ref<'persist' | 'preset'>('persist')
-const filteredConfigs = computed(() =>
-  appStore.configs.filter((c: any) =>
-    configTab.value === 'preset'
-      ? c.config_type === '临时'
-      : c.config_type !== '临时')
-)
-const createDialogType = ref<'persist' | 'preset'>('persist')
-const createDialogTitle = computed(() => createDialogType.value === 'preset' ? '新建任务预设' : '新建账号配置')
-
-// 配置右键菜单
-const configContextMenu = ref({ show: false, x: 0, y: 0, configId: '', configName: '' })
-const configContextOptions = computed(() => [
-  {
-    label: `复制 "${configContextMenu.value.configName || configContextMenu.value.configId}"`,
-    key: 'copy',
-  },
-  {
-    label: `重命名 "${configContextMenu.value.configName || configContextMenu.value.configId}"`,
-    key: 'rename',
-  },
-  { type: 'divider' as const },
-  {
-    label: `删除 "${configContextMenu.value.configName || configContextMenu.value.configId}"`,
-    key: 'delete',
-    props: { style: { color: '#e53935' } },
-  },
-])
-
-function showConfigContextMenu(e: MouseEvent, configId: string, configName: string) {
-  e.preventDefault()
-  configContextMenu.value = {
-    show: true,
-    x: e.clientX,
-    y: e.clientY,
-    configId,
-    configName,
-  }
-}
-
-function handleConfigContextSelect(key: string) {
-  configContextMenu.value.show = false
-  if (key === 'copy') {
-    handleDuplicateConfig(configContextMenu.value.configId, configContextMenu.value.configName)
-  } else if (key === 'rename') {
-    handleRenameConfig(configContextMenu.value.configId, configContextMenu.value.configName)
-  } else if (key === 'delete') {
-    handleDeleteConfig(configContextMenu.value.configId, configContextMenu.value.configName)
-  }
-}
+// ---- 配置列表与切换（类型页签 / 增删改 / 右键菜单 / 切换编排）----
+// 与其它 composable 的耦合以回调注入：视图切换、任务数据加载、调度器运行状态
+const {
+  configTab, filteredConfigs, createDialogType, createDialogTitle,
+  showCreateDialog, newUsername, creating,
+  configContextMenu, configContextOptions,
+  showConfigContextMenu, handleConfigContextSelect,
+  selectConfig, switchConfigTab, openCreateDialog, handleCreateConfig,
+  handleDuplicateConfig, handleRenameConfig, handleDeleteConfig,
+} = useConfigs({
+  switchToOverview: () => switchToOverview(),
+  loadTaskData,
+  schedulerRunning,
+})
 
 // ---- 视图切换 ----
 function switchToGlobalLog() {
@@ -417,128 +375,6 @@ function switchToSetting() {
   router.push({ name: 'Settings' })
 }
 
-// ---- 配置选择 ----
-// 切换配置时右侧面板需等待从后端获取完调度器状态与任务状态等请求结束后才允许点击，
-// 避免上一个配置的慢响应覆盖当前配置状态（竞态）。自增 seq 用于丢弃过期响应。
-let _switchSeq = 0
-
-async function _loadConfigAndStatus(id: string | null, seq: number) {
-  try {
-    if (id) {
-      await loadTaskData()
-      const res = await schedulerApi.status(id)
-      if (seq !== _switchSeq) return
-      schedulerRunning.value = res.data?.running ?? false
-    } else {
-      schedulerRunning.value = false
-    }
-  } catch {
-    if (seq === _switchSeq) schedulerRunning.value = false
-  } finally {
-    if (seq === _switchSeq) appStore.configSwitching = false
-  }
-}
-
-async function selectConfig(id: string) {
-  const seq = ++_switchSeq
-  appStore.configSwitching = true
-  if (appStore.activeConfigId === id) {
-    // 重复点击同一配置：activeConfigId 不变，watch 不会触发，这里主动重新加载
-    switchToOverview()
-    await _loadConfigAndStatus(id, seq)
-  } else {
-    appStore.setActiveConfig(id)
-    // 点击左侧配置统一进入总览；预设的助手设置/任务流程通过中栏「助手设置」入口进入
-    switchToOverview()
-  }
-}
-
-function switchConfigTab(tab: 'persist' | 'preset') {
-  if (configTab.value === tab) return
-  configTab.value = tab
-  appStore.setActiveConfig(null)
-  schedulerRunning.value = false
-  switchToOverview()
-}
-
-function openCreateDialog() {
-  createDialogType.value = configTab.value
-  newUsername.value = ''
-  showCreateDialog.value = true
-}
-
-// ---- 新建配置（账号配置/任务预设） ----
-async function handleCreateConfig() {
-  if (!newUsername.value) return
-  creating.value = true
-  try {
-    const type = createDialogType.value === 'preset' ? '临时' : '持久'
-    const res = await configApi.create(newUsername.value, type)
-    await appStore.loadConfigs()
-    showCreateDialog.value = false
-    newUsername.value = ''
-    configTab.value = type === '临时' ? 'preset' : 'persist'
-    const newId = res.data?.id
-    if (newId) {
-      await selectConfig(newId)
-    }
-  } catch { /* ignore */ }
-  finally { creating.value = false }
-}
-
-// ---- 复制配置 ----
-function handleDuplicateConfig(configId: string, configName: string) {
-  configApi.duplicate(configId).then(async (res) => {
-    await appStore.loadConfigs()
-    const newId = res.data?.id
-    if (newId) {
-      const newCfg = appStore.configs.find((c: any) => c.id === newId)
-      configTab.value = newCfg?.config_type === '临时' ? 'preset' : 'persist'
-      await selectConfig(newId)
-    }
-    message.success(`已复制 "${configName}"`)
-  }).catch(() => {
-    message.error('复制失败')
-  })
-}
-
-// ---- 配置右键菜单操作 ----
-function handleRenameConfig(configId: string, oldName: string) {
-  const newName = prompt('请输入新的名称：', oldName)
-  if (!newName || newName === oldName) return
-  configApi.rename(configId, newName).then(() => {
-    appStore.loadConfigs()
-    message.success('重命名成功')
-  }).catch(() => {
-    message.error('重命名失败')
-  })
-}
-
-function handleDeleteConfig(configId: string, configName: string) {
-  const ok = confirm(`确定要删除配置 "${configName}" 吗？此操作不可恢复。`)
-  if (!ok) return
-  configApi.delete(configId).then(() => {
-    if (appStore.activeConfigId === configId) {
-      appStore.setActiveConfig(null)
-    }
-    appStore.loadConfigs()
-    message.success('删除成功')
-  }).catch(() => {
-    message.error('删除失败')
-  })
-}
-
-// 切换配置时重新加载任务数据并同步调度器状态（selectConfig 会触发本 watch）
-watch(() => appStore.activeConfigId, (id) => {
-  const seq = ++_switchSeq
-  if (id) {
-    appStore.configSwitching = true
-    _loadConfigAndStatus(id, seq)
-  } else {
-    schedulerRunning.value = false
-    appStore.configSwitching = false
-  }
-})
 
 /** 资源图/资源管理页：hash 路由下新标签页打开需带上当前 hash 前缀 */
 function openResourceGraph() {

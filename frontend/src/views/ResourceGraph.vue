@@ -51,8 +51,8 @@ import { ref, computed, onMounted, onBeforeUnmount, nextTick, reactive } from 'v
 import { useRouter } from 'vue-router'
 import { useMessage } from 'naive-ui'
 import { AddOutlined, RefreshOutlined } from '@vicons/material'
-import { resourceApi } from '@/api/resource'
-import type { ResourceScene, ResourceEdge } from '@/api/resource'
+import { resourceApi } from '@/api/endpoints/resource'
+import type { ResourceScene, ResourceEdge } from '@/api/endpoints/resource'
 import {
   forceSimulation,
   forceManyBody,

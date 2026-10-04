@@ -1,4 +1,4 @@
-import client from './client'
+import client from '../client'
 
 // ===== 资源管理（场景 / 元素）API =====
 // 设计：前端初始化一次全量读取，场景内元素一次批量读取，避免逐条请求

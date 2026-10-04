@@ -339,7 +339,17 @@ class FrontendWiringTest(unittest.TestCase):
             return f.read()
 
     def test_client_forwards_force(self):
-        src = self._read(os.path.join("frontend", "src", "api", "client.ts"))
+        # 阶段 5：端点对象已拆到 frontend/src/api/endpoints/（client.ts 只做 barrel），
+        # 断言读整个 api 层，保持"前端确实带 force 参数"的验证意图
+        api_dir = os.path.join(_PROJECT_ROOT, "frontend", "src", "api")
+        parts = [self._read(os.path.join("frontend", "src", "api", "client.ts"))]
+        endpoints = os.path.join(api_dir, "endpoints")
+        if os.path.isdir(endpoints):
+            for name in sorted(os.listdir(endpoints)):
+                if name.endswith(".ts"):
+                    parts.append(self._read(os.path.join("frontend", "src", "api",
+                                                         "endpoints", name)))
+        src = "\n".join(parts)
         self.assertIn("force = false", src)
         self.assertIn("?force=true", src)
 

@@ -46,7 +46,7 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, reactive, ref, watch } from 'vue'
-import { resourceApi } from '../api/resource'
+import { resourceApi } from '../api/endpoints/resource'
 
 const props = defineProps<{
   show: boolean

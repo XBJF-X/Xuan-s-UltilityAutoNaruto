@@ -268,7 +268,13 @@ class FrontendWiringTest(unittest.TestCase):
         self.assertIn("data?.local_version", vue, "check-update 响应也用于补版本")
 
     def test_client_exposes_version_api(self):
-        ts = (_PROJECT_ROOT / "frontend/src/api/client.ts").read_text(encoding="utf-8")
+        # 阶段 5：端点对象已拆到 frontend/src/api/endpoints/（client.ts 只做 barrel）
+        api_dir = _PROJECT_ROOT / "frontend" / "src" / "api"
+        parts = [(api_dir / "client.ts").read_text(encoding="utf-8")]
+        endpoints = api_dir / "endpoints"
+        if endpoints.is_dir():
+            parts += [p.read_text(encoding="utf-8") for p in sorted(endpoints.glob("*.ts"))]
+        ts = "\n".join(parts)
         self.assertIn("localVersion: () => client.get('/utils/version')", ts)
 
 

@@ -460,7 +460,7 @@ defineOptions({ name: 'ResourceSceneEditor' })
 import { computed, h, nextTick, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useMessage } from 'naive-ui'
-import { resourceApi, type ResourceElement, type ElementPayload } from '../api/resource'
+import { resourceApi, type ResourceElement, type ElementPayload } from '../api/endpoints/resource'
 import RatioDialog from '../components/RatioDialog.vue'
 
 const route = useRoute()

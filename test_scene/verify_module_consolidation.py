@@ -124,8 +124,14 @@ class DeadCodeRemovedTest(unittest.TestCase):
         self.assertFalse(hasattr(resource_api, "_BINARY_FIELDS"))
 
     def test_frontend_dead_method_removed(self):
-        src = (_PROJECT_ROOT / "frontend" / "src" / "api" / "client.ts").read_text(
-            encoding="utf-8")
+        # 阶段 5：端点对象已拆到 frontend/src/api/endpoints/（client.ts 只做 barrel），
+        # 因此读整个 api 层
+        api_dir = _PROJECT_ROOT / "frontend" / "src" / "api"
+        parts = [(api_dir / "client.ts").read_text(encoding="utf-8")]
+        endpoints = api_dir / "endpoints"
+        if endpoints.is_dir():
+            parts += [p.read_text(encoding="utf-8") for p in sorted(endpoints.glob("*.ts"))]
+        src = "\n".join(parts)
         # 只断言"方法定义与 URL"不存在（注释里会保留删除原因说明）
         self.assertNotIn("updateTaskPriorities:", src)
         self.assertNotIn("task-priorities", src)

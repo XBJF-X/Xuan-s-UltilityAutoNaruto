@@ -218,7 +218,7 @@
 <script setup lang="ts">
 import { computed, h, onMounted, reactive, ref } from 'vue'
 import { NButton, NPopconfirm, NSpace, useMessage, type DataTableColumns } from 'naive-ui'
-import { resourceApi, type ResourceScene, type ResourceElement, type ResourceEdge, type ElementPayload } from '../api/resource'
+import { resourceApi, type ResourceScene, type ResourceElement, type ResourceEdge, type ElementPayload } from '../api/endpoints/resource'
 
 const message = useMessage()
 const loading = ref(false)
