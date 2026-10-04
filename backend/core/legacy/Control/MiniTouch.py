@@ -116,7 +116,7 @@ class MiniTouch(Control):
 
     def _build_core(self):
         self._mt_core = MiniTouchCore(self.serial)
-        self.max_contacts = int(self._mt_core.max_contacts)
+        self._max_contacts = int(self._mt_core.max_contacts)
         self.max_pressure = int(self._mt_core.max_pressure)
         self._released = False
 
@@ -215,6 +215,52 @@ class MiniTouch(Control):
     def ready(self) -> bool:
         """Control约束：就绪状态"""
         return not self._released and self._mt_core is not None
+
+    @property
+    def core(self):
+        """当前 minidevice 核心（未就绪时 None）。
+
+        供连点器的「集中批量提交」直接投递整段命令流使用：批量提交需要绕过
+        ``multi_tap``（它一次只发一个周期），但仍必须复用**同一个**核心实例与
+        **同一把** ``_core_lock``，否则会与在途的 ``multi_tap`` / ``release``
+        争用同一个 socket。
+        """
+        return self._mt_core
+
+    @property
+    def max_contacts(self) -> int:
+        """设备端支持的最大同时触点数（未就绪时回退 1）。"""
+        return int(getattr(self, "_max_contacts", 1) or 1)
+
+    def tap_command_batch(self, raw_points, command: str):
+        """把一段已构造好的 minitouch 命令流批量投递给设备（集中批量提交）。
+
+        与 ``multi_tap`` 共用 ``_core_lock`` 与同一个核心，因此不会与在途的
+        ``multi_tap`` / ``release`` 争用 socket。
+
+        :param raw_points: 本次批量涉及的**原始**坐标列表，仅用于连接异常时打日志
+        :param command: ``touch_batch.build_tap_batch`` 产出的完整命令流
+        :return: True=已投递；False=未就绪/连接已断开（调用方按需重建）
+        """
+        if not self.ready:
+            return False
+        with self._core_lock:
+            core = self._mt_core
+            if core is None:
+                return False
+            try:
+                core.send(command)
+                return True
+            except Exception as e:
+                if self._is_disconnect_error(e):
+                    self.logger.warning(f"批量连点投递失败（连接断开），尝试重建: {e}")
+                    self._reconnect()
+                    return False
+                raise
+
+    def convert_point(self, x, y):
+        """对外暴露的坐标转换（含旋转补偿），供连点器批量提交使用。"""
+        return self.__convert(x, y)
 
     @property
     def rotated(self):

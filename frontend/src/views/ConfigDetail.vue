@@ -55,7 +55,7 @@
                     style="width: 140px"
                     placeholder="控制模式"
                   />
-                  <n-text depth="3" style="font-size: 12px">MiniTouch=1, U2=2</n-text>
+                  <n-text depth="3" style="font-size: 12px">MiniTouch=0（U2 已弃用，旧值 1 自动路由到 MiniTouch）</n-text>
                 </n-space>
               </n-card>
 
@@ -276,7 +276,7 @@ const showKeyMapEditor = ref(false)
 // 助手设置 - 提取常用设置项
 const assistantSettings = reactive<Record<string, any>>({
   '串口': '',
-  '控制模式': 1,
+  '控制模式': 0,
   '截图模式': 0,
   '模拟器路径': '',
   '实例索引': 0,
@@ -285,9 +285,9 @@ const assistantSettings = reactive<Record<string, any>>({
   '调试模式': 0,
 })
 
+// 控制模式：U2 已弃用，仅保留 MiniTouch；旧配置的 1 由后端路由到 MiniTouch
 const controlModeOptions = [
-  { label: 'MiniTouch (1)', value: 1 },
-  { label: 'U2 (2)', value: 2 },
+  { label: 'MiniTouch (0)', value: 0 },
 ]
 
 const screenModeOptions = [

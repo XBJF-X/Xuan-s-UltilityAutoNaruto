@@ -64,6 +64,16 @@
                 style="width: 140px"
                 @update:value="(v: number | null) => onSet(section, key, String(v ?? 0))"
               />
+              <!-- 敏感项（GithubPAT / 二级密码）：密文显示 + 显隐切换，避免旁人直视 -->
+              <n-input
+                v-else-if="isSecretKey(section, key)"
+                :value="val"
+                type="password"
+                show-password-on="click"
+                :placeholder="key === 'GithubPAT' ? '留空 = 匿名调用（易被 GitHub 限流）' : ''"
+                style="width: 320px"
+                @update:value="(v: string) => onSet(section, key, v)"
+              />
               <n-input
                 v-else
                 :value="val"
@@ -148,13 +158,21 @@ function installPathGuide(key: string): string {
   )
 }
 
+// 是否为「助手设置」中的敏感项（密文显示，默认不透露已保存内容）
+function isSecretKey(section: string, key: string): boolean {
+  if (section !== '助手设置') return false
+  return key === 'GithubPAT' || key === '二级密码'
+}
+
 function isBool(v: string): boolean {
-  const s = v.trim().toLowerCase()
+  const s = (v ?? '').trim().toLowerCase()
   return s === 'true' || s === 'false'
 }
 
 function isNum(v: string): boolean {
-  return /^-?\d+(\.\d+)?$/.test(v.trim())
+  const s = (v ?? '').trim()
+  if (!s) return false
+  return /^-?\d+(\.\d+)?$/.test(s)
 }
 
 function parseBool(v: string): boolean {

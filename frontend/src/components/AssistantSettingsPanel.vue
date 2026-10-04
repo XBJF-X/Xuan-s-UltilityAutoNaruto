@@ -35,9 +35,10 @@ const settings = reactive<any>({
 });
 // 已保存的键位（独立维护，不进入 reactive 的固定键集合）
 const keymapSaved = ref<any[] | null>(null);
+// U2 控制方案已弃用：控制模式只剩 MiniTouch 一种实现，旧配置里的 U2(1) 由后端
+// 统一路由到 MiniTouch（backend/core/legacy/Control/__init__.py: resolve_control_mode）
 const CONTROL_MODES = [
-  { label: "MiniTouch（高性能推荐）", value: 0 },
-  { label: "U2", value: 1 },
+  { label: "MiniTouch（唯一可用）", value: 0 },
 ];
 const SCREEN_MODES = [
   { label: "DroidCastRaw", value: 0 },
@@ -385,7 +386,8 @@ function confirmKeymap() {
                   style="width: 250px"
                 />
                 <span class="field-desc"
-                  >控制模式决定了模拟器按键/触摸的注入方式（U2：性能适中；MiniTouch：高性能推荐）</span
+                  >控制模式已统一为 MiniTouch（原 U2 方案已弃用，旧配置会自动路由到
+                  MiniTouch）</span
                 >
               </div>
             </n-form-item>

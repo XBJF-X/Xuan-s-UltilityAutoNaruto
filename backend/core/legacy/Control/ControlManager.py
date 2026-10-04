@@ -3,7 +3,7 @@ import threading
 from typing import Any
 
 from backend.core.legacy.Config import Config
-from backend.core.legacy.Control import Control, ControlMode
+from backend.core.legacy.Control import Control, ControlMode, resolve_control_mode
 
 
 class ControlManager:
@@ -15,7 +15,9 @@ class ControlManager:
     def __init__(self, config: Config, parent_logger=None):
         self.logger = parent_logger.getChild(self.__class__.__name__) if parent_logger else logging.getLogger(self.__class__.__name__)
         self.config = config
-        self.control_mode = ControlMode(self.config.get_config('控制模式'))
+        # U2 已弃用：存量配置里的 1 在这里被归一化为 MiniTouch（见 resolve_control_mode）
+        self.control_mode = resolve_control_mode(
+            self.config.get_config('控制模式'), self.logger)
         self._control_lock = threading.RLock()
         self.current_control: Control | Any = self.create_control_instance()
 
@@ -30,20 +32,16 @@ class ControlManager:
             return (self.current_control is not None) and self.current_control.ready
 
     def create_control_instance(self):
-        """初始化控制实例"""
+        """初始化控制实例（U2 已弃用，统一创建 MiniTouch）。"""
         self.logger.info(f"当前控制模式：[{self.control_mode.name}]")
         try:
-            # 根据模式创建对应子类（懒导入：避免未安装 minidevice 时阻塞调度器启动）
-            if self.control_mode == ControlMode.U2:
-                from backend.core.legacy.Control.U2 import U2
-                control = U2(self.config, self.logger)
-            else:
-                # MiniTouch 模式：初始化失败时直接抛出，不降级到 U2——
-                # 降级会导致"配置为 MiniTouch、实际实例为 U2"，Clicker 连点
-                # 按配置走 MiniTouch 分支却拿到 U2 实例调用 multi_tap 崩溃刷屏；
-                # 失败由上层 Device.device_ready / 调度器启动检测拦截，停止调度器。
-                from backend.core.legacy.Control.MiniTouch import MiniTouch
-                control = MiniTouch(self.config, self.logger)
+            # 懒导入：避免未安装 minidevice 时阻塞调度器启动。
+            # MiniTouch 初始化失败时直接抛出，不降级——
+            # 降级会导致"配置为 MiniTouch、实际实例为 U2"，Clicker 连点
+            # 按配置走 MiniTouch 分支却拿到 U2 实例调用 multi_tap 崩溃刷屏；
+            # 失败由上层 Device.device_ready / 调度器启动检测拦截，停止调度器。
+            from backend.core.legacy.Control.MiniTouch import MiniTouch
+            control = MiniTouch(self.config, self.logger)
 
             if control.ready:
                 self.logger.info(f"[{self.control_mode.name}]控制实例初始化完成")
@@ -57,7 +55,12 @@ class ControlManager:
             return None
 
     def switch_control_mode(self, new_mode: ControlMode):
-        """切换控制模式（核心方法）"""
+        """切换控制模式（核心方法）。
+
+        U2 已弃用：请求切到弃用模式时归一化为 MiniTouch（等价于 MiniTouch 模式下的
+        空操作），不再创建 U2 实例。
+        """
+        new_mode = resolve_control_mode(new_mode, self.logger)
         self.logger.info(f"即将切换控制模式：[{new_mode.name}]")
         if new_mode == self.control_mode:
             self.logger.info(f"已经是[{new_mode.name}]模式")
