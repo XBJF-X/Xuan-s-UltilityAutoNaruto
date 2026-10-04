@@ -787,3 +787,41 @@ update_service 平台知识导出/状态与锁同一对象）。
    → 结论：等该脚本修复后再改写；改为行为断言的做法是复用文件内 `_make_service()`
    替身、替换 `_ensure_no_stale_contacts` / `_wait_clicker_stopped` 为记录器后调用
    `start()` / `stop()` 断言调用顺序与原因字符串，并用单测名单独运行验证。
+
+### 7.26 阶段 3~5 收官（2026-10-04）
+
+**① `scan()` → `plan → execute(commands)`（阶段 4 剩余项）**
+- `ScanLoop.plan(now)` **纯决策不改状态**，产出 `mark_ready` / `start` / `preempt` / `notify_idle` 命令；
+  `execute(commands)` 依序落状态、记日志、回调、启停执行层
+- 等价性：`plan` 用局部 `due_tasks` **模拟状态迁移**后再调 `planner.pick_next`，
+  保持"本 tick 刚就绪的任务也参与本轮挑选"（唯一理论差异：优先级与 create_time 完全相同者，不可达）
+- 新增 `test_scene/verify_scan_plan_execute.py` 12 项（plan 纯净性 / 同 tick 挑选 / 抢占 /
+  事件顺序 / 防重入与异常复位 / 源码防回退）；`verify_force_preempt`(12)、`verify_task_schedules`(22)、
+  `verify_phase0_hardening`(16) 等全绿
+
+**② `getsource` 断言处理（阶段 4 剩余项）**
+| 位置 | 处理 |
+|---|---|
+| `verify_touch_residue_fix.py`（唯一真正针对 `SchedulerService`） | stop 半部 → **行为断言**（复用 `_make_service()` 记录器驱动 `stop()`）；start 半部保留源码断言并写明理由（127 行集成路径，行为面由 e2e 冒烟覆盖）。按单测名可独立验证通过 |
+| `verify_task_scene_stuck_param.py` | 源码断言**删除**（同一行为已由该文件 9 个真实 Watchdog 用例覆盖，源码断言只阻碍重构） |
+| `verify_recognizer_pruning.py` | **保留**：目标是 `api/resource.py`（本次重构未触及），且属 HEAVY 脚本（需完整资源库）；改写需拉起资源库与多条变更路径 |
+
+**③ 前端目录化补齐（阶段 5 最后一项）**
+`api/http.ts → api/http/index.ts`、`api/ws.ts → api/ws/index.ts`、`api/wsProtocol.ts → api/ws/protocol.ts`、
+`stores/app.ts → stores/app/index.ts`、`stores/snapshot.ts → stores/app/snapshot.ts`，
+全部按"目录 index 解析"迁移，**既有 `@/api/ws`、`@/api/http`、`@/stores/app` 调用点零改动**；
+3 个 TS 直跑脚本的 import 路径随之更新。
+
+**最终形态**
+```
+backend/api/utils/         client(门面) + {common,deps,logs,update,feedback,system}.py（薄路由/再导出）
+backend/services/          {log,feedback,update}_service.py + scheduler/（7 个协作者）
+frontend/src/api/          client.ts(barrel) + http/ + ws/ + endpoints/
+frontend/src/composables/  useConfigs / useTaskTree / useSchedulerControl / useStartupChecks
+frontend/src/stores/app/   index.ts + snapshot.ts
+```
+
+**总验证**：`compileall` OK；回归批 **40/40 PASS**（含 6 个新增脚本：module_consolidation、
+emulator_env、base_task_consolidation、layering_rules(28 项)、task_state_store、layout_composables、
+api_endpoints_split、enable_single_write、scan_plan_execute）；`tsc` OK；`vite build` OK；
+`verify_ws_dual_write_e2e.py` 3/3；HEAVY 基线脚本始终 2 failures / 23 errors（与阶段 4 起点一致，无新增）。
