@@ -722,3 +722,29 @@ HEAVY 基线脚本 `verify_touch_residue_fix.py` 始终 2 failures / 23 errors�
 平台选择/PAT/版本比较/完整性校验/热更新与大更新下载安装/进度状态）与
 `feedback_service`（反馈打包 + 文件夹选择 + 打开日志目录）；两者都需把 `_UPDATE_STATUS`/
 `_FEEDBACK_STATUS` 状态与锁一并迁到服务层，并保持 `api.utils.*` 再导出与既有测试 patch 目标。
+
+### 7.23 阶段 3.4（后半）第二/三批：反馈打包 + 更新平台知识下沉
+
+| 项 | 变化 |
+|---|---|
+| 新增 `services/feedback_service.py`（260 行） | `collect_options` / `start_package`（running 互斥 + 起线程）/ `run_package`（原 `_do_feedback_package`）/ `set_status` / `snapshot` / `FEEDBACK_STATUS` + 独立锁 |
+| `api/utils/feedback.py` | 239 → **53 行**（代码 42 行），只做参数映射；再导出 `_do_feedback_package` / `_set_feedback_status` |
+| 新增 `services/update_service.py`（167 行，第一批） | GitHub/Gitee 平台配置与 auto 降级顺序、`get_update_source`、`get_github_pat`（值绝不入日志/响应）、`platform_headers`、`github_pat_configured`、`select_platforms`、`api_url`、`get_releases_url`、`UPDATE_STATUS` + `STATUS_LOCK` + `UPDATE_VERIFY_TLS`、`set_update_status` / `update_status_snapshot` |
+| `api/utils/common.py` | 246 → **162 行**：上述名字改为从服务同名再导出（状态字典/锁为**同一对象**） |
+
+**兼容性（测试断言 `is` 同一对象）**：`utils_api._FEEDBACK_STATUS`（测试会就地
+`clear()`/`update()`）、`utils_api._do_feedback_package`、`utils_api._UPDATE_STATUS`、
+`utils_api._STATUS_LOCK`、`utils_api._get_releases_url`、`utils_api._github_pat_configured`；
+`deps.check_dependency` 的 `release_url` 取值路径不变（实测仍返回 GitHub Releases 地址）。
+顺带把打包时"单文件写入失败静默跳过"改为 warning 留痕后继续（行为不变）。
+
+**守门**：`verify_layering_rules.py` 扩到 25 项（新增 feedback_service 导出/路由薄壳/状态同一对象、
+update_service 平台知识导出/状态与锁同一对象）。
+
+**阶段 3.4 后半剩余（下一轮）**：`api/utils/update.py`（649 行）的
+`check_update`（提交历史比对，~140 行）、`_check_full_update`、`_read_local_sha`、
+`_write_restart_request`、`_backup_for_hot_update`、`_verify_update_integrity`、
+`_get_latest_sha`、`_do_apply_update` / `_do_apply_release_update`（下载→解压→覆盖→写重启请求）
+继续搬进 `services/update_service.py`，`update.py` 收敛为薄路由 + 再导出；
+迁移要点：`_UPDATE_EXCLUDE_DIRS`/`_UPDATE_EXCLUDE_FILES`/`_SHA_SUFFIX_RE` 随逻辑走，
+`requests` 仍须在 `backend.api.utils` 命名空间可见（既有 `mock.patch("backend.api.utils.requests.get")`）。
