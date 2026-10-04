@@ -306,6 +306,54 @@ class ServiceLayerSinkingTest(unittest.TestCase):
         self.assertIs(utils_pkg._get_releases_url, update_service.get_releases_url)
         self.assertIs(utils_pkg._github_pat_configured, update_service.github_pat_configured)
 
+    def test_update_service_full_api(self):
+        """阶段 3.4（后半）第四批：检查更新 + 应用更新链路已全部下沉"""
+        from backend.services import update_service
+        for name in ("check_update", "check_full_update", "read_local_sha",
+                     "write_restart_request", "backup_for_hot_update",
+                     "verify_update_integrity", "get_latest_sha",
+                     "start_apply_update", "start_apply_release_update",
+                     "do_apply_update", "do_apply_release_update",
+                     "UPDATE_EXCLUDE_DIRS", "UPDATE_EXCLUDE_FILES"):
+            with self.subTest(name=name):
+                self.assertTrue(hasattr(update_service, name),
+                                f"update_service 缺少 {name}")
+
+    def test_update_route_is_thin_adapter(self):
+        src = (_PROJECT_ROOT / "backend" / "api" / "utils" / "update.py").read_text(
+            encoding="utf-8")
+        code = "\n".join(line.split("#", 1)[0] for line in src.splitlines())
+        parts = code.split('"""')
+        code = "".join(parts[i] for i in range(0, len(parts), 2))
+        for moved in ("def _do_apply_update", "def _do_apply_release_update",
+                      "def _verify_update_integrity", "requests.get(",
+                      "zipfile", "shutil.copy2", "def check_update():\n    \"\"\"检查更新：对比本地"):
+            with self.subTest(moved=moved):
+                self.assertNotIn(moved, code, f"{moved} 应已下沉到 update_service")
+        # import 列表（含再导出）+ logger + router + 6 个路由（依赖检查那段是编排）
+        self.assertLessEqual(len(code.splitlines()), 110,
+                             f"路由仍偏厚：{len(code.splitlines())} 行代码")
+
+    def test_update_reexports_match_service(self):
+        import backend.api.utils as utils_pkg
+        from backend.services import update_service
+        for api_name, service_name in (
+            ("_check_full_update", "check_full_update"),
+            ("_read_local_sha", "read_local_sha"),
+            ("_write_restart_request", "write_restart_request"),
+            ("_backup_for_hot_update", "backup_for_hot_update"),
+            ("_verify_update_integrity", "verify_update_integrity"),
+            ("_get_latest_sha", "get_latest_sha"),
+            ("_do_apply_update", "do_apply_update"),
+            ("_do_apply_release_update", "do_apply_release_update"),
+            ("_set_update_status", "set_update_status"),
+            ("_SHA_SUFFIX_RE", "_SHA_SUFFIX_RE"),
+        ):
+            with self.subTest(api=api_name):
+                self.assertIs(getattr(utils_pkg, api_name),
+                              getattr(update_service, service_name),
+                              f"{api_name} 必须与服务的 {service_name} 是同一对象")
+
 
 class DependencyCheckRegistryTest(unittest.TestCase):
     """接口行为：#/dependency-check 从登记表读失败模块"""

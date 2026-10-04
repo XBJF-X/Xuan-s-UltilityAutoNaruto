@@ -98,7 +98,6 @@ from backend.api.utils.logs import (
 from backend.api.utils import logs  # noqa: F401
 
 from backend.api.utils.update import (
-    _SHA_SUFFIX_RE,
     _UPDATE_EXCLUDE_DIRS,
     _UPDATE_EXCLUDE_FILES,
     _backup_for_hot_update,
@@ -118,6 +117,9 @@ from backend.api.utils.update import (
     update_status,
 )
 from backend.api.utils import update  # noqa: F401
+# 阶段 3.4（后半）：完整性校验用的 SHA 后缀正则随逻辑下沉到 update_service，
+# 这里从服务再导出，保持 `backend.api.utils._SHA_SUFFIX_RE` 可用
+from backend.services.update_service import _SHA_SUFFIX_RE  # noqa: F401
 
 from backend.api.utils.feedback import (
     _do_feedback_package,

@@ -123,49 +123,56 @@ class UpdateSecurityTest(unittest.TestCase):
         import re
         from backend.api import utils as utils_api
         self.assertIs(utils_api._UPDATE_VERIFY_TLS, True)
-        # 阶段 3.4：backend/api/utils.py 已拆分为包，检查整包源码（更新链路在 update.py）
+        # 阶段 3.4：backend/api/utils.py 已拆分为包；阶段 3.4（后半）：更新链路（含全部
+        # requests 调用）已下沉到 services/update_service.py —— 两处源码都要扫
         utils_pkg = Path(_PROJECT_ROOT) / "backend" / "api" / "utils"
-        src = "\n".join(p.read_text(encoding="utf-8")
-                        for p in sorted(utils_pkg.glob("*.py")))
+        sources = [p.read_text(encoding="utf-8") for p in sorted(utils_pkg.glob("*.py"))]
+        service = Path(_PROJECT_ROOT) / "backend" / "services" / "update_service.py"
+        sources.append(service.read_text(encoding="utf-8"))
+        src = "\n".join(sources)
         # 去掉注释后再找所有 verify= 实参，确保没有裸 False（注释里提到旧实现不算）
         code = "\n".join(line.split("#", 1)[0] for line in src.splitlines())
         values = set(re.findall(r"verify=([\w.]+)", code))
-        self.assertEqual(values, {"_UPDATE_VERIFY_TLS"},
-                         f"所有 requests 调用必须走 TLS 校验常量，实际: {values}")
+        # 常量在 api 层叫 _UPDATE_VERIFY_TLS、在服务层叫 UPDATE_VERIFY_TLS；两者都允许，
+        # 但不得出现裸 True/False 或其它表达式
+        allowed = {"UPDATE_VERIFY_TLS", "_UPDATE_VERIFY_TLS"}
+        self.assertTrue(values, "必须能扫描到 requests 的 verify= 参数（否则扫描范围失效）")
+        self.assertTrue(values <= allowed,
+                        f"所有 requests 调用必须走 TLS 校验常量，实际: {values}")
 
     def test_integrity_binds_to_commit(self):
         from backend.api import utils as utils_api
-        # 阶段 3.4：_verify_update_integrity 与 _get_latest_sha 都在
-        # backend.api.utils.update 里，patch 必须落在该子模块命名空间
-        # （在包上赋值不会影响已定义函数内部的全局查找）
-        from backend.api.utils import update as update_mod
+        # 阶段 3.4（后半）：完整性校验与「最新 SHA」查询都下沉到
+        # backend/services/update_service.py，patch 必须落在该模块命名空间
+        # （在包或 api 子模块上赋值不会影响服务内已定义函数的全局查找）
+        from backend.services import update_service as service_mod
         tmp = Path(tempfile.mkdtemp(prefix="xuan_update_"))
         try:
             sha = "a1b2c3d4e5f60718293a4b5c6d7e8f9012345678"
             good = tmp / f"repo-{sha[:7]}"
             good.mkdir()
-            orig = update_mod._get_latest_sha
-            update_mod._get_latest_sha = lambda: sha
+            orig = service_mod.get_latest_sha
+            service_mod.get_latest_sha = lambda: sha
             try:
-                update_mod._verify_update_integrity(good, {"key": "github", "label": "GitHub"})
+                service_mod.verify_update_integrity(good, {"key": "github", "label": "GitHub"})
                 bad = tmp / "repo-fffffff"
                 bad.mkdir()
                 with self.assertRaises(RuntimeError):
-                    update_mod._verify_update_integrity(
+                    service_mod.verify_update_integrity(
                         bad, {"key": "github", "label": "GitHub"})
                 # 目录名不含 sha（Gitee archive）→ 只告警放行，不阻断更新
                 plain = tmp / "repo-v17"
                 plain.mkdir()
-                update_mod._verify_update_integrity(
+                service_mod.verify_update_integrity(
                     plain, {"key": "github", "label": "GitHub"})
             finally:
-                update_mod._get_latest_sha = orig
+                service_mod.get_latest_sha = orig
         finally:
             import shutil
             shutil.rmtree(tmp, ignore_errors=True)
         # 包级再导出仍可用（旧调用点兼容）
         self.assertIs(utils_api._verify_update_integrity,
-                      update_mod._verify_update_integrity)
+                      service_mod.verify_update_integrity)
 
 
 class FeedbackPathTest(unittest.TestCase):
