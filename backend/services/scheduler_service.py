@@ -41,10 +41,13 @@ _SCREEN_MODE_NAMES = {0: "DroidCastRaw", 1: "WindowCapture", 2: "U2", 3: "MuMu",
 from backend.services.scheduler.constants import IDLE_NOTIFY_THRESHOLD  # noqa: E402
 
 # ===== 立即执行的触发来源 =====
-# 用户点「执行」（手动）：默认做**窗口预检**，窗口外拒绝并返回原因（可显式强制忽略）
-SOURCE_MANUAL = "manual"
-# 任务结束后激活另一任务（`BaseTask._activate_another_task`）：窗口守卫见 _skip_expired_activation
-SOURCE_ACTIVATION = "activation"
+# 常量唯一实现已移至 services/scheduler/constants.py（阶段 4.4b：ActivationManager 也要用）；
+# 此处保留同名引用，3 个测试脚本 `from backend.services.scheduler_service import SOURCE_*`
+# 与既有调用点不受影响
+from backend.services.scheduler.constants import (  # noqa: E402
+    SOURCE_ACTIVATION,
+    SOURCE_MANUAL,
+)
 
 
 # ===== 全局共享 SceneGraph 单例 =====
@@ -451,6 +454,15 @@ class SchedulerService:
     def _temp_activated_tasks(self, value: dict) -> None:
         # 既有测试会直接整体替换（object.__new__ 构造的服务），故提供 setter
         self.activation_manager.temp_activated_tasks = dict(value)
+
+    @property
+    def _pending_activate_tasks(self) -> List[str]:
+        """待激活任务登记（阶段 4.4b 起由 ActivationManager 持有）"""
+        return self.activation_manager.pending_activate_tasks
+
+    @_pending_activate_tasks.setter
+    def _pending_activate_tasks(self, value: List[str]) -> None:
+        self.activation_manager.pending_activate_tasks = list(value)
 
     # ================================================================
     # 设备运行时（实现见 services/scheduler/device_runtime.py，阶段 4.1 抽出）
@@ -1105,113 +1117,22 @@ class SchedulerService:
 
     def _on_task_activate_request(self, task_name: str,
                                   next_execute_time=None):
-        """其他任务请求激活指定任务。
-
-        两种方式（由 next_execute_time 区分）：
-        - 不传时间：登记到待激活列表，当前任务结束后统一激活并立即执行（原行为）；
-        - 传时间：只把该任务的下次执行时间设为指定时刻（未启用时临时启用），
-          当前任务不需要停留等待，到点后由扫描循环自然执行。
-
-        登记式激活的原因：原先在执行线程中直接 execute_task_now，完全依赖扫描循环时序
-        去捡起该任务（扫描可能恰好错过、且抢占判断可能将其延后），鲁棒性不足；临时预设
-        模式下扫描只遍历预设列表，被激活的临时任务甚至永远不会执行。改为登记后在任务
-        完成回调中统一处理，时机确定、无需与扫描线程竞争。
-        """
-        if next_execute_time is not None:
-            self._schedule_task_activation(task_name, next_execute_time)
-            return
-        if task_name not in self._pending_activate_tasks:
-            self._pending_activate_tasks.append(task_name)
-            self.logger.info(f"{task_name} 已登记待激活（当前任务结束后立即执行）")
-        else:
-            self.logger.debug(f"{task_name} 已在待激活列表中，忽略重复激活请求")
+        """其他任务请求激活指定任务——实现见 ActivationManager"""
+        return self.activation_manager.on_task_activate_request(
+            task_name, next_execute_time)
 
     def _schedule_task_activation(self, task_name: str, next_execute_time) -> None:
-        """指定被激活任务的下次执行时间（不登记立即执行，当前任务无需停留等待）。"""
-        if next_execute_time.tzinfo is None:
-            next_execute_time = next_execute_time.replace(
-                tzinfo=ZoneInfo("Asia/Shanghai"))
-        task = self.task_queue.get_task(task_name)
-        if task is None:
-            self.logger.warning(
-                f"被激活任务 {task_name} 不在任务队列中，仅写入下次执行时间")
-        # 未启用的任务会被扫描循环跳过（TaskPlanner.is_due 要求 is_activated），
-        # 需临时启用才能到点执行；执行结束后会恢复原状态
-        self._ensure_task_runnable(task_name)
-        self.config.set_task_base_config(task_name, "下次执行时间",
-                                        int(next_execute_time.timestamp()))
-        self.logger.info(
-            f"{task_name} 已指定下次执行时间："
-            f"{next_execute_time.strftime('%Y-%m-%d %H:%M:%S')}"
-            "（当前任务无需等待，到点自动执行）")
-        if task is not None:
-            self._sync_task_state(task)
-        self._push_snapshot()
-        # 指定时间已到/已过：立即触发一次扫描，让它尽快进入执行
-        if next_execute_time <= datetime.now(ZoneInfo("Asia/Shanghai")):
-            self.scan()
+        """指定被激活任务的下次执行时间——实现见 ActivationManager"""
+        return self.activation_manager.schedule_task_activation(
+            task_name, next_execute_time)
 
     def _process_pending_activations(self):
-        """任务结束回调中处理待激活列表：激活登记的任务并立即尝试启动。"""
-        if not self._pending_activate_tasks:
-            return
-        pending = list(self._pending_activate_tasks)
-        self._pending_activate_tasks.clear()
-        now = datetime.now(ZoneInfo("Asia/Shanghai"))
-        for task_name in pending:
-            task = self.task_queue.get_task(task_name)
-            if task is None:
-                self.logger.warning(f"待激活任务 {task_name} 不在任务队列中，忽略")
-                continue
-            # 窗口守卫：目标任务的可执行窗口已过期时不激活（否则会被临时启用并空转到
-            # 最长执行时长，期间调度器无法执行其它任务，见 _skip_expired_activation）
-            if self._skip_expired_activation(task, now):
-                continue
-            self.execute_task_now(task_name, enable_if_needed=True,
-                                  source=SOURCE_ACTIVATION)
-            if self.run_once:
-                # 临时预设模式：被激活任务插入待执行列表最前，下一轮扫描优先执行
-                if task_name in self.pending_once_tasks:
-                    self.pending_once_tasks.remove(task_name)
-                self.pending_once_tasks.insert(0, task_name)
-        # 同步扫描一次：让被激活任务立即进入执行（_scanning 标志防重入，
-        # 若扫描线程正在扫描则本次返回，由下一轮扫描兜底）
-        self.scan()
+        """任务结束回调中处理待激活列表——实现见 ActivationManager"""
+        return self.activation_manager.process_pending_activations()
 
     def _skip_expired_activation(self, task, now: datetime) -> bool:
-        """跨任务"立即激活"前的窗口守卫：目标任务当前不可执行则跳过激活。
-
-        【要塞争夺战/天地战场】执行结束（含超窗口/超最长时长被强制结束）后会自动
-        激活【叛忍来袭】，而"立即执行/被激活"按设计会跳过窗口校验
-        （`BaseTask._should_skip_window_check`）。若这两个任务自己就拖到了叛忍窗口
-        （周三 21:00~22:00 / 周六 20:00~21:00）之后，照旧激活会让叛忍来袭被临时启用
-        并带着执行意图空转——游戏里已无叛忍入口，任务会一直重试到最长执行时长
-        （45 分钟），期间调度器无法执行其它任务（表现为"卡死"）。
-
-        因此这里先用 `BaseTask.probe_execute_window(now)` 探测目标任务的排期窗口：
-        不在窗口内（已过期 / 还没开始）→ 不启用、不登记立即执行，交由任务自身的排期
-        在下一个周期处理，并记一条 WARNING 说明原因。
-
-        Returns:
-            bool: True 表示因窗口不可执行跳过了本次激活
-        """
-        probe = getattr(task, "probe_execute_window", None)
-        if not callable(probe):
-            return False
-        try:
-            runnable, state = probe(now)
-        except Exception as e:
-            # 排期计算异常（任务参数/资源缺失等）不应阻断激活：留痕后按原行为继续
-            self.logger.warning(
-                f"探测 {task.task_name} 可执行窗口失败，按原行为激活: {e}")
-            return False
-        if runnable:
-            return False
-        self.logger.warning(
-            f"[{task.task_name}] {state}"
-            f"（{getattr(task, 'schedule_description', '未知排期')}），"
-            "跳过本次激活（不启用、不立即执行）")
-        return True
+        """跨任务"立即激活"前的窗口守卫——实现见 ActivationManager"""
+        return self.activation_manager.skip_expired_activation(task, now)
 
     # ================================================================
     # 超时监视器：告警信号处理

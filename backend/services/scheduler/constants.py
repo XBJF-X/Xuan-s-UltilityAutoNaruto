@@ -10,4 +10,10 @@ from datetime import timedelta
 # 视为本段时间的执行告一段落，向用户发送一次桌面通知
 IDLE_NOTIFY_THRESHOLD = timedelta(hours=1)
 
-__all__ = ["IDLE_NOTIFY_THRESHOLD"]
+# ===== 立即执行的触发来源 =====
+# 用户点「执行」（手动）：默认做**窗口预检**，窗口外拒绝并返回原因（可显式强制忽略）
+SOURCE_MANUAL = "manual"
+# 任务结束后激活另一任务（`BaseTask._activate_another_task`）：窗口守卫见 skip_expired_activation
+SOURCE_ACTIVATION = "activation"
+
+__all__ = ["IDLE_NOTIFY_THRESHOLD", "SOURCE_MANUAL", "SOURCE_ACTIVATION"]
