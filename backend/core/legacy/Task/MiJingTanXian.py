@@ -63,7 +63,12 @@ class MiJingTanXian(BaseTask):
         if tzq is not None:
             self.logger.info(f"挑战券为 {tzq} ，继续执行")
         else:
-            raise TaskCompleted("识别剩余挑战券数量失败（已重试 %d 次），按未知处理：不再尝试出战",self.TZQ_OCR_ATTEMPTS)
+            # 注意：异常只接受 1 个参数——旧实现传了 2 个（消息 + 次数），运行时会抛
+            # TypeError 并被 BaseTask 的兜底分支判成"未捕获异常"（正常完成 → 错误截图 +
+            # 冷却重试），故此处必须用 f-string 拼成单参数。
+            raise TaskCompleted(
+                f"识别剩余挑战券数量失败（已重试 {self.TZQ_OCR_ATTEMPTS} 次），"
+                f"按未知处理：不再尝试出战")
         self.operationer.click_and_wait("出战")
         self.bool_click = True
         return False

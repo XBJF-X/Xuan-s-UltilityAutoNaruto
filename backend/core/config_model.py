@@ -3,10 +3,14 @@ import copy
 import json
 import logging
 import os
+import threading
 from pathlib import Path
 from typing import Dict, Any
 
 from backend.utils import get_real_path
+
+# 写盘串行化：任务线程 / 扫描线程 / 事件循环三处都会写同一个 Config_N.json
+_CONFIG_WRITE_LOCK = threading.Lock()
 
 
 class Config:
@@ -35,9 +39,12 @@ class Config:
         logger 名含 Config_N（parent_logger.getChild(config_id)），
         供 WebSocketLogHandler 按 config_id 归类。
         """
-        from backend.log_setup import get_config_file_handler
+        from backend.log_setup import get_config_file_handler, bind_config_id
         from backend.api.ws import get_ws_log_handler
 
+        # 显式绑定 config_id（副本配置 id 形如 Config_1_副本，靠 logger 名正则会被错判成
+        # 源配置；绑定后 WebSocket 推送直接读 record.config_id，正则仅作兜底）
+        bind_config_id(self.logger, self.config_path.stem)
         username = self.setting_dics.get("用户名") or "unknown"
         file_handler = get_config_file_handler(username)
         if file_handler not in self.logger.handlers:
@@ -166,7 +173,7 @@ class Config:
             return {
                 "配置文件版本": "V3",
                 "调试模式": 1,
-                "控制模式": 1,
+                "控制模式": 0,
                 "任务": {}
             }
 
@@ -241,7 +248,15 @@ class Config:
             self.setting_dics.pop(key, None)
         self.logger.debug("配置合并完成")
 
-    def save_config_to_file(self):
+    def save_config_to_file(self) -> bool:
+        """原子写回配置文件（tmp + os.replace），返回是否成功。
+
+        旧实现 `open(path, 'w')` 先截断再写，而写入方有任务线程（`BaseTask` 写下次执行
+        时间）、扫描线程与 FastAPI 事件循环三条路径 → 并发写会交错/截断，`Config_N.json`
+        整体损坏（`ConfigService.list_configs` 遇坏 JSON 会静默跳过该配置，表现为
+        "配置消失"）。这里改为同目录临时文件 + 原子替换，并用模块级锁串行化。
+        """
+        tmp_path = self.config_path.with_name(self.config_path.name + ".tmp")
         try:
             config_data = copy.deepcopy(self.setting_dics)
             new_content = json.dumps(config_data, ensure_ascii=False, indent=4)
@@ -250,10 +265,22 @@ class Config:
                 try:
                     with open(self.config_path, 'r', encoding='utf-8') as f:
                         if f.read() == new_content:
-                            return
-                except Exception:
-                    pass
-            with open(self.config_path, 'w', encoding='utf-8') as f:
-                f.write(new_content)
+                            return True
+                except OSError as e:
+                    self.logger.debug(f"读取配置失败（将重写）: {e}")
+            with _CONFIG_WRITE_LOCK:
+                with open(tmp_path, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(tmp_path, self.config_path)
+            return True
         except Exception as e:
+            # 原子写失败时清理临时文件，避免残留 .tmp
+            try:
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+            except OSError as cleanup_error:
+                self.logger.warning(f"清理配置临时文件失败: {cleanup_error}")
             self.logger.error(f"保存配置失败: {str(e)}")
+            return False

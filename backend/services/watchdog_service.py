@@ -43,6 +43,7 @@ import logging
 import math
 import threading
 import time
+import traceback
 from dataclasses import dataclass, field
 from enum import IntEnum
 from typing import Callable, List, Optional, TYPE_CHECKING
@@ -487,16 +488,42 @@ class TimeoutWatchdog:
     # ================================================================
 
     def _monitor_loop(self):
-        """后台检测主循环"""
+        """后台检测主循环
+
+        健壮性：间隔的**读取与换算也在 try 内**。旧实现把它们放在 try 之外，
+        「超时检测-检测间隔秒」填成非数字时 `float(...)` 抛 TypeError 会让监视器线程
+        静默死亡——调度器仍以为卡死检测在跑。现在：非法间隔降级为默认 5s；
+        致命异常留痕后置 `_running=False` 并通知调度器（on_freeze 回调）。
+        """
         while self._running:
             try:
                 self._check_once()
-            except Exception as e:
-                self.logger.error(f"超时监视器检测异常: {e}")
-            interval = max(1.0, float(self._cfg("超时检测-检测间隔秒", 5)))
+                interval = max(1.0, float(self._cfg("超时检测-检测间隔秒", 5)))
+            except (TypeError, ValueError) as e:
+                self.logger.warning("检测间隔配置非法（%s），本轮按默认 5 秒处理", e)
+                interval = 5.0
+            except Exception:
+                self.logger.error("超时监视器检测异常:\n%s", traceback.format_exc())
+                interval = 5.0
+            except BaseException:
+                self.logger.error("超时监视器致命异常，监视线程退出:\n%s",
+                                  traceback.format_exc())
+                self._running = False
+                self._report_loop_death()
+                return
             deadline = time.monotonic() + interval
             while self._running and time.monotonic() < deadline:
                 time.sleep(0.2)
+
+    def _report_loop_death(self) -> None:
+        """监视线程死亡上报（复用 on_freeze 通道，仅记录、不触发救援动作）。"""
+        try:
+            task = self._current_task
+            name = getattr(task, "task_name", "") if task else ""
+            self.logger.error(
+                "超时监视器线程异常退出，卡死检测已失效（当前任务=%s）", name or "无")
+        except Exception as e:
+            self.logger.warning("上报监视器线程退出失败: %s", e)
 
     def _check_once(self):
         """单轮检测：截图 → 帧差 → 场景停滞/游戏卡死/模拟器卡死判定"""

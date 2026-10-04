@@ -34,9 +34,12 @@ class Config:
         logger 名含 Config_N（parent_logger.getChild(config_id)），
         供 WebSocketLogHandler 按 config_id 归类。
         """
-        from backend.log_setup import get_config_file_handler
+        from backend.log_setup import get_config_file_handler, bind_config_id
         from backend.api.ws import get_ws_log_handler
 
+        # 与 backend/core/config_model.py 保持同一行为：显式绑定 config_id，
+        # 避免副本配置（Config_N_副本）的日志被正则错判到源配置
+        bind_config_id(self.logger, self.config_path.stem)
         username = self.setting_dics.get("用户名") or "unknown"
         file_handler = get_config_file_handler(username)
         if file_handler not in self.logger.handlers:
@@ -166,7 +169,7 @@ class Config:
             return {
                 "配置文件版本": "V3",
                 "调试模式": 1,
-                "控制模式": 1,
+                "控制模式": 0,
                 "任务": {}
             }
 

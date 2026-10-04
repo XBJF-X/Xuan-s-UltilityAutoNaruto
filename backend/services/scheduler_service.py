@@ -3,6 +3,7 @@ import heapq
 import logging
 import threading
 import time
+import traceback
 from datetime import datetime, timedelta
 from typing import Optional, Callable, List, TypeVar, Generic, Dict
 from zoneinfo import ZoneInfo
@@ -133,6 +134,10 @@ class SchedulerService:
                  on_snapshot: Optional[Callable] = None):
         self.logger = logging.getLogger(
             f"SchedulerService_{config.config_path.stem}")
+        # 显式绑定 config_id：副本配置（Config_N_副本）靠 logger 名正则会被错判成源配置，
+        # 导致副本日志面板空白、源面板混入副本日志（见 backend/log_setup.bind_config_id）
+        from backend.log_setup import bind_config_id
+        bind_config_id(self.logger, config.config_path.stem)
         self.config = config
         # 场景图：可传入或为 None（为 None 时 _lazy_init 使用全局共享单例，
         # 避免每个配置重复解码全部元素图——场景图构建后只读，可安全共享）
@@ -403,6 +408,53 @@ class SchedulerService:
     # 残留触点（粘滞多点触摸）自检 / 自愈
     # ================================================================
 
+    def _join_task_threads(self, tasks, timeout: float = 5.0) -> list[str]:
+        """等待任务执行线程退出（共享超时预算），返回未退出者任务名。
+
+        `stop()` 过去完全不等任务线程：设备/控制实例被 release 并置 None 后，任务线程
+        仍可能继续访问它们（脱困动作同理）。这里只保证"尽力等待 + 留痕"，不阻塞退出。
+        """
+        current = threading.current_thread()
+        deadline = time.time() + max(0.0, timeout)
+        pending: list[tuple[str, threading.Thread]] = []
+        for task in tasks:
+            thread = getattr(task, "_execution_thread", None)
+            if isinstance(thread, threading.Thread) and thread.is_alive() \
+                    and thread is not current:
+                pending.append((getattr(task, "task_name", "?"), thread))
+        still_alive: list[str] = []
+        for name, thread in pending:
+            remaining = deadline - time.time()
+            if remaining <= 0:
+                still_alive.append(name)
+                continue
+            thread.join(timeout=remaining)
+            if thread.is_alive():
+                still_alive.append(name)
+        if still_alive:
+            self.logger.warning(
+                "以下任务线程在 %.1fs 内未退出（将随进程结束）: %s",
+                timeout, still_alive)
+        return still_alive
+
+    def _shutdown_clicker_engine(self):
+        """关闭本设备的长驻连点引擎（调度器停止路径专用）。
+
+        连点引擎自 v0.17.60 起是按设备串口全局唯一、线程长驻的执行体：任务级
+        ``stop()`` 只失效会话、不销毁线程，因此调度器停止时必须显式关闭，否则
+        线程与其持有的控制实例会被保留到进程结束。
+        """
+        serial = self._device_serial()
+        if not serial:
+            return
+        try:
+            from backend.core.legacy.Control.clicker_engine import (
+                shutdown_device_clickers,
+            )
+            shutdown_device_clickers(serial, self.logger)
+        except Exception as e:
+            self.logger.debug(f"关闭连点引擎失败（不影响停止流程）: {e}")
+
     def _device_serial(self) -> str:
         """当前配置的串口（供残留触点自检/清理使用，取不到时返回空串）。"""
         serial = ""
@@ -596,12 +648,12 @@ class SchedulerService:
             self.running = False
         # 清空未处理的待激活任务登记（调度器已停止，无需再激活）
         self._pending_activate_tasks.clear()
-        # 临时启用的任务在停机时不写回配置（避免停止过程产生额外写入），仅清除登记
-        if self._temp_activated_tasks:
-            self.logger.warning(
-                f"调度器停止，以下临时启用的任务保持当前启用状态："
-                f"{list(self._temp_activated_tasks)}")
-        self._temp_activated_tasks.clear()
+        # 临时启用的任务必须在停机时**恢复原状态**：登记项 `False` 表示"原本未激活"，
+        # 而 `_restore_temp_activation` 只在"任务执行结束"回调里被调用；若调度器在
+        # 任务结束前被停止（用户手动停止 / 预设结束 / 程序退出），旧实现只 clear 登记
+        # 就把「是否启用=True」永远留在配置文件里 → 用户下次启动时该任务被正常调度，
+        # 属静默的配置副作用。这里在清登记前逐个恢复。
+        self._restore_all_temp_activations()
 
         # 记录停止原因：显式传入优先；未传入时按执行模式给默认值
         if reason:
@@ -635,6 +687,17 @@ class SchedulerService:
         # 之后任何一次点击都会同时触发所有预设连点坐标。
         for task in running_tasks:
             self._wait_clicker_stopped(task)
+
+        # 再等任务执行线程收尾（v0.17.61）：旧实现从不 join，任务线程可能在
+        # `operationer` 内继续跑，而下面已经把设备/控制实例 release 并置 None ——
+        # 告警派生的脱困线程也会对已释放的设备继续下命令。这里给一个**共享预算**，
+        # 超时只告警不阻塞退出（daemon 线程会随进程结束）。
+        self._join_task_threads(running_tasks, timeout=5.0)
+
+        # 连点引擎是按设备全局单例、线程长驻（v0.17.60），必须在释放控制实例
+        # **之前**显式关闭：否则引擎线程会在 socket 被 release 后继续尝试投递，
+        # 且该设备的下一次调度会复用一个持有已失效控制实例的引擎。
+        self._shutdown_clicker_engine()
 
         # 停止超时监视器
         if self.watchdog:
@@ -754,6 +817,39 @@ class SchedulerService:
             f"{task_name} 原为未激活，已临时启用（任务执行结束后恢复原状态）")
         return True
 
+    def _restore_all_temp_activations(self) -> None:
+        """停机时恢复全部"临时启用"任务的原激活状态（清空登记）。
+
+        与 `_restore_temp_activation` 的区别：这里不依赖任务对象（调度器停机后队列
+        已被清空/任务线程正在收尾），只按登记写回配置并同步快照；临时预设模式
+        （`config_type == "临时"`）不写盘，避免污染预设文件。
+        """
+        if not self._temp_activated_tasks:
+            return
+        pending = dict(self._temp_activated_tasks)
+        self._temp_activated_tasks.clear()
+        if self.config.config_type == "临时":
+            self.logger.info(
+                "调度器停止：临时预设模式，不写回以下任务的启用状态：%s",
+                list(pending))
+            return
+        restored: list[str] = []
+        for task_name, originally_activated in pending.items():
+            if originally_activated:
+                # 原本就是启用的（不应出现，登记只记录"原本未激活"）→ 保持不动
+                continue
+            self.config.set_task_base_config(task_name, "是否启用", False)
+            task = self.task_queue.get_task(task_name)
+            if task is not None:
+                task.force_execute_now = False
+                if getattr(task, "current_status", 2) != 2:
+                    self._update_task_status(task_name, 2)
+                self._sync_task_state(task)
+            restored.append(task_name)
+        if restored:
+            self.logger.info(
+                "调度器停止：已把临时启用的任务恢复为未激活（原为未勾选）：%s", restored)
+
     def _restore_temp_activation(self, task) -> None:
         """被跨任务激活的任务执行结束后，恢复其激活前的状态。
 
@@ -872,20 +968,50 @@ class SchedulerService:
         self._scan_thread.start()
 
     def _scan_loop(self):
-        """后台扫描循环（和原版 Scheduler 一样持续循环，按间隔等待）"""
+        """后台扫描循环（和原版 Scheduler 一样持续循环，按间隔等待）
+
+        健壮性：间隔的**读取与换算也在 try 内**。旧实现把它们放在 try 之外，用户把
+        「扫描间隔」填成非数字时 `scan_interval / 1000.0` 会抛 TypeError 让扫描线程
+        静默死亡——而 `running` 仍为 True，表现为"界面显示运行中、却永远不执行任务、
+        无任何报错"。现在：非法间隔只降级为本轮默认等待；致命异常留痕 + 上报 + 停机。
+        """
         while self.running:
             try:
                 self.scan()
-            except Exception as e:
-                import traceback
-                self.logger.error(f"扫描异常:\n{traceback.format_exc()}")
-            # 等待下一个扫描周期
-            scan_interval = self.config.get_config("扫描间隔", 1000)
-            wait_time = max(0.1, scan_interval / 1000.0)
-            # 用短循环代替 sleep 以支持快速退出
-            deadline = time.time() + wait_time
-            while self.running and time.time() < deadline:
-                time.sleep(0.05)
+                # 等待下一个扫描周期（用短循环代替 sleep 以支持快速退出）
+                scan_interval = self.config.get_config("扫描间隔", 1000)
+                try:
+                    wait_time = max(0.1, float(scan_interval) / 1000.0)
+                except (TypeError, ValueError):
+                    self.logger.warning(
+                        "扫描间隔配置非法（%r），本轮按默认 1000ms 处理", scan_interval)
+                    wait_time = 1.0
+                deadline = time.time() + wait_time
+                while self.running and time.time() < deadline:
+                    time.sleep(0.05)
+            except Exception:
+                self.logger.error("扫描异常:\n%s", traceback.format_exc())
+            except BaseException:
+                # 非 Exception 的致命异常（BaseException）绝不允许静默终结扫描循环
+                self.logger.error("扫描循环致命异常，调度器转为停止:\n%s",
+                                  traceback.format_exc())
+                self._report_loop_death("扫描循环")
+                return
+
+    def _report_loop_death(self, loop_name: str) -> None:
+        """后台循环因致命异常退出时置停机并上报，避免"显示运行中却永不干活"。"""
+        self.running = False
+        self.logger.error("%s 已退出，调度器状态置为停止", loop_name)
+        try:
+            if self.on_status_change:
+                self.on_status_change({
+                    "running": False,
+                    "task_count": len(self.task_queue.heap),
+                    "error": f"{loop_name}异常退出，调度器已停止",
+                })
+        except Exception as e:
+            # 上报失败不能再次抛出（否则异常会吞掉循环死亡的现场）
+            self.logger.warning("上报 %s 异常退出失败: %s", loop_name, e)
 
     def _cancel_scan_loop(self):
         """停止扫描循环"""

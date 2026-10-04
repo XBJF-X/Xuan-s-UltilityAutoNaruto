@@ -1,25 +1,37 @@
 """设置管理模型 - 从 utils/Base/Setting.py 迁移，剥离 StaticFunctions 依赖"""
 import configparser
+import io
 import logging
 import os
+import threading
 from pathlib import Path
 from typing import Any, Optional
 
 from backend.utils import get_real_path
 
+# 写盘串行化：读路径绝不写盘（改前每次构造 Setting 都会整文件重写 setting.ini，
+# 而 SettingsService() 每次调用都新建实例 → 一次读 = 一次全量重写；多线程并发写
+# 会截断/交错文件，直接丢掉用户的全部助手设置）。
+_WRITE_LOCK = threading.Lock()
+
 
 class Setting:
-    def __init__(self, parent_logger, setting_path: Path):
+    def __init__(self, parent_logger, setting_path: Path, *, readonly: bool = False):
         if isinstance(parent_logger, str):
             self.logger = logging.getLogger(self.__class__.__name__)
         else:
             self.logger = parent_logger.getChild(self.__class__.__name__)
-        self.setting_path = setting_path
+        self.setting_path = Path(setting_path)
         self.default_setting_path = Path(get_real_path("src/DefaultSetting.ini"))
+        # readonly=True：只读场景（探测/单测）构造时不写盘
+        self.readonly = bool(readonly)
         self.config = self._new_parser()
         self.load_and_merge_config()
         self._normalize_legacy_keys()
-        self.save_to_file()
+        # 仅在"合并结果与磁盘不一致"时写盘（等价于 config_model 的免写盘优化）：
+        # 正常读取不再是写操作，避免与 api/settings.py 的写路径并发损坏文件。
+        if not self.readonly and self._needs_write():
+            self.save_to_file()
         self.logger.debug("初始化完成...")
 
     # 历史遗留 key 别名：旧版 configparser 会把 MuMu安装路径 小写化为 mumu安装路径
@@ -130,16 +142,49 @@ class Setting:
         self.config = self._merge_configs(user_config, default_config)
         self.logger.info(f"设置加载并合并完成，共 {len(self.config.sections())} 个节")
 
-    def save_to_file(self):
+    def _serialize(self) -> str:
+        """把当前配置序列化为 ini 文本（用于免写盘比对与原子写）"""
+        buf = io.StringIO()
+        self.config.write(buf)
+        return buf.getvalue()
+
+    def _needs_write(self) -> bool:
+        """磁盘内容与内存配置是否不一致（读不了文件时视为需要写）"""
         try:
-            config_dir = os.path.dirname(self.setting_path)
-            if not os.path.exists(config_dir):
+            current = self.setting_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            return True
+        return current != self._serialize()
+
+    def save_to_file(self) -> bool:
+        """原子写回 setting.ini（tmp + os.replace），返回是否成功。
+
+        旧实现 `open(path, 'w')` 先截断再写，进程被杀/并发写会留下半截文件；
+        这里改为写同目录临时文件后原子替换，并用模块级锁串行化。
+        """
+        tmp_path = self.setting_path.with_name(self.setting_path.name + ".tmp")
+        try:
+            config_dir = os.path.dirname(str(self.setting_path))
+            if config_dir and not os.path.exists(config_dir):
                 os.makedirs(config_dir)
-            with open(self.setting_path, 'w', encoding='utf-8') as f:
-                self.config.write(f)
+            payload = self._serialize()
+            with _WRITE_LOCK:
+                with open(tmp_path, "w", encoding="utf-8") as f:
+                    f.write(payload)
+                    f.flush()
+                    os.fsync(f.fileno())
+                os.replace(tmp_path, self.setting_path)
             self.logger.debug(f"设置已保存到 {self.setting_path}")
+            return True
         except Exception as e:
+            # 原子写失败时清理临时文件，避免残留 .tmp 干扰下次启动
+            try:
+                if os.path.exists(tmp_path):
+                    os.remove(tmp_path)
+            except OSError as cleanup_error:
+                self.logger.warning(f"清理临时设置文件失败: {cleanup_error}")
             self.logger.error(f"保存设置失败: {str(e)}")
+            return False
 
     def sections(self):
         return self.config.sections()
