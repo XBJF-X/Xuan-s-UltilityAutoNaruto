@@ -279,9 +279,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { useMessage, useDialog } from 'naive-ui'
+import { useMessage } from 'naive-ui'
 import {
   RefreshOutlined, SettingsOutlined, SystemUpdateOutlined,
   FolderOpenOutlined, HelpOutlineOutlined, CameraOutlined, HubOutlined,
@@ -289,7 +289,7 @@ import {
 import githubIcon from '@/assets/GithubIcon.png'
 import asdsIcon from '@/assets/ASDS.ico'
 import { useAppStore } from '@/stores/app'
-import { configApi, schedulerApi, utilsApi, deviceApi, settingsApi } from '@/api/client'
+import { configApi, schedulerApi } from '@/api/client'
 import TaskConfigPanel from '@/components/TaskConfigPanel.vue'
 import LogPanel from '@/components/LogPanel.vue'
 import AssistantSettingsPanel from '@/components/AssistantSettingsPanel.vue'
@@ -297,21 +297,36 @@ import UpdateDialog from '@/components/UpdateDialog.vue'
 import FeedbackDialog from '@/components/FeedbackDialog.vue'
 import StartupNoticeDialog from '@/components/StartupNoticeDialog.vue'
 import PresetEditor from '@/views/PresetEditor.vue'
-import { useWebSocket } from '@/api/ws'
+// 阶段 5：把任务树 / 调度器控制 / 启动检查三块职责抽成 composable（Layout 只做编排与模板）
+import { useTaskTree } from '@/composables/useTaskTree'
+import { useSchedulerControl } from '@/composables/useSchedulerControl'
+import { useStartupChecks } from '@/composables/useStartupChecks'
 
 const router = useRouter()
 const appStore = useAppStore()
 const message = useMessage()
-const dialog = useDialog()
+
+// ---- 任务树（任务数据 / 分组 / 启用状态同步）----
+const {
+  rawTasks, showDisabledTasks, taskGroups, enabledTaskNames,
+  loadTaskData, onTaskEnabledChanged,
+} = useTaskTree()
+
+// ---- 调度器控制（启停 + 状态/快照 WS 订阅）----
+const {
+  schedulerRunning, schedulerStarting, toggleScheduler, startScheduler, stopScheduler,
+} = useSchedulerControl()
+
+// ---- 启动检查（引导/依赖/自动更新）与截图、反馈入口 ----
+const {
+  showUpdateDialog, showFeedbackDialog, showStartupNotice,
+  checkStartupNotice, checkDependencyOnStart, checkUpdateOnStart,
+  handleStartupGoFeedback, handleScreenshot, openFeedback,
+} = useStartupChecks()
 
 const showCreateDialog = ref(false)
 const newUsername = ref('')
 const creating = ref(false)
-const schedulerRunning = ref(false)
-const schedulerStarting = ref(false)
-const showUpdateDialog = ref(false)
-const showFeedbackDialog = ref(false)
-const showStartupNotice = ref(false)
 
 const currentView = ref<'overview' | 'task' | 'globallog' | 'assistant' | 'preset'>('overview')
 const currentTaskName = ref<string | null>(null)
@@ -326,13 +341,6 @@ const filteredConfigs = computed(() =>
 )
 const createDialogType = ref<'persist' | 'preset'>('persist')
 const createDialogTitle = computed(() => createDialogType.value === 'preset' ? '新建任务预设' : '新建账号配置')
-
-// 任务数据
-const rawTasks = ref<Record<string, any>>({})
-const taskSchema = ref<Record<string, any>>({})
-
-// 是否显示已禁用的任务
-const showDisabledTasks = ref(true)
 
 // 配置右键菜单
 const configContextMenu = ref({ show: false, x: 0, y: 0, configId: '', configName: '' })
@@ -372,74 +380,6 @@ function handleConfigContextSelect(key: string) {
     handleRenameConfig(configContextMenu.value.configId, configContextMenu.value.configName)
   } else if (key === 'delete') {
     handleDeleteConfig(configContextMenu.value.configId, configContextMenu.value.configName)
-  }
-}
-
-// ---- 任务树分组 ----
-// 匹配原版 Servicer 映射：task_type = 1 if 类型==5 else 类型
-// 「临时」类别已取消（改为每个任务独立的「是否临时」属性），类型 5 不再使用
-const typeGroupMap: Record<number, string> = {
-  0: '每日任务',
-  1: '每周任务',
-  2: '每周任务',
-  3: '活动任务',
-  4: '活动任务',
-}
-
-const taskGroups = computed(() => {
-  const groups: Record<string, { label: string; tasks: any[] }> = {}
-  for (const [name, info] of Object.entries(rawTasks.value)) {
-    // 不显示禁用任务时跳过
-    if (!showDisabledTasks.value && !(info as any)['是否启用']) continue
-    const type = (info as any)['类型'] ?? 0
-    const groupLabel = typeGroupMap[type] || '其他'
-    if (!groups[groupLabel]) groups[groupLabel] = { label: groupLabel, tasks: [] }
-    groups[groupLabel].tasks.push({ name, ...(info as any) })
-  }
-  // 按标签排序
-  const order = ['每日任务', '每周任务', '每月任务', '周期任务', '活动任务', '其他']
-  return order.filter(l => groups[l]).map(l => groups[l])
-})
-
-/** 所有已启用的任务名列表（用于判断树是否为空） */
-const enabledTaskNames = computed(() => {
-  const names: string[] = []
-  for (const [name, info] of Object.entries(rawTasks.value)) {
-    if ((info as any)['是否启用']) names.push(name)
-  }
-  return names
-})
-
-const allTasks = computed(() => Object.keys(rawTasks.value))
-
-// ---- 加载任务数据 ----
-async function loadTaskData() {
-  if (!appStore.activeConfigId) {
-    rawTasks.value = {}
-    return
-  }
-  // 1. 加载任务数据（失败时清空，避免显示上一个配置的脏数据）
-  try {
-    const res = await configApi.get(appStore.activeConfigId)
-    rawTasks.value = res.data.tasks || {}
-  } catch {
-    rawTasks.value = {}
-  }
-  // 2. 加载任务 schema（仅首次；加载失败不影响已加载的任务列表）
-  if (Object.keys(taskSchema.value).length === 0) {
-    try {
-      const schemaRes = await configApi.getDefaultTasks()
-      taskSchema.value = schemaRes.data || {}
-    } catch (e) {
-      console.error('加载任务 schema 失败:', e)
-    }
-  }
-}
-
-// ---- 任务启用状态变更回调（来自 TaskConfigPanel） ----
-function onTaskEnabledChanged(taskName: string, enabled: boolean) {
-  if (rawTasks.value[taskName]) {
-    rawTasks.value[taskName]['是否启用'] = enabled
   }
 }
 
@@ -527,58 +467,6 @@ function openCreateDialog() {
   showCreateDialog.value = true
 }
 
-// ---- 调度器 ----
-async function toggleScheduler() {
-  if (!appStore.activeConfigId) return
-  if (schedulerRunning.value) { await stopScheduler() }
-  else { await startScheduler() }
-}
-
-async function startScheduler() {
-  if (!appStore.activeConfigId) return
-  schedulerStarting.value = true
-  try {
-    // 启动前快速预检：串口（已配置/格式/占用/在线）与 MuMu/LD 截图路径环境，
-    // 避免参数错误时进入耗时的设备连接导致界面长时间无响应
-    const pre = await schedulerApi.precheck(appStore.activeConfigId)
-    if (pre.data?.errors?.length) {
-      message.error(`启动前检查未通过：\n${pre.data.errors.join('\n')}`)
-      return
-    }
-    if (pre.data?.warnings?.length) {
-      message.warning(pre.data.warnings.join('\n'))
-    }
-    await schedulerApi.start(appStore.activeConfigId)
-    schedulerRunning.value = true
-  } catch (e: any) {
-    message.error(e?.response?.data?.detail || '启动失败')
-  } finally {
-    schedulerStarting.value = false
-  }
-}
-
-async function stopScheduler() {
-  if (!appStore.activeConfigId) return
-  try { await schedulerApi.stop(appStore.activeConfigId); schedulerRunning.value = false }
-  catch { /* ignore */ }
-}
-
-// 监听调度器运行状态（含预设任务跑完自动停止），同步中栏启停按钮
-const { onMessage } = useWebSocket()
-const unsubSchedulerStatus = onMessage((msg) => {
-  if (msg.type === 'status' && msg.data?.config_id === appStore.activeConfigId) {
-    schedulerRunning.value = !!msg.data?.running
-  }
-  // 调度器完整状态快照：按 config_id 存到 AppStore（Dashboard/PresetEditor 据此零轮询）
-  // 阶段 5：统一走 applySnapshot（带 seq 去旧帧），不再直接写 schedulerSnapshots
-  if (msg.type === 'scheduler_snapshot' && msg.config_id) {
-    appStore.applySnapshot(msg.config_id, msg.data, { seq: msg.seq, source: 'ws' })
-    if (msg.config_id === appStore.activeConfigId) {
-      schedulerRunning.value = !!msg.data?.running
-    }
-  }
-})
-
 // ---- 新建配置（账号配置/任务预设） ----
 async function handleCreateConfig() {
   if (!newUsername.value) return
@@ -651,134 +539,21 @@ watch(() => appStore.activeConfigId, (id) => {
     appStore.configSwitching = false
   }
 })
-async function handleScreenshot() {
-  if (!appStore.activeConfigId) {
-    message.warning('请先选择一个配置')
-    return
-  }
-  try {
-    const res = await deviceApi.saveScreenshot(appStore.activeConfigId)
-    message.success(`截图已保存：${res.data?.path || ''}`)
-  } catch (e: any) {
-    message.error(e?.response?.data?.detail || '截图失败')
-  }
-}
 
-function openFeedback() {
-  if (!appStore.activeConfigId) {
-    message.warning('请先选择一个配置')
-    return
-  }
-  showFeedbackDialog.value = true
-}
-
-// 程序启动时的使用引导提示：读取全局设置 [助手设置] 启动提示（默认 True），
-// 在弹窗中勾选「不再提示」后该项被写为 False，之后启动不再弹出。
-// 与依赖检查/自动更新弹窗错开 1.2s 出现，避免多个弹窗叠加遮挡；
-// 更新窗口已打开时本轮跳过（用户未勾选「不再提示」时下次启动仍会提示）。
-async function checkStartupNotice() {
-  try {
-    await new Promise(resolve => setTimeout(resolve, 1200))
-    if (showUpdateDialog.value) return
-    const res = await settingsApi.getAll()
-    const flag = res.data?.['助手设置']?.['启动提示']
-    // 仅显式 False 时不再提示；键缺失/为空（旧 setting.ini）时仍弹出，避免引导被静默跳过
-    if (String(flag ?? '').trim().toLowerCase() === 'false') return
-    showStartupNotice.value = true
-  } catch {
-    // 全局设置接口异常时不打扰用户（启动引导非关键功能）
-  }
-}
-
-// 引导弹窗「跳转反馈界面」：未选择配置时给出指引（反馈需按配置用户名定位日志目录）
-function handleStartupGoFeedback() {
-  if (!appStore.activeConfigId) {
-    message.warning('请先在左侧选择或新建一个配置，再生成反馈包')
-    return
-  }
-  showFeedbackDialog.value = true
-}
-
+/** 资源图/资源管理页：hash 路由下新标签页打开需带上当前 hash 前缀 */
 function openResourceGraph() {
-  // hash 路由下，新标签页打开需带上当前 hash 前缀
   const href = router.resolve({ name: 'ResourceGraph' }).href
   window.open(href, '_blank')
 }
 
+// 启动流程：健康检查 + 配置列表 + 依赖检查 / 自动更新 / 使用引导
+// （三项检查的实现见 composables/useStartupChecks.ts，此处只做编排）
 onMounted(() => {
   appStore.checkBackendHealth()
   appStore.loadConfigs()
   checkDependencyOnStart()
   checkUpdateOnStart()
   checkStartupNotice()
-})
-
-// 启动时依赖健康检查：版本过低或模块缺失时弹窗引导前往 Release 更新，
-// 让用户在依赖库不完整时也能通过界面操作，而不是只能在群里求助。
-// 另外单独检查 OCR GPU(DirectML) 加速：依赖库不含 DML provider 时 OCR 会静默回退
-// CPU 推理（任务执行时 CPU 占用呈尖峰），同样引导用户覆盖安装最新 Release。
-async function checkDependencyOnStart() {
-  try {
-    const res = await utilsApi.checkDependency()
-    const data = res.data
-    if (!data) return
-    const releaseUrl = data.release_url
-      || 'https://github.com/XBJF-X/Xuan-s-UltilityAutoNaruto/releases'
-    // 仅在依赖库本身无问题时提示 OCR 加速（否则下面的「依赖库不完整」弹窗已包含同一
-    // 修复动作——覆盖安装，避免连弹两次）
-    if (data.ok && data.ocr_accel?.needs_notice) {
-      const pkg = data.ocr_accel.package || '未知'
-      const ver = data.ocr_accel.onnxruntime_version || ''
-      dialog.warning({
-        title: 'OCR 加速不可用',
-        content: `${data.ocr_accel.message}\n\n当前 onnxruntime：${pkg} ${ver}`.trim(),
-        positiveText: '前往 Release',
-        negativeText: '知道了',
-        onPositiveClick: () => { window.open(releaseUrl, '_blank') },
-      })
-    }
-    if (data.ok) return
-    const msgs: string[] = []
-    if (data.deprecated) {
-      msgs.push(`当前版本 ${data.local_version} 低于本版本要求的最低版本 ${data.required_tag}，依赖库不完整`)
-    }
-    if (data.missing_modules?.length) {
-      msgs.push(`检测到以下依赖缺失：${data.missing_modules.join('、')}`)
-    }
-    dialog.warning({
-      title: '依赖库不完整',
-      content: `${msgs.join('\n')}\n\n为避免任务出现异常，请前往 GitHub Release 页面下载最新安装包更新。`,
-      positiveText: '前往 Release',
-      negativeText: '稍后再说',
-      onPositiveClick: () => {
-        window.open(releaseUrl, '_blank')
-      },
-    })
-  } catch {
-    // 依赖检查接口异常时静默忽略，不打扰用户
-  }
-}
-
-// 程序启动时自动检查更新：仅当全局设置"自动更新"开启且云端有新版本时弹出更新窗口
-async function checkUpdateOnStart() {
-  try {
-    // 读取全局设置 [助手设置] 段的"自动更新"开关（默认关闭）
-    const settingsRes = await settingsApi.getAll()
-    const autoUpdate = settingsRes.data?.['助手设置']?.['自动更新']
-    if (String(autoUpdate ?? '').trim().toLowerCase() !== 'true') {
-      return
-    }
-    const res = await utilsApi.checkUpdate()
-    // 有大更新（正式版/依赖库）或热更新时均弹出更新窗口（update_type: full/hot/none）
-    if (res.data?.ok && res.data.update_type && res.data.update_type !== 'none') {
-      showUpdateDialog.value = true
-    }
-  } catch {
-    // 网络异常时静默忽略，用户可随时通过顶部按钮手动检查
-  }
-}
-onBeforeUnmount(() => {
-  unsubSchedulerStatus()
 })
 </script>
 
