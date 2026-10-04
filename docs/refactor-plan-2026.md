@@ -349,11 +349,13 @@ frontend/src/
 | 清理静默失败 | `TaskConfigPanel.vue`(3) / `PresetEditor.vue`(3) 的 `.catch(() => {})` 改为 `message.error(...errorMessage(e))` | typecheck + build |
 | 回归入口 | `test_scene/_run_verify_batch.py` 重写：自动发现全部 `verify_*.py`、区分 HEAVY / KNOWN_STALE（每项附证据）、`--full` / `--stale` / `--list`、失败返回非 0 | 见 7.4 |
 | CI | 新增 `.github/workflows/ci.yml`（后端 compileall + 回归批 + 关键模块导入；前端 typecheck + build）；`.gitignore` 由忽略整个 `.github/` 改为 `.github/*` + 保留 `.github/workflows/` | 本地跑通等价命令 |
-| 待办（未完成） | ① 后端 `response_model` 补齐；② WS 统一信封（`{v,type,seq,ts,config_id,payload}`）与旧帧双写；③ `api/utils.py` 拆分与 `runtime/events.py` 事件总线；④ `SchedulerService` 拆分（阶段 4） | — |
+| WS 统一信封（v1） | `backend/api/ws.py`：信封 `{v,type,seq,ts,config_id,payload}` + `ConnState{protocol,seq,config_ids}` + `subscribe` 能力协商 + **双写**（legacy 连接仍收旧帧，含 `["log",batch]`）+ `log.batch` 单帧上限 200/`dropped` + 连接级订阅过滤 + 发送 `wait_for(2s)` 判慢客户端断开；前端新增 `wsProtocol.ts`（三种帧形态归一 + v1 type 映射回 legacy type，消费端零改动）、`ws.ts` 连接后发 `subscribe{protocol:1}` 并新增 `on(type,handler)` 注册表 | `verify_ws_protocol_v1.py`（23 项，后端帧/协商/双写/截断/订阅/慢客户端/源码防回退）、`verify_ws_protocol_frames.ts`（33 项，前端解析器，node 直跑）、**`verify_ws_dual_write_e2e.py`（3 项，进程内真实 uvicorn + 真 WS 客户端验证"legacy 永不收信封、v1 只收信封"）** |
+| 待办（未完成） | ① `api/utils.py` 拆分与 `runtime/events.py` 事件总线；② `services/scheduler_registry.py`；③ 敏感设置掩码；④ `SchedulerService` 拆分（阶段 4） | — |
 
 ### 7.4 回归结果（2026-10-04）
 
-- 快速集 `python -X utf8 test_scene/_run_verify_batch.py`：**26/26 PASS**（含新增 `verify_phase0_hardening.py` 16 项、`verify_api_event_loop_safety.py` 12 项、`verify_security_hardening.py` 13 项）。
+- 快速集 `python -X utf8 test_scene/_run_verify_batch.py`：**30/30 PASS**（含新增 `verify_phase0_hardening.py` 16 项、`verify_api_event_loop_safety.py` 12 项、`verify_security_hardening.py` 13 项、`verify_api_contracts.py` 5 项、`verify_ws_protocol_v1.py` 23 项，以及 2 个前端 TS 脚本 `verify_log_dedupe.ts` / `verify_ws_protocol_frames.ts` 由 node 直跑）。
+- 重型集（`--full`，另行执行）：`verify_ws_dual_write_e2e.py` **3/3 PASS**（进程内真实 uvicorn + 真 WS 客户端）。
 - 因本次改造同步更新的既有测试：`verify_log_ws_payload.py`（4→6）、`verify_temp_activation_restore.py`（7→9）、`verify_consume_stamina_params.py`（3 处 `asyncio.run` → 直接调用）、`verify_manual_execute_guard.py`（同上）。
 - 归类为既有滞后（不计入门槛，见 `_run_verify_batch.py::KNOWN_STALE` 的逐项证据）：`verify_startup_notice.py`、`verify_declare_next_scene.py`、`verify_transition_stall_guard.py`、`verify_renfatijiangli_flow.py`、`verify_renfatijiangli_time.py`、`verify_pending_scene_edges.py`。
 - 前端：`tsc -p tsconfig.typecheck.json` OK；`vite build` OK（13.7s，dist 已更新）。
@@ -368,62 +370,42 @@ frontend/src/
 ### 7.7 新增待办（本轮发现，未实施）
 
 1. **敏感设置明文返回（P1，隐私）**：`GET /api/settings/` 返回整段 `[助手设置]`，其中包含 `GithubPAT` 与 `二级密码` 明文（前端 `Settings.vue:164` 已按"敏感项"做密文显示 + 显隐切换，说明 UI 层已识别敏感，但接口层没有）。旧 CORS `*` 下这等于对任意网站公开。建议：`get_all()` 对敏感键返回掩码（如 `已配置/未配置` 或 `***`），显隐切换改走单独的 `GET /api/settings/{section}/{key}?reveal=true`；用户 WIP 里新增的 `_github_pat_configured()` 正是这个方向。
-2. **`adb kill-server` 的副作用**：lifespan 关闭段与 `atexit` 都会执行 `adb kill-server`（issue #4 的清理）。副作用：任何"短命的后端实例"（例如本次冒烟、或将来 CI）退出时都会杀掉**用户正在运行的实例**所依赖的 adb server。建议加"仅在无其他后端实例/无运行中调度器时才 kill"的判定，或改为由 launcher 独占负责。
+2. **`adb kill-server` 的副作用（已缓解）**：lifespan 关闭段与 `atexit` 都会执行 `adb kill-server`（issue #4 的清理）。副作用：任何"短命的后端实例"（冒烟/测试/工具）退出时都会杀掉**用户正在运行的实例**所依赖的 adb server —— 本会话实测踩到两次。已加 `XUAN_SKIP_ADB_CLEANUP=1` 环境变量跳过（`backend/main.py::_shutdown_adb_server`），端到端测试在导入前设置该变量（`atexit` 注册的是导入时的原始函数对象，只改模块属性拦不住）；真正的默认行为（issue #4 修复）保持不变。
 3. **`api/utils.py` 仍在事件循环里做文件/JSON 之外的重活**：`/feedback/package` 起线程（OK），但 `_do_apply_update` 的批量 `shutil.copy2`（数千文件）在后台线程里逐文件写 `_UPDATE_STATUS`（有锁）——可接受但应改为 job + 进度事件（阶段 2 未完成项 ③）。
 
-### 7.9 下一步实施单：WS 统一信封（v1 协议，含旧帧兼容）
+### 7.9 WS 统一信封（v1 协议，含旧帧兼容）— 已实施（2026-10-04）
 
-> 状态：设计已定，**未实施**（本轮上下文预算用尽，留给下一轮按此单执行）。
+> 原计划见本节历史版本；实际实现与设计的差异与验证如下。
 
-**目标**：把 4 类消息 + 数组帧 + 前端归一化 hack 收敛为统一信封；**不破坏旧前端 dist**。
+**已实现**
+- 信封 `{v,type,seq,ts,config_id,payload}`（`build_frame`）+ 不变式（`config_id` 仅在顶层）。
+- `ConnState{protocol, seq, config_ids}`；`ConnectionManager` 改为连接→状态映射，广播取快照
+  遍历（修掉"迭代中 await 被 disconnect 改写"的漏发）。
+- **能力协商**：连接首帧 `hello`；客户端发 `{"type":"subscribe","protocol":1}` 后该连接切 v1
+  （可带 `config_ids` 做连接级订阅；无归属日志恒放行）。
+- **双写**：`broadcast_dual()` 让 legacy 连接继续收到与改造前逐字等价的旧帧
+  （`["log", batch]` / 单条对象 / `status` / `task_state` / `scheduler_snapshot`），v1 连接收
+  `log.batch` / `status` / `task.state` / `scheduler.snapshot`。
+- 背压：`log.batch` 单帧 ≤200 条 + `dropped` 计数；发送 `wait_for(2s)`，超时判慢客户端断开。
+- v1 type 表：`hello` / `log.batch` / `status` / `task.state` / `scheduler.snapshot` /
+  `error` / `log.truncated`；未知 type 必须被忽略。
+- 前端：`wsProtocol.ts`（纯解析器，三种帧形态归一；**`task.state`→`task_state`、
+  `scheduler.snapshot`→`scheduler_snapshot` 映射回 legacy type，Dashboard/Layout/PresetEditor/
+  LogPanel 零改动**）；`ws.ts` 连接后协商、`on(type,handler)` 注册表（与 `onMessage` 并存）。
+- 修正一处**行为回归**：旧后端在"单条日志"时发对象帧 `{type:'log',...}`，最初实现把它只当
+  消息派发而不再入日志面板 → 解析器补回 `logs` 帧（并保留旧的"同时派发 message"语义）。
 
-**信封（所有服务端帧）**
-```json
-{"v":1,"type":"scheduler.snapshot","seq":118,"ts":1730000000000,"config_id":"Config_1","payload":{...}}
-```
-不变式：`config_id` 只在顶层；`payload` 形状由 `type` 唯一决定；`seq` 每连接单调递增；
-未知 `type` 必须被忽略；`hello` 协商能力。
-
-**消息类型表**
-
-| type | 方向 | payload | 现状对应 |
-|---|---|---|---|
-| `hello` | S→C | `{server_version, protocol, caps:{subscribe,backpressure}}` | 新增（连接首帧，旧前端会忽略未知 type） |
-| `subscribe` | C→S | `{protocol:1, config_ids?:[...]}` | 新增：收到即把该连接标记为 v1 并只发新帧 |
-| `log.batch` | S→C | `{entries:[{id,ts,level,logger,config_id,message}], dropped}` | 替代 `["log",[...]]` 与单条 `log` |
-| `scheduler.snapshot` | S→C | `{running,mode,task_count,tasks:[...]}` | 同名，但移入 `payload` |
-| `task.state` | S→C | `{name,status,action,error}` | 同上 |
-| `status` | S→C | `{running,task_count}` | 保留（兼容），v1 用 snapshot |
-| `ping`/`pong` | 双向 | — | 保留（文本帧） |
-| `error` / `log.truncated` | S→C | `{code,message}` / `{dropped}` | 新增（背压/协议错误） |
-
-**后端改动（`backend/api/ws.py`）**
-1. `ConnectionManager` 的 `active_connections: list` → `dict[WebSocket, ConnState{seq, protocol}]`；
-   `broadcast_*` 内部按连接 `protocol` 选择帧格式（**v1 发信封，旧连接发旧帧**）。
-2. 新增 `send_hello(ws)`（accept 后立即发）；`websocket_logs/status` 增加接收分支：
-   `{"type":"subscribe","protocol":1,...}` → 置 `protocol=1`（其余文本仍按 ping 处理）。
-3. `WebSocketLogHandler._flush_batch`：对 v1 连接发 `log.batch`（每帧 ≤200 条，超出截断并
-   带 `dropped`），对旧连接保持现有 `["log",batch]`/单条对象逻辑。
-4. `seq` 单调递增（每连接一个计数器，锁内自增）。
-5. 背压：每连接有界队列（溢出丢最旧 + `log.truncated`）；`send_json` 包 `wait_for(2s)`，
-   超时判慢客户端并 `disconnect`。
-
-**前端改动**
-1. 新增 `frontend/src/api/ws/protocol.ts`：帧类型定义 + `parseFrame(raw): Frame|null`——同时
-   识别 v1 信封（有 `v`/`payload`）、旧对象帧（顶层 `type`）、旧数组帧（`["log",[...]]`）。
-2. `frontend/src/api/ws.ts`：`connect()` 成功后发 `{"type":"subscribe","protocol":1}`；
-   分发改为 `on(type, handler)` 注册表；`log` 处理统一走 `parseFrame`。
-3. 保持既有 `reconnected` 伪消息与 `mergeHistory` 去重逻辑不变（历史日志仍是秒级 ts）。
-
-**测试（新增 `test_scene/verify_ws_protocol_v1.py`）**
-- 信封字段齐全且 `config_id` 仅在顶层；`seq` 严格递增；
-- 旧连接收到的仍是旧帧（数组帧/单条对象/旧 `status`），**逐字面量比对**；
-- 收到 `subscribe{protocol:1}` 后切换为新帧，且不再发旧帧；
-- `log.batch` 超过 200 条时截断并给出 `dropped`；
-- 未知 `type` 不被前端解析器当成 `log`（`parseFrame` 返回 null 或 passthrough）。
+**验证**（三层）
+1. `verify_ws_protocol_v1.py` 23 项：信封形状/seq 单调/双写分流/数组帧保留/截断+dropped/订阅过滤/慢客户端断开/`subscribe` 解析（含非法 JSON）/源码防回退。
+2. `verify_ws_protocol_frames.ts` 33 项：前端解析器覆盖三种帧形态与全部 v1 type（node 直跑）。
+3. `verify_ws_dual_write_e2e.py` 3 项：**进程内真实 uvicorn + 真实 WebSocket 客户端** —— legacy 连接全程收不到信封且仍收到旧形态日志帧；v1 连接首帧 `hello`、随后 `log.batch` 信封（`seq` 单调、`config_id` 仅在顶层、条目字段齐全）；两条连接共存互不串帧。
 
 **发布顺序（硬约束）**：后端双写 → 前端切换 → 观察 ≥2 个 release → 删旧帧。
-禁止"前端先发新 dist、后端后热更"（用户机上 dist 与 backend 可能不同版本）。
+本仓库的 dist 与 backend 在同一 zip 内分发，故本轮已完成"后端双写 + 前端兼容"两步；
+**删旧帧**留待 ≥2 个 release 之后。
+
+**遗留**：`_periodic_flush` 的 `while True` 仍无退出条件（P2-15），退出依赖进程结束；
+若后续要做优雅关闭需加 `asyncio.Event`。
 
 ### 7.10 仍未实施（阶段 2 收尾清单）
 
