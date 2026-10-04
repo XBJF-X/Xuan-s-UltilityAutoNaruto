@@ -255,6 +255,57 @@ class ServiceLayerSinkingTest(unittest.TestCase):
                     offenders[str(path.relative_to(_PROJECT_ROOT))].append(mod)
         self.assertEqual(dict(offenders), {})
 
+    # ---- 反馈打包（阶段 3.4 后半，第二批） ----
+    def test_feedback_service_exists_and_exports(self):
+        path = _PROJECT_ROOT / "backend" / "services" / "feedback_service.py"
+        self.assertTrue(path.exists())
+        from backend.services import feedback_service
+        for name in ("FEEDBACK_STATUS", "set_status", "snapshot", "collect_options",
+                     "start_package", "run_package"):
+            with self.subTest(name=name):
+                self.assertTrue(hasattr(feedback_service, name), f"feedback_service 缺少 {name}")
+
+    def test_feedback_route_is_thin_adapter(self):
+        src = (_PROJECT_ROOT / "backend" / "api" / "utils" / "feedback.py").read_text(
+            encoding="utf-8")
+        self.assertIn("from backend.services.feedback_service import", src)
+        code = "\n".join(line.split("#", 1)[0] for line in src.splitlines())
+        code_parts = code.split('"""')
+        code = "".join(code_parts[i] for i in range(0, len(code_parts), 2))
+        for moved in ("zipfile", "threading.Thread", "ZIP_DEFLATED", "def _do_feedback_package"):
+            with self.subTest(moved=moved):
+                self.assertNotIn(moved, code, f"{moved} 应已下沉到 feedback_service")
+        # import + logger + router + 3 个装饰器与函数签名 + return（无业务逻辑）
+        self.assertLessEqual(len(code.splitlines()), 50,
+                             f"路由仍偏厚：{len(code.splitlines())} 行代码")
+
+    def test_feedback_state_is_shared_object(self):
+        import backend.api.utils as utils_pkg
+        from backend.services import feedback_service
+        self.assertIs(utils_pkg._FEEDBACK_STATUS, feedback_service.FEEDBACK_STATUS,
+                      "api 层必须再导出同一个状态字典（测试会就地 clear/update）")
+        self.assertIs(utils_pkg._do_feedback_package, feedback_service.run_package)
+        self.assertIs(utils_pkg._set_feedback_status, feedback_service.set_status)
+
+    # ---- 更新链路（阶段 3.4 后半，第三批：平台/PAT/状态先行） ----
+    def test_update_service_platform_knowledge(self):
+        path = _PROJECT_ROOT / "backend" / "services" / "update_service.py"
+        self.assertTrue(path.exists())
+        from backend.services import update_service
+        for name in ("PLATFORMS", "UPDATE_STATUS", "UPDATE_VERIFY_TLS", "get_update_source",
+                     "get_github_pat", "platform_headers", "github_pat_configured",
+                     "select_platforms", "api_url", "get_releases_url", "set_update_status"):
+            with self.subTest(name=name):
+                self.assertTrue(hasattr(update_service, name), f"update_service 缺少 {name}")
+
+    def test_update_state_is_shared_object(self):
+        import backend.api.utils as utils_pkg
+        from backend.services import update_service
+        self.assertIs(utils_pkg._UPDATE_STATUS, update_service.UPDATE_STATUS)
+        self.assertIs(utils_pkg._STATUS_LOCK, update_service.STATUS_LOCK)
+        self.assertIs(utils_pkg._get_releases_url, update_service.get_releases_url)
+        self.assertIs(utils_pkg._github_pat_configured, update_service.github_pat_configured)
+
 
 class DependencyCheckRegistryTest(unittest.TestCase):
     """接口行为：#/dependency-check 从登记表读失败模块"""

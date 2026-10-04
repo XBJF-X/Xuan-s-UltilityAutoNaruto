@@ -29,31 +29,37 @@ logger = logging.getLogger("backend.api.utils")
 # ============================================================
 # 模块级后台任务状态（供前端轮询）
 # ============================================================
-_UPDATE_STATUS: dict = {
-    "running": False,
-    "phase": "",          # downloading / extracting / replacing / writing-version / done / error
-    "percent": 0,
-    "message": "",
-    "error": "",
-    "output": None,       # 更新解压根目录
-}
+# 更新链路的状态字典/平台与 PAT 知识自阶段 3.4（后半）起由 services/update_service.py 持有：
+# 这里以同名再导出（状态字典为**同一对象**），既有调用点与测试
+# （`utils_api._UPDATE_STATUS`、`utils_api._UPDATE_VERIFY_TLS`、`_github_pat_configured` 等）
+# 全部不受影响。
+from backend.services.update_service import (  # noqa: E402,F401
+    AUTO_PLATFORM_ORDER as _AUTO_PLATFORM_ORDER,
+    BRANCH as _BRANCH,
+    GITHUB_OWNER as _GITHUB_OWNER,
+    GITHUB_REPO as _GITHUB_REPO,
+    INSTALLER_ASSET_PREFIX as _INSTALLER_ASSET_PREFIX,
+    PLATFORMS as _PLATFORMS,
+    PLATFORM_GITHUB as _PLATFORM_GITHUB,
+    PLATFORM_GITEE as _PLATFORM_GITEE,
+    STATUS_LOCK as _STATUS_LOCK,
+    UPDATE_STATUS as _UPDATE_STATUS,
+    UPDATE_VERIFY_TLS as _UPDATE_VERIFY_TLS,
+    api_url as _api_url,
+    get_github_pat as _get_github_pat,
+    get_releases_url as _get_releases_url,
+    get_update_source as _get_update_source,
+    github_pat_configured as _github_pat_configured,
+    platform_headers as _platform_headers,
+    select_platforms as _select_platforms,
+)
 
-_FEEDBACK_STATUS: dict = {
-    "running": False,
-    "percent": 0,
-    "current": "",
-    "message": "",
-    "error": "",
-    "output": None,       # 生成的 zip 文件路径
-}
-
-_STATUS_LOCK = threading.Lock()
-
-# 更新链路必须校验 TLS 证书：旧实现全部 `verify=False`，而热更新会下载 zip →
-# 解压 → 覆盖 backend/ 与 frontend/dist → 写 restart 请求触发重启；关闭证书校验
-# 意味着任何能劫持 DNS/代理/局域网的人都能让客户端执行任意代码。
-# 保留常量便于企业内网/自签代理场景显式调整（改这里即可，不要散落 verify=）。
-_UPDATE_VERIFY_TLS = True
+# 反馈打包进度自阶段 3.4（后半）起由 services/feedback_service.py 持有：
+# 这里再导出**同一个字典对象**，因此 `utils_api._FEEDBACK_STATUS.clear()/update()/.get()`
+# 等既有测试写法继续作用于服务侧真实状态。
+from backend.services.feedback_service import (  # noqa: F401
+    FEEDBACK_STATUS as _FEEDBACK_STATUS,
+)
 
 
 # ============================================================
@@ -141,98 +147,6 @@ _INSTALLER_ASSET_PREFIX = "XuanInstaller_V"
 # 依赖库（OCR 模型/DLL 等）随 Release 安装包分发、热更新不携带；本地 _version.py
 # 低于该版本时，检查更新将提示用户前往 Release 下载完整安装包。
 # 文件名常量的唯一实现见 core/version_info（本模块头部以别名导入 _MIN_RELEASE_TAG_FILE）。
-
-# ===== 更新源平台配置（GitHub + Gitee 双源） =====
-# Gitee OpenAPI（gitee.com/api/v5）的 branches/commits 响应结构与 GitHub 兼容（已实测），
-# releases/latest 在未发布时返回 404（按"无 release"处理）；zipball 走 archive 直链匿名下载。
-_PLATFORM_GITHUB = {
-    "key": "github",
-    "label": "GitHub",
-    "owner": _GITHUB_OWNER,
-    "repo": _GITHUB_REPO,
-    "api_base": "https://api.github.com/repos",
-    "headers": {"Accept": "application/vnd.github+json"},
-    "zip_url": "https://codeload.github.com/{owner}/{repo}/zip/refs/heads/{branch}",
-    "releases_url": "https://github.com/{owner}/{repo}/releases",
-}
-_PLATFORM_GITEE = {
-    "key": "gitee",
-    "label": "Gitee",
-    "owner": "xuan-bu-jiu-fei",
-    "repo": "Xuan-s-UltilityAutoNaruto",
-    "api_base": "https://gitee.com/api/v5/repos",
-    "headers": {},
-    "zip_url": "https://gitee.com/{owner}/{repo}/repository/archive/{branch}.zip",
-    "releases_url": "https://gitee.com/{owner}/{repo}/releases",
-}
-_PLATFORMS = {"github": _PLATFORM_GITHUB, "gitee": _PLATFORM_GITEE}
-# auto 时按此顺序尝试（github 优先；失败自动降级 gitee 兜底）
-_AUTO_PLATFORM_ORDER = ("github", "gitee")
-
-
-def _get_update_source() -> str:
-    """读取 [助手设置] 更新源：github / gitee / auto（默认 auto）。"""
-    try:
-        from backend.services.settings_service import SettingsService
-        v = (SettingsService().get("助手设置", "更新源") or "").strip().lower()
-        if v in _PLATFORMS:
-            return v
-    except Exception:
-        pass
-    return "auto"
-
-
-def _get_github_pat() -> str:
-    """读取 [助手设置] GithubPAT（默认为空 = 匿名调用）。
-
-    GitHub 对未认证请求限流很严（匿名 60 次/小时/IP），多人共用出口 IP 时
-    「检查更新」很容易被 403 限流。填 PAT 后带 ``Authorization`` 头即可把额度
-    提升到 5000 次/小时。空值/读取失败一律视为未配置。
-
-    注意：本函数的返回值**绝不允许**写入日志或接口响应。
-    """
-    try:
-        from backend.services.settings_service import SettingsService
-        return (SettingsService().get("助手设置", "GithubPAT") or "").strip()
-    except Exception:
-        return ""
-
-
-def _platform_headers(platform: dict) -> dict:
-    """构造请求头：GitHub 平台在配置了 PAT 时附加认证头。
-
-    Gitee 走匿名（其 OpenAPI 无需 token 即可读公开仓库），只有 GitHub 需要。
-    """
-    headers = dict(platform.get("headers") or {})
-    if platform.get("key") == "github":
-        pat = _get_github_pat()
-        if pat:
-            headers["Authorization"] = f"Bearer {pat}"
-    return headers
-
-
-def _github_pat_configured() -> bool:
-    """当前是否已配置 GitHub PAT（供状态展示，不泄露 token 本身）。"""
-    return bool(_get_github_pat())
-
-
-
-def _select_platforms() -> list:
-    """按优先级返回更新源平台列表（auto = github 优先、gitee 兜底）。"""
-    src = _get_update_source()
-    if src in _PLATFORMS:
-        return [_PLATFORMS[src]]
-    return [_PLATFORMS[k] for k in _AUTO_PLATFORM_ORDER if k in _PLATFORMS]
-
-
-def _api_url(platform: dict, path: str) -> str:
-    return f"{platform['api_base']}/{platform['owner']}/{platform['repo']}/{path}"
-
-
-def _get_releases_url(platform: dict = None) -> str:
-    pf = platform or _select_platforms()[0]
-    return pf["releases_url"].format(owner=pf["owner"], repo=pf["repo"])
-
 
 # 关键依赖模块探测清单（find_spec 仅查是否存在、不实际加载，避免触发重型初始化）
 _DEPENDENCY_PROBE_MODULES = (
