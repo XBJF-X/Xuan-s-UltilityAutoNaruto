@@ -697,3 +697,28 @@ composable"、"Layout 必须仍保留 `openResourceGraph` 与 `onMounted` 编排
 
 **验证**：`tsc` OK、`vite build` OK、回归批 **39/39 PASS**、`compileall` OK；
 HEAVY 基线脚本 `verify_touch_residue_fix.py` 始终 2 failures / 23 errors（与阶段 4 起点一致）。
+
+### 7.22 阶段 3.4（后半）进展：业务逻辑下沉 services（日志先行）
+
+**目标**：`api/utils/{update,feedback,logs}.py` 的业务逻辑下沉到
+`services/{update,feedback,log}_service.py`，路由只做参数映射。
+
+**已落地：日志模块**
+| 项 | 变化 |
+|---|---|
+| 新增 `services/log_service.py` | 178 行：`read_tail`（尾部按块读取）、`parse_log_lines`（行解析 + config_id 兜底）、`get_config_username`、`read_log_history`（原路由全部逻辑） |
+| `api/utils/logs.py` | 104 → **29 行**（代码 19 行），3 行适配：`return read_log_history(config_id, limit)` |
+| `api/utils/common.py` | 313 → 248 行；三个辅助函数改为从服务同名再导出（`_read_tail` / `parse_log_lines` / `_get_config_username`） |
+
+**兼容性**：`from backend.api.utils import parse_log_lines`、`utils_pkg._read_tail`、
+`verify_ocr_cpu_fallback.py` 对 `backend.api.utils.system._get_config_username` 的 patch
+全部继续有效（再导出的是**同一个函数对象**，测试已断言 `is` 关系）。
+
+**分层守门**：`verify_layering_rules.py` 新增 `ServiceLayerSinkingTest`（4 项）：
+服务导出齐全、路由不含解析逻辑且代码 ≤25 行、"api 再导出与 service 是同一对象"、
+`services/**` 对 `backend.api` 依赖为 0。
+
+**后续（下一轮）**：按同一手法下沉 `update_service`（`api/utils/update.py` 648 行的更新链路：
+平台选择/PAT/版本比较/完整性校验/热更新与大更新下载安装/进度状态）与
+`feedback_service`（反馈打包 + 文件夹选择 + 打开日志目录）；两者都需把 `_UPDATE_STATUS`/
+`_FEEDBACK_STATUS` 状态与锁一并迁到服务层，并保持 `api.utils.*` 再导出与既有测试 patch 目标。
