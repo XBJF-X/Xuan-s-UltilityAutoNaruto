@@ -193,8 +193,7 @@ class SchedulerService:
         启动前环境检测：截图路径文件 / 实例 / 分辨率16:9 / 后台保活。
         不通过时返回 (False, messages)，调度器提示并拒绝启动。
         """
-        import os
-        import subprocess
+        import os  # 仅用于下方日志/路径拼接（探测命令与解析已下沉 emulator_env）
         messages = []
         mode = self.config.get_config("截图模式", 2)
         try:
@@ -203,71 +202,53 @@ class SchedulerService:
                 index = self.config.get_config("MuMu实例索引", 0)
                 if not base:
                     return False, ["未配置 MuMu安装路径"]
-                # 候选路径与 MuMu.py / validate.py 保持一致，任一存在即可
-                manager = None
-                for rel in ("MuMuManager.exe", "shell/MuMuManager.exe", "nx_main/MuMuManager.exe"):
-                    candidate = os.path.join(base, rel)
-                    if os.path.exists(candidate):
-                        manager = candidate
-                        break
-                dll_candidates = (
-                    "shell/sdk/external_renderer_ipc.dll",
-                    "nx_device/12.0/shell/sdk/external_renderer_ipc.dll",
-                    "nx_device/15.0/shell/sdk/external_renderer_ipc.dll",
-                    "nx_main/sdk/external_renderer_ipc.dll",
+                # 候选路径与实例解析统一由 core/emulator_env.py 提供（阶段 3 单点化）
+                from backend.core.emulator_env import (
+                    check_mumu_files, find_mumu_manager, probe_mumu_instance,
                 )
+                dll_ok, manager_ok = check_mumu_files(base)
+                manager = find_mumu_manager(base)
                 missing = []
-                if not any(os.path.exists(os.path.join(base, rel)) for rel in dll_candidates):
+                if not dll_ok:
                     missing.append("external_renderer_ipc.dll (MuMu 动态库)")
-                if manager is None:
+                if not manager_ok:
                     missing.append("MuMuManager.exe")
                 if missing:
                     return False, ["MuMu 截图路径缺少文件: " + ", ".join(missing)]
                 messages.append("MuMu 截图路径文件检查通过")
-                if manager is not None and os.path.exists(manager):
-                    out = subprocess.run(
-                        [manager, "info", "-v", str(index)],
-                        capture_output=True, text=True, timeout=15,
-                        encoding="utf-8", errors="ignore",
-                    ).stdout or ""
-                    if ("state=Running" not in out and "状态=运行" not in out):
+                if manager is not None:
+                    info = probe_mumu_instance(manager, index)
+                    if info is not None and not info.running:
                         messages.append("提示: MuMu 实例未运行（走后台保活）")
             elif mode == 4:  # LD 雷电
+                from backend.core.emulator_env import (
+                    LD_CONSOLE_NAME, LD_DLL_NAME, find_ld_console,
+                    missing_files, probe_ld_instances,
+                )
                 base = self.config.get_config("雷电安装路径", "")
                 index = self.config.get_config("雷电实例索引", 0)
                 if not base:
                     return False, ["未配置 雷电安装路径"]
-                missing = [rel for rel in ("ldconsole.exe", "ldopengl64.dll")
-                           if not os.path.exists(os.path.join(base, rel))]
+                missing = missing_files(base, (LD_CONSOLE_NAME, LD_DLL_NAME))
                 if missing:
                     return False, ["雷电截图路径缺少文件: " + ", ".join(missing)]
                 messages.append("雷电截图路径文件检查通过")
-                ldconsole = os.path.join(base, "ldconsole.exe")
-                if os.path.exists(ldconsole):
-                    out = subprocess.run(
-                        [ldconsole, "list2"],
-                        capture_output=True, text=True, timeout=15,
-                        encoding="utf-8", errors="ignore",
-                    ).stdout or ""
-                    found = False
-                    for line in out.strip().splitlines():
-                        parts = line.split(",")
-                        if len(parts) >= 8 and parts[0].strip().isdigit() and int(parts[0]) == index:
-                            found = True
-                            sysboot = parts[4].strip()
-                            rw, rh = int(parts[7]), int(parts[8])
-                            is_16_9 = abs(max(rw, rh) * 9 - min(rw, rh) * 16) < 10
-                            messages.append("雷电实例%d 分辨率 %dx%d（%s），状态 %s" % (
-                                index, rw, rh,
-                                "16:9 符合" if is_16_9 else "非16:9",
-                                "运行中" if sysboot == "1" else "未运行(后台保活)"))
-                            if not is_16_9:
-                                return False, ["雷电实例%d 分辨率 %dx%d 不是16:9，请在模拟器设置中调整" % (index, rw, rh)]
-                            if sysboot != "1":
-                                messages.append("提示: 实例未运行，请确认已开启后台保活")
-                            break
-                    if not found:
+                console = find_ld_console(base)
+                if console is not None:
+                    instance = probe_ld_instances(console).get(index)
+                    if instance is None:
                         return False, ["未在 ldconsole list2 中找到雷电实例索引 %d" % index]
+                    resolution = instance.resolution
+                    if resolution:
+                        rw, rh = resolution
+                        messages.append("雷电实例%d 分辨率 %dx%d（%s），状态 %s" % (
+                            index, rw, rh,
+                            "16:9 符合" if instance.is_16_9 else "非16:9",
+                            "运行中" if instance.running else "未运行(后台保活)"))
+                        if not instance.is_16_9:
+                            return False, ["雷电实例%d 分辨率 %dx%d 不是16:9，请在模拟器设置中调整" % (index, rw, rh)]
+                    if not instance.running:
+                        messages.append("提示: 实例未运行，请确认已开启后台保活")
             else:
                 messages.append("截图模式 %d 无需路径/实例检测" % mode)
         except Exception as e:

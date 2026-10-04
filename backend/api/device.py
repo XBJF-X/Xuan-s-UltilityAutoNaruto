@@ -197,88 +197,55 @@ def check_environment(config_id: str):
         "is_16_9": None,
     }
 
-    def check_files(base: str, required: list[str]) -> list[str]:
-        missing = []
-        for rel in required:
-            if not os.path.exists(os.path.join(base, rel)):
-                missing.append(rel)
-        return missing
-
     mode = result["screenshot_mode"]
     if mode == 3:  # MuMu
+        from backend.core.emulator_env import (
+            MUMU_DLL_CANDIDATES, check_mumu_files, find_mumu_manager,
+            probe_mumu_instance,
+        )
         base = cfg.get_config("MuMu安装路径", "")
         index = cfg.get_config("MuMu实例索引", 0)
-        # 候选路径与 MuMu.py / validate.py / scheduler_service.py 保持一致，任一存在即可
-        manager = None
-        for rel in ("MuMuManager.exe", "shell/MuMuManager.exe", "nx_main/MuMuManager.exe"):
-            candidate = os.path.join(base, rel)
-            if os.path.exists(candidate):
-                manager = candidate
-                break
-        dll_candidates = (
-            "shell/sdk/external_renderer_ipc.dll",
-            "nx_device/12.0/shell/sdk/external_renderer_ipc.dll",
-            "nx_device/15.0/shell/sdk/external_renderer_ipc.dll",
-            "nx_main/sdk/external_renderer_ipc.dll",
-        )
+        # 候选路径/探测解析统一由 core/emulator_env.py 提供（阶段 3 单点化）
+        dll_ok, manager_ok = check_mumu_files(base)
+        manager = find_mumu_manager(base)
         missing = [] if base else ["（未配置安装路径）"]
-        if base and not any(os.path.exists(os.path.join(base, rel)) for rel in dll_candidates):
+        if base and not dll_ok:
             missing.append("external_renderer_ipc.dll（MuMu 动态库，安装根目录/shell/nx_device/nx_main 下）")
-        if manager is None and base:
+        if base and not manager_ok:
             missing.append("MuMuManager.exe（安装根目录或 shell/、nx_main/ 下）")
         result["path_ok"] = not missing
         result["missing_files"] = missing
-        if manager is not None and os.path.exists(manager):
-            import subprocess
-            try:
-                out = subprocess.run(
-                    [manager, "info", "-v", str(index)],
-                    capture_output=True, text=True, timeout=15,
-                    encoding="utf-8", errors="ignore",
-                ).stdout or ""
-                result["instance_ok"] = ("state=Running" in out or "状态=运行" in out)
-                import re
-                w = re.search(r"ScreenWidth=(\d+)", out)
-                h = re.search(r"ScreenHeight=(\d+)", out)
-                if w and h:
-                    rw, rh = int(w.group(1)), int(h.group(1))
-                    result["resolution"] = [rw, rh]
-                    result["is_16_9"] = abs(max(rw, rh) * 9 - min(rw, rh) * 16) < 10
-                    result["resolution_ok"] = bool(result["is_16_9"])
-            except Exception:
-                pass
+        if manager is not None:
+            info = probe_mumu_instance(manager, index)
+            if info is not None:
+                result["instance_ok"] = info.running
+                if info.resolution:
+                    result["resolution"] = list(info.resolution)
+                    result["is_16_9"] = info.is_16_9
+                    result["resolution_ok"] = bool(info.is_16_9)
         result["keep_alive_hint"] = (
             "MuMu：无直接后台保活命令，建议在 MuMu 多开器设置中开启"
             "『关闭游戏后保持后台运行』；运行中实例 info -v 输出 state=Running。"
         )
     elif mode == 4:  # LD 雷电
+        from backend.core.emulator_env import (
+            LD_REQUIRED_FILES, find_ld_console, missing_files, probe_ld_instances,
+        )
         base = cfg.get_config("雷电安装路径", "")
         index = cfg.get_config("雷电实例索引", 0)
-        missing = check_files(base, ["ldconsole.exe", "ldopengl64.dll"]) if base else ["（未配置安装路径）"]
+        missing = missing_files(base, LD_REQUIRED_FILES) if base else ["（未配置安装路径）"]
         result["path_ok"] = not missing
         result["missing_files"] = missing
-        ldconsole = os.path.join(base, "ldconsole.exe")
-        if os.path.exists(ldconsole):
-            import subprocess
-            try:
-                out = subprocess.run(
-                    [ldconsole, "list2"],
-                    capture_output=True, text=True, timeout=15,
-                    encoding="utf-8", errors="ignore",
-                ).stdout or ""
-                for line in out.strip().splitlines():
-                    parts = line.split(",")
-                    if len(parts) >= 8 and parts[0].strip().isdigit() and int(parts[0]) == index:
-                        result["instance_ok"] = True
-                        sysboot = parts[4].strip()  # 第5列 sysboot：1=运行(含后台保活)
-                        result["running"] = sysboot == "1"
-                        rw, rh = int(parts[7]), int(parts[8])
-                        result["resolution"] = [rw, rh]
-                        result["is_16_9"] = abs(max(rw, rh) * 9 - min(rw, rh) * 16) < 10
-                        result["resolution_ok"] = bool(result["is_16_9"])
-                        break
-            except Exception:
-                pass
+        console = find_ld_console(base)
+        if console is not None:
+            instance = probe_ld_instances(console).get(index)
+            if instance is not None:
+                result["instance_ok"] = True
+                result["running"] = instance.running
+                if instance.resolution:
+                    result["resolution"] = list(instance.resolution)
+                    result["is_16_9"] = instance.is_16_9
+                    result["resolution_ok"] = bool(instance.is_16_9)
         result["keep_alive_hint"] = (
             "雷电：ldconsole list2 第5列(sysboot) 为 1 表示实例运行中（含后台保活）；"
             "若需确认『后台保活』设置，请打开雷电多开器 → 设置 → 其他 → 勾选『关闭模拟器(后台)时保持运行』。"

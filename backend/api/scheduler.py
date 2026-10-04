@@ -1,7 +1,6 @@
 """调度器管理 API 路由 - 延迟初始化，接入 WebSocket 状态推送"""
 import asyncio
 import logging
-import os
 import re
 import threading
 import time
@@ -236,7 +235,15 @@ def _precheck_serial(cfg) -> tuple[list[str], list[str]]:
 
 
 def _precheck_screenshot_path(cfg) -> list[str]:
-    """截图路径环境预检：MuMu/LD 安装路径下关键文件存在性（参照 validate.py / device.py check-environment）。"""
+    """截图路径环境预检：MuMu/LD 安装路径下关键文件存在性。
+
+    候选清单/存在性判定统一走 backend/core/emulator_env.py（阶段 3 单点化，
+    与 device.py 的 check-environment、validate.py 的 install-path 共用同一份知识）。
+    """
+    from backend.core.emulator_env import (
+        LD_CONSOLE_NAME, LD_DLL_NAME, check_mumu_files, check_ld_files,
+    )
+
     mode = cfg.get_config("截图模式", 2)
     errors: list[str] = []
     if mode == 3:  # MuMu
@@ -245,9 +252,7 @@ def _precheck_screenshot_path(cfg) -> list[str]:
         if not base:
             errors.append("未配置 MuMu 安装路径（截图模式为 MuMu 时需要，请在全局设置中配置）")
             return errors
-        from backend.api.validate import MUMU_MANAGER_CANDIDATES, MUMU_DLL_CANDIDATES
-        manager_ok = any(os.path.exists(os.path.join(base, rel)) for rel in MUMU_MANAGER_CANDIDATES)
-        dll_ok = any(os.path.exists(os.path.join(base, rel)) for rel in MUMU_DLL_CANDIDATES)
+        dll_ok, manager_ok = check_mumu_files(base)
         if not dll_ok:
             errors.append(base)
             errors.append("MuMu 安装路径下未找到 external_renderer_ipc.dll（截图动态库）")
@@ -259,12 +264,13 @@ def _precheck_screenshot_path(cfg) -> list[str]:
         if not base:
             errors.append("未配置 雷电安装路径（截图模式为 LD 时需要，请在全局设置中配置）")
             return errors
-        if not os.path.exists(os.path.join(base, "ldconsole.exe")):
+        dll_ok, console_ok = check_ld_files(base)
+        if not console_ok:
             errors.append(base)
-            errors.append("雷电安装路径下未找到 ldconsole.exe")
-        if not os.path.exists(os.path.join(base, "ldopengl64.dll")):
+            errors.append(f"雷电安装路径下未找到 {LD_CONSOLE_NAME}")
+        if not dll_ok:
             errors.append(base)
-            errors.append("雷电安装路径下未找到 ldopengl64.dll")
+            errors.append(f"雷电安装路径下未找到 {LD_DLL_NAME}")
     return errors
 
 

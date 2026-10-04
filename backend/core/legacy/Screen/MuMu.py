@@ -82,13 +82,11 @@ class MuMu(Screen):
 
     def _load_mumu_library(self):
         """加载 MuMu 模拟器的 DLL 库"""
-        # 尝试不同的 DLL 路径
-        lib_paths=[
-            os.path.join(self.current_mumu_path, "nx_device/12.0/shell/sdk/external_renderer_ipc.dll"),
-            os.path.join(self.current_mumu_path, "nx_device/15.0/shell/sdk/external_renderer_ipc.dll"),
-            os.path.join(self.current_mumu_path, "shell/sdk/external_renderer_ipc.dll"),
-            os.path.join(self.current_mumu_path, "nx_main/sdk/external_renderer_ipc.dll")
-        ]
+        # DLL 候选相对路径由 core/emulator_env.py 单点提供（阶段 3 去重：
+        # 此前 MuMu.py 的候选顺序与 validate/device/scheduler_service 不同）
+        from backend.core.emulator_env import MUMU_DLL_CANDIDATES
+        lib_paths = [os.path.join(self.current_mumu_path, rel)
+                     for rel in MUMU_DLL_CANDIDATES]
         no_exist_lib_paths = []
         load_failed_lib_paths = []
         dll_handle = None
@@ -274,13 +272,9 @@ class MuMu(Screen):
         if not mumu_path:
             self.logger.warning("未配置 MuMu安装路径，无法重启模拟器")
             return False
-        # MuMuManager.exe 可能位于安装根目录 / shell/ / nx_main/ 子目录
-        manager = None
-        for rel in ("MuMuManager.exe", "shell/MuMuManager.exe", "nx_main/MuMuManager.exe"):
-            candidate = os.path.join(mumu_path, rel)
-            if os.path.exists(candidate):
-                manager = candidate
-                break
+        # MuMuManager.exe 的候选目录由 core/emulator_env.py 单点提供
+        from backend.core.emulator_env import find_mumu_manager
+        manager = find_mumu_manager(mumu_path)
         if not manager:
             self.logger.warning(f"未找到 MuMuManager.exe: {mumu_path}")
             return False

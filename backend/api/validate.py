@@ -6,6 +6,10 @@ from typing import Literal, List
 from fastapi import APIRouter
 from pydantic import BaseModel
 
+from backend.core.emulator_env import (
+    LD_CONSOLE_NAME, LD_DLL_NAME, MUMU_DLL_CANDIDATES, MUMU_MANAGER_CANDIDATES,
+)
+
 router = APIRouter()
 logger = logging.getLogger("ValidateAPI")
 
@@ -15,19 +19,11 @@ class InstallPathRequest(BaseModel):
     path: str
 
 
-# MuMu 候选动态库相对路径（任一存在即视为 dll 满足）
-MUMU_DLL_CANDIDATES = [
-    "shell/sdk/external_renderer_ipc.dll",
-    "nx_device/12.0/shell/sdk/external_renderer_ipc.dll",
-    "nx_device/15.0/shell/sdk/external_renderer_ipc.dll",
-    "nx_main/sdk/external_renderer_ipc.dll",
-]
-
-# MuMuManager.exe 候选相对路径（任一存在即视为满足）
-MUMU_MANAGER_CANDIDATES = [
-    "MuMuManager.exe",
-    "shell/MuMuManager.exe",
-    "nx_main/MuMuManager.exe",
+# 候选清单的唯一实现已迁至 backend/core/emulator_env.py（阶段 3 单点化）；
+# 这里保留同名别名以兼容既有 import（api/scheduler.py 曾从此处导入）。
+__all__ = [
+    "router", "InstallPathRequest", "validate_install_path",
+    "MUMU_DLL_CANDIDATES", "MUMU_MANAGER_CANDIDATES", "LD_CONSOLE_NAME", "LD_DLL_NAME",
 ]
 
 
@@ -39,9 +35,8 @@ async def validate_install_path(req: InstallPathRequest):
         return {"ok": False, "dll_ok": False, "manager_ok": False, "missing": [""]}
 
     if req.mode == "mumu":
-        # 动态库：任一候选存在即可
+        # 动态库 / MuMuManager.exe：各自候选任一存在即可（候选清单见 core/emulator_env）
         dll_ok = any(os.path.exists(os.path.join(path, rel)) for rel in MUMU_DLL_CANDIDATES)
-        # MuMuManager.exe：安装根目录 / shell / nx_main 子目录（任一存在即可）
         manager_ok = any(os.path.exists(os.path.join(path, rel)) for rel in MUMU_MANAGER_CANDIDATES)
         missing: List[str] = []
         if not dll_ok:
@@ -56,13 +51,13 @@ async def validate_install_path(req: InstallPathRequest):
         }
 
     # 雷电
-    ldconsole_ok = os.path.exists(os.path.join(path, "ldconsole.exe"))
-    ldopengl_ok = os.path.exists(os.path.join(path, "ldopengl64.dll"))
+    ldconsole_ok = os.path.exists(os.path.join(path, LD_CONSOLE_NAME))
+    ldopengl_ok = os.path.exists(os.path.join(path, LD_DLL_NAME))
     missing = []
     if not ldconsole_ok:
-        missing.append("ldconsole.exe")
+        missing.append(LD_CONSOLE_NAME)
     if not ldopengl_ok:
-        missing.append("ldopengl64.dll")
+        missing.append(LD_DLL_NAME)
     return {
         "ok": ldconsole_ok and ldopengl_ok,
         "dll_ok": ldopengl_ok,
