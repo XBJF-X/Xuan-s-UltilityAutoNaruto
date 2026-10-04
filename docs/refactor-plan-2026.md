@@ -512,7 +512,7 @@ DeviceRuntime → PresetRunner → IdleNotifier → ActivationManager → ScanLo
 | 4.1 | `device_runtime.py` | `_device_serial` `_shutdown_clicker_engine` `_ensure_no_stale_contacts` `_wait_clicker_stopped` `_wait_device_ready` | ✅ |
 | 4.2 | `preset_runner.py` | `_init_once_pending` `_reset_once_progress` + **持有** `pending_once_tasks`/`_preset_total`/`_completed_count` | ✅ |
 | 4.3 | `idle_notifier.py` | `_notifications_enabled` `_notify_user` `_notify_preset_finished` `_notify_account_idle` + **持有** `_idle_notified` | ✅ |
-| 4.4 | `activation_manager.py` | `toggle_task_activation` `_ensure_task_runnable` `_restore_all_temp_activations` `_restore_temp_activation` `execute_task_now` `_reject_manual_execute_outside_window` `_on_task_activate_request` `_schedule_task_activation` `_process_pending_activations` `_skip_expired_activation`（最大一步，6 个测试脚本覆盖） | ⏳ |
+| 4.4 | `activation_manager.py` | `toggle_task_activation` `_ensure_task_runnable` `_restore_all_temp_activations` `_restore_temp_activation` `_reject_manual_execute_outside_window`（4.4a）+ `_on_task_activate_request` `_schedule_task_activation` `_process_pending_activations` `_skip_expired_activation` + 持有 `_temp_activated_tasks`/`_pending_activate_tasks`（4.4b） | ✅ 分两次提交 |
 | 4.5 | `scan_loop.py` | `_start_scan_loop` `_scan_loop` `_report_loop_death` `scan` `_scan_once` + RLock（`scan()` 改 `plan → execute(commands)`） | ⏳ |
 | 4.6 | `freeze_handler.py` | `_on_watchdog_freeze` `_process_freeze_event` `_handle_scene_stuck` `_handle_game_frozen` `_handle_emulator_frozen` | ⏳ |
 | 4.7 | `task_state_store.py` | `get_status` `get_tasks_status` `_update_task_status` `_push_snapshot` `_sync_task_state` + 状态字典（订阅式 `on_change`） | ⏳ |
@@ -532,25 +532,40 @@ DeviceRuntime → PresetRunner → IdleNotifier → ActivationManager → ScanLo
 **回归门**：每步跑 `test_scene/_run_verify_batch.py`（34 个脚本），4.4 与 4.5 完成后额外跑
 `--full`（含 HEAVY）与 `verify_ws_dual_write_e2e.py`。
 
-### 7.18 阶段 4 进度快照（2026-10-04，4.1~4.3 已完成）
+### 7.18 阶段 4 进度快照（2026-10-04，4.1~4.4 已完成）
 
 | 项 | 数值 |
 |---|---|
-| `SchedulerService` 行数 | **1604 → 1476**（−128） |
-| 新协作者模块 | `services/scheduler/{constants,device_runtime,preset_runner,idle_notifier}.py`（+`__init__.py` 门面） |
-| 服务侧保留 | 11 个同名转发方法 + 5 个同名 property（`pending_once_tasks`/`_preset_total`/`_completed_count`/`_idle_notified`） |
-| 测试面 | 零改动（含 `sched._notify_user = ...` 捕获、`sched.pending_once_tasks = [...]` 直写、`inspect.getsource` 源码断言） |
-| 回归 | 每步后全批 **34/34 PASS**；`compileall` OK |
-| 提交 | `3d856096`(4.1) → `6085a244`(4.2) → `78b1ee17`(4.3) |
+| `SchedulerService` 行数 | **1604 → 1335**（−269，−17%） |
+| 新协作者模块 | `services/scheduler/{constants,device_runtime,preset_runner,idle_notifier,activation_manager}.py`（+`__init__.py` 门面） |
+| 服务侧保留 | 20 个同名转发方法 + 7 个同名 property（`pending_once_tasks`/`_preset_total`/`_completed_count`/`_idle_notified`/`_temp_activated_tasks`/`_pending_activate_tasks`） |
+| 测试面 | 零改动（含 `sched._notify_user = ...` 捕获、`sched.pending_once_tasks = [...]`、`sched._pending_activate_tasks.append(...)`、`svc._temp_activated_tasks = {}`、`from ...scheduler_service import SOURCE_*`、`inspect.getsource` 源码断言） |
+| 回归 | 每步后全批 **34/34 PASS**；7 个激活相关脚本全 OK；`compileall` OK |
+| 提交 | `3d856096`(4.1) → `6085a244`(4.2) → `78b1ee17`(4.3) → `59f488b2`(4.4a) → `a4f40ab3`(4.4b) |
+
+**协作者访问方式（阶段 4 定稿）**：`_collaborator(attr, factory)` + 同名只读 property **懒加载**。
+起因：HEAVY 脚本 `verify_touch_residue_fix.py` 用 `object.__new__(SchedulerService)` 绕过
+`__init__`，4.1 首版把协作者装配写在 `__init__` 里 → 该脚本新增 5 个
+`AttributeError: ... has no attribute 'device_runtime'`。改为惰性创建后两种构造方式都可用。
+
+**HEAVY 脚本基线核对方法（可复用）**：`git worktree add <tmp> <重构前的 commit>` →
+在临时工作区跑脚本 → `git worktree remove`。据此确认 `verify_touch_residue_fix.py`
+在阶段 4 起点即为 **2 failures / 23 errors**（Control 层与用户 WIP 不一致），
+当前数值与基线**完全一致**；基线已写入 `_run_verify_batch.py` 的 HEAVY 条目注释。
 
 **踩坑记录（供后续步骤复用）**
 1. 4.2 首版遗漏了测试对 `sched.pending_once_tasks = [...]` 的**直接赋值** → property 必须配 setter。
 2. 4.3 首版把 `notify_preset_finished` 的文案改成"拼接 suffix + lstrip('，')"，与原文案不等价
    （丢逗号）→ 已改回逐字原文；**搬文案时不要做"等价改写"**。
 3. 4.3 首版漏掉 `self.idle_notifier = IdleNotifier(self)` 装配 → 15 个用例报
-   `AttributeError`；搬走方法后必须同步在 `__init__` 装配协作者。
+   `AttributeError`；4.4 起改懒加载后该类问题不再可能出现。
 4. 4.3 首版让协作者直接调用自己的 `notify_user` → 3 个用 `sched._notify_user = ...` 捕获通知的
    测试静默失败（0 != 1）；改为回调 `service._notify_user` 后恢复。
+5. 4.4b 把 `SOURCE_MANUAL`/`SOURCE_ACTIVATION` 移入 `constants.py`：协作者需要它们，
+   若从 `scheduler_service` 导入会形成循环导入；测试从 `scheduler_service` 导入的写法靠
+   同名再导出保持。
+
+### 7.11 事故与恢复记录（重要）
 
 ### 7.11 事故与恢复记录（重要）
 

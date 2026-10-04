@@ -32,6 +32,11 @@ HEAVY = {
     "verify_ocr_cpu_fallback.py",
     "verify_ocr_accel_check.py",
     "verify_clicker_batching.py",
+    # 基线（阶段 4 起点 e779bac2，用 `git worktree` 复核）：Ran 49 → failures=2, errors=23。
+    # 失败全部是 Control 层与用户 WIP 不一致所致（`Clicker._minitouch_click_worker` /
+    # `_refresh_minitouch_instance` / `_stopped_event` 不存在、`MiniTouch.max_contacts`
+    # 无 setter、2 个控制实例切换断言 + 1 个 IndexError），与调度器重构无关。
+    # **重构后该脚本的失败数必须仍为 2/23**，新增即为回归。
     "verify_touch_residue_fix.py",
     "verify_adb_bootstrap.py",
     "verify_ws_dual_write_e2e.py",
