@@ -1332,15 +1332,24 @@ class BaseTask:
             return None
         return path
 
-    def _cleanup_on_stop(self):
-        """停止请求时的清理"""
+    def _cleanup(self, reason: str = ""):
+        """任务收尾的统一清理：停止连点 + 复位执行进度。
+
+        阶段 3 合并：`_cleanup_on_stop/_error/_timeout/_complete/_too_early` 五个钩子的
+        方法体原本**逐字相同**；现在它们都是本方法的转发别名（保留同名以兼容既有调用点
+        与子类重写）。`reason` 仅用于调试留痕，不改变清理动作。
+        """
+        self.logger.debug(f"任务清理（{reason or '未指明'}）")
         self.operationer.clicker.stop()
         self.reset_task_exe_prog()
 
+    def _cleanup_on_stop(self):
+        """停止请求时的清理"""
+        self._cleanup("stop")
+
     def _cleanup_on_error(self):
-        """步骤失败 / 未捕获异常时的清理（与超时一致：停止连点并复位进度，便于冷却后重试）"""
-        self.operationer.clicker.stop()
-        self.reset_task_exe_prog()
+        """步骤失败 / 未捕获异常时的清理（便于冷却后重试）"""
+        self._cleanup("error")
 
     def _auto_screenshot(self, reason: str) -> bool:
         """错误/超时/异常场景自动截图一次，保存到 log/<用户名>/<日期>/screenshot/<任务名>/，
@@ -1388,18 +1397,15 @@ class BaseTask:
 
     def _cleanup_on_timeout(self):
         """超时时的清理"""
-        self.operationer.clicker.stop()
-        self.reset_task_exe_prog()
+        self._cleanup("timeout")
 
     def _cleanup_on_complete(self):
         """任务正常完成时的清理"""
-        self.operationer.clicker.stop()
-        self.reset_task_exe_prog()
+        self._cleanup("complete")
 
     def _cleanup_on_too_early(self):
         """过早执行时的清理"""
-        self.operationer.clicker.stop()
-        self.reset_task_exe_prog()
+        self._cleanup("too_early")
 
     def _activate_another_task(self, task_name: str,
                                next_execute_time: datetime.datetime | None = None,
@@ -1573,140 +1579,17 @@ class BaseTask:
     ############################################################################################
     #                                 某些弹窗或独立场景的处理                                   #
     ############################################################################################
-    @TransitionOn("二级密码")
-    def _(self):
-        self.logger.info("出现二级密码窗口")
-        password = self.config.get_config("二级密码")
-        if len(password) != 6:
-            raise StepFailedError("请检查二级密码！")
-        # 输入操作
-        input_el = self.operationer.get_element("输入框")
-        if input_el is None:
-            raise StepFailedError("未找到二级密码输入框")
-        self.operationer.click_and_input(input_el, password)
-        # 点击二级密码-确定
-        confirm_el = self.operationer.get_element("确定")
-        if confirm_el is None:
-            self.logger.error("未找到二级密码确认按钮")
-            return False
-        if not self.operationer.click_and_wait(confirm_el):
-            self.logger.error("二级密码验证失败")
-        return False
+    # 阶段 3 外移：21 个公共弹窗/独立场景处理函数原先写在本类体内（全部以 `@TransitionOn`
+    # 装饰且方法名都是 `_`，靠描述符 __set_name__ 注册），现已集中到
+    # `Task/default_transitions.py` 的 DEFAULT_TRANSITION_HANDLERS 表中，并在本模块末尾
+    # 由 `install_default_handlers(BaseTask)` 装上。
+    # 语义完全一致：实例侧仍按 MRO 合并 transition_func，子类同名场景覆盖默认实现，
+    # 处理函数仍以 `func(self)` 调用。
+    transition_func: dict = {}
 
-    @TransitionOn("升级")
-    def _(self):
-        self.operationer.click_and_wait("X")
-        return False
 
-    @TransitionOn("公告")
-    def _(self):
-        self.operationer.click_and_wait("X")
-        return False
+# 装上内置的公共弹窗/独立场景处理函数（表见 Task/default_transitions.py）
+from backend.core.legacy.Task.default_transitions import install_default_handlers  # noqa: E402
 
-    @TransitionOn("登录界面-开始游戏")
-    def _(self):
-        self.operationer.click_and_wait("开始游戏")
-        return False
+install_default_handlers(BaseTask, replace=True)
 
-    @TransitionOn("登录奖励")
-    def _(self):
-        self.operationer.click_and_wait("领取")
-        return False
-
-    @TransitionOn("好友排名至X位")
-    def _(self):
-        self.operationer.click_and_wait("确定")
-        return False
-
-    @TransitionOn("重连提示")
-    def _(self):
-        self.logger.warning("即将尝试网络重连...")
-        self.operationer.click_and_wait("继续")
-        return False
-
-    @TransitionOn("响应超时")
-    def _(self):
-        self.operationer.click_and_wait("确定")
-        self.logger.warning("响应超时！")
-        return False
-
-    @TransitionOn("安装包更新异常")
-    def _(self):
-        self.operationer.click_and_wait("重试")
-        return False
-
-    @TransitionOn("对方数据异常")
-    def _(self):
-        self.operationer.click_and_wait("确定")
-        self.logger.warning("对方数据异常，即将退出战斗...")
-        return False
-
-    @TransitionOn("网络不畅通")
-    def _(self):
-        self.operationer.click_and_wait("确定")
-        self.logger.warning("网络不通畅！")
-        return False
-    @TransitionOn("登录授权过期")
-    def _(self):
-        self.operationer.click_and_wait("忽略")
-        self.logger.warning("登陆授权过期，已自动忽略并继续执行...")
-        return False
-
-    @TransitionOn("版本更新1")
-    def _(self):
-        self.operationer.click_and_wait("重启游戏")
-        self.logger.warning("游戏出现版本更新，请重启游戏更新")
-        return False
-
-    @TransitionOn("版本更新2")
-    def _(self):
-        self.operationer.click_and_wait("重启")
-        self.logger.warning("游戏出现版本更新，此更新必须重启")
-        return False
-
-    @TransitionOn("是否隐藏气泡")
-    def _(self):
-        self.operationer.click_and_wait("关闭所有气泡")
-        self.operationer.click_and_wait("确定")
-        return False
-
-    @TransitionOn("网络连接失败")
-    def _(self):
-        self.operationer.click_and_wait("确定")
-        self.logger.warning("决斗场网络连接失败，已退出战斗")
-        return False
-
-    @TransitionOn("聊天频道")
-    def _(self):
-        self.operationer.click_and_wait("X")
-        return False
-
-    @TransitionOn("网络异常重连失败")
-    def _(self):
-        self.operationer.click_and_wait("确定")
-        self.logger.warning("网络异常重连失败，已退出战斗")
-        return False
-
-    @TransitionOn("未知含X场景")
-    def _(self):
-        if self.operationer.search_and_click([
-                self.operationer.get_element("X-普通", "主场景"),
-                self.operationer.get_element("X-广告-1", "主场景"),
-                self.operationer.get_element("X-广告-2", "主场景")
-        ], [],
-                                             once_max_attempts=1,
-                                             max_attempts=1):
-            self.logger.info("点击X关闭")
-        return False
-
-    @TransitionOn("未知场景")
-    def _(self):
-        self.operationer.clicker.stop()
-        time.sleep(1)
-        return False
-
-    @TransitionOn("未注册场景")
-    def _(self):
-        self.operationer.clicker.stop()
-        time.sleep(1)
-        return False
