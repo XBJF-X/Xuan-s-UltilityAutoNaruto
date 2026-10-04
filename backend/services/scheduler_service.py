@@ -17,6 +17,8 @@ from backend.core.scene_graph import SceneGraph
 from backend.runtime.log_sinks import get_handlers
 # 阶段 4.1：设备/连点引擎运行时协作者
 from backend.services.scheduler.device_runtime import DeviceRuntime
+# 阶段 4.2：临时预设运行器
+from backend.services.scheduler.preset_runner import PresetRunner
 from backend.core.legacy.Exceptions import (
     STOP_REASON_FROZEN,
     STOP_REASON_STUCK,
@@ -153,7 +155,8 @@ class SchedulerService:
 
         # 临时预设（配置类型=临时）：只执行一遍、按顺序执行，跑完自动关闭调度器
         self.run_once = (config.config_type == "临时")
-        self.pending_once_tasks: List[str] = []
+        # 阶段 4.2：预设状态（待执行队列/计数）由 PresetRunner 持有，
+        # 本类以同名 property 暴露（见下方"临时预设"小节），既有调用点逐字不变
         # 待激活任务列表：任务执行期间通过 _on_task_activate_request 登记，
         # 待当前任务结束后（_execute_done_callback）统一激活并立即执行，
         # 避免在任务执行线程中直接激活对扫描循环时序的依赖（更稳定）。
@@ -170,10 +173,7 @@ class SchedulerService:
         # 桌面通知（仅 Windows）：预设跑完 / 账号配置模式告一段落时提醒用户
         # _idle_notified 为“同一段空闲只通知一次”的去抖标记
         self._idle_notified = False
-        # 本次启动以来执行结束的任务数（用于判断是否真的“执行过一段时间”）
-        self._completed_count = 0
-        # 临时预设本次待执行任务总数（通知文案用）
-        self._preset_total = 0
+        # 已执行完任务数与预设任务总数：阶段 4.2 起由 PresetRunner 持有（同名 property）
 
         # 为当前 config 添加专属文件处理器（log/<用户名>/<日期>/Xuan.log）
         username = config.get_config("用户名", "unknown")
@@ -194,6 +194,8 @@ class SchedulerService:
 
         # 阶段 4.1：设备/连点引擎运行时协作者（同名转发方法见下方"设备运行时"小节）
         self.device_runtime = DeviceRuntime(self)
+        # 阶段 4.2：临时预设运行器（同名转发方法 + 状态 property 见"临时预设"小节）
+        self.preset_runner = PresetRunner(self)
 
         self.logger.info("SchedulerService 初始化完成")
 
@@ -499,10 +501,10 @@ class SchedulerService:
         self._pending_activate_tasks.clear()
         # 清空临时启用登记（跨轮次的临时启用不应影响本轮判定）
         self._temp_activated_tasks.clear()
-        # 通知去抖标记与执行计数按本轮重置（避免上一轮的“已通知”状态影响本轮）
+        # 通知去抖标记与执行计数按本轮重置（避免上一轮的“已通知”状态影响本轮）；
+        # 计数由 PresetRunner 持有（阶段 4.2）
         self._idle_notified = False
-        self._completed_count = 0
-        self._preset_total = 0
+        self.preset_runner.reset_counters()
         self._log_start_banner()
 
         # 临时任务启动时一律关闭不执行（临时预设除外，其由用户显式勾选），
@@ -1002,20 +1004,8 @@ class SchedulerService:
             self._scanning = False
 
     def _init_once_pending(self):
-        """临时预设：生成按序待执行任务列表（按 任务执行顺序 过滤已启用，顺序缺失的任务排到末尾）"""
-        order = self.config.get_config("任务执行顺序", []) or []
-        enabled = [t for t, info in self.config.tasks.items()
-                   if info.get("是否启用", False)]
-        if order:
-            pending = [t for t in order if t in enabled]
-            for t in enabled:
-                if t not in pending:
-                    pending.append(t)
-        else:
-            pending = list(enabled)
-        self.pending_once_tasks = pending
-        self._preset_total = len(pending)
-        self.logger.info(f"预设待执行任务（按顺序）: {' -> '.join(pending) or '无'}")
+        """临时预设：生成按序待执行任务列表（实现见 PresetRunner）"""
+        return self.preset_runner.init_pending()
 
     def _scan_once(self):
         """临时预设模式：按任务执行顺序逐一执行，失败/超时也跳过继续，全部跑完后自动关闭调度器"""
@@ -1055,31 +1045,39 @@ class SchedulerService:
             threading.Thread(target=self.stop, kwargs={"reason": "预设任务全部执行完毕"}, daemon=True).start()
 
     def _reset_once_progress(self):
-        """临时预设运行结束后，将执行进度与下次执行时间重置为默认值，不持久化运行结果"""
-        try:
-            import json as _json
-            with open(self.config.default_config_path, "r",
-                      encoding="utf-8") as f:
-                default_tasks = _json.load(f).get("任务", {})
-            changed = False
-            for task_name, task_info in self.config.tasks.items():
-                default_task = default_tasks.get(task_name, {})
-                if ("下次执行时间" in default_task
-                        and task_info.get("下次执行时间", 0)
-                        != default_task.get("下次执行时间", 0)):
-                    task_info["下次执行时间"] = default_task.get("下次执行时间", 0)
-                    changed = True
-                default_prog = default_task.get("执行进度", {})
-                cur_prog = task_info.get("执行进度", {})
-                for k in list(cur_prog.keys()):
-                    if k in default_prog and cur_prog[k] != default_prog[k]:
-                        cur_prog[k] = default_prog[k]
-                        changed = True
-            if changed:
-                self.config.save_config_to_file()
-                self.logger.info("预设执行进度已重置为默认值")
-        except Exception as e:
-            self.logger.warning(f"重置预设执行进度失败: {e}")
+        """临时预设运行结束后重置执行进度与下次执行时间（实现见 PresetRunner）"""
+        return self.preset_runner.reset_progress()
+
+    # ================================================================
+    # 临时预设状态（阶段 4.2：由 PresetRunner 持有；同名 property 保证既有
+    # 读写点逐字不变：start() / _scan_once / _on_task_activate_request /
+    # _notify_preset_finished / _notify_account_idle / _execute_done_callback）
+    # ================================================================
+
+    @property
+    def pending_once_tasks(self) -> List[str]:
+        return self.preset_runner.pending_tasks
+
+    @pending_once_tasks.setter
+    def pending_once_tasks(self, value: List[str]) -> None:
+        # 既有测试会直接写该属性（构造"预设待执行列表"场景），故提供 setter
+        self.preset_runner.pending_tasks = list(value)
+
+    @property
+    def _preset_total(self) -> int:
+        return self.preset_runner.preset_total
+
+    @_preset_total.setter
+    def _preset_total(self, value: int) -> None:
+        self.preset_runner.preset_total = value
+
+    @property
+    def _completed_count(self) -> int:
+        return self.preset_runner.completed_count
+
+    @_completed_count.setter
+    def _completed_count(self, value: int) -> None:
+        self.preset_runner.completed_count = value
 
     # ================================================================
     # 桌面通知（仅 Windows）

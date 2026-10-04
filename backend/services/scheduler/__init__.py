@@ -8,5 +8,6 @@
 （API 与 14 个测试脚本）无需改动；协作者稳定后再在收尾步骤删除转发。
 """
 from backend.services.scheduler.device_runtime import DeviceRuntime
+from backend.services.scheduler.preset_runner import PresetRunner
 
-__all__ = ["DeviceRuntime"]
+__all__ = ["DeviceRuntime", "PresetRunner"]
