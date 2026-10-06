@@ -25,6 +25,8 @@ export type WSMessage = {
     | 'hello'
     | 'error'
     | 'log.truncated'
+    /** 本次运行截图数超过每日上限（后端 v1 事件 `screenshot.limit`；payload 见 data） */
+    | 'screenshot_limit'
   level?: string
   message?: string
   config_id?: string
@@ -63,6 +65,9 @@ const V1_TO_LEGACY: Record<string, WSMessage['type']> = {
   status: 'status',
   'task.state': 'task_state',
   'scheduler.snapshot': 'scheduler_snapshot',
+  // 截图超限提醒（新增事件）：映射到 legacy 风格 `type + data`，
+  // 使 Layout 等消费方与 status/snapshot 用同一套 `data` 读取方式
+  'screenshot.limit': 'screenshot_limit',
 }
 
 function toLogEntry(item: any): LogEntry {

@@ -104,6 +104,17 @@ def _get_scheduler(config_id: str):
             msg["config_id"] = config_id
             await manager.broadcast_snapshot(msg)
 
+        async def on_screenshot_limit(payload: dict):
+            """本次运行截图数超过每日上限 → 提醒前端弹窗（提示关闭截图开关）。
+
+            走 v1 信封 + legacy 双写：旧前端按未知 type 安全忽略，新前端展示不可自动关闭的弹窗。
+            """
+            data = dict(payload)
+            data["config_id"] = config_id
+            await manager.broadcast_dual(
+                {"type": "screenshot_limit", "data": data},
+                "screenshot.limit", data, config_id=config_id)
+
         def _submit(coro) -> None:
             """把状态推送投递到主事件循环（投递失败只告警，不影响任务执行）"""
             loop = _get_main_loop_or_none()
@@ -124,11 +135,15 @@ def _get_scheduler(config_id: str):
         def sync_on_snapshot(snapshot: dict):
             _submit(on_snapshot(snapshot))
 
+        def sync_on_screenshot_limit(payload: dict):
+            _submit(on_screenshot_limit(payload))
+
         _schedulers[config_id] = SchedulerService(
             cfg,
             on_status_change=sync_on_status,
             on_task_state_change=sync_on_task,
             on_snapshot=sync_on_snapshot,
+            on_screenshot_limit=sync_on_screenshot_limit,
         )
         return _schedulers[config_id]
 

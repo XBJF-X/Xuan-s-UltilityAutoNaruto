@@ -275,6 +275,9 @@
 
     <!-- 启动引导提示：程序启动时弹出，10s 内不可关闭，勾选「不再提示」后不再弹出 -->
     <StartupNoticeDialog v-model:show="showStartupNotice" @go-feedback="handleStartupGoFeedback" />
+
+    <!-- 截图超限提醒：本次运行截图数超过每日上限时弹出，只能用户手动关闭 -->
+    <ScreenshotLimitDialog :alerts="screenshotAlerts" @consume="consumeScreenshotAlert" />
   </div>
 </template>
 
@@ -294,6 +297,7 @@ import AssistantSettingsPanel from '@/components/AssistantSettingsPanel.vue'
 import UpdateDialog from '@/components/UpdateDialog.vue'
 import FeedbackDialog from '@/components/FeedbackDialog.vue'
 import StartupNoticeDialog from '@/components/StartupNoticeDialog.vue'
+import ScreenshotLimitDialog from '@/components/ScreenshotLimitDialog.vue'
 import PresetEditor from '@/views/PresetEditor.vue'
 // 阶段 5：把任务树 / 调度器控制 / 启动检查 / 配置列表与切换四块职责抽成 composable
 // （Layout 只做编排与模板）
@@ -301,6 +305,7 @@ import { useTaskTree } from '@/composables/useTaskTree'
 import { useSchedulerControl } from '@/composables/useSchedulerControl'
 import { useStartupChecks } from '@/composables/useStartupChecks'
 import { useConfigs } from '@/composables/useConfigs'
+import { useScreenshotLimitAlerts } from '@/composables/useScreenshotLimitAlerts'
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -325,6 +330,10 @@ const {
 
 const currentView = ref<'overview' | 'task' | 'globallog' | 'assistant' | 'preset'>('overview')
 const currentTaskName = ref<string | null>(null)
+
+// ---- 截图超限提醒（每日截图上限）----
+// 订阅/退订与入队逻辑见 composables/useScreenshotLimitAlerts.ts（与其它 WS 订阅同一约定）
+const { screenshotAlerts, consumeScreenshotAlert } = useScreenshotLimitAlerts()
 
 // ---- 配置列表与切换（类型页签 / 增删改 / 右键菜单 / 切换编排）----
 // 与其它 composable 的耦合以回调注入：视图切换、任务数据加载、调度器运行状态

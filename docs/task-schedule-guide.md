@@ -256,6 +256,7 @@ source, ignore_window)`：
 | 识别缺边收敛（待补边清单 + 落库接口） | `.venv\Scripts\python.exe test_scene\verify_pending_scene_edges.py` |
 | 显式等待 / 连点进展信号（卡死判据=无进展） | `.venv\Scripts\python.exe test_scene\verify_wait_and_progress.py` |
 | 处理函数返回值约定（字符串=声明落点） | `.venv\Scripts\python.exe test_scene\verify_declare_next_scene.py` |
+| 每日截图上限（配额清理 / 重复画面跳过 / 超限提醒 + 前端弹窗） | `.venv\Scripts\python.exe test_scene\verify_screenshot_quota.py` |
 
 新增任务的验收清单：
 
@@ -530,4 +531,46 @@ def _(self):
   同一段空闲只通知一次（`SchedulerService._idle_notified`），一旦有任务进入执行/就绪队列即重新武装；
   另外**本次启动后尚未执行过任何任务时不会通知**（避免刚启动就弹窗）。
 - 相关验证：`test_scene/verify_task_notify.py`。
+
+---
+
+## 11. 每日截图上限与超限提醒（2026-09-17）
+
+**背景**：日志面板右上角的「截图」开关（配置键 `保存截图`）开启后，`Operationer._after_action`
+每完成一个动作就保存一张 PNG（"一次点击一张图"，可达每小时数百张）。用户忘关时既占磁盘、
+也产生大量无意义读写。本机制给"每个配置当天的日志文件夹"设上限，并在超限时提醒用户关掉开关。
+
+### 11.1 上限与计数范围
+
+| 项 | 约定 |
+| --- | --- |
+| 配置项 | `setting.ini [助手设置] 每日截图上限`，**默认 100，最小 100**（低于 100 自动按 100 生效） |
+| 生效方式 | 每次保存截图时**实时读取**（改设置立即生效，无需重启调度器）；读取失败/非法值回退 100 并只告警一次 |
+| 计数范围 | `log/<用户名>/<日期>/screenshot/<任务名>/*.png`（**仅自动截图**） |
+| 不参与 | `screenshot/用户截图/*.png`（顶栏「截图」按钮保存的用户手动截图）**不计数、不删除** |
+| 超额动作 | 保留**最新** X 张、删除**最早**的（按文件 mtime，同值回退文件名） |
+
+### 11.2 尽量少读写（R6）
+
+| 措施 | 说明 |
+| --- | --- |
+| 内存索引（M1） | 进入新日期/首次保存时**只扫一次**目录建索引（`backend/services/screenshot_quota.py`），之后只做内存增删 |
+| 批量删除（M2） | 写入成功后一次删完所有超出项，完成后只输出**一条**汇总 INFO（不逐文件刷日志） |
+| 单次提醒（M4） | 超限提醒每次运行只广播一次 + 只写一条 WARNING，避免"每张截图一条日志/一次弹窗"反向放大开销 |
+| 完全相同画面跳过（M5） | 同一任务内与上一张**逐像素完全一致**的画面跳过写盘（只记 DEBUG 与跳过计数）。错误/超时/卡死截图**永不跳过**，异常现场必然落盘 |
+| 容错 | 任何删除/stat/指纹异常都只记 warning，不影响截图主流程（该截的图一张不少） |
+
+### 11.3 超限提醒（不可自动消失的弹窗）
+
+- 触发：**本次运行**成功保存数 **> 每日上限**（每个配置、每次运行各自一次；`start()` 时计数归零）。
+- 链路：`ScreenshotGuard.maybe_alert` → `SchedulerService` 回调 `on_screenshot_limit`
+  （`backend/api/scheduler.py` 注入，`services` 不反向依赖 `api.ws`）→ WS 双写
+  （legacy 未知 type 被旧前端忽略 / v1 事件 `screenshot.limit`）。
+- 前端：`composables/useScreenshotLimitAlerts.ts` 订阅入队 → `components/ScreenshotLimitDialog.vue`
+  展示。弹窗 `:mask-closable="false"` `:closable="false"` `:close-on-esc="false"`、**无倒计时**，
+  只能由用户点按钮关闭；按钮为「我知道了」与「一键关闭该配置的截图开关」
+  （后者走 `PUT /api/configs/{id}/setting {key:'保存截图', value:0}`；`SchedulerService` 与
+  `ConfigService` 共用同一个 `Config` 实例，因此**立即**对运行中的调度器生效）。
+- 相关验证：`test_scene/verify_screenshot_quota.py`（配额/索引/容错/跳过/计数/提醒/前端接线）。
+
 

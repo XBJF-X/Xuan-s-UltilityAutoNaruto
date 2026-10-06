@@ -1,6 +1,7 @@
 """调度器服务 - 严格遵循原版 Scheduler.py 逻辑，剥离 PySide6，衔接新版前端"""
 import heapq
 import logging
+import os
 import threading
 import time
 import traceback
@@ -29,6 +30,14 @@ from backend.services.scheduler.scan_loop import ScanLoop
 from backend.services.scheduler.freeze_handler import FreezeIncidentHandler
 # 阶段 4.7：任务状态存储（快照读写 + 推送 + 订阅）
 from backend.services.scheduler.task_state_store import TaskStateStore
+# 截图运行守卫（本次运行计数 / 完全重复画面跳过 / 超限提醒）
+from backend.services.scheduler.screenshot_guard import ScreenshotGuard
+# 每日截图配额（内存索引 + 批量删最早，见 services/screenshot_quota.py）
+from backend.services.screenshot_quota import (
+    ScreenshotQuota,
+    get_daily_limit,
+    normalize_daily_limit,
+)
 # 说明：`STOP_REASON_STUCK` / `STOP_REASON_FROZEN` / `Stop` 的使用点已随卡死处理搬到
 # freeze_handler（阶段 4.6），本模块不再需要这些导入
 
@@ -126,7 +135,8 @@ class SchedulerService:
                  scene_graph: Optional[SceneGraph] = None,
                  on_status_change: Optional[Callable] = None,
                  on_task_state_change: Optional[Callable] = None,
-                 on_snapshot: Optional[Callable] = None):
+                 on_snapshot: Optional[Callable] = None,
+                 on_screenshot_limit: Optional[Callable] = None):
         self.logger = logging.getLogger(
             f"SchedulerService_{config.config_path.stem}")
         # 显式绑定 config_id：副本配置（Config_N_副本）靠 logger 名正则会被错判成源配置，
@@ -175,6 +185,15 @@ class SchedulerService:
         self._temp_activated_tasks: dict[str, bool] = {}
         # 截图保存回调（_lazy_init 时注入，供卡死告警截图使用）
         self._save_screenshot = None
+        # 截图运行守卫：本次运行计数 / 完全重复画面跳过 / 超限提醒（每次 start() 重置）
+        self.screenshot_guard = ScreenshotGuard(
+            config.config_path.stem, self.logger,
+            alert_callback=on_screenshot_limit)
+        # 每日截图配额缓存：key=(用户名, 日期) -> ScreenshotQuota（内存索引，跨天自动切换）
+        self._quota_lock = threading.Lock()
+        self._quota_cache: Dict[tuple, ScreenshotQuota] = {}
+        # 每日截图上限告警去重（设置值非法时只提示一次，避免每张截图刷屏）
+        self._limit_warned = ""
         # 调度器启动时间 / 停止原因（供停止横幅与问题定位）
         self.started_at: Optional[datetime] = None
         self._stop_reason = ""
@@ -272,22 +291,20 @@ class SchedulerService:
             return False, ["环境检测异常: %s" % e]
         return True, messages
 
-    def _lazy_init(self):
-        """延迟导入重型依赖（与原版 Scheduler.start 中的初始化一致）"""
-        # 未显式注入 SceneGraph 时使用全局共享单例（避免每个配置重复解码元素图）
-        if self.scene_graph is None:
-            self.scene_graph = get_shared_scene_graph()
-        from backend.core.legacy.Device import Device
-        from backend.core.legacy.Operationer import Operationer
-        from backend.core.legacy.Scene.TransitionManager import TransitionManager
-        from backend.core.legacy.Task import TASK_TYPE_MAP
-        from backend.core.legacy.Task.BaseTask import BaseTask, TaskType
+    def _build_save_screenshot_callback(self):
+        """构造截图保存回调（`_lazy_init` 注入给 Operationer 与卡死处理）。
 
-        import os
-
+        抽成方法以便单测直接构造并调用真实实现（回归脚本无需拉起真实设备）。
+        """
         def _save_screenshot(task_name: str, reason: str = ""):
             """保存当前设备截图到 log/<用户名>/<日期>/screenshot/<任务名>/ 目录。
             reason 非空表示错误/超时/卡死自动截图，由"错误自动截图"开关控制（与"保存截图"开关独立）。
+
+            保存成功后会：
+            - 按 [助手设置] 每日截图上限 清理当天最早的自动截图（用户手动截图不参与，见
+              services/screenshot_quota.py）；
+            - 累计"本次运行"张数，超过上限时广播一次提醒（提示关闭日志面板右上角截图开关）；
+            - 跳过与上一张**完全相同**的画面（默认截图路径），减少静止画面期间的磁盘写入。
             """
             try:
                 if reason:
@@ -305,23 +322,47 @@ class SchedulerService:
                     return
                 import numpy as np
                 arr = np.array(img)
+                # M5：与上一张逐像素完全相同的画面跳过写盘（错误/超时/卡死截图永不跳过）
+                if self.screenshot_guard.should_skip(task_name, arr, reason=reason):
+                    return
                 username = self.config.get_config("用户名", "unknown")
                 date_str = datetime.now().strftime("%Y-%m-%d")
                 ts = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:-3]
                 safe_name = task_name.replace("/", "_").replace(
                     "\\", "_") if task_name else "unknown"
-                log_dir = get_real_path("log")
-                save_dir = os.path.join(log_dir, username, date_str,
-                                        "screenshot", safe_name)
+                screenshot_root = os.path.join(
+                    get_real_path("log"), username, date_str, "screenshot")
+                save_dir = os.path.join(screenshot_root, safe_name)
                 os.makedirs(save_dir, exist_ok=True)
                 filepath = os.path.join(
                     save_dir, f"{ts}{('_' + reason) if reason else ''}.png")
                 cv2.imencode('.png', arr)[1].tofile(filepath)
                 self.logger.info(
                     f"保存截图到{filepath}" + (f"（原因: {reason}）" if reason else ""))
+                # 每日配额 + 本次运行计数/超限提醒（任何异常都不得影响截图主流程）
+                try:
+                    self._enforce_screenshot_quota(screenshot_root, filepath)
+                except Exception as _e:
+                    self.logger.warning(
+                        f"截图配额处理失败（截图已保存）: {type(_e).__name__}: {_e}")
             except Exception as e:
                 # 截图保存失败不影响任务主流程，但必须留痕（原实现静默吞掉异常）
                 self.logger.warning(f"截图保存失败: {type(e).__name__}: {e}")
+
+        return _save_screenshot
+
+    def _lazy_init(self):
+        """延迟导入重型依赖（与原版 Scheduler.start 中的初始化一致）"""
+        # 未显式注入 SceneGraph 时使用全局共享单例（避免每个配置重复解码元素图）
+        if self.scene_graph is None:
+            self.scene_graph = get_shared_scene_graph()
+        from backend.core.legacy.Device import Device
+        from backend.core.legacy.Operationer import Operationer
+        from backend.core.legacy.Scene.TransitionManager import TransitionManager
+        from backend.core.legacy.Task import TASK_TYPE_MAP
+        from backend.core.legacy.Task.BaseTask import BaseTask, TaskType
+
+        _save_screenshot = self._build_save_screenshot_callback()
 
         self._save_screenshot = _save_screenshot
 
@@ -346,6 +387,79 @@ class SchedulerService:
         )
         self.executor.set_watchdog(self.watchdog)
         return TASK_TYPE_MAP, BaseTask, TaskType
+
+    # ================================================================
+    # 每日截图配额与运行计数（R6：尽量少读写，且不影响截图主流程）
+    # ================================================================
+
+    def _quota_for(self, screenshot_root: str) -> ScreenshotQuota:
+        """取（并按需新建）某个 screenshot 根目录的配额实例。
+
+        按 ``(用户名, 日期)`` 复用实例，使内存索引得以跨保存复用；跨天/改名时自动新建，
+        旧实例按插入序淘汰（正常配置最多 2 个：今天与昨天）。
+        """
+        key = (str(screenshot_root), )
+        with self._quota_lock:
+            quota = self._quota_cache.get(key)
+            if quota is None:
+                quota = ScreenshotQuota(screenshot_root, self.logger)
+                self._quota_cache[key] = quota
+                if len(self._quota_cache) > 2:
+                    for stale_key in list(self._quota_cache)[:-2]:
+                        self._quota_cache.pop(stale_key, None)
+            return quota
+
+    def _daily_screenshot_limit(self) -> int:
+        """读取每日截图上限：非数字/越界值会被夹取或回退默认值（只提示一次，避免刷屏）"""
+        raw = None
+        try:
+            from backend.core.settings_store import SettingsService
+            raw = SettingsService().get("助手设置", "每日截图上限")
+        except Exception as e:
+            if self._limit_warned != "error":
+                self._limit_warned = "error"
+                self.logger.warning(f"读取[助手设置] 每日截图上限 失败，按默认值处理: {e}")
+            from backend.services.screenshot_quota import DEFAULT_DAILY_LIMIT
+            return DEFAULT_DAILY_LIMIT
+        limit = normalize_daily_limit(raw)
+        if not self._limit_warned:
+            if raw is None or str(raw).strip() == "":
+                self._limit_warned = "missing"
+                self.logger.warning(
+                    "未读到[助手设置] 每日截图上限，按默认值 %d 张处理", limit)
+            else:
+                try:
+                    raw_num = int(float(str(raw).strip()))
+                except (TypeError, ValueError):
+                    raw_num = None
+                if raw_num is None:
+                    self._limit_warned = "invalid"
+                    self.logger.warning(
+                        "每日截图上限设置值非法（%r），按默认值 %d 处理", raw, limit)
+                elif raw_num < limit:
+                    self._limit_warned = "clamped"
+                    self.logger.warning(
+                        "每日截图上限最小为 %d，已按 %d 生效（设置值 %d）", limit, limit, raw_num)
+        return limit
+
+    def _enforce_screenshot_quota(self, screenshot_root: str, filepath: str) -> dict:
+        """截图落盘后的配额清理与"本次运行"计数/提醒。
+
+        返回 ``{deleted, total, run_count, limit, alerted}``（供单测断言）。
+        """
+        quota = self._quota_for(screenshot_root)
+        limit = self._daily_screenshot_limit()
+        result = quota.prune(filepath, limit)
+        if result.skipped:
+            # 不在本实例管辖范围（例如用户手动截图目录）：不计数、不提醒
+            return {"deleted": 0, "total": result.total, "run_count": self.screenshot_guard.run_count,
+                    "limit": limit, "alerted": False}
+        stats = self.screenshot_guard.note_saved()
+        alerted = self.screenshot_guard.maybe_alert(
+            run_count=stats["run_count"], limit=stats["limit"], today_count=result.total)
+        return {"deleted": result.deleted, "total": result.total,
+                "run_count": stats["run_count"], "limit": stats["limit"],
+                "alerted": alerted}
 
     def _log_start_banner(self) -> None:
         """记录调度器启动横幅（启动时间 / 控制模式 / 截图模式 / 串口 / 版本等基本信息），
@@ -598,6 +712,8 @@ class SchedulerService:
         # 记录调度器启动横幅（环境检测通过，即将真正启动），并记录启动时刻供停止横幅计算运行时长
         self.started_at = datetime.now()
         self._stop_reason = ""
+        # 截图运行守卫按本轮重置：本次运行截图计数归零、允许再次弹超限提醒、清空重复画面指纹
+        self.screenshot_guard.reset_run()
         # 清空上次运行遗留的待激活任务登记（防止跨轮次残留导致误激活）
         self._pending_activate_tasks.clear()
         # 清空临时启用登记（跨轮次的临时启用不应影响本轮判定）

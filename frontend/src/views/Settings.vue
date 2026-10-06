@@ -58,6 +58,15 @@
                 :value="parseBool(val)"
                 @update:value="(v: boolean) => onSet(section, key, String(v))"
               />
+              <!-- 每日截图上限：最小值 100（低于 100 后端也会自动按 100 生效） -->
+              <n-input-number
+                v-else-if="isDailyShotLimit(section, key)"
+                :value="parseNum(val)"
+                :min="MIN_DAILY_SHOT_LIMIT"
+                :step="10"
+                style="width: 160px"
+                @update:value="(v: number | null) => onSet(section, key, String(Math.max(MIN_DAILY_SHOT_LIMIT, Math.round(v ?? MIN_DAILY_SHOT_LIMIT))))"
+              />
               <n-input-number
                 v-else-if="isNum(val)"
                 :value="parseNum(val)"
@@ -82,6 +91,15 @@
               />
             </div>
           </div>
+          <!-- 每日截图上限说明：仅显示在「助手设置」卡片内 -->
+          <div
+            v-if="section === '助手设置' && isDailyShotLimit(section, DAILY_SHOT_LIMIT_KEY)"
+            class="install-hint hint-default"
+          >
+            每个配置当天日志文件夹 screenshot 内保留的自动截图张数，超出后自动删除最早的截图；
+            最小 {{ MIN_DAILY_SHOT_LIMIT }}（低于该值按 {{ MIN_DAILY_SHOT_LIMIT }} 生效）。
+            顶栏「截图」按钮保存的用户截图不计入、不会被删除。
+          </div>
           <!-- 安装路径校验提示：仅显示在「助手设置」卡片内 -->
           <div
             v-if="section === '助手设置' && installHint"
@@ -104,6 +122,10 @@ import { settingsApi, utilsApi } from '@/api/client'
 
 const message = useMessage()
 const loading = ref(true)
+
+// 每日截图上限（[助手设置] 每日截图上限）：前端最小约束，与后端 MIN_DAILY_LIMIT 保持一致
+const DAILY_SHOT_LIMIT_KEY = '每日截图上限'
+const MIN_DAILY_SHOT_LIMIT = 100
 
 const settings = ref<Record<string, Record<string, string>>>({})
 // 安装路径输入缓冲（避免每次按键即保存）
@@ -162,6 +184,11 @@ function installPathGuide(key: string): string {
 function isSecretKey(section: string, key: string): boolean {
   if (section !== '助手设置') return false
   return key === 'GithubPAT' || key === '二级密码'
+}
+
+/** 是否为「每日截图上限」（数字输入 + 最小值 100 + 说明文案） */
+function isDailyShotLimit(section: string, key: string): boolean {
+  return section === '助手设置' && key === DAILY_SHOT_LIMIT_KEY
 }
 
 function isBool(v: string): boolean {
@@ -406,6 +433,9 @@ onMounted(() => {
 }
 .hint-success {
   color: #18a058;
+}
+.hint-default {
+  color: #6d6d6d;
 }
 .hint-warning {
   color: #f0a020;

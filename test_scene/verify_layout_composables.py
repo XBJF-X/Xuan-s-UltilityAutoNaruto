@@ -7,6 +7,7 @@
 - `useTaskTree.ts`     任务数据与分组（rawTasks / taskGroups / loadTaskData / onTaskEnabledChanged）
 - `useSchedulerControl.ts` 启停 + status/scheduler_snapshot 的 WS 订阅（含自动退订）
 - `useStartupChecks.ts` 引导 / 依赖检查 / 自动更新 / 截图 / 反馈入口
+- `useScreenshotLimitAlerts.ts` 截图超限提醒（每日截图上限）的 WS 订阅（含自动退订）
 
 本脚本钉住：
 1. 三个 composable 存在且导出预期 API（正则级，避免 node 侧要装 vue/naive-ui）；
@@ -63,6 +64,11 @@ EXPECTED_API = {
                       "handleDuplicateConfig", "handleRenameConfig", "handleDeleteConfig",
                       "watch(() => appStore.activeConfigId",
                       "export function useConfigs"],
+    # 截图超限提醒（每日截图上限）：弹窗队列 + WS 订阅（同样是 Layout 派生的派生状态）
+    "useScreenshotLimitAlerts.ts": ["screenshotAlerts", "consumeScreenshotAlert",
+                                    "onScreenshotLimit", "useWebSocket()",
+                                    "onBeforeUnmount",
+                                    "export function useScreenshotLimitAlerts"],
 }
 
 # Layout.vue 里不该再出现的实现（已搬进 composable）
@@ -104,7 +110,8 @@ class ComposablesExistTest(unittest.TestCase):
 
     def test_composables_are_imported_by_layout(self):
         src = LAYOUT.read_text(encoding="utf-8")
-        for name in ("useTaskTree", "useSchedulerControl", "useStartupChecks", "useConfigs"):
+        for name in ("useTaskTree", "useSchedulerControl", "useStartupChecks", "useConfigs",
+                     "useScreenshotLimitAlerts"):
             with self.subTest(composable=name):
                 self.assertIn(f"import {{ {name} }} from '@/composables/{name}'", src)
                 self.assertIn(f"}} = {name}(", src)
