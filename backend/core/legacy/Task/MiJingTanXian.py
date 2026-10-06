@@ -14,6 +14,7 @@ class MiJingTanXian(BaseTask):
         self.fighting = False
         self.first_fight=False
         self.bool_sd=False
+        self.fight_time=self.config.get_task_exe_param(self.task_name, "秘境刷取次数", 0)
         self.operationer.clicker.update_coordinates([
             self.config.get_config("键位")[KEY_INDEX.BasicAttack],
             self.config.get_config("键位")[KEY_INDEX.FirstSkill],
@@ -22,12 +23,18 @@ class MiJingTanXian(BaseTask):
             self.config.get_config("键位")[KEY_INDEX.UltimateSkill]
         ])
         super().run()
-
+    def _check_tzq_num(self)->bool:
+        if self.fight_time and self.config.get_task_exe_prog(self.task_name, "秘境已刷取次数", 0)>=self.fight_time:
+            return True
+        return False
     @TransitionOn()
     def _(self):
         self.fighting = False
         self.operationer.clicker.stop()
         self.bool_click = False
+        if self._check_tzq_num():
+            self.config.set_task_exe_prog(self.task_name, "秘境已刷取次数", 0)
+            raise TaskCompleted(f"已达到设定刷取次数 {self.fight_time} 次，任务执行结束")
         if self.bool_sd:
             sd_times= self.operationer.ocr_recognize("扫荡次数")
             if sd_times and ("0/5" not in sd_times[0].text):
@@ -41,81 +48,29 @@ class MiJingTanXian(BaseTask):
                 self.bool_sd=False
         return "秘境探险-匹配"
     
-    # 剩余挑战券 OCR 读取失败时的重试次数与间隔（切场景瞬间/单帧抖动常读不到）
-    TZQ_OCR_ATTEMPTS = 3
-    TZQ_OCR_RETRY_INTERVAL = 0.4
 
     @TransitionOn("秘境探险-匹配")
     def _(self):
         self.fighting = False
         self.operationer.clicker.stop()
         self.bool_click = False
+
+        if self._check_tzq_num():
+            self.config.set_task_exe_prog(self.task_name, "秘境已刷取次数", 0)
+            raise TaskCompleted(f"已达到设定刷取次数 {self.fight_time} 次，任务执行结束")
         ##############测试代码##############
         # self.operationer.click_and_wait("出战")
         # self.bool_click = True
         # self.logger.info("测试代码，无视挑战券数量，继续执行")
         # return False
         ###################################
-        tzq = self._read_remain_ticket_count()
-        if tzq == 0:
-            self.logger.info("挑战券已耗尽，任务执行结束")
+        if self.operationer.detect_element("剩余挑战券-0",max_time=0.5, wait_time=0):
             raise TaskCompleted("任务执行完成")
-        if tzq is not None:
-            self.logger.info(f"挑战券为 {tzq} ，继续执行")
         else:
-            # 注意：异常只接受 1 个参数——旧实现传了 2 个（消息 + 次数），运行时会抛
-            # TypeError 并被 BaseTask 的兜底分支判成"未捕获异常"（正常完成 → 错误截图 +
-            # 冷却重试），故此处必须用 f-string 拼成单参数。
-            raise TaskCompleted(
-                f"识别剩余挑战券数量失败（已重试 {self.TZQ_OCR_ATTEMPTS} 次），"
-                f"按未知处理：不再尝试出战")
+            self.logger.info(f"挑战券未耗尽，继续执行")
         self.operationer.click_and_wait("出战")
         self.bool_click = True
         return False
-
-    def _read_remain_ticket_count(self):
-        """读剩余挑战券数量：重试若干次，返回非负整数；始终读不到返回 None。
-
-        - 取数字统一走 `OcrResultList.get_first_number()`：旧的
-          `extract_all_numbers()[0]` 在"只识别到文本、没有数字"时会抛 IndexError；
-        - 每次重试都会重新截图识别（`ocr_recognize` 内部重新截图）；
-        - 全部失败时用同场景的图片元素 `剩余挑战券-0` 作辅助判据：命中即判定券已耗尽
-          （实测 9 张券时该模板 max_val≈0.84 < 阈值 0.91，不会误判）。
-        """
-        texts = []
-        for attempt in range(1, self.TZQ_OCR_ATTEMPTS + 1):
-            result = self.operationer.ocr_recognize("剩余挑战券数量")
-            texts = result.texts() if result else []
-            number = result.get_first_number() if result else None
-            if number is not None:
-                return number
-            if attempt < self.TZQ_OCR_ATTEMPTS:
-                time.sleep(self.TZQ_OCR_RETRY_INTERVAL)
-        self.logger.warning("剩余挑战券 OCR 识别文本=%s（未读出数字）", texts)
-        zero_flag = self.operationer.get_element("剩余挑战券-0")
-        if zero_flag is not None and self.operationer.detect_element(
-                zero_flag, max_time=0.5, wait_time=0):
-            self.logger.info("OCR 未读出数字，但命中[剩余挑战券-0]模板，判定券已耗尽")
-            return 0
-        return None
-
-    def _no_ticket_tip_shown(self) -> bool:
-        """点出战之后是否出现「挑战券不足」提示。
-
-        该元素属于[秘境探险-首页]场景，而 `Operationer.get_element(name)` 默认只在
-        `current_scene` 内解析，故这里显式指定场景获取元素对象（否则会抛"元素未定义"）。
-        元素缺失（资源库未配置）时返回 False，不影响主流程。
-        """
-        try:
-            element = self.operationer.get_element("挑战券不足", "秘境探险-首页")
-        except Exception as e:
-            self.logger.warning("获取[挑战券不足]元素失败：%s", e)
-            return False
-        if element is None:
-            self.logger.warning("[挑战券不足]元素未配置，跳过该判据")
-            return False
-        return bool(self.operationer.detect_element(
-            element, max_time=1.0, wait_time=0))
 
 
     @TransitionOn("秘境奖励")
@@ -123,6 +78,11 @@ class MiJingTanXian(BaseTask):
         self.fighting = False
         self.bool_click = True
         self.operationer.clicker.stop()
+
+        fighted_time=self.config.get_task_exe_prog(self.task_name, "秘境已刷取次数", 0)
+        self.logger.info(f"当前已刷取 {fighted_time+1} 次秘境")
+        self.config.set_task_exe_prog(self.task_name, "秘境已刷取次数", fighted_time+1)
+
         self.logger.info("等待系统自动翻牌结束...")
         self.operationer.wait_until_stable(stable_duration=2)
 
@@ -159,7 +119,6 @@ class MiJingTanXian(BaseTask):
 
         self.operationer.click_and_wait("返回")
         self.bool_click = False
-        self.reset_task_exe_prog()
         if not self.first_fight and not self.bool_sd:
             self.first_fight =True
             self.bool_sd=True
@@ -252,4 +211,5 @@ class MiJingTanXian(BaseTask):
         self.fighting = False
         self.config.set_task_exe_prog(self.task_name, "忍具已翻牌次数", 0)
         self.config.set_task_exe_prog(self.task_name, "饰品已翻牌次数", 0)
+        self.config.set_task_exe_prog(self.task_name, "秘境已刷取次数", 0)
         return True
