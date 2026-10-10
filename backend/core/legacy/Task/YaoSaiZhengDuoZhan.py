@@ -53,32 +53,9 @@ class YaoSaiZhengDuoZhan(BaseTask):
     @TransitionOn()
     def _(self):
         if self._bool_kuafuyaosaizhan():
-            if self.config.get_task_exe_param(self.task_name, "执行结束后是否有叛忍", False):
-                running_time = self.config.get_task_exe_param(
-                                self.task_name, "本任务执行多少分钟后执行叛忍", 0)
-                self._activate_another_task("叛忍来袭",delay=datetime.timedelta(running_time if not running_time else 30))
-                raise TaskCompleted("本周为跨服要塞战周且有[叛忍来袭]，故激活叛忍来袭后跳过要塞争夺战任务")
-            else :
-                raise TaskCompleted("本周为跨服要塞战周且无[叛忍来袭]，故跳过要塞争夺战任务")
-        
-        self.operationer.click_and_wait("玩法")
-        self.operationer.swipe_and_wait(
-                (350, 464),
-                (1000, 464),
-                duration=0.3,
-                times=4,
-                wait_time=0.3
-            )
-        self.operationer.search_and_click([f"要塞争夺战-前往"], [{
-            "swipe": {
-                "start_coordinate": [1000, 464],
-                "end_coordinate": [350, 464],
-                "duration": 0.5
-            }
-        }],
-        max_attempts=3,
-        wait_time=5)
-        return False
+            return "跨服要塞战"
+        else:
+            return "要塞战略图"
 
     # =========================本服要塞战部分==========================
     @TransitionOn("要塞战略图")
@@ -116,8 +93,11 @@ class YaoSaiZhengDuoZhan(BaseTask):
     # =========================跨服要塞战部分==========================
     @TransitionOn("跨服要塞战")
     def _(self):
-        time.sleep(3)
-        return False
+        if self.config.get_task_exe_param(self.task_name, "执行结束后是否有叛忍", False):
+            running_time = self.config.get_task_exe_param(
+                            self.task_name, "本任务执行多少分钟后执行叛忍", 0)
+            self._activate_another_task("叛忍来袭",delay=datetime.timedelta(running_time if not running_time else 30))
+        raise TaskCompleted("本周为跨服要塞战周且有[叛忍来袭]，跨服要塞战奖励已改为不需要战斗，故激活叛忍来袭后跳过要塞争夺战任务")
     
     @TransitionOn("跨服要塞战-要塞内部")
     def _(self):
@@ -175,6 +155,7 @@ class YaoSaiZhengDuoZhan(BaseTask):
         base_date = datetime.date(2025, 9, 20)
         delta_weeks = (this_saturday - base_date).days // 7
         return delta_weeks >= 0 and (delta_weeks % 5) == 0
+    
     def on_complete(self, current_time: datetime.datetime):
         if self.config.get_task_exe_param(self.task_name, "执行结束后是否有叛忍", True):
             self._activate_another_task("叛忍来袭")

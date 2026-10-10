@@ -566,7 +566,7 @@ class TransitionManager:
             operationer.click_and_wait("玩法")
             operationer.search_and_click(
                 [
-                    f"{kwargs.get("target_id")}-前往"
+                    f"{kwargs.get('target_id')}-前往"
                 ],
                 [
                     {
@@ -675,27 +675,40 @@ class TransitionManager:
 
         @self.register("主场景-组织", "组织")
         def _(operationer: Operationer, *args, **kwargs):
+            operationer.click_and_wait("信息")
             operationer.click_and_wait("进入组织")
 
         @self.register("主场景-组织", "要塞战略图")
-        @self.register("主场景-组织", "跨服要塞战")
+        # @self.register("主场景-组织", "跨服要塞战")
         def _(operationer: Operationer, *args, **kwargs):
             operationer.click_and_wait("玩法")
-            operationer.search_and_click(
-                [
-                    "要塞争夺战-前往"
-                ],
+            operationer.search_and_detect(
+                ["玩法-组织祈福"],
                 [
                     {
-                        "swipe": {
-                            "start_coordinate": [1339, 464],
-                            "end_coordinate": [260, 464],
-                            "duration": 0.5
+                        'swipe':
+                        {
+                            "start_coordinate": [350, 464],
+                            "end_coordinate": [1000, 464],
+                            "duration": 0.3
                         }
                     }
                 ],
-                max_attempts=3
+                max_attempts=3,
+                wait_time=0,
             )
+            operationer.search_and_click(
+                [f"要塞争夺战-前往"], 
+                [{
+                "swipe": {
+                    "start_coordinate": [1000, 464],
+                    "end_coordinate": [350, 464],
+                    "duration": 0.5
+                }
+                }],
+                max_attempts=3,
+                wait_time=5
+                )
 
         @self.register("要塞战略图", "X之要塞")
         def _(operationer: Operationer, *args, **kwargs):
@@ -859,6 +872,16 @@ class TransitionManager:
                 }],
                 max_attempts=3,
             )   
+        @self.register("组织", "要塞争夺战-入口")
+        def _(operationer: Operationer, *args, **kwargs):
+            operationer.click_and_wait("要塞争夺战")
+
+        @self.register("要塞争夺战-入口", "跨服要塞战")
+        @self.register("要塞争夺战-入口", "要塞战略图")
+        def _(operationer: Operationer, *args, **kwargs):
+            operationer.click_and_wait(kwargs.get("target_id"))
+        
+        
 if __name__ == "__main__":
     TM = TransitionManager(None)
-    print(TM.bfs_shortest_path("主场景", "心悦俱乐部"))
+    print(TM.bfs_shortest_path("主场景-组织", "要塞战略图"))
