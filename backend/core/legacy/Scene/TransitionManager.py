@@ -305,7 +305,6 @@ class TransitionManager:
         @self.register("主场景", "邮件")
         @self.register("主场景", "招募")
         @self.register("主场景", "招财")
-        @self.register("主场景", "冒险-冒险副本")
         @self.register("主场景", "个人信息")
         @self.register("主场景", "忍法帖")
         @self.register("主场景", "活动")
@@ -327,7 +326,18 @@ class TransitionManager:
         def _(operationer: Operationer, *args, **kwargs):
             """通用跳转函数，点击[传入的目标ID]"""
             operationer.click_and_wait(kwargs.get("target_id"))
-
+            
+        @self.register("主场景", "冒险-冒险副本")
+        def _(operationer: Operationer, *args, **kwargs):
+            """通用跳转函数，点击[传入的目标ID]"""
+            operationer.click_and_wait(kwargs.get("target_id"))
+            operationer.swipe_and_wait(
+                start_coordinate=[1400,450],
+                end_coordinate=[200,450],
+                duration=0.3,
+                times=3,
+                wait_time=0
+            )
         # @self.register("主场景", "丰饶之间")
         # @self.register("主场景", "忍者挑战")
         # @self.register("主场景", "排行榜")
