@@ -89,7 +89,11 @@ class ScreenshotQuota:
     def __init__(self, root, logger: Optional[logging.Logger] = None, *,
                  user_subdir: str = USER_SCREENSHOT_DIR,
                  glob_pattern: str = AUTO_SCREENSHOT_GLOB):
-        self.root = Path(root)
+        self.root = Path(root).resolve()
+        # 说明：必须统一解析为**长名绝对路径**。Windows 上 TEMP 可能是 8.3 短名
+        # （CI 的 `C:\Users\RUNNER~1\...`），而 `prune()` 传进来的 filepath 经
+        # `resolve()` 会展开成长名；若索引用短名 key，同一文件会被计成两条
+        # → total 偏大、按上限多删截图。索引键全部以 self.root 为基准。
         self.logger = logger or logging.getLogger("ScreenshotQuota")
         self.user_subdir = user_subdir
         self.glob_pattern = glob_pattern

@@ -123,7 +123,9 @@ class DailyLimitTest(unittest.TestCase):
 class QuotaTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(prefix="xuan_quota_")
-        self.root = Path(self.tmp.name) / "screenshot"
+        # 统一 resolve：Windows 上 %TEMP% 可能是 8.3 短名（CI 的 RUNNER~1），
+        # 而 ScreenshotQuota 内部索引键是 resolve() 后的长名；测试路径必须同源。
+        self.root = (Path(self.tmp.name) / "screenshot").resolve()
         self.quota = ScreenshotQuota(self.root, logger)
         self.base = 1_700_000_000_000_000_000  # 固定基准时间戳（ns）
 
@@ -179,6 +181,18 @@ class QuotaTest(unittest.TestCase):
         left = sorted(p.name for p in (self.root / "任务A").glob("*.png"))
         self.assertEqual(left, [names[3], newest.name], "必须删除最早的，保留最新的 2 张")
         self.assertTrue(newest.exists(), "刚写入的最新截图不得被删")
+
+    def test_index_keys_are_resolved_long_paths(self):
+        """索引键必须与 prune 的 resolve() 一致（Windows 8.3 短名 / RUNNER~1）
+
+        CI 的 %TEMP% 是 8.3 短名：`build_index` 用短名路径做 key，而 `prune` 的
+        `file_path.resolve()` 会展开成长名 → 同一文件计成两条（total 偏大、多删图）。
+        这里直接断言索引与 prune 使用同一规范化路径。
+        """
+        _write_shot(self.root / "任务A", "a0.png", value=1)
+        self.quota.build_index()
+        key = next(iter(self.quota._index))
+        self.assertEqual(key, key.resolve(), "索引键必须是 resolve() 后的长名路径")
 
     def test_prune_normalizes_limit_to_minimum(self):
         """公开入口 `prune` 会把上限夹到最小值 100（设置侧的最小值约束）"""
@@ -240,7 +254,8 @@ class QuotaTest(unittest.TestCase):
         real_remove = os.remove
 
         def fake_remove(target):
-            if str(target) == str(paths[0]):
+            # 测试根路径已在 setUp 中 resolve()，与索引键同源（不依赖大小写/短名）
+            if Path(target) == paths[0]:
                 raise OSError("locked")
             return real_remove(target)
 
@@ -420,7 +435,8 @@ class ServiceIntegrationTest(unittest.TestCase):
         from backend.services.scheduler_service import SchedulerService
 
         self.tmp = tempfile.TemporaryDirectory(prefix="xuan_shot_service_")
-        self.dir = Path(self.tmp.name)
+        # 同 QuotaTest：resolve() 避免 8.3 短名/大小写导致路径不同源（CI 的 RUNNER~1）
+        self.dir = Path(self.tmp.name).resolve()
         self.ini = self.dir / "setting.ini"
         self.ini.write_text(
             "[助手设置]\r\n每日截图上限 = 100\r\n错误自动截图 = True\r\n",
