@@ -17,10 +17,31 @@ jobs:
         with:
           python-version: "3.12"
 
+      # 回归脚本里有 3 个 TS 用例（node --experimental-strip-types 直跑），
+      # 其中 verify_log_dedupe.ts 会 import frontend/src/api/ws/index.ts → vue，
+      # 必须安装前端依赖；Node 需 >= 22.6 才支持 --experimental-strip-types。
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: 安装前端依赖（TS 回归需要 vue）
+        run: npm install
+        working-directory: frontend
+
+      # _version.py 被 .gitignore 忽略：运行时的版本接口与回归脚本都依赖它
+      - name: 生成版本文件（_version.py）
+        run: python -X utf8 build/gen_version_file.py
+
       - name: 安装依赖
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt -r backend/requirements.txt
+
+      # minidevice 未发布到 PyPI（见 backend/requirements.txt 注释）。
+      # 安装失败不阻断：相关 MiniTouch 用例会自动 skip，不影响其余回归。
+      - name: 安装 minidevice（可选）
+        continue-on-error: true
+        run: pip install "minidevice @ git+https://github.com/NakanoSanku/minidevice.git"
 
       - name: 编译检查（compileall）
         run: python -m compileall -q backend

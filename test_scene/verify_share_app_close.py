@@ -22,7 +22,13 @@ logging.basicConfig(level=logging.CRITICAL)
 _PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _PROJECT_ROOT)
 
-from backend.core.legacy.Control.MiniTouch import MiniTouch
+try:  # minidevice 未发布到 PyPI（见 backend/requirements.txt 注释），CI 干净环境可能缺失
+    from backend.core.legacy.Control.MiniTouch import MiniTouch
+except ImportError as _mt_import_error:  # 仅缺依赖时降级：委托用例跳过，其余用例照常
+    MiniTouch = None
+    _MT_IMPORT_ERROR = _mt_import_error
+else:
+    _MT_IMPORT_ERROR = None
 from backend.core.legacy.Device import Device
 from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Operationer import Operationer
@@ -91,6 +97,8 @@ class DeviceStopTest(unittest.TestCase):
 class AdbForceStopTest(unittest.TestCase):
     """② 停包链路：MiniTouch 委托 adbutils 设备，最终执行为 adb shell am force-stop"""
 
+    @unittest.skipIf(MiniTouch is None,
+                     f"缺少 minidevice（{_MT_IMPORT_ERROR}）：无法导入 MiniTouch")
     def test_minitouch_delegates_to_adb_device(self):
         mt = object.__new__(MiniTouch)
         rec = _Recorder()

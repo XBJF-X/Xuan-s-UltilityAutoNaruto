@@ -243,14 +243,25 @@ class MiJingTanXianRaiseTest(unittest.TestCase):
         self.assertEqual(str(exc), "已重试 3 次")
 
     def test_source_uses_single_argument(self):
+        """源码级防回退：所有异常构造都必须单参数（多参数会渲染成元组、%d 不展开）
+
+        `MiJingTanXian` 的 OCR 重试逻辑已重写（`TZQ_OCR_ATTEMPTS` 与旧日志文案均不存在），
+        原先按文案断言的检查已失效。这里改为 AST 扫描：不依赖具体文案，任何
+        `TaskCompleted(...)` / `StepFailedError(...)` 传入第二个参数都会被捕获。
+        """
+        import ast
+
         src = (Path(_PROJECT_ROOT) / "backend" / "core" / "legacy" / "Task"
                / "MiJingTanXian.py").read_text(encoding="utf-8")
-        self.assertIn("按未知处理：不再尝试出战", src)
-        self.assertNotIn("不再尝试出战\",self.TZQ_OCR_ATTEMPTS", src,
-                         "不得再向 TaskCompleted 传第二个参数")
-        self.assertNotIn(", self.TZQ_OCR_ATTEMPTS)", src,
-                         "不得再向 TaskCompleted 传第二个参数")
-        self.assertIn("self.TZQ_OCR_ATTEMPTS", src, "次数应拼进消息文本")
+        tree = ast.parse(src)
+        exc_names = {"TaskCompleted", "StepFailedError", "TaskFailedError"}
+        offenders = []
+        for node in ast.walk(tree):
+            if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                    and node.func.id in exc_names and len(node.args) > 1):
+                offenders.append((node.lineno, node.func.id, len(node.args)))
+        self.assertEqual(offenders, [],
+                         "异常消息必须是单参数字符串（多参数会渲染成元组）")
 
 
 if __name__ == "__main__":

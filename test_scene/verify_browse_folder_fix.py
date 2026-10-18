@@ -109,12 +109,27 @@ class BrowseFolderFixTest(unittest.TestCase):
         self.assertEqual(self.calls["pidl"], 1234, "取路径必须用解包后的 PIDL")
 
     def test_mbcs_bytes_path_decoded(self):
-        """ANSI 回退版本（SHGetPathFromIDList）返回 mbcs bytes，必须按系统代码页解码"""
+        """ANSI 回退版本（SHGetPathFromIDList）返回 mbcs bytes，必须按系统代码页解码
+
+        路径样本必须能在**当前系统 ANSI 代码页**下编码：CI（en-US，cp1252）无法
+        编码中文，硬编码中文会导致 `encode("mbcs")` 先抛 UnicodeEncodeError（与
+        被测实现无关）。因此按优先级挑一个可编码的非 ASCII 样本——中文系统仍走
+        中文路径（覆盖真实场景），英文系统退化为含变音字母的路径，语义一致。
+        """
         self.browse_return = (7, "name", 0)
-        self.path_return = "E:\\中文目录\\反馈".encode("mbcs")
+        expected = None
+        for candidate in ("E:\\中文目录\\反馈", "E:\\café\\report"):
+            try:
+                self.path_return = candidate.encode("mbcs")
+            except UnicodeEncodeError:
+                continue
+            expected = candidate
+            break
+        if expected is None:
+            self.skipTest("当前系统 ANSI 代码页无法编码任何非 ASCII 路径样本")
         result = self._browse()
         self.assertTrue(result["ok"])
-        self.assertEqual(result["path"], "E:\\中文目录\\反馈")
+        self.assertEqual(result["path"], expected)
 
     # ---------------- 3. 取消 ----------------
     def test_cancel_tuple_of_none_is_not_an_error(self):

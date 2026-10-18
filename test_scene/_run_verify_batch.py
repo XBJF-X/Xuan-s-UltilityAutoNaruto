@@ -80,6 +80,12 @@ def discover_ts() -> list[str]:
                   if n.startswith("verify_") and n.endswith(".ts"))
 
 
+def _tail_lines(text: str, limit: int = 15) -> str:
+    """取输出的最后若干非空行（CI 上定位失败原因用，避免只看到 "no summary"）"""
+    lines = [ln.rstrip() for ln in text.splitlines() if ln.strip()]
+    return "\n".join(lines[-limit:])
+
+
 def run_ts(name: str) -> tuple[bool, str]:
     node = shutil.which("node")
     if node is None:
@@ -93,8 +99,9 @@ def run_ts(name: str) -> tuple[bool, str]:
         return False, f"超时(>{PER_SCRIPT_TIMEOUT}s)"
     text = (proc.stdout + proc.stderr).decode("utf-8", errors="replace")
     ok = proc.returncode == 0
-    tail = "全部通过" if ok else "\n".join(text.splitlines()[-6:])
-    return ok, tail
+    if ok:
+        return True, "全部通过"
+    return False, _tail_lines(text)
 
 
 def run(name: str) -> tuple[bool, str]:
@@ -108,7 +115,11 @@ def run(name: str) -> tuple[bool, str]:
     text = (proc.stdout + proc.stderr).decode("utf-8", errors="replace")
     ran = [ln.strip() for ln in text.splitlines() if ln.startswith("Ran ")]
     ok = proc.returncode == 0
-    return ok, (ran[0] if ran else "no summary")
+    summary = ran[0] if ran else "no summary"
+    if not ok:
+        # CI 上必须能看到具体断言/traceback；只报 "Ran N tests" 无法定位回归
+        summary = f"{summary}\n{_tail_lines(text)}"
+    return ok, summary
 
 
 def main() -> int:

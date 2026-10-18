@@ -5,6 +5,7 @@ import os
 import threading
 import time
 import traceback
+import uuid
 from datetime import datetime, timedelta
 from typing import Optional, Callable, List, TypeVar, Generic, Dict
 from zoneinfo import ZoneInfo
@@ -291,6 +292,24 @@ class SchedulerService:
             return False, ["环境检测异常: %s" % e]
         return True, messages
 
+    @staticmethod
+    def _unique_screenshot_path(filepath: str) -> str:
+        """同毫秒内多张截图不得互相覆盖（快机器/CI 上正常截图与错误截图可能紧邻）。
+
+        文件名精度只有毫秒（``%f`` 截断到 3 位）；两次保存落在同一毫秒时后者会覆盖
+        前者，导致"错误截图丢失/当日计数偏少"。目标已存在时依次尝试
+        ``<stem>_1.png``、``<stem>_2.png``…，极端情况下用 uuid 兜底，
+        保证**永不因为命名冲突覆盖已有截图**。
+        """
+        if not os.path.exists(filepath):
+            return filepath
+        stem, ext = os.path.splitext(filepath)
+        for index in range(1, 1000):
+            candidate = f"{stem}_{index}{ext}"
+            if not os.path.exists(candidate):
+                return candidate
+        return f"{stem}_{uuid.uuid4().hex[:8]}{ext}"
+
     def _build_save_screenshot_callback(self):
         """构造截图保存回调（`_lazy_init` 注入给 Operationer 与卡死处理）。
 
@@ -336,6 +355,7 @@ class SchedulerService:
                 os.makedirs(save_dir, exist_ok=True)
                 filepath = os.path.join(
                     save_dir, f"{ts}{('_' + reason) if reason else ''}.png")
+                filepath = self._unique_screenshot_path(filepath)
                 cv2.imencode('.png', arr)[1].tofile(filepath)
                 self.logger.info(
                     f"保存截图到{filepath}" + (f"（原因: {reason}）" if reason else ""))

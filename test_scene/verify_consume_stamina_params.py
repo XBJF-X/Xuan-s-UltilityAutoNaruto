@@ -232,6 +232,17 @@ def _fake_requests_get(url, **kwargs):
 class LocalVersionApiTest(unittest.TestCase):
     """D. /utils/version 与 check-update 顶层的 local_version"""
 
+    @classmethod
+    def setUpClass(cls):
+        # `_version.py` 被 .gitignore 忽略（commitizen 生成）：干净检出/CI 必须先运行
+        # `python build/gen_version_file.py`。缺失时明确跳过，避免 3 个 FileNotFoundError
+        # 被误判为代码回归。
+        version_file = _PROJECT_ROOT / "_version.py"
+        if not version_file.exists():
+            raise unittest.SkipTest(
+                "_version.py 未生成（被 .gitignore 忽略）：请先运行 "
+                "python build/gen_version_file.py")
+
     def test_version_endpoint_reads_version_file(self):
         # get_local_version 仍是 async（只读一个小文件，开销可忽略）；
         # check_update / dependency-check / log-history 已改为同步端点（走线程池）

@@ -23,7 +23,13 @@ logging.basicConfig(level=logging.CRITICAL)
 _PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, _PROJECT_ROOT)
 
-from backend.core.legacy.Control import MiniTouch as mt_module
+try:  # minidevice 未发布到 PyPI（见 backend/requirements.txt 注释），CI 干净环境可能缺失
+    from backend.core.legacy.Control import MiniTouch as mt_module
+except ImportError as _mt_import_error:  # 仅缺依赖时降级：MiniTouch 用例跳过，其余用例照常
+    mt_module = None
+    _MT_IMPORT_ERROR = _mt_import_error
+else:
+    _MT_IMPORT_ERROR = None
 from backend import runtime_info
 from backend.services import update_service as us
 from backend.runtime import adb_env
@@ -57,6 +63,8 @@ def _make_minitouch(device):
     return mt
 
 
+@unittest.skipIf(mt_module is None,
+                 f"缺少 minidevice（{_MT_IMPORT_ERROR}）：MiniTouch 路径用例无法导入被测模块")
 class MiniTouchPathTest(unittest.TestCase):
     def test_directory_is_removed_before_init(self):
         dev = _FakeDevice(["DIR\n", "MISSING\n"])

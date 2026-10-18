@@ -549,6 +549,22 @@ class ServiceIntegrationTest(unittest.TestCase):
         self.sched._save_screenshot("任务A", "StepFailed")
         self.assertEqual(self._count_files(), 1)
 
+    def test_same_millisecond_screenshot_does_not_overwrite(self):
+        """同一毫秒内的第二张截图必须换名保存（快机器/CI 上曾经互相覆盖）"""
+        import backend.services.scheduler_service as sched_mod
+
+        d = Path(self.tmp.name) / "same_ms"
+        d.mkdir()
+        first = d / "20240101_000000_000.png"
+        first.write_bytes(b"first")
+        second = sched_mod.SchedulerService._unique_screenshot_path(str(first))
+        self.assertNotEqual(second, str(first))
+        self.assertTrue(second.endswith("_1.png"), second)
+        Path(second).write_bytes(b"second")
+        third = sched_mod.SchedulerService._unique_screenshot_path(str(first))
+        self.assertTrue(third.endswith("_2.png"), third)
+        self.assertEqual(first.read_bytes(), b"first", "原文件绝不能被覆盖")
+
     def test_source_wiring(self):
         """源码接线防回退：配额/计数/提醒/跳过四处调用点必须在位"""
         src = (Path(_PROJECT_ROOT) / "backend" / "services" /
@@ -557,6 +573,7 @@ class ServiceIntegrationTest(unittest.TestCase):
         self.assertIn("self.screenshot_guard.should_skip(", src)
         self.assertIn("self._enforce_screenshot_quota(screenshot_root, filepath)", src)
         self.assertIn("quota.prune(filepath, limit)", src)
+        self.assertIn("self._unique_screenshot_path(filepath)", src)
         self.assertIn("_save_screenshot = self._build_save_screenshot_callback()", src)
         api_src = (Path(_PROJECT_ROOT) / "backend" / "api" /
                    "scheduler.py").read_text(encoding="utf-8")
