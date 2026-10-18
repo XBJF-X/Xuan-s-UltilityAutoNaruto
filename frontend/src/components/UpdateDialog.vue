@@ -110,9 +110,9 @@
         </n-card>
       </template>
 
-      <!-- 提交历史（仅热更新展示） -->
-      <div v-if="info.update_type !== 'full'" class="commit-section">
-        <div class="section-title">云端提交历史</div>
+      <!-- 提交历史（任何状态都展示；每条右侧可拉取该 commit，当前已是最新也允许） -->
+      <div class="commit-section">
+        <div class="section-title">云端提交历史（右侧「拉取」可更新到任意提交）</div>
         <div class="commit-list">
           <div
             v-for="c in info.commits"
@@ -129,6 +129,17 @@
             <span class="c-msg">{{ c.message }}</span>
             <span class="c-date">{{ formatDate(c.date) }}</span>
             <span class="c-author">{{ c.author }}</span>
+            <n-button
+              size="tiny"
+              tertiary
+              type="primary"
+              class="c-pull"
+              :loading="pullingSha === c.sha"
+              :disabled="isUpdating && pullingSha !== c.sha"
+              @click.stop="apply(c.sha)"
+            >
+              拉取
+            </n-button>
           </div>
           <n-empty v-if="!info.commits || info.commits.length === 0" description="暂无提交记录" size="small" style="padding: 12px 0;" />
         </div>
@@ -174,6 +185,8 @@ const info = ref<any>(null)
 const localVersion = ref('')
 const isUpdating = ref(false)
 const startingUpdate = ref(false)
+// 正在拉取指定 commit 的 sha（用于该行按钮 loading；允许当前已是最新时重拉/回退）
+const pullingSha = ref('')
 const progress = ref<{ running: boolean; phase: string; percent: number; message: string; error: string }>({
   running: false, phase: '', percent: 0, message: '', error: '',
 })
@@ -185,6 +198,7 @@ const phaseLabel = computed(() => {
     downloading: '下载更新包',
     extracting: '解压更新包',
     replacing: '替换文件',
+    'verifying-files': '校验文件覆盖',
     'writing-version': '更新版本记录',
     'downloading-installer': '下载安装包',
     verifying: '校验安装包',
@@ -257,17 +271,26 @@ function stopPolling() {
   if (pollTimer) { clearInterval(pollTimer); pollTimer = null }
 }
 
-async function apply() {
+async function apply(targetSha?: string) {
+  // 只有字符串才算「拉取指定 commit」；页脚 @click 不会传参
+  const sha = typeof targetSha === 'string' && targetSha ? targetSha : ''
   isUpdating.value = true
   startingUpdate.value = true
+  pullingSha.value = sha
   try {
-    // 大更新走 Release 安装包；热更新走分支 zipball
-    const res = info.value?.update_type === 'full'
-      ? await utilsApi.applyReleaseUpdate()
-      : await utilsApi.applyUpdate()
+    // 指定 commit → 拉取该提交；大更新走 Release 安装包；其余走分支 zipball
+    let res
+    if (sha) {
+      res = await utilsApi.applyUpdate(sha)
+    } else if (info.value?.update_type === 'full') {
+      res = await utilsApi.applyReleaseUpdate()
+    } else {
+      res = await utilsApi.applyUpdate()
+    }
     if (!res.data?.ok) {
       message.error(res.data?.message || '启动更新失败')
       isUpdating.value = false
+      pullingSha.value = ''
       return
     }
     pollTimer = setInterval(async () => {
@@ -288,6 +311,7 @@ async function apply() {
           // 稍等让用户看到完成状态
           setTimeout(() => {
             isUpdating.value = false
+            pullingSha.value = ''
             info.value = null
             close()
           }, 1500)
@@ -295,12 +319,14 @@ async function apply() {
           stopPolling()
           message.error(st.message || '更新失败')
           isUpdating.value = false
+          pullingSha.value = ''
         }
       } catch { /* 轮询失败忽略，下次继续 */ }
     }, 800)
   } catch (e: any) {
     message.error(e?.response?.data?.detail || '启动更新失败')
     isUpdating.value = false
+    pullingSha.value = ''
   } finally {
     startingUpdate.value = false
   }
@@ -313,6 +339,7 @@ function reset() {
   info.value = null
   isUpdating.value = false
   startingUpdate.value = false
+  pullingSha.value = ''
   progress.value = { running: false, phase: '', percent: 0, message: '', error: '' }
 }
 
@@ -467,4 +494,5 @@ onBeforeUnmount(stopPolling)
 }
 .c-date { color: #999; flex-shrink: 0; font-size: 11px; }
 .c-author { color: #888; flex-shrink: 0; font-size: 11px; }
+.c-pull { flex-shrink: 0; }
 </style>

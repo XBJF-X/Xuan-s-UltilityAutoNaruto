@@ -47,7 +47,8 @@ export const utilsApi = {
   // 依赖健康检查：版本是否满足 MIN_RELEASE_TAG + 关键模块是否缺失
   checkDependency: () => client.get('/utils/dependency-check'),
   // 应用更新（后台执行，进度通过 updateStatus 轮询）
-  applyUpdate: () => client.post('/utils/apply-update'),
+  // sha 可选：指定后拉取该提交（当前已是最新也允许），不传则更新到分支最新提交
+  applyUpdate: (sha?: string) => client.post('/utils/apply-update', sha ? { sha } : {}),
   // 应用大更新：下载最新 GitHub Release 安装包并自动重启安装（进度通过 updateStatus 轮询）
   applyReleaseUpdate: () => client.post('/utils/apply-release-update'),
   // 查询更新任务进度

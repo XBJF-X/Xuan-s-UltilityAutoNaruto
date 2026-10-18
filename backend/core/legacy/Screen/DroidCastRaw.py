@@ -12,6 +12,10 @@ from requests import Session
 from backend.utils import get_real_path
 from backend.core.legacy.Config import Config
 from backend.core.legacy.Screen import Screen
+from backend.runtime.adb_env import ensure_bundled_adb, get_adb_executable
+
+# 统一使用依赖库自带的 adb（避免与用户本机 adb 争用 server）
+ensure_bundled_adb()
 
 
 class DroidCastRaw(Screen):
@@ -35,6 +39,8 @@ class DroidCastRaw(Screen):
     def __init__(self, config: Config, parent_logger):
         super().__init__(config, parent_logger)
         self.serial = config.get_config("串口")  # 设备序列号
+        # 实例级覆盖：统一使用项目自带 adb（类属性保留仅为兼容旧引用）
+        self.adb_command = [get_adb_executable()]
         self.device_port = 8080  # 设备上的服务端口
         self.pc_port = 53516  # 电脑上的转发端口
         self.session = Session()

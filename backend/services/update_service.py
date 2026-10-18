@@ -17,6 +17,7 @@
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
@@ -63,6 +64,7 @@ PLATFORM_GITHUB = {
     "api_base": "https://api.github.com/repos",
     "headers": {"Accept": "application/vnd.github+json"},
     "zip_url": "https://codeload.github.com/{owner}/{repo}/zip/refs/heads/{branch}",
+    "zip_commit_url": "https://codeload.github.com/{owner}/{repo}/zip/{ref}",
     "releases_url": "https://github.com/{owner}/{repo}/releases",
 }
 PLATFORM_GITEE = {
@@ -73,6 +75,7 @@ PLATFORM_GITEE = {
     "api_base": "https://gitee.com/api/v5/repos",
     "headers": {},
     "zip_url": "https://gitee.com/{owner}/{repo}/repository/archive/{branch}.zip",
+    "zip_commit_url": "https://gitee.com/{owner}/{repo}/repository/archive/{ref}.zip",
     "releases_url": "https://gitee.com/{owner}/{repo}/releases",
 }
 PLATFORMS = {"github": PLATFORM_GITHUB, "gitee": PLATFORM_GITEE}
@@ -455,6 +458,109 @@ UPDATE_EXCLUDE_DIRS = {
 UPDATE_EXCLUDE_FILES = {".clineignore"}
 
 _SHA_SUFFIX_RE = re.compile(r"-(?P<sha>[0-9a-f]{7,40})$")
+_COMMIT_SHA_RE = re.compile(r"^[0-9a-fA-F]{7,40}$")
+
+
+def normalize_target_sha(value) -> Optional[str]:
+    """校验并规范化前端传来的目标提交 SHA；非法值返回 None。
+
+    只允许 7~40 位十六进制：该值会拼进下载 URL，必须严格校验（防注入/误传）。
+    """
+    text = str(value or "").strip()
+    if not text:
+        return None
+    if not _COMMIT_SHA_RE.fullmatch(text):
+        logger.warning("拒绝非法的目标提交 SHA: %r", text[:80])
+        return None
+    return text.lower()
+
+
+def _file_sha256(path: Path) -> str:
+    """计算文件 sha256（分块读取，避免大文件占用内存）。"""
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def verify_replaced_files(project_root: Path, expected: dict[str, str]) -> None:
+    """校验热更新是否真的覆盖了全部目标文件（内容一致、无遗漏）。
+
+    :param project_root: 安装/开发根目录
+    :param expected: ``{相对路径(posix): 源文件 sha256}``
+    :raises RuntimeError: 任一文件缺失或 sha256 不一致（version.json 不得更新）
+
+    只有本函数通过后调用方才允许写 version.json —— 这是「本地版本记录必须
+    与实际文件一致」的保证：复制失败、被占用、被杀软拦截等情况下，宁可保留
+    旧版本记录（下次仍会提示更新），也不能谎报已是最新。
+    """
+    missing: list[str] = []
+    mismatched: list[str] = []
+    for rel, expected_sha in expected.items():
+        dst = project_root / rel
+        if not dst.is_file():
+            missing.append(rel)
+            continue
+        try:
+            actual = _file_sha256(dst)
+        except Exception as e:
+            mismatched.append(f"{rel}（读取失败：{e}）")
+            continue
+        if actual != expected_sha:
+            mismatched.append(f"{rel}（期望 {expected_sha[:8]}，实际 {actual[:8]}）")
+    if missing or mismatched:
+        problems = []
+        if missing:
+            problems.append(f"缺失 {len(missing)} 个：" + "、".join(missing[:5]))
+        if mismatched:
+            problems.append(f"内容不一致 {len(mismatched)} 个：" + "、".join(mismatched[:5]))
+        raise RuntimeError(
+            "更新文件校验失败（version.json 未更新）：" + "；".join(problems))
+    logger.info("更新文件校验通过：%d 个文件均已覆盖且内容一致", len(expected))
+
+
+def write_version_json(commit_sha: str) -> None:
+    """写入 version.json（仅在文件替换与校验全部成功后调用）。
+
+    额外写入 ``updated_by/updated_at``：安装目录里可能残留旧版遗留的
+    version.json（例如切换分支前的 master SHA）。读取端据此判断该记录是否
+    来自热更新，避免把过期 SHA 当成实时版本。
+    """
+    vf = Path(get_real_path("version.json"))
+    payload = {
+        "commit": {"sha": commit_sha},
+        "updated_by": "hot-update",
+        "updated_at": datetime.now().isoformat(timespec="seconds"),
+    }
+    with open(vf, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2)
+    logger.info("version.json 已更新为提交 %s", commit_sha[:7])
+
+
+def refresh_build_info(commit_sha: str) -> None:
+    """安装版存在 ``_build_info.py`` 时同步刷新其 commit/构建时间。
+
+    ``_build_info.py`` 是打包快照，热更新不会自动重写；旧版启动横幅因此永远
+    显示构建时的 commit。这里在更新成功后一并刷新（开发模式没有该文件，跳过）。
+    """
+    try:
+        path = Path(get_real_path("_build_info.py"))
+        if not path.exists():
+            return
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        path.write_text(
+            "# 由 build_release.py 自动生成，请勿手动修改\n"
+            f'__build_time__ = "{now}"\n'
+            f'__commit__ = "{commit_sha}"\n'
+            f'__branch__ = "{BRANCH}"\n',
+            encoding="utf-8",
+        )
+        logger.info("_build_info.py 已刷新为提交 %s", commit_sha[:7])
+    except Exception as e:
+        # 横幅信息不是更新成败的关键：记录 WARNING 并继续（version.json 已更新）
+        logger.warning("刷新 _build_info.py 失败（不影响本次更新）: %s", e)
+
 
 
 def get_latest_sha() -> Optional[str]:
@@ -473,16 +579,19 @@ def get_latest_sha() -> Optional[str]:
     return None
 
 
-def verify_update_integrity(src_dir: Path, platform: dict) -> None:
+def verify_update_integrity(src_dir: Path, platform: dict,
+                            expected_sha: Optional[str] = None) -> None:
     """把解压出的源码目录钉到"已确认的云端提交 SHA"上。
 
     GitHub 的 zipball 顶层目录名为 ``{repo}-{commit_sha}``，因此可以用它做内容绑定：
-    下载 → 解压后若目录名里的 sha 与 `get_latest_sha()` 查到的提交不一致，说明
+    下载 → 解压后若目录名里的 sha 与目标提交不一致，说明
     （在已启用 TLS 校验的前提下）内容被替换或更新源发生了漂移 → 中止更新并保留
     `.update_backup`，绝不覆盖 backend/ 与 frontend/dist。
 
-    Gitee 的 archive 目录名是 ``{repo}-{branch}``（不含 sha），只能依赖 TLS；
-    目录名无法识别时记 WARNING 放行，避免因命名差异把正常更新卡死。
+    :param expected_sha: 目标提交（按 commit 拉取时传入）；为空则查询分支最新 SHA。
+
+    Gitee 的 archive 目录名可能不含 sha，只能依赖 TLS；目录名无法识别时记
+    WARNING 放行，避免因命名差异把正常更新卡死。
     """
     match = _SHA_SUFFIX_RE.search(src_dir.name)
     if not match:
@@ -490,23 +599,34 @@ def verify_update_integrity(src_dir: Path, platform: dict) -> None:
             "更新包目录名 %r 不含提交 SHA，跳过完整性绑定（依赖 TLS 校验）", src_dir.name)
         return
     got = match.group("sha")
-    if platform.get("key") != "github":
-        logger.info("更新源 %s 的目录 SHA 前缀=%s（非 GitHub，未做提交比对）",
+    if expected_sha:
+        expected = expected_sha
+    elif platform.get("key") == "github":
+        expected = get_latest_sha()
+    else:
+        logger.info("更新源 %s 的目录 SHA 前缀=%s（非 GitHub 且未指定目标提交，未做提交比对）",
                     platform.get("label"), got)
         return
-    expected = get_latest_sha()
     if not expected:
-        logger.warning("无法获取云端最新提交 SHA，跳过完整性绑定（依赖 TLS 校验）")
+        logger.warning("无法获取目标提交 SHA，跳过完整性绑定（依赖 TLS 校验）")
         return
     if not expected.startswith(got) and not got.startswith(expected):
         raise RuntimeError(
-            f"更新包完整性校验失败：下载内容的提交 {got} 与云端最新提交 "
+            f"更新包完整性校验失败：下载内容的提交 {got} 与目标提交 "
             f"{expected[:7]} 不一致，已中止更新（未修改任何程序文件）")
     logger.info("更新包完整性校验通过（提交 %s）", got[:7])
 
 
-def start_apply_update() -> dict:
-    """启动热更新后台任务（原 `POST /apply-update` 的逻辑）"""
+def start_apply_update(target_sha: Optional[str] = None) -> dict:
+    """启动热更新后台任务（原 `POST /apply-update` 的逻辑）。
+
+    :param target_sha: 目标提交；为空表示更新到分支最新提交。传入任意云端提交
+        时用于「拉取指定 commit」（即使当前已是最新也允许回退/重拉）。
+    """
+    raw = str(target_sha or "").strip()
+    target = normalize_target_sha(raw) if raw else None
+    if raw and target is None:
+        return {"ok": False, "message": f"非法的提交 SHA：{raw[:40]}"}
     with STATUS_LOCK:
         if UPDATE_STATUS["running"]:
             logger.info("热更新请求被忽略：更新已在执行中")
@@ -515,7 +635,7 @@ def start_apply_update() -> dict:
             "running": True, "phase": "", "percent": 0,
             "message": "", "error": "", "output": None,
         })
-    threading.Thread(target=do_apply_update, daemon=True).start()
+    threading.Thread(target=do_apply_update, args=(target,), daemon=True).start()
     return {"ok": True, "message": "更新任务已启动"}
 
 
@@ -533,9 +653,20 @@ def start_apply_release_update() -> dict:
     return {"ok": True, "message": "大更新任务已启动"}
 
 
-def do_apply_update() -> None:
+def do_apply_update(target_sha: Optional[str] = None) -> None:
     """热更新线程体（原 `_do_apply_update`）：下载 zipball → 完整性绑定 → 备份 →
-    替换文件 → 写 version.json → 请求重启"""
+    替换文件 → **覆盖校验** → 写 version.json → 请求重启。
+
+    :param target_sha: 目标提交；为空表示分支最新提交。指定后下载该 commit 的
+        归档包（允许在当前已是最新时拉取任意历史 commit）。
+    """
+    target = normalize_target_sha(target_sha) if target_sha else None
+    if target_sha and target is None:
+        set_update_status(phase="error", percent=0, running=False,
+                          message=f"更新失败：非法的提交 SHA {str(target_sha)[:40]}",
+                          error="invalid_sha")
+        return
+    target_label = f"提交 {target[:7]}" if target else "云端最新版本"
     try:
         project_root = Path(get_real_path(""))
         tmp_root = project_root / ".update_tmp"
@@ -544,12 +675,18 @@ def do_apply_update() -> None:
         tmp_root.mkdir(parents=True, exist_ok=True)
 
         # ---- 1. 下载 zipball（按更新源配置依次尝试平台）----
-        set_update_status(phase="downloading", percent=5, message="正在下载云端最新版本...")
+        set_update_status(phase="downloading", percent=5,
+                          message=f"正在下载{target_label}...")
         zip_path = tmp_root / "update.zip"
         download_ok = False
         pf = None
         for pf in select_platforms():
-            zip_url = pf["zip_url"].format(owner=pf["owner"], repo=pf["repo"], branch=BRANCH)
+            if target:
+                zip_url = pf["zip_commit_url"].format(
+                    owner=pf["owner"], repo=pf["repo"], ref=target)
+            else:
+                zip_url = pf["zip_url"].format(
+                    owner=pf["owner"], repo=pf["repo"], branch=BRANCH)
             try:
                 with requests.get(zip_url, verify=UPDATE_VERIFY_TLS, timeout=60, stream=True) as r:
                     r.raise_for_status()
@@ -594,7 +731,7 @@ def do_apply_update() -> None:
             raise RuntimeError("更新包结构异常：未找到源码目录")
         src_dir = top_dirs[0]
         # ---- 2-1. 完整性绑定：把解压内容钉到"已确认的云端提交"上 ----
-        verify_update_integrity(src_dir, pf)
+        verify_update_integrity(src_dir, pf, expected_sha=target)
 
         # ---- 2.4 热更新前备份 backend + frontend/dist（失败可回滚）----
         backup_for_hot_update(project_root)
@@ -610,20 +747,23 @@ def do_apply_update() -> None:
         except Exception as e:
             logger.warning(f"释放数据库连接失败（继续执行更新）：{e}")
 
-        # ---- 3. 替换文件 ----
+        # ---- 3. 替换文件（先登记目标清单，替换后逐个校验）----
         all_files = sorted(p for p in src_dir.rglob("*") if p.is_file())
-        total_files = len(all_files)
+        planned: list[tuple[Path, Path]] = []
+        for src_file in all_files:
+            rel_path = src_file.relative_to(src_dir)
+            if any(part in UPDATE_EXCLUDE_DIRS for part in rel_path.parts):
+                continue
+            if rel_path.name in UPDATE_EXCLUDE_FILES:
+                continue
+            planned.append((rel_path, src_file))
+        total_files = len(planned)
         copied = 0
-        skipped_files = []
-        for i, src_file in enumerate(all_files):
-            rel = src_file.relative_to(src_dir)
-            parts = rel.parts
-            if any(part in UPDATE_EXCLUDE_DIRS for part in parts):
-                continue
-            if rel.name in UPDATE_EXCLUDE_FILES:
-                continue
+        failed_files: list[str] = []
+        expected_files: dict[str, str] = {}
+        for i, (rel, src_file) in enumerate(planned):
             dst = project_root / rel
-            # 场景资源数据库覆盖前自动备份（保护用户本地编辑；同名 .bak 保留多份仅最新）
+            # 场景资源数据库覆盖前自动备份（保护用户本地编辑；同名 .bak 保留一份）
             if rel.as_posix() == "src/database.db" and dst.exists():
                 try:
                     shutil.copy2(dst, dst.with_name("database.db.bak"))
@@ -631,21 +771,35 @@ def do_apply_update() -> None:
                     logger.warning(f"备份 database.db 失败（继续更新）：{e}")
             try:
                 dst.parent.mkdir(parents=True, exist_ok=True)
+                src_sha = _file_sha256(src_file)
                 shutil.copy2(src_file, dst)
+                expected_files[rel.as_posix()] = src_sha
                 copied += 1
             except Exception as e:
-                skipped_files.append(str(rel))
-                logger.debug("替换文件失败（记入 skipped）: %s -> %s: %s", src_file, dst, e)
-            pct = 50 + int((i + 1) / total_files * 40)
+                failed_files.append(f"{rel.as_posix()}（{type(e).__name__}: {e}）")
+                logger.warning("替换文件失败: %s -> %s: %s", src_file, dst, e)
+            pct = 50 + int((i + 1) / max(total_files, 1) * 40)
             set_update_status(phase="replacing", percent=pct, message=f"正在替换文件 {i + 1}/{total_files}：{rel}")
 
-        # ---- 4. 更新 version.json ----
+        if total_files == 0:
+            raise RuntimeError("更新包中没有可替换的文件（排除目录/文件后为空），已中止")
+        if failed_files:
+            raise RuntimeError(
+                f"有 {len(failed_files)} 个文件替换失败（version.json 未更新）："
+                + "；".join(failed_files[:5]))
+
+        # ---- 3-1. 覆盖校验：每个目标文件都必须存在且内容一致（无遗漏）----
+        set_update_status(phase="verifying-files", percent=91,
+                          message="正在校验更新文件覆盖情况...")
+        verify_replaced_files(project_root, expected_files)
+
+        # ---- 4. 更新 version.json（仅在覆盖校验通过后）----
         set_update_status(phase="writing-version", percent=92, message="正在更新版本记录...")
-        latest = get_latest_sha()
-        vf = Path(get_real_path("version.json"))
-        if latest:
-            with open(vf, "w", encoding="utf-8") as f:
-                json.dump({"commit": {"sha": latest}}, f, ensure_ascii=False, indent=2)
+        final_sha = target or get_latest_sha()
+        if not final_sha:
+            raise RuntimeError("无法获取本次更新的提交 SHA，version.json 未更新")
+        write_version_json(final_sha)
+        refresh_build_info(final_sha)
 
         # ---- 5. 清理 ----
         shutil.rmtree(tmp_root, ignore_errors=True)
@@ -654,7 +808,7 @@ def do_apply_update() -> None:
         write_restart_request(mode="hot")
         set_update_status(
             phase="done", percent=100, running=False,
-            message=f"更新完成，共更新 {copied} 个文件，程序即将自动重启生效。",
+            message=f"更新完成（{final_sha[:7]}），共更新 {copied} 个文件，程序即将自动重启生效。",
             output=str(project_root),
         )
     except Exception as e:
@@ -745,6 +899,8 @@ __all__ = [
     "check_full_update", "check_update", "read_local_sha",
     "write_restart_request", "backup_for_hot_update",
     "UPDATE_EXCLUDE_DIRS", "UPDATE_EXCLUDE_FILES", "get_latest_sha",
+    "normalize_target_sha", "verify_replaced_files", "write_version_json",
+    "refresh_build_info",
     "verify_update_integrity", "start_apply_update", "start_apply_release_update",
     "do_apply_update", "do_apply_release_update",
 ]

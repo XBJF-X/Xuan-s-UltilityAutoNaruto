@@ -4,6 +4,11 @@ from typing import Tuple
 
 from backend.core.legacy.Config import Config
 from backend.core.legacy.Control import Control
+from backend.runtime.adb_env import ensure_bundled_adb, quoted_adb_executable
+
+# 统一使用依赖库自带的 adb（避免与用户本机 adb 争用 server）
+ensure_bundled_adb()
+
 
 
 class ADB(Control):
@@ -24,10 +29,11 @@ class ADB(Control):
         self.logger.info(f"ADB 控制器初始化成功，设备序列号: {self.device_serial}")
 
     def _build_adb_prefix(self) -> str:
-        """构建 ADB 命令前缀（指定目标设备）"""
+        """构建 ADB 命令前缀（指定目标设备，使用项目自带 adb）。"""
+        adb_exe = quoted_adb_executable()
         if self.device_serial:
-            return f"adb -s {self.device_serial}"
-        return "adb"
+            return f"{adb_exe} -s {self.device_serial}"
+        return adb_exe
 
     def _run_cmd(self, cmd: str, timeout: float = 10) -> Tuple[bool, str]:
         try:

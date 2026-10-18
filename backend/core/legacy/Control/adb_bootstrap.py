@@ -51,6 +51,8 @@ def adb_device_states() -> dict:
     首次调用会触发 adb server 启动（adbutils 内部执行 ``adb start-server``）。
     adb 不可用/查询失败时抛出异常，由调用方决定是否重试。
     """
+    from backend.runtime.adb_env import ensure_bundled_adb
+    ensure_bundled_adb()
     from adbutils import adb
 
     return {info.serial: info.state for info in adb.list()}
@@ -92,6 +94,8 @@ def ensure_adb_device(serial, logger=None, timeout: float = DEFAULT_TIMEOUT,
         log.warning("ADB 就绪等待跳过：串口为空")
         return False
 
+    from backend.runtime.adb_env import ensure_bundled_adb
+    ensure_bundled_adb()
     from adbutils import adb
 
     start = time.monotonic()

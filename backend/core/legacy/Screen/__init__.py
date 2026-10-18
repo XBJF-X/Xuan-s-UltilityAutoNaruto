@@ -55,9 +55,10 @@ class Screen(abc.ABC):
             return False
         try:
             import subprocess
+            from backend.runtime.adb_env import get_adb_executable
             self.logger.info(f"通过 adb 重启模拟器: {serial}")
             subprocess.run(
-                ["adb", "-s", serial, "reboot"],
+                [get_adb_executable(), "-s", serial, "reboot"],
                 capture_output=True, timeout=30)
             return True
         except Exception as e:

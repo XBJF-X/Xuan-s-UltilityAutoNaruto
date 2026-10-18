@@ -1,7 +1,15 @@
 import time
 import threading
+import traceback
 from enum import Enum
 from typing import List, Tuple
+
+# 必须在导入 adbutils / minidevice 之前固定 adb：用户本机的 adb 会与本项目
+# 依赖库自带的 adb 争用同一个 adb server，导致 MiniTouch 初始化时 socket
+# 读不到内容（现象：概率性初始化失败）。见 backend/runtime/adb_env.py。
+from backend.runtime.adb_env import ensure_bundled_adb
+
+ensure_bundled_adb()
 
 from adbutils import adb
 from minidevice import MiniTouch as MiniTouchCore
@@ -11,6 +19,16 @@ from backend.core.legacy.Config import Config
 from backend.core.legacy.Control import Control, InvalidResolution
 from backend.core.legacy.Control import touch_residue
 from backend.core.legacy.Control.adb_bootstrap import ensure_adb_device
+
+# 设备端 minitouch 可执行文件路径（minidevice 的推送目标）
+_MINITOUCH_REMOTE_PATH = "/data/local/tmp/minitouch"
+# 返回 DIR / FILE / MISSING：用于识别「被其他程序误创建成目录」的情况
+_MINITOUCH_PATH_STATE_CMD = (
+    f"if [ -d {_MINITOUCH_REMOTE_PATH} ]; then echo DIR; "
+    f"elif [ -f {_MINITOUCH_REMOTE_PATH} ]; then echo FILE; "
+    "else echo MISSING; fi"
+)
+
 
 # 初始化重试：程序退出时会 adb kill-server，下次首次连接时 adb server 冷启动、
 # 本机模拟器端口尚未被扫描到，`device 'emulator-xxxx' not found` 属瞬态错误；
@@ -35,6 +53,20 @@ class ArchType(Enum):
     UNKNOWN = "unknown"
 
 
+class MiniTouchInitError(RuntimeError):
+    """带**失败步骤**的 MiniTouch 初始化异常（便于定位具体出错位置）。"""
+
+    def __init__(self, step: str, serial: str, cause):
+        self.step = step
+        self.serial = serial or "未指定"
+        self.cause = cause
+        super().__init__(
+            f"MiniTouch 初始化失败[{step}]（设备 {self.serial}）："
+            f"{type(cause).__name__}: {cause}"
+        )
+
+
+
 class MiniTouch(Control):
     """
     基于minidevice.MiniTouch封装的控制器
@@ -55,7 +87,7 @@ class MiniTouch(Control):
             self._init_device()
 
         except Exception as e:
-            self.logger.error(f"MiniTouch 初始化失败: {e}")
+            self.logger.error(f"MiniTouch 初始化失败: {e}", exc_info=e)
             self.release()
             self._released = True
             raise
@@ -72,11 +104,21 @@ class MiniTouch(Control):
             wait_timeout = _INIT_WAIT_TIMEOUTS[
                 min(attempt - 1, len(_INIT_WAIT_TIMEOUTS) - 1)]
             ensure_adb_device(self.serial, self.logger, timeout=wait_timeout)
+            step = "检查/清理设备端 minitouch 路径"
             try:
+                # 关键前置检查：/data/local/tmp/minitouch 被其他程序误创建成
+                # 目录时，minidevice 会把二进制推进该目录、再执行目录 → 报
+                # "Is a directory"，且错误被 socket 解析成无意义的解包异常。
+                self._prepare_minitouch_path()
+
+                step = "启动 minidevice minitouch 核心（推送/转发/socket 握手）"
                 self._build_core()
 
+                step = "读取 adb 设备信息"
                 self.adb = adb.device(self.serial)
                 self.get_device_info()
+
+                step = "校验屏幕分辨率比例"
                 if not self.check_resolution():
                     raise InvalidResolution("模拟器分辨率比例不符合16:9的要求，请在模拟器设置内切换！")
                 self.logger.info(
@@ -86,8 +128,9 @@ class MiniTouch(Control):
             except InvalidResolution:
                 # 分辨率不符属配置问题，重试无意义，直接由上层报错
                 raise
-            except Exception as e:
+            except MiniTouchInitError as e:
                 last_error = e
+                self._diagnose_minitouch_failure(e.step)
                 # 半初始化的核心可能已启动设备端 minitouch 服务/占用 socket，重试前清理
                 self._discard_core()
                 if attempt < _INIT_ATTEMPTS:
@@ -96,9 +139,116 @@ class MiniTouch(Control):
                         f"{_INIT_RETRY_INTERVAL}s 后重试..."
                     )
                     time.sleep(_INIT_RETRY_INTERVAL)
+            except Exception as e:
+                last_error = MiniTouchInitError(step, self.serial, e)
+                self._diagnose_minitouch_failure(step)
+                # 半初始化的核心可能已启动设备端 minitouch 服务/占用 socket，重试前清理
+                self._discard_core()
+                if attempt < _INIT_ATTEMPTS:
+                    self.logger.warning(
+                        f"MiniTouch 初始化第 {attempt} 次失败（{last_error}）"
+                        f"{chr(10)}{traceback.format_exc()}"
+                        f"{_INIT_RETRY_INTERVAL}s 后重试..."
+                    )
+                    time.sleep(_INIT_RETRY_INTERVAL)
         if last_error is not None:
             raise last_error
         raise RuntimeError("MiniTouch 初始化失败：重试流程未产生异常，请检查 adb 与模拟器状态")
+
+    @staticmethod
+    def _shell_text(device, command: str) -> str:
+        """执行设备端 shell 命令并统一转成文本（兼容返回 bytes 的实现）。"""
+        output = device.shell(command)
+        if isinstance(output, bytes):
+            return output.decode("utf-8", errors="replace")
+        return str(output or "")
+
+    def _read_minitouch_path_state(self) -> str:
+        """返回设备端 minitouch 路径状态：DIR / FILE / MISSING。"""
+        device = adb.device(self.serial)
+        if getattr(device, "shell", None) is None:
+            # 仅测试替身会出现（真实 adbutils.AdbDevice 一定有 shell）；
+            # 显式跳过而不是伪造结果，避免误删真实设备上的文件。
+            self.logger.debug(
+                "当前 adb 设备对象不支持 shell（测试替身），跳过 minitouch 路径预检")
+            return "SKIPPED"
+        try:
+            output = self._shell_text(device, _MINITOUCH_PATH_STATE_CMD)
+        except Exception as e:
+            raise MiniTouchInitError(
+                f"检查 {_MINITOUCH_REMOTE_PATH} 是否为目录", self.serial, e) from e
+        return output.strip().splitlines()[-1].strip().upper() if output.strip() else ""
+
+    def _prepare_minitouch_path(self) -> str:
+        """初始化前检查设备端 minitouch 路径；若被误创建成目录则删除。
+
+        minidevice 的 ``MiniTouch.__init__`` 会直接把二进制 push 到
+        ``/data/local/tmp/minitouch`` 并执行它。目标若是目录，push 变成
+        "放进目录"，执行时得到 ``Is a directory``；该错误又发生在 socket
+        握手之前，最终只表现为读不到协议头（``ValueError: not enough values
+        to unpack``），非常难定位。这里在创建核心前显式检查并清理。
+        """
+        state = self._read_minitouch_path_state()
+        if state == "SKIPPED":
+            return state
+        if state == "DIR":
+            self.logger.warning(
+                f"检测到设备端 {_MINITOUCH_REMOTE_PATH} 是目录"
+                "（可能被其他程序误创建），先删除再初始化 MiniTouch...")
+            device = adb.device(self.serial)
+            try:
+                output = self._shell_text(
+                    device, f"rm -rf {_MINITOUCH_REMOTE_PATH} && echo REMOVED"
+                ).strip()
+            except Exception as e:
+                raise MiniTouchInitError(
+                    f"删除被误创建为目录的 {_MINITOUCH_REMOTE_PATH}", self.serial, e) from e
+            if "REMOVED" not in output:
+                raise MiniTouchInitError(
+                    f"删除被误创建为目录的 {_MINITOUCH_REMOTE_PATH}", self.serial,
+                    f"删除命令未成功（设备返回：{output[:200] or '空'}）")
+            if self._read_minitouch_path_state() == "DIR":
+                raise MiniTouchInitError(
+                    f"删除被误创建为目录的 {_MINITOUCH_REMOTE_PATH}", self.serial,
+                    "删除后仍为目录（可能无写权限或被其他进程占用）")
+            self.logger.info(
+                f"已删除被误创建为目录的 {_MINITOUCH_REMOTE_PATH}，继续初始化 MiniTouch")
+            state = "MISSING"
+        elif state == "FILE":
+            self.logger.debug(
+                f"设备端 {_MINITOUCH_REMOTE_PATH} 已存在（文件），将由 minidevice 覆盖推送")
+        elif state == "MISSING":
+            self.logger.debug(f"设备端 {_MINITOUCH_REMOTE_PATH} 不存在，等待 minidevice 推送")
+        else:
+            raise MiniTouchInitError(
+                f"检查 {_MINITOUCH_REMOTE_PATH} 是否为目录", self.serial,
+                f"无法识别的路径状态：{state[:200] or '空'}")
+        return state
+
+    def _diagnose_minitouch_failure(self, step: str) -> None:
+        """初始化失败时补充设备端关键状态（不抛异常，只记日志）。
+
+        socket 握手失败时原生异常缺少上下文；这里把「路径类型 / 进程 / ABI」
+        打出来，便于区分「目录占位」「进程残留」「二进制不兼容」等原因。
+        """
+        try:
+            device = adb.device(self.serial)
+            if getattr(device, "shell", None) is None:
+                return
+            for command in (
+                f"ls -ld {_MINITOUCH_REMOTE_PATH}",
+                "pidof minitouch",
+                "getprop ro.product.cpu.abi",
+                "getprop ro.build.version.sdk",
+            ):
+                try:
+                    output = self._shell_text(device, command).strip()
+                except Exception as e:
+                    output = f"<执行失败: {e}>"
+                self.logger.warning(
+                    f"MiniTouch 诊断[{step}] $ {command} -> {output[:300] or '空'}")
+        except Exception as e:
+            self.logger.warning(f"MiniTouch 诊断信息采集失败: {e}")
 
     def _discard_core(self):
         """丢弃未完成初始化的 minitouch 核心（重试前释放进程与 socket）。
@@ -115,7 +265,21 @@ class MiniTouch(Control):
                 self.logger.debug(f"清理未就绪的 MiniTouch 核心失败: {e}")
 
     def _build_core(self):
-        self._mt_core = MiniTouchCore(self.serial)
+        """构造 minidevice 核心，并把失败上下文补进异常文本。
+
+        minidevice 内部依次做：push 二进制 → chmod → kill 旧进程 → 启动
+        ``/data/local/tmp/minitouch`` → 端口转发 → 读 socket 协议头。
+        这一段抛出的原生异常（尤其是 socket 解包错误）不含任何上下文，这里补上
+        串口与设备端路径，便于定位。
+        """
+        try:
+            self._mt_core = MiniTouchCore(self.serial)
+        except Exception as e:
+            raise RuntimeError(
+                f"minidevice.MiniTouch 构造失败（串口={self.serial}，"
+                f"设备端路径={_MINITOUCH_REMOTE_PATH}，adb={adb.__class__.__module__}）："
+                f"{type(e).__name__}: {e}"
+            ) from e
         self._max_contacts = int(self._mt_core.max_contacts)
         self.max_pressure = int(self._mt_core.max_pressure)
         self._released = False

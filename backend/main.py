@@ -18,6 +18,13 @@ from pathlib import Path
 _project_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_project_root))
 
+# 必须在任何 adbutils / minidevice 导入之前固定 adb 路径：本机其他工具的 adb
+# 会与依赖库自带的 adb 争用同一个 adb server（5037），导致 MiniTouch 初始化时
+# socket 读不到内容。见 backend/runtime/adb_env.py。
+from backend.runtime.adb_env import build_adb_command, ensure_bundled_adb  # noqa: E402
+
+ensure_bundled_adb()
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -219,7 +226,7 @@ def _shutdown_adb_server():
         return
     try:
         result = subprocess.run(
-            ["adb", "kill-server"], capture_output=True, text=True, timeout=15,
+            build_adb_command("kill-server"), capture_output=True, text=True, timeout=15,
             encoding="utf-8", errors="ignore",
         )
         if result.returncode == 0:

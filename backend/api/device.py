@@ -10,6 +10,11 @@ from backend.api.schemas import (
     SerialListResponse,
     StaleContactsResponse,
 )
+from backend.runtime.adb_env import ensure_bundled_adb
+
+# 本模块是 adb 查询的公共入口：导入即固定为依赖库自带的 adb，避免与用户
+# 本机 adb 争用同一个 adb server。
+ensure_bundled_adb()
 
 router = APIRouter()
 logger = logging.getLogger("DeviceAPI")

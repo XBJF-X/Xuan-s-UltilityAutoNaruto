@@ -38,7 +38,7 @@ from backend.services.update_service import (
     UPDATE_VERIFY_TLS as _UPDATE_VERIFY_TLS,
 )
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Body
 
 logger = logging.getLogger("backend.api.utils")
 
@@ -94,9 +94,16 @@ def check_update():
 # 3. 应用更新（后台线程 + 进度轮询；实现见 services/update_service.py）
 # ============================================================
 @router.post("/apply-update")
-async def apply_update():
-    """下载并应用云端最新版本（后台线程执行，进度通过 /utils/update-status 轮询）"""
-    return start_apply_update()
+async def apply_update(payload: dict | None = Body(default=None)):
+    """下载并应用更新（后台线程执行，进度通过 /utils/update-status 轮询）。
+
+    请求体可选 ``{"sha": "<commit>"}``：指定后拉取该提交（即使当前已是最新也允许，
+    用于更新窗口里逐条 commit 的「拉取」按钮）；不传则更新到分支最新提交。
+    """
+    target = ""
+    if isinstance(payload, dict):
+        target = str(payload.get("sha") or "").strip()
+    return start_apply_update(target or None)
 
 
 @router.post("/apply-release-update")

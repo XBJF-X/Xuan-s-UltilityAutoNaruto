@@ -63,12 +63,14 @@ def _get_client_version(base_dir: str) -> str:
 
 
 def _get_runtime_commit(base_dir: str) -> str:
-    """获取本次运行的 commit：优先 _build_info.py，其次 git rev-parse（开发模式）。"""
+    """获取本次运行**实时**的 commit。
+
+    优先级：git rev-parse（开发模式）→ version.json（热更新写入的目标提交）→
+    _build_info.py（构建快照，仅兜底）。``_build_info.py`` 是打包时的静态快照，
+    热更新不会重写；此前把它放最前，导致安装版横幅永远是构建时的 commit。
+    """
     import re
-    text = _read_project_file(base_dir, "_build_info.py")
-    m = re.search(r'__commit__\s*=\s*["\']([^"\']*)["\']', text)
-    if m and m.group(1).strip():
-        return m.group(1).strip()
+    # 1) 开发模式：本地仓库 HEAD 最真实
     try:
         if os.path.isdir(os.path.join(base_dir, ".git")):
             r = subprocess.run(
@@ -80,7 +82,78 @@ def _get_runtime_commit(base_dir: str) -> str:
                 return r.stdout.strip()[:12]
     except Exception:
         pass
+    # 2) 安装版：热更新成功后写入的 version.json（需排除安装目录残留的旧记录）
+    try:
+        import json
+        text = _read_project_file(base_dir, "version.json")
+        if text:
+            data = json.loads(text) or {}
+            sha = str((data.get("commit") or {}).get("sha") or "").strip()
+            if re.fullmatch(r"[0-9a-fA-F]{7,40}", sha):
+                trusted = data.get("updated_by") == "hot-update"
+                if not trusted:
+                    build_info = os.path.join(base_dir, "_build_info.py")
+                    version_file = os.path.join(base_dir, "version.json")
+                    trusted = (not os.path.exists(build_info)
+                               or os.path.getmtime(version_file) >= os.path.getmtime(build_info))
+                if trusted:
+                    return sha[:12]
+    except Exception:
+        pass
+    # 3) 构建快照兜底
+    text = _read_project_file(base_dir, "_build_info.py")
+    m = re.search(r'__commit__\s*=\s*["\']([^"\']*)["\']', text)
+    if m and m.group(1).strip():
+        return m.group(1).strip()
     return "unknown"
+
+
+def _find_bundled_adb(base_dir: str = "") -> str:
+    """查找依赖库自带的 adb.exe（adbutils/binaries），找不到返回空串。
+
+    与 `backend/runtime/adb_env.py` 保持同一策略，但 launcher 在冻结环境里
+    先于后端启动，不能依赖 backend 包已被 sys.path 收录，因此这里用纯路径扫描。
+    """
+    exe_name = "adb.exe" if os.name == "nt" else "adb"
+    env_path = os.environ.get("ADBUTILS_ADB_PATH")
+    candidates = []
+    if env_path:
+        candidates.append(env_path)
+    for entry in sys.path:
+        if entry:
+            candidates.append(os.path.join(entry, "adbutils", "binaries", exe_name))
+    if base_dir:
+        candidates.append(os.path.join(
+            base_dir, "_internal", "venv", "Lib", "site-packages",
+            "adbutils", "binaries", exe_name))
+    exe_dir = os.path.dirname(os.path.abspath(sys.executable))
+    candidates.extend([
+        os.path.join(exe_dir, "adbutils", "binaries", exe_name),
+        os.path.join(exe_dir, "Lib", "site-packages", "adbutils", "binaries", exe_name),
+        os.path.join(exe_dir, "_internal", "venv", "Lib", "site-packages",
+                     "adbutils", "binaries", exe_name),
+    ])
+    seen = set()
+    for path in candidates:
+        key = os.path.normcase(os.path.abspath(path))
+        if key in seen:
+            continue
+        seen.add(key)
+        if os.path.isfile(path):
+            return path
+    return ""
+
+
+def _ensure_bundled_adb_env(base_dir: str = "") -> str:
+    """把 adb 固定为依赖库自带版本，并通过环境变量传给后端子进程。"""
+    exe = _find_bundled_adb(base_dir)
+    if exe:
+        os.environ["ADBUTILS_ADB_PATH"] = exe
+        LOG.info("使用项目自带 adb: %s", exe)
+        return exe
+    LOG.warning("未找到依赖库自带的 adb（adbutils/binaries），回退使用 PATH 中的 adb")
+    return "adb"
+
 
 
 def _startup_banner(base_dir: str, component: str = "Xuan Launcher") -> str:
@@ -460,15 +533,17 @@ def _relaunch_cmd(base_dir: str) -> list:
     return [sys.executable, os.path.join(base_dir, "launcher.py")]
 
 
-def stop_adb_server():
+def stop_adb_server(base_dir: str = ""):
     """程序退出时停止全局 adb server，避免退出后残留 adb 进程（issue #4）。
 
-    仅在程序使用过 adb（uiautomator2 / adb devices 等）时才有意义；
+    必须使用**项目自带**的 adb：用户的本地 adb（不同版本）与本程序使用的
+    server 可能是两个进程，用错二进制会杀掉/干扰另一个 server。
     清理失败不影响程序退出，但会记录日志供排查。
     """
+    exe = _find_bundled_adb(base_dir or get_base_dir()) or "adb"
     try:
         result = subprocess.run(
-            ["adb", "kill-server"], capture_output=True, text=True, timeout=15,
+            [exe, "kill-server"], capture_output=True, text=True, timeout=15,
             encoding="utf-8", errors="ignore",
         )
         if result.returncode == 0:
@@ -515,6 +590,9 @@ def _run(show_window: bool, autoclose: int = 0) -> int:
 
     # 启动横幅（启动时间 / 客户端版本 / Commit），便于在 launcher.log 中快速定位每次运行
     LOG.info("%s", _startup_banner(base_dir))
+
+    # 统一 adb 路径（必须在后端子进程启动前写入环境，子进程继承 ADBUTILS_ADB_PATH）
+    _ensure_bundled_adb_env(base_dir)
 
     # 统一退出出口：记录退出横幅（时间 + 原因）后返回退出码
     def _finish(exit_code: int, reason: str) -> int:

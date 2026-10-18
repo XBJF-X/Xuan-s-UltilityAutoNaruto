@@ -68,6 +68,8 @@ def _adb_shell(serial: str, command: str) -> str:
 
     经 adbutils（与项目其余 adb 调用一致，自动解析 adb 可执行文件路径）。
     """
+    from backend.runtime.adb_env import ensure_bundled_adb
+    ensure_bundled_adb()
     from adbutils import adb
 
     return adb.device(serial).shell(command)
