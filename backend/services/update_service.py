@@ -257,6 +257,24 @@ def check_full_update(local_version: str, platform: dict = None) -> dict:
     }
 
 
+def _commit_payload(c: dict) -> dict:
+    """把 GitHub/Gitee 提交对象压成前端展示结构。
+
+    ``message`` 取首行用于列表展示，``full_message`` 保留完整提交消息
+    （前端提交项悬浮提示用；多行提交说明在列表里会被省略号截断）。
+    """
+    raw = (c.get("commit", {}).get("message") or "")
+    commit_meta = c.get("commit", {})
+    return {
+        "sha": c["sha"],
+        "short_sha": c["sha"][:7],
+        "message": raw.splitlines()[0] if raw.strip() else "",
+        "full_message": raw.strip(),
+        "date": commit_meta.get("committer", {}).get("date", ""),
+        "author": (commit_meta.get("author", {}).get("name") or ""),
+    }
+
+
 def check_update(branch: Optional[str] = None) -> dict:
     """检查更新：对比本地 version.json 与更新源分支，返回云端提交历史。
 
@@ -304,13 +322,7 @@ def check_update(branch: Optional[str] = None) -> dict:
                 )
                 if commits_resp.status_code == 200:
                     for c in json.loads(commits_resp.content.decode("utf-8")):
-                        commits.append({
-                            "sha": c["sha"],
-                            "short_sha": c["sha"][:7],
-                            "message": (c["commit"]["message"] or "").splitlines()[0],
-                            "date": c["commit"]["committer"]["date"],
-                            "author": (c["commit"]["author"].get("name") or ""),
-                        })
+                        commits.append(_commit_payload(c))
             except Exception as e:
                 # 提交历史属展示信息：失败不阻断检查更新，仅留痕
                 logger.debug("拉取提交历史失败: %s", e)
@@ -329,13 +341,7 @@ def check_update(branch: Optional[str] = None) -> dict:
                         )
                         if c_resp.status_code == 200:
                             c = json.loads(c_resp.content.decode("utf-8"))
-                            current_commit = {
-                                "sha": c["sha"],
-                                "short_sha": c["sha"][:7],
-                                "message": (c["commit"]["message"] or "").splitlines()[0],
-                                "date": c["commit"]["committer"]["date"],
-                                "author": (c["commit"]["author"].get("name") or ""),
-                            }
+                            current_commit = _commit_payload(c)
                     except Exception as e:
                         logger.debug("拉取本地提交详情失败: %s", e)
             break  # 分支请求成功即使用该平台

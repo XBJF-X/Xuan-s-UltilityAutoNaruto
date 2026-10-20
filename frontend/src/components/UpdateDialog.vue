@@ -3,7 +3,7 @@
     v-model:show="showModel"
     preset="card"
     title="检查更新"
-    style="width: min(640px, calc(100vw - 48px))"
+    style="width: min(1400px, calc(100vw - 32px))"
     :mask-closable="!isUpdating"
     :closable="!isUpdating"
     @after-leave="reset"
@@ -127,72 +127,87 @@
         </n-card>
       </template>
 
-      <!-- 提交历史（任何状态都展示；每条右侧可拉取该 commit，当前已是最新也允许） -->
-      <div class="commit-section">
-        <div class="section-title">
-          云端提交历史（{{ info.branch || branch }} · 右侧「拉取」可更新到任意提交）
-        </div>
-        <div class="commit-list">
-          <div
-            v-for="c in info.commits"
-            :key="c.sha"
-            class="commit-item"
-            :class="{
-              'is-latest': c.sha === info.latest_sha,
-              'is-current': c.sha === info.current_sha,
-            }"
-          >
-            <span class="c-tag" v-if="c.sha === info.latest_sha">最新</span>
-            <span class="c-tag current" v-else-if="c.sha === info.current_sha">本地</span>
-            <span class="c-sha">{{ c.short_sha }}</span>
-            <span class="c-msg">{{ c.message }}</span>
-            <span class="c-date">{{ formatDate(c.date) }}</span>
-            <span class="c-author">{{ c.author }}</span>
-            <n-button
-              v-if="packageMap.has(c.sha) && c.sha !== info.current_sha"
-              size="tiny"
-              tertiary
-              type="warning"
-              class="c-rollback"
-              :loading="rollingBackSha === c.sha"
-              :disabled="isUpdating && rollingBackSha !== c.sha"
-              @click.stop="confirmRollback(c.sha, c.short_sha)"
-            >
-              回滚
-            </n-button>
-            <n-button
-              size="tiny"
-              tertiary
-              type="primary"
-              class="c-pull"
-              :loading="pullingSha === c.sha"
-              :disabled="isUpdating && pullingSha !== c.sha"
-              @click.stop="apply(c.sha)"
-            >
-              拉取
-            </n-button>
-          </div>
-          <n-empty v-if="!info.commits || info.commits.length === 0" description="暂无提交记录" size="small" style="padding: 12px 0;" />
-        </div>
-      </div>
-
+      <!-- 提交历史与本地回滚包统一在弹窗底部同一列表展示（见下方 commit-section） -->
     </template>
 
-    <!-- 本地可用回滚包（离线可用，与云端提交历史相互独立） -->
-    <div v-if="!loading && packages.length" class="package-section">
+
+    <!-- 提交历史 + 本地回滚包：融合在同一列表（带本地包的提交直接显示「回滚」；
+         云端历史未覆盖到的更早提交/快照作为「本地包」行追加，保证所有可回滚项都可见） -->
+    <div v-if="!loading" class="commit-section">
       <div class="section-title">
-        本地可用回滚包（{{ packages.length }}/{{ maxPackages }} · 共 {{ formatSize(totalSize) }}）
+        <template v-if="info">
+          提交历史（{{ info.branch || branch }} · 右侧可「拉取」任意提交；带本地包的提交可「回滚」）
+        </template>
+        <template v-else>本地可用回滚包（离线可用，不依赖网络）</template>
       </div>
-      <div class="package-list">
+      <div class="commit-list">
         <div
-          v-for="p in packages"
-          :key="p.sha"
-          class="package-item"
+          v-for="c in commitRows"
+          :key="c.sha"
+          class="commit-item"
+          :class="{
+            'is-latest': c.sha === latestSha,
+            'is-current': c.sha === currentSha,
+          }"
+        >
+          <span class="c-tag" v-if="c.sha === latestSha">最新</span>
+          <span class="c-tag current" v-else-if="c.sha === currentSha">本地</span>
+          <span class="c-sha">{{ c.short_sha }}</span>
+          <!-- 悬浮显示完整提交消息（列表里是首行 + 省略号） -->
+          <n-tooltip placement="top-start" :style="{ maxWidth: '720px' }">
+            <template #trigger>
+              <span class="c-msg">{{ c.message }}</span>
+            </template>
+            <div style="white-space: pre-wrap; word-break: break-word; max-height: 320px; overflow-y: auto;">
+              {{ c.full_message || c.message }}
+            </div>
+          </n-tooltip>
+          <span class="c-date">{{ formatDate(c.date) }}</span>
+          <span class="c-author">{{ c.author }}</span>
+          <n-button
+            v-if="packageMap.has(c.sha) && c.sha !== currentSha"
+            size="tiny"
+            tertiary
+            type="warning"
+            class="c-rollback"
+            :loading="rollingBackSha === c.sha"
+            :disabled="isUpdating && rollingBackSha !== c.sha"
+            @click.stop="confirmRollback(c.sha, c.short_sha)"
+          >
+            回滚
+          </n-button>
+          <n-button
+            size="tiny"
+            tertiary
+            type="primary"
+            class="c-pull"
+            :loading="pullingSha === c.sha"
+            :disabled="isUpdating && pullingSha !== c.sha"
+            @click.stop="apply(c.sha)"
+          >
+            拉取
+          </n-button>
+        </div>
+
+        <!-- 云端历史未覆盖到的本地回滚包（更早的提交 / 更新前快照），同样可回滚 -->
+        <div
+          v-for="p in orphanPackages"
+          :key="'pkg-' + p.sha"
+          class="commit-item is-local-pkg"
           :class="{ 'is-current': p.is_current }"
         >
+          <span class="c-tag pkg">本地包</span>
           <span class="c-tag current" v-if="p.is_current">当前</span>
           <span class="c-sha">{{ p.short_sha }}</span>
-          <span class="c-msg">{{ p.message || (p.kind === 'snapshot' ? '更新前快照' : '已下载更新包') }}</span>
+          <n-tooltip placement="top-start" :style="{ maxWidth: '720px' }">
+            <template #trigger>
+              <span class="c-msg">{{ p.message || (p.kind === 'snapshot' ? '更新前快照' : '已下载更新包') }}</span>
+            </template>
+            <div style="white-space: pre-wrap; word-break: break-word;">
+              {{ p.kind === 'snapshot' ? '更新前快照（离线回滚包）' : '已下载更新包（离线回滚包）' }}
+              保存于 {{ formatDate(p.saved_at) }}，共 {{ formatSize(p.size) }}。
+            </div>
+          </n-tooltip>
           <span class="c-date">{{ formatDate(p.saved_at) }}</span>
           <span class="c-date">{{ formatSize(p.size) }}</span>
           <n-button
@@ -207,9 +222,19 @@
             回滚
           </n-button>
         </div>
+
+        <n-empty
+          v-if="!commitRows.length && !orphanPackages.length"
+          description="暂无可展示的提交或回滚包"
+          size="small"
+          style="padding: 12px 0;"
+        />
       </div>
       <n-text depth="3" style="font-size: 12px;">
         回滚不依赖网络：直接用本机保存的更新包覆盖代码，完成后自动热重启。
+        <template v-if="packages.length">
+          （本机保留 {{ packages.length }}/{{ maxPackages }} 个包，共 {{ formatSize(totalSize) }}）
+        </template>
       </n-text>
     </div>
     </div>
@@ -311,6 +336,17 @@ const packageMap = computed(() => {
   const map = new Map<string, any>()
   for (const p of packages.value) map.set(String(p.sha), p)
   return map
+})
+// 提交列表数据源：检查失败（info 为空）时只显示本地回滚包，回滚入口不依赖网络
+const commitRows = computed<any[]>(() =>
+  Array.isArray(info.value?.commits) ? info.value.commits : [])
+const latestSha = computed(() => String(info.value?.latest_sha || ''))
+const currentSha = computed(() => String(info.value?.current_sha || ''))
+// 云端提交历史未覆盖到的本地回滚包（更早的提交 / 更新前快照）：追加到同一列表，
+// 保证「本机所有可回滚的提交」都看得到（回滚包最多 5 个，不会超出 50 行上限）
+const orphanPackages = computed(() => {
+  const known = new Set(commitRows.value.map((c: any) => String(c.sha)))
+  return packages.value.filter((p: any) => !known.has(String(p.sha)))
 })
 const progress = ref<{
   running: boolean
@@ -730,7 +766,7 @@ onBeforeUnmount(() => {
   font-size: 12px;
   word-break: break-all;
 }
-.commit-section { margin-top: 4px; }
+.commit-section { margin-top: 12px; }
 .release-section { margin-top: 4px; margin-bottom: 12px; }
 .release-body {
   max-height: 180px;
@@ -751,7 +787,10 @@ onBeforeUnmount(() => {
   margin-bottom: 6px;
 }
 .commit-list {
-  max-height: 240px;
+  /* 最多 50 行（行高 28px）：云端 20 条提交 + 本机 ≤5 个回滚包能一次展示完，
+     避免可回滚的 commit 被过矮的列表高度挤掉；只有超出 50 行才内部滚动 */
+  --commit-row-h: 28px;
+  max-height: calc(var(--commit-row-h) * 50);
   overflow-y: auto;
   border: 1px solid #eee;
   border-radius: 8px;
@@ -760,7 +799,9 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 10px;
+  min-height: var(--commit-row-h);
+  box-sizing: border-box;
+  padding: 4px 10px;
   border-bottom: 1px solid #f0f0f0;
   font-size: 12px;
 }
@@ -768,6 +809,7 @@ onBeforeUnmount(() => {
 .commit-item:hover { background: #fafafa; }
 .commit-item.is-latest { background: #fffbe6; }
 .commit-item.is-current { background: #e6f4ff; }
+.commit-item.is-local-pkg { background: #fcfcfc; }
 .c-tag {
   flex-shrink: 0;
   font-size: 11px;
@@ -778,6 +820,7 @@ onBeforeUnmount(() => {
   padding: 0 4px;
 }
 .c-tag.current { color: #1677ff; background: #e6f4ff; border-color: #91caff; }
+.c-tag.pkg { color: #722ed1; background: #f9f0ff; border-color: #d3adf7; }
 .c-sha { font-family: Consolas, monospace; color: #555; flex-shrink: 0; }
 .c-msg {
   flex: 1;
@@ -790,23 +833,4 @@ onBeforeUnmount(() => {
 .c-author { color: #888; flex-shrink: 0; font-size: 11px; }
 .c-pull { flex-shrink: 0; }
 .c-rollback { flex-shrink: 0; }
-.package-section { margin-top: 12px; }
-.package-list {
-  max-height: 160px;
-  overflow-y: auto;
-  border: 1px solid #eee;
-  border-radius: 8px;
-  margin-bottom: 6px;
-}
-.package-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 10px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 12px;
-}
-.package-item:last-child { border-bottom: none; }
-.package-item:hover { background: #fafafa; }
-.package-item.is-current { background: #e6f4ff; }
 </style>
