@@ -7,6 +7,10 @@ from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
 from backend.core.legacy.Task.schedule import Custom, Weekday, WeeklySlot
 
+# 战场元素名（与 TianDiZhanChang 一致）：本任务由「天地战场」复制而来，
+# 首版漏掉了这个模块级常量，选战场时会抛 NameError（由 verify_undefined_names 抓到）。
+choose_dic = ["天之战场", "地之战场"]
+
 PARAM_HAS_PANREN = "执行结束后是否有叛忍"
 PARAM_PANREN_MINUTE = "本任务执行多少分钟后执行叛忍"
 
