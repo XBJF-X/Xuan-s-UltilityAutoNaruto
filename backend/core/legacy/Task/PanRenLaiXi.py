@@ -62,7 +62,7 @@ class PanRenLaiXi(BaseTask):
         self.operationer.click_and_wait("玩法")
         self.operationer.search_and_click(
             [
-                f"叛忍来袭-前往"
+                "叛忍来袭-前往"
             ],
             [
                 {

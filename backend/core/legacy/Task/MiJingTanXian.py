@@ -67,7 +67,7 @@ class MiJingTanXian(BaseTask):
         if self.operationer.detect_element("剩余挑战券-0",max_time=0.5, wait_time=0):
             raise TaskCompleted("任务执行完成")
         else:
-            self.logger.info(f"挑战券未耗尽，继续执行")
+            self.logger.info("挑战券未耗尽，继续执行")
         self.operationer.click_and_wait("出战")
         self.bool_click = True
         return False

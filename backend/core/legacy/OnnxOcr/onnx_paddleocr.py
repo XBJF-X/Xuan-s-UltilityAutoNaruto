@@ -2,9 +2,8 @@ import time
 
 from backend.core.legacy.OnnxOcr.predict_system import TextSystem
 from backend.core.legacy.OnnxOcr.utils import infer_args as init_args
-from backend.core.legacy.OnnxOcr.utils import str2bool, draw_ocr
+from backend.core.legacy.OnnxOcr.utils import draw_ocr
 import argparse
-import sys
 
 
 class ONNXPaddleOcr(TextSystem):

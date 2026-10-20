@@ -708,7 +708,7 @@ class TransitionManager:
                 wait_time=0,
             )
             operationer.search_and_click(
-                [f"要塞争夺战-前往"], 
+                ["要塞争夺战-前往"], 
                 [{
                 "swipe": {
                     "start_coordinate": [1000, 464],

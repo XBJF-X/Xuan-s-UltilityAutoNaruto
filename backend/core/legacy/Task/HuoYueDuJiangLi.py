@@ -19,7 +19,7 @@ class HuoYueDuJiangLi(BaseTask):
 
     @TransitionOn()
     def _(self):
-        if not self.config.get_task_exe_prog(self.task_name, f"周活跃礼已领取", False) and not self.weekly_check:
+        if not self.config.get_task_exe_prog(self.task_name, "周活跃礼已领取", False) and not self.weekly_check:
             self.operationer.click_and_wait("周活跃礼")
             return False
         
@@ -48,7 +48,7 @@ class HuoYueDuJiangLi(BaseTask):
     @TransitionOn("周活跃大礼")
     def _(self):
         if self.operationer.click_and_wait("领取"):
-            self.config.set_task_exe_prog(self.task_name, f"周活跃礼已领取", True)
+            self.config.set_task_exe_prog(self.task_name, "周活跃礼已领取", True)
             self.logger.info("周活跃奖励领取成功")
         self.operationer.click_and_wait("X")
         self.weekly_check=True
@@ -56,20 +56,20 @@ class HuoYueDuJiangLi(BaseTask):
 
     def reset_task_exe_prog(self) -> bool:
         self.finished = False
-        if (self.config.get_task_exe_prog(self.task_name, f"周活跃礼已领取", False) and
+        if (self.config.get_task_exe_prog(self.task_name, "周活跃礼已领取", False) and
                 datetime.now(ZoneInfo("Asia/Shanghai")).weekday() == 6):
             # 每周日重置周活跃领取状态
-            self.config.set_task_exe_prog(self.task_name, f"周活跃礼已领取", False)
+            self.config.set_task_exe_prog(self.task_name, "周活跃礼已领取", False)
         flag = all([
-            self.config.get_task_exe_prog(self.task_name, f"10活跃度已领取", False),
-            self.config.get_task_exe_prog(self.task_name, f"40活跃度已领取", False),
-            self.config.get_task_exe_prog(self.task_name, f"80活跃度已领取", False),
-            self.config.get_task_exe_prog(self.task_name, f"100活跃度已领取", False)
+            self.config.get_task_exe_prog(self.task_name, "10活跃度已领取", False),
+            self.config.get_task_exe_prog(self.task_name, "40活跃度已领取", False),
+            self.config.get_task_exe_prog(self.task_name, "80活跃度已领取", False),
+            self.config.get_task_exe_prog(self.task_name, "100活跃度已领取", False)
         ])
-        self.config.set_task_exe_prog(self.task_name, f"10活跃度已领取", False)
-        self.config.set_task_exe_prog(self.task_name, f"40活跃度已领取", False)
-        self.config.set_task_exe_prog(self.task_name, f"80活跃度已领取", False)
-        self.config.set_task_exe_prog(self.task_name, f"100活跃度已领取", False)
+        self.config.set_task_exe_prog(self.task_name, "10活跃度已领取", False)
+        self.config.set_task_exe_prog(self.task_name, "40活跃度已领取", False)
+        self.config.set_task_exe_prog(self.task_name, "80活跃度已领取", False)
+        self.config.set_task_exe_prog(self.task_name, "100活跃度已领取", False)
         if flag:
             self.logger.debug("所有活跃度奖励已领取")
         else:

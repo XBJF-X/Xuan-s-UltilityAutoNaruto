@@ -43,6 +43,11 @@ jobs:
         continue-on-error: true
         run: pip install "minidevice @ git+https://github.com/NakanoSanku/minidevice.git"
 
+      - name: 静态检查（ruff）
+        # 只开正确性规则（见根目录 ruff.toml）：未定义名/未使用导入/重复定义/
+        # 重复字典键/裸 except/可变默认参数。compileall 查不出函数体内的 NameError。
+        run: python -m ruff check backend
+
       - name: 编译检查（compileall）
         run: python -m compileall -q backend
 

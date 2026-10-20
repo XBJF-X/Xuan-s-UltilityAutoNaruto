@@ -3,7 +3,7 @@ import logging
 import random as _random  # 方法参数名 random 会遮蔽同名模块，故用别名导入
 import threading
 import time
-from typing import Tuple, Any, List
+from typing import Any, List
 
 from backend.tools.resource_model import Scene, Element
 from backend.core.legacy.Clicker import Clicker

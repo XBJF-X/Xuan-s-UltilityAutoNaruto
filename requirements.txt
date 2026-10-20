@@ -42,6 +42,7 @@ PyYAML==6.0.2
 questionary==2.1.0
 requests==2.32.4
 retry2==0.9.5
+ruff==0.17.1
 setuptools==80.9.0
 shiboken6==6.9.1
 termcolor==3.1.0

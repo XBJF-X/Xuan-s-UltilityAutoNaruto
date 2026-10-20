@@ -10,18 +10,17 @@
 - 元素从属于唯一场景（Element.scene_id 外键必填，1:N）
 - SceneEdge 表示场景之间的跳转边（source -> target）
 """
-import io
 import logging
 import re
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import Response
 
 from backend.tools.resource_db import ResourceDBManager
-from backend.tools.resource_model import Scene, Element, SceneEdge
+from backend.tools.resource_model import Scene, Element
 from backend.core.enums import ElementType, MatchType
 
 router = APIRouter()

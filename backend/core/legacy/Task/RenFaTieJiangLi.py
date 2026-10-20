@@ -1,6 +1,5 @@
 import datetime
 
-from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
 from backend.core.legacy.Task.schedule import Daily, Weekday, Weekly
 

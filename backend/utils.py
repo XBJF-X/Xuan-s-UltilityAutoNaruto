@@ -1,7 +1,6 @@
 """后端工具函数 - 路径、图像IO、日志等（不依赖 PySide6）"""
 import logging
 import os
-import sys
 from pathlib import Path
 
 import cv2

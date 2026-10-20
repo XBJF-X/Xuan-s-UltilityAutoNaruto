@@ -5,7 +5,6 @@
 任务完成信号仍由 BaseTask 的 callback 回到调度器（保持向后兼容）。
 """
 import inspect
-from typing import Optional
 
 
 def _request_stop(task, reason: str) -> None:

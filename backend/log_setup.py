@@ -11,7 +11,6 @@
   - 前端 LogPanel 通过 WebSocketLogHandler 接收（已按 config_id 隔离）
 """
 import logging
-import os
 import re
 import threading
 from logging.handlers import RotatingFileHandler

@@ -4,7 +4,6 @@
 WS 层据此推送 scheduler_snapshot 给前端（前端零轮询）。
 """
 import threading
-from typing import Optional
 
 
 class SchedulerState:

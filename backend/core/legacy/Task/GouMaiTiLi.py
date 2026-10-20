@@ -1,9 +1,6 @@
 import re
-import time
 from datetime import timedelta
-from typing import List
 
-from backend.core.legacy.OcrText import OcrText
 from backend.core.legacy.Exceptions import StepFailedError, TaskCompleted
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
 

@@ -11,8 +11,9 @@ import logging
 
 from backend.services.feedback_service import (
     collect_options,
-    run_package as _do_feedback_package,
-    set_status as _set_feedback_status,
+    # 再导出给 backend/api/utils/__init__.py（本模块不直接使用，勿删）
+    run_package as _do_feedback_package,  # noqa: F401
+    set_status as _set_feedback_status,  # noqa: F401
     snapshot as _feedback_snapshot,
     start_package,
 )

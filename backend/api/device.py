@@ -190,7 +190,6 @@ def check_environment(config_id: str):
     if cfg is None:
         raise HTTPException(status_code=404, detail="配置不存在")
 
-    import os
     result: dict = {
         "screenshot_mode": cfg.get_config("截图模式", 2),
         "path_ok": False,
@@ -205,7 +204,7 @@ def check_environment(config_id: str):
     mode = result["screenshot_mode"]
     if mode == 3:  # MuMu
         from backend.core.emulator_env import (
-            MUMU_DLL_CANDIDATES, check_mumu_files, find_mumu_manager,
+            check_mumu_files, find_mumu_manager,
             probe_mumu_instance,
         )
         base = cfg.get_config("MuMu安装路径", "")

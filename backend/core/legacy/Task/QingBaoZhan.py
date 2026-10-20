@@ -1,5 +1,5 @@
 
-from datetime import datetime, timedelta, time
+from datetime import timedelta, time
 
 from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
@@ -213,12 +213,12 @@ class QingBaoZhan(BaseTask):
         self.config.set_task_exe_prog(self.task_name, f"{num}活跃度奖励已领取", True)
 
     def reset_task_exe_prog(self) -> bool:
-        self.config.set_task_exe_prog(self.task_name, f"浏览卷轴", False)
-        self.config.set_task_exe_prog(self.task_name, f"浏览村口", False)
-        self.config.set_task_exe_prog(self.task_name, f"点赞帖子", 0)
-        self.config.set_task_exe_prog(self.task_name, f"浏览忍者站", False)
-        self.config.set_task_exe_prog(self.task_name, f"情报站签到", False)
-        self.config.set_task_exe_prog(self.task_name, f"浏览金币助手", False)
-        self.config.set_task_exe_prog(self.task_name, f"领取情报站活跃度", False)
+        self.config.set_task_exe_prog(self.task_name, "浏览卷轴", False)
+        self.config.set_task_exe_prog(self.task_name, "浏览村口", False)
+        self.config.set_task_exe_prog(self.task_name, "点赞帖子", 0)
+        self.config.set_task_exe_prog(self.task_name, "浏览忍者站", False)
+        self.config.set_task_exe_prog(self.task_name, "情报站签到", False)
+        self.config.set_task_exe_prog(self.task_name, "浏览金币助手", False)
+        self.config.set_task_exe_prog(self.task_name, "领取情报站活跃度", False)
         return True
 

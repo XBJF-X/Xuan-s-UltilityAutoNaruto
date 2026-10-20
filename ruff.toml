@@ -1,0 +1,28 @@
+# 后端静态扫描配置（ruff）。运行方式：`.venv\Scripts\ruff.exe check backend`
+# CI 见 .github/workflows/ci.yml 的「静态检查（ruff）」步骤。
+#
+# 规则集刻意**收窄到正确性**：
+#   F    pyflakes：未定义名（F821）、未使用导入（F401）、重复定义（F811）、
+#        重复字典键（F601）、f-string 无占位符（F541）等
+#   E722 裸 except（会吞掉 KeyboardInterrupt，且掩盖真实异常类型）
+#   B006 可变默认参数（跨调用共享同一个 list/dict）
+# 风格类（UP/SIM/RUF/I/命名）暂不启用：一次性会引入上千条无关 diff，
+# 需要单独一轮做格式化/现代化，避免和逻辑修复混在一起。
+target-version = "py312"
+line-length = 120
+
+[lint]
+select = ["F", "E722", "B006"]
+
+[lint.per-file-ignores]
+# API 层刻意「同名再导出」：这些名字在本模块不直接使用，但被
+# backend/api/utils/__init__.py 用 `from backend.api.utils.update import _xxx` 再导出，
+# 供路由/测试按旧路径访问（删掉会断兼容）。
+"backend/api/utils/__init__.py" = ["F401"]
+"backend/api/utils/update.py" = ["F401"]
+# 子包聚合门面（__init__ 只做导出，不直接使用）
+"backend/services/scheduler/__init__.py" = ["F401"]
+# 第三方 OCR 代码（自 PaddleOCR 移植）：保持上游写法（星号导出/裸 except/可变默认值/
+# 未使用局部变量），改动会让后续同步上游变困难。
+"backend/core/legacy/OnnxOcr/imaug.py" = ["F403", "F401"]
+"backend/core/legacy/OnnxOcr/*.py" = ["E722", "B006", "F841"]

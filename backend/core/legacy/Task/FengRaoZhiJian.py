@@ -1,7 +1,5 @@
 import time
 from datetime import timedelta
-import datetime
-from typing import List, Tuple
 
 from backend.core.legacy.Enums import KEY_INDEX
 from backend.core.legacy.Exceptions import TaskCompleted

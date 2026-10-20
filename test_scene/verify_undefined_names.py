@@ -23,6 +23,12 @@
 用法：
     .venv\\Scripts\\python.exe -X utf8 test_scene/verify_undefined_names.py
     在 `_run_verify_batch.py` 快速集里按 `verify_*.py` 自动发现。
+
+与 ruff 的关系：
+    CI 的门槛是 `ruff check backend`（根目录 ruff.toml，规则 `F/E722/B006`），它覆盖
+    本脚本的全部检查并更精确。本脚本保留为**零依赖兜底**：本地没装 ruff、或想在不跑
+    CI 的环境里快速自检时仍可用，同时额外锁住「`from x import *` 跳过清单不得随新增文件
+    悄悄扩大」。
 """
 import ast
 import builtins

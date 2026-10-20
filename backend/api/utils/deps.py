@@ -4,7 +4,6 @@
 模块级 logger 名为 "backend.api.utils"（与拆分前一致，保证日志连续性与
 既有测试的 assertLogs("backend.api.utils") 继续有效）。"""
 import threading
-import time
 
 import logging
 

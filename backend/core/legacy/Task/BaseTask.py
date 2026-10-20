@@ -12,7 +12,6 @@ from typing import Dict, Callable, List, Optional, Tuple
 from zoneinfo import ZoneInfo
 
 from backend.utils import get_real_path
-from backend.core.legacy.Config import Config
 from backend.core.legacy.Exceptions import (
     StepFailedError,
     TimeOutDeadLineError,
@@ -23,7 +22,6 @@ from backend.core.legacy.Exceptions import (
     STUCK_STOP_REASONS,
 )
 from backend.core.legacy.Operationer import Operationer
-from backend.core.legacy.Scene.TransitionManager import TransitionManager
 from backend.core.legacy.Task.schedule import Daily, Schedule, ScheduleContext
 from backend.core.scheduler.runtime import RuntimeContext
 

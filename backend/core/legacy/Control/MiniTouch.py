@@ -603,7 +603,7 @@ class MiniTouch(Control):
             if core is None:
                 return
             try:
-                core.send(f"u 0\nc")
+                core.send("u 0\nc")
             except Exception as e:
                 if self._is_disconnect_error(e):
                     self._reconnect()
