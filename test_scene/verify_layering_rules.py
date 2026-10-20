@@ -114,11 +114,17 @@ class UtilsPackageTest(unittest.TestCase):
         import backend.main as main_module
         spec = main_module.app.openapi()
         utils_paths = sorted(p for p in spec["paths"] if p.startswith("/api/utils"))
-        self.assertEqual(len(utils_paths), 13, f"utils 端点数变化: {utils_paths}")
+        # 13（原有）+ 3（离线回滚：update-packages / rollback / rollback-status，
+        # 由 backend/api/recovery.py 独立注册，见 v0.17.82）
+        self.assertEqual(len(utils_paths), 16, f"utils 端点数变化: {utils_paths}")
         self.assertIn("/api/utils/log-history", utils_paths)
         self.assertIn("/api/utils/check-update", utils_paths)
         self.assertIn("/api/utils/feedback/package", utils_paths)
         self.assertIn("/api/utils/open-log-dir", utils_paths)
+        # 回滚入口必须存在，且不能挂在 utils 包内（否则更新链路坏掉时一起失效）
+        self.assertIn("/api/utils/update-packages", utils_paths)
+        self.assertIn("/api/utils/rollback", utils_paths)
+        self.assertIn("/api/utils/rollback-status", utils_paths)
 
     def test_submodule_loggers_share_package_name(self):
         """既有测试用 assertLogs("backend.api.utils")，子模块 logger 名必须一致"""

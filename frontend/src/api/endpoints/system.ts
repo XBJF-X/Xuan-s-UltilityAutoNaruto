@@ -49,6 +49,12 @@ export const utilsApi = {
   // 应用更新（后台执行，进度通过 updateStatus 轮询）
   // sha 可选：指定后拉取该提交（当前已是最新也允许），不传则更新到分支最新提交
   applyUpdate: (sha?: string) => client.post('/utils/apply-update', sha ? { sha } : {}),
+  // 本机保留的热更新包（离线回滚候选；不访问网络）
+  updatePackages: () => client.get('/utils/update-packages'),
+  // 离线回滚到指定提交（后台执行，进度通过 updateStatus / rollbackStatus 轮询）
+  rollback: (sha: string) => client.post('/utils/rollback', { sha }),
+  // 回滚进度（update 模块不可用时前端改轮询这个）
+  rollbackStatus: () => client.get('/utils/rollback-status'),
   // 应用大更新：下载最新 GitHub Release 安装包并自动重启安装（进度通过 updateStatus 轮询）
   applyReleaseUpdate: () => client.post('/utils/apply-release-update'),
   // 查询更新任务进度

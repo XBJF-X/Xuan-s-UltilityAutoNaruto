@@ -94,7 +94,7 @@
         <n-card size="small" class="progress-card">
           <div class="phase-row">
             <n-text :type="progress.error ? 'error' : 'primary'" weight="bold">
-              {{ phaseLabel }}
+              {{ progressTitle }}
             </n-text>
             <n-text depth="3">{{ progress.percent }}%</n-text>
           </div>
@@ -130,6 +130,18 @@
             <span class="c-date">{{ formatDate(c.date) }}</span>
             <span class="c-author">{{ c.author }}</span>
             <n-button
+              v-if="packageMap.has(c.sha) && c.sha !== info.current_sha"
+              size="tiny"
+              tertiary
+              type="warning"
+              class="c-rollback"
+              :loading="rollingBackSha === c.sha"
+              :disabled="isUpdating && rollingBackSha !== c.sha"
+              @click.stop="confirmRollback(c.sha, c.short_sha)"
+            >
+              回滚
+            </n-button>
+            <n-button
               size="tiny"
               tertiary
               type="primary"
@@ -146,6 +158,41 @@
       </div>
 
     </template>
+
+    <!-- 本地可用回滚包（离线可用，与云端提交历史相互独立） -->
+    <div v-if="!loading && packages.length" class="package-section">
+      <div class="section-title">
+        本地可用回滚包（{{ packages.length }}/{{ maxPackages }} · 共 {{ formatSize(totalSize) }}）
+      </div>
+      <div class="package-list">
+        <div
+          v-for="p in packages"
+          :key="p.sha"
+          class="package-item"
+          :class="{ 'is-current': p.is_current }"
+        >
+          <span class="c-tag current" v-if="p.is_current">当前</span>
+          <span class="c-sha">{{ p.short_sha }}</span>
+          <span class="c-msg">{{ p.message || (p.kind === 'snapshot' ? '更新前快照' : '已下载更新包') }}</span>
+          <span class="c-date">{{ formatDate(p.saved_at) }}</span>
+          <span class="c-date">{{ formatSize(p.size) }}</span>
+          <n-button
+            size="tiny"
+            tertiary
+            type="warning"
+            class="c-rollback"
+            :loading="rollingBackSha === p.sha"
+            :disabled="p.is_current || (isUpdating && rollingBackSha !== p.sha)"
+            @click.stop="confirmRollback(p.sha, p.short_sha)"
+          >
+            回滚
+          </n-button>
+        </div>
+      </div>
+      <n-text depth="3" style="font-size: 12px;">
+        回滚不依赖网络：直接用本机保存的更新包覆盖代码，完成后自动热重启。
+      </n-text>
+    </div>
     </div>
 
     <template #footer>
@@ -165,8 +212,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onBeforeUnmount } from 'vue'
-import { useMessage } from 'naive-ui'
+import { ref, computed, watch, onBeforeUnmount, h } from 'vue'
+import { useMessage, useDialog } from 'naive-ui'
 import { utilsApi } from '@/api/client'
 
 const props = defineProps<{ show: boolean }>()
@@ -178,6 +225,7 @@ const showModel = computed({
 })
 
 const message = useMessage()
+const dialog = useDialog()
 const loading = ref(false)
 const error = ref('')
 const info = ref<any>(null)
@@ -187,8 +235,28 @@ const isUpdating = ref(false)
 const startingUpdate = ref(false)
 // 正在拉取指定 commit 的 sha（用于该行按钮 loading；允许当前已是最新时重拉/回退）
 const pullingSha = ref('')
-const progress = ref<{ running: boolean; phase: string; percent: number; message: string; error: string }>({
-  running: false, phase: '', percent: 0, message: '', error: '',
+// 正在回滚的 sha（本地更新包）
+const rollingBackSha = ref('')
+// 本机保留的热更新包（离线回滚候选）
+const packages = ref<any[]>([])
+const maxPackages = ref(5)
+const totalSize = ref(0)
+// sha -> 包信息（用于在云端提交历史行上显示「回滚」）
+const packageMap = computed(() => {
+  const map = new Map<string, any>()
+  for (const p of packages.value) map.set(String(p.sha), p)
+  return map
+})
+const progress = ref<{
+  running: boolean
+  mode: string
+  targetSha: string
+  phase: string
+  percent: number
+  message: string
+  error: string
+}>({
+  running: false, mode: '', targetSha: '', phase: '', percent: 0, message: '', error: '',
 })
 
 let pollTimer: ReturnType<typeof setInterval> | null = null
@@ -208,12 +276,29 @@ const phaseLabel = computed(() => {
   return map[progress.value.phase] || '准备中'
 })
 
+// 进度标题：回滚时切换文案（更新沿用 phaseLabel）
+const progressTitle = computed(() => {
+  if (progress.value.mode !== 'rollback') return phaseLabel.value
+  const sha = progress.value.targetSha ? progress.value.targetSha.slice(0, 7) : ''
+  if (progress.value.phase === 'done') return '回滚完成'
+  if (progress.value.phase === 'error') return '回滚失败'
+  return sha ? `正在回滚到 ${sha}` : '正在回滚'
+})
+
 function formatDate(iso: string) {
   if (!iso) return ''
   try {
     const d = new Date(iso)
     return d.toLocaleString('zh-CN', { hour12: false })
   } catch { return iso }
+}
+
+function formatSize(bytes: number) {
+  const size = Number(bytes) || 0
+  if (size <= 0) return '0 B'
+  if (size < 1024 * 1024) return `${(size / 1024).toFixed(0)} KB`
+  if (size < 1024 * 1024 * 1024) return `${(size / 1024 / 1024).toFixed(1)} MB`
+  return `${(size / 1024 / 1024 / 1024).toFixed(2)} GB`
 }
 
 // 依赖库过旧（deprecated）且云端无可用安装包资产时，引导用户前往 Release 页面手动下载
@@ -243,6 +328,24 @@ async function loadLocalVersion() {
   } catch (e) {
     // 外部依赖不可控（后端未就绪/请求失败）：降级为不显示版本号，不影响弹窗其余功能
     console.warn('[UpdateDialog] 读取当前版本失败', e)
+  }
+}
+
+// 读取本机保留的更新包（离线回滚候选）：不访问网络，检查更新失败时也照常展示
+async function loadPackages() {
+  try {
+    const res = await utilsApi.updatePackages()
+    const data = res.data
+    if (data?.ok === false) {
+      console.warn('[UpdateDialog] 读取更新包列表失败', data?.message)
+      return
+    }
+    packages.value = Array.isArray(data?.packages) ? data.packages : []
+    maxPackages.value = Number(data?.max_packages) || 5
+    totalSize.value = Number(data?.total_size) || 0
+  } catch (e) {
+    // 后端未就绪/接口不可用：降级为不显示回滚入口（其余功能不受影响）
+    console.warn('[UpdateDialog] 读取更新包列表失败', e)
   }
 }
 
@@ -293,40 +396,92 @@ async function apply(targetSha?: string) {
       pullingSha.value = ''
       return
     }
-    pollTimer = setInterval(async () => {
-      try {
-        const stRes = await utilsApi.updateStatus()
-        const st = stRes.data
-        if (!st) return
-        progress.value = {
-          running: st.running,
-          phase: st.phase,
-          percent: st.percent ?? 0,
-          message: st.message || '',
-          error: st.error || '',
-        }
-        if (st.phase === 'done') {
-          stopPolling()
-          message.success(st.message || '更新完成')
-          // 稍等让用户看到完成状态
-          setTimeout(() => {
-            isUpdating.value = false
-            pullingSha.value = ''
-            info.value = null
-            close()
-          }, 1500)
-        } else if (st.phase === 'error') {
-          stopPolling()
-          message.error(st.message || '更新失败')
-          isUpdating.value = false
-          pullingSha.value = ''
-        }
-      } catch { /* 轮询失败忽略，下次继续 */ }
-    }, 800)
+    startStatusPolling()
   } catch (e: any) {
     message.error(e?.response?.data?.detail || '启动更新失败')
     isUpdating.value = false
     pullingSha.value = ''
+  } finally {
+    startingUpdate.value = false
+  }
+}
+
+// 状态轮询（更新 / 回滚共用）：优先读 /update-status；该接口不可用时退回 /rollback-status
+function startStatusPolling() {
+  stopPolling()
+  pollTimer = setInterval(async () => {
+    try {
+      let st: any = null
+      try {
+        st = (await utilsApi.updateStatus()).data
+      } catch {
+        st = (await utilsApi.rollbackStatus()).data
+      }
+      if (!st) return
+      const isRollback = st.mode === 'rollback'
+      progress.value = {
+        running: !!st.running,
+        mode: st.mode || '',
+        targetSha: st.target_sha || '',
+        phase: st.phase || '',
+        percent: st.percent ?? 0,
+        message: st.message || '',
+        error: st.error || '',
+      }
+      if (st.phase === 'done') {
+        stopPolling()
+        message.success(st.message || (isRollback ? '回滚完成' : '更新完成'))
+        // 稍等让用户看到完成状态
+        setTimeout(() => {
+          isUpdating.value = false
+          pullingSha.value = ''
+          rollingBackSha.value = ''
+          info.value = null
+          close()
+        }, 1500)
+      } else if (st.phase === 'error') {
+        stopPolling()
+        message.error(st.message || (isRollback ? '回滚失败' : '更新失败'))
+        isUpdating.value = false
+        pullingSha.value = ''
+        rollingBackSha.value = ''
+      }
+    } catch { /* 轮询失败忽略，下次继续 */ }
+  }, 800)
+}
+
+function confirmRollback(sha: string, shortSha: string) {
+  dialog.warning({
+    title: `回滚到 ${shortSha}？`,
+    content: () => h('div', { style: 'white-space: pre-line; line-height: 1.7;' }, [
+      '· 回滚不依赖网络，直接使用本机保存的更新包',
+      '· 会用该包内容覆盖当前代码，完成后自动热重启',
+      '· 本地未提交的源码改动会被覆盖',
+      '· 不会删除较新版本新增的文件',
+    ].join('\n')),
+    positiveText: '确认回滚',
+    negativeText: '取消',
+    onPositiveClick: () => { void doRollback(sha) },
+  })
+}
+
+async function doRollback(sha: string) {
+  isUpdating.value = true
+  startingUpdate.value = true
+  rollingBackSha.value = sha
+  try {
+    const res = await utilsApi.rollback(sha)
+    if (!res.data?.ok) {
+      message.error(res.data?.message || '启动回滚失败')
+      isUpdating.value = false
+      rollingBackSha.value = ''
+      return
+    }
+    startStatusPolling()
+  } catch (e: any) {
+    message.error(e?.response?.data?.detail || '回滚请求失败')
+    isUpdating.value = false
+    rollingBackSha.value = ''
   } finally {
     startingUpdate.value = false
   }
@@ -340,7 +495,10 @@ function reset() {
   isUpdating.value = false
   startingUpdate.value = false
   pullingSha.value = ''
-  progress.value = { running: false, phase: '', percent: 0, message: '', error: '' }
+  rollingBackSha.value = ''
+  progress.value = {
+    running: false, mode: '', targetSha: '', phase: '', percent: 0, message: '', error: '',
+  }
 }
 
 function close() {
@@ -350,6 +508,8 @@ function close() {
 watch(() => props.show, (v) => {
   if (!v) return
   loadLocalVersion()
+  // 更新包列表与云端检查并行：断网时仍能看到/使用本地回滚包
+  loadPackages()
   if (!info.value && !loading.value && !error.value) {
     check()
   }
@@ -495,4 +655,24 @@ onBeforeUnmount(stopPolling)
 .c-date { color: #999; flex-shrink: 0; font-size: 11px; }
 .c-author { color: #888; flex-shrink: 0; font-size: 11px; }
 .c-pull { flex-shrink: 0; }
+.c-rollback { flex-shrink: 0; }
+.package-section { margin-top: 12px; }
+.package-list {
+  max-height: 160px;
+  overflow-y: auto;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+.package-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 12px;
+}
+.package-item:last-child { border-bottom: none; }
+.package-item:hover { background: #fafafa; }
+.package-item.is-current { background: #e6f4ff; }
 </style>
