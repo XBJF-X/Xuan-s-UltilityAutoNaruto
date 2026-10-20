@@ -48,6 +48,9 @@ _API_ROUTERS_SPEC = [
     ("settings", "/api/settings", "全局设置"),
     ("utils", "/api/utils", "工具"),
     ("validate", "/api/utils", "工具"),
+    # 回滚入口独立注册：utils 包会连带导入 update.router，更新链路坏掉时整包失效，
+    # 而回滚必须仍然可用（见 backend/api/recovery.py 顶部说明）
+    ("recovery", "/api/utils", "工具"),
     ("device", "/api/device", "设备"),
     ("resource", "/api/resource", "资源管理"),
     ("ws", "/ws", "WebSocket"),

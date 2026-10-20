@@ -63,8 +63,8 @@ def get_build_info() -> dict:
 def read_version_json_commit() -> str:
     """读取 version.json 中记录的提交 SHA（热更新成功后的实时版本）。
 
-    只信任**热更新写入**或**比构建快照更新**的记录：
-    - 带 ``updated_by: hot-update`` → 直接信任；
+    只信任**热更新/回滚写入**或**比构建快照更新**的记录：
+    - 带 ``updated_by: hot-update`` 或 ``rollback`` → 直接信任；
     - 否则若存在 ``_build_info.py``，要求 version.json 的 mtime 不早于它
       （安装目录可能残留旧版/旧分支遗留的 version.json，不能拿来当实时版本）；
     - 缺失 / 结构异常 / 内容不是 7~40 位十六进制时返回空串。
@@ -77,7 +77,7 @@ def read_version_json_commit() -> str:
         sha = str((data.get("commit") or {}).get("sha") or "").strip()
         if not re.fullmatch(r"[0-9a-fA-F]{7,40}", sha):
             return ""
-        if data.get("updated_by") == "hot-update":
+        if data.get("updated_by") in ("hot-update", "rollback"):
             return sha
         bf = Path(get_real_path("_build_info.py"))
         if bf.exists():
