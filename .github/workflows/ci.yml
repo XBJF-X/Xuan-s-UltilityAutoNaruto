@@ -37,6 +37,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt -r backend/requirements.txt
 
+      # 仅开发/CI 需要的工具（ruff）；不进 requirements.txt，避免被
+      # build/build_release.py 从 .venv-build 打进发行包的运行时。
+      - name: 安装开发依赖（ruff）
+        run: pip install -r requirements-dev.txt
+
       # minidevice 未发布到 PyPI（见 backend/requirements.txt 注释）。
       # 安装失败不阻断：相关 MiniTouch 用例会自动 skip，不影响其余回归。
       - name: 安装 minidevice（可选）

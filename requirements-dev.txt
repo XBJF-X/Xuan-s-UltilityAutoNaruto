@@ -1,0 +1,8 @@
+# 开发/CI 专用依赖（**不会进入发行包**，用户无需安装）
+#
+# 发行包的 Python 运行时是整份拷贝 `.venv-build\Lib\site-packages`
+# （见 build/build_release.py），所以这里的东西**不要**装进 .venv-build，
+# 否则会被打进安装包的 _internal/venv（纯属浪费体积）。
+# 安装方式（开发机 / CI）：
+#     .venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+ruff==0.17.1

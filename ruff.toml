@@ -1,5 +1,6 @@
 # 后端静态扫描配置（ruff）。运行方式：`.venv\Scripts\ruff.exe check backend`
 # CI 见 .github/workflows/ci.yml 的「静态检查（ruff）」步骤。
+# 依赖见 requirements-dev.txt（**不进发行包**：用户/安装版无需安装任何新依赖）。
 #
 # 规则集刻意**收窄到正确性**：
 #   F    pyflakes：未定义名（F821）、未使用导入（F401）、重复定义（F811）、
