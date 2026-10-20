@@ -85,9 +85,13 @@ async def get_local_version():
 
 
 @router.get("/check-update")
-def check_update():
-    """检查更新：对比本地 version.json 与更新源分支，返回云端提交历史（实现见 update_service）"""
-    return _service_check_update()
+def check_update(branch: str = ""):
+    """检查更新：对比本地 version.json 与更新源分支（默认 v17），返回云端提交历史。
+
+    ``branch`` 可选：前端更新窗口可显式指定 dev 等测试分支（非法分支名由服务层拒绝）。
+    实现见 update_service.check_update。
+    """
+    return _service_check_update(branch or None)
 
 
 # ============================================================
@@ -97,13 +101,18 @@ def check_update():
 async def apply_update(payload: dict | None = Body(default=None)):
     """下载并应用更新（后台线程执行，进度通过 /utils/update-status 轮询）。
 
-    请求体可选 ``{"sha": "<commit>"}``：指定后拉取该提交（即使当前已是最新也允许，
-    用于更新窗口里逐条 commit 的「拉取」按钮）；不传则更新到分支最新提交。
+    请求体可选 ``{"sha": "<commit>", "branch": "<branch>"}``：
+    - ``sha``：指定后拉取该提交（即使当前已是最新也允许，用于更新窗口里逐条
+      commit 的「拉取」按钮）；不传则更新到分支最新提交。
+    - ``branch``：拉取的分支，默认 ``v17``（稳定分支）；开发者可显式指定 dev
+      等测试分支，非法分支名由服务层拒绝。
     """
     target = ""
+    branch = ""
     if isinstance(payload, dict):
         target = str(payload.get("sha") or "").strip()
-    return start_apply_update(target or None)
+        branch = str(payload.get("branch") or "").strip()
+    return start_apply_update(target or None, branch or None)
 
 
 @router.post("/apply-release-update")

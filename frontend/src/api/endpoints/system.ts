@@ -42,13 +42,18 @@ export const utilsApi = {
     client.get('/utils/open-log-dir', { params: { config_id: configId } }),
   // 本地客户端版本：读取根目录 _version.py（不访问外部更新源）
   localVersion: () => client.get('/utils/version'),
-  // 检查更新：对比本地 version.json 与 GitHub v17 分支，返回提交历史
-  checkUpdate: () => client.get('/utils/check-update'),
+  // 检查更新：对比本地 version.json 与指定分支（默认 v17 稳定分支），返回提交历史
+  checkUpdate: (branch?: string) =>
+    client.get('/utils/check-update', { params: branch ? { branch } : {} }),
   // 依赖健康检查：版本是否满足 MIN_RELEASE_TAG + 关键模块是否缺失
   checkDependency: () => client.get('/utils/dependency-check'),
   // 应用更新（后台执行，进度通过 updateStatus 轮询）
   // sha 可选：指定后拉取该提交（当前已是最新也允许），不传则更新到分支最新提交
-  applyUpdate: (sha?: string) => client.post('/utils/apply-update', sha ? { sha } : {}),
+  // branch 可选：拉取的分支（默认 v17 稳定分支）；dev 等测试分支由更新窗口二次确认
+  applyUpdate: (sha?: string, branch?: string) => client.post('/utils/apply-update', {
+    ...(sha ? { sha } : {}),
+    ...(branch ? { branch } : {}),
+  }),
   // 本机保留的热更新包（离线回滚候选；不访问网络）
   updatePackages: () => client.get('/utils/update-packages'),
   // 离线回滚到指定提交（后台执行，进度通过 updateStatus / rollbackStatus 轮询）

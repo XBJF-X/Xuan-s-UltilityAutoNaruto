@@ -49,7 +49,11 @@ logger = logging.getLogger("UpdateService")
 # ===== 仓库与分支 =====
 GITHUB_OWNER = "XBJF-X"
 GITHUB_REPO = "Xuan-s-UltilityAutoNaruto"
-BRANCH = "v17"
+# 默认更新分支（稳定分支）：更新窗口未显式选择时一律拉取该分支。
+# dev 等分支仅供开发者测试（前端切换需 10 秒确认），服务端不假设其存在。
+DEFAULT_BRANCH = "v17"
+# 兼容既有再导出（backend/api/utils/common.py → `_BRANCH`）与测试断言的常量名
+BRANCH = DEFAULT_BRANCH
 
 # 大更新：GitHub Release 安装包资产名前缀
 INSTALLER_ASSET_PREFIX = "XuanInstaller_V"
@@ -92,6 +96,7 @@ AUTO_PLATFORM_ORDER = ("github", "gitee")
 UPDATE_STATUS: dict = {
     "running": False,
     "mode": "",            # update / rollback（前端据此切换文案）
+    "branch": "",          # 本次热更新拉取的分支（空 = 默认分支）
     "target_sha": "",      # 本次操作的目标提交
     "phase": "",          # downloading / extracting / replacing / writing-version / done / error
     "percent": 0,
@@ -252,11 +257,22 @@ def check_full_update(local_version: str, platform: dict = None) -> dict:
     }
 
 
-def check_update() -> dict:
-    """检查更新：对比本地 version.json 与更新源分支，返回云端提交历史"""
+def check_update(branch: Optional[str] = None) -> dict:
+    """检查更新：对比本地 version.json 与更新源分支，返回云端提交历史。
+
+    :param branch: 目标分支；空/None = ``DEFAULT_BRANCH``（v17 稳定分支）。
+        前端更新窗口可显式指定 dev 等测试分支，非法分支名直接拒绝。
+    """
     current_sha = read_local_sha()
     # 本地版本：既用于大更新/依赖库版本判定，也随响应返回供前端展示（各分支都要带上）
     local_version = read_client_version()
+    raw_branch = str(branch or "").strip()
+    selected_branch = normalize_branch(raw_branch)
+    if selected_branch is None:
+        return {"ok": False, "local_version": local_version,
+                "branch": raw_branch[:100],
+                "message": f"非法的分支名：{raw_branch[:40]}"}
+    selected_branch = selected_branch or DEFAULT_BRANCH
     try:
         # 按更新源配置依次尝试平台（auto = github 优先、gitee 兜底），分支请求成功即使用该平台
         used_platform = None
@@ -266,7 +282,7 @@ def check_update() -> dict:
         for pf in select_platforms():
             try:
                 resp = requests.get(
-                    api_url(pf, f"branches/{BRANCH}"),
+                    api_url(pf, f"branches/{selected_branch}"),
                     headers=platform_headers(pf), verify=UPDATE_VERIFY_TLS, timeout=15,
                 )
             except Exception as e:
@@ -283,7 +299,7 @@ def check_update() -> dict:
             try:
                 commits_resp = requests.get(
                     api_url(pf, "commits"),
-                    params={"sha": BRANCH, "per_page": 20},
+                    params={"sha": selected_branch, "per_page": 20},
                     headers=platform_headers(pf), verify=UPDATE_VERIFY_TLS, timeout=15,
                 )
                 if commits_resp.status_code == 200:
@@ -327,6 +343,7 @@ def check_update() -> dict:
         if used_platform is None:
             logger.warning("检查更新失败：更新源（GitHub/Gitee）均不可达")
             return {"ok": False, "local_version": local_version,
+                    "branch": selected_branch,
                     "message": "检查更新失败：更新源（GitHub/Gitee）均不可达"}
 
         has_update = current_sha is None or current_sha != latest_sha
@@ -382,6 +399,7 @@ def check_update() -> dict:
             "ok": True,
             "has_update": has_update or full_update,
             "update_type": update_type,
+            "branch": selected_branch,
             "local_version": local_version,
             "current_sha": current_sha,
             "latest_sha": latest_sha,
@@ -394,6 +412,7 @@ def check_update() -> dict:
     except Exception as e:
         logger.error("检查更新出错: %s", e, exc_info=e)
         return {"ok": False, "local_version": local_version,
+                "branch": selected_branch,
                 "message": f"检查更新出错：{e}"}
 
 
@@ -467,6 +486,10 @@ UPDATE_EXCLUDE_FILES = {".clineignore"}
 
 _SHA_SUFFIX_RE = re.compile(r"-(?P<sha>[0-9a-f]{7,40})$")
 _COMMIT_SHA_RE = re.compile(r"^[0-9a-fA-F]{7,40}$")
+# 分支名白名单：只允许单段简单名字（v17 / dev / master / feature-x）。
+# 不含 "/"：该值会拼进 `branches/{branch}` 与 zip URL 的 path，
+# 允许路径分隔符会把请求拼到别的地址上（注入）。
+_BRANCH_NAME_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$")
 
 
 def normalize_target_sha(value) -> Optional[str]:
@@ -481,6 +504,21 @@ def normalize_target_sha(value) -> Optional[str]:
         logger.warning("拒绝非法的目标提交 SHA: %r", text[:80])
         return None
     return text.lower()
+
+
+def normalize_branch(value) -> Optional[str]:
+    """校验并规范化前端传来的更新分支名。
+
+    :return: 空字符串 = 未指定（调用方回退 ``DEFAULT_BRANCH``）；非法返回 None。
+    """
+    text = str(value or "").strip()
+    if not text:
+        return ""
+    if (not _BRANCH_NAME_RE.fullmatch(text)
+            or ".." in text or text.endswith(".lock")):
+        logger.warning("拒绝非法的更新分支名: %r", text[:80])
+        return None
+    return text
 
 
 def _file_sha256(path: Path) -> str:
@@ -528,16 +566,18 @@ def verify_replaced_files(project_root: Path, expected: dict[str, str]) -> None:
     logger.info("更新文件校验通过：%d 个文件均已覆盖且内容一致", len(expected))
 
 
-def write_version_json(commit_sha: str) -> None:
+def write_version_json(commit_sha: str, branch: Optional[str] = None) -> None:
     """写入 version.json（仅在文件替换与校验全部成功后调用）。
 
     额外写入 ``updated_by/updated_at``：安装目录里可能残留旧版遗留的
     version.json（例如切换分支前的 master SHA）。读取端据此判断该记录是否
     来自热更新，避免把过期 SHA 当成实时版本。
+    ``branch`` 记录本次拉取的分支（v17/dev...），便于排查「当前代码来自哪个分支」。
     """
     vf = Path(get_real_path("version.json"))
     payload = {
         "commit": {"sha": commit_sha},
+        "branch": branch or DEFAULT_BRANCH,
         "updated_by": "hot-update",
         "updated_at": datetime.now().isoformat(timespec="seconds"),
     }
@@ -546,7 +586,7 @@ def write_version_json(commit_sha: str) -> None:
     logger.info("version.json 已更新为提交 %s", commit_sha[:7])
 
 
-def refresh_build_info(commit_sha: str) -> None:
+def refresh_build_info(commit_sha: str, branch: Optional[str] = None) -> None:
     """安装版存在 ``_build_info.py`` 时同步刷新其 commit/构建时间。
 
     ``_build_info.py`` 是打包快照，热更新不会自动重写；旧版启动横幅因此永远
@@ -561,7 +601,7 @@ def refresh_build_info(commit_sha: str) -> None:
             "# 由 build_release.py 自动生成，请勿手动修改\n"
             f'__build_time__ = "{now}"\n'
             f'__commit__ = "{commit_sha}"\n'
-            f'__branch__ = "{BRANCH}"\n',
+            f'__branch__ = "{branch or DEFAULT_BRANCH}"\n',
             encoding="utf-8",
         )
         logger.info("_build_info.py 已刷新为提交 %s", commit_sha[:7])
@@ -571,12 +611,19 @@ def refresh_build_info(commit_sha: str) -> None:
 
 
 
-def get_latest_sha() -> Optional[str]:
-    """获取更新源分支最新 SHA（按更新源配置依次尝试平台）。"""
+def get_latest_sha(branch: Optional[str] = None) -> Optional[str]:
+    """获取更新源分支最新 SHA（按更新源配置依次尝试平台）。
+
+    :param branch: 目标分支；空/None = ``DEFAULT_BRANCH``；非法分支名返回 None。
+    """
+    selected = normalize_branch(branch)
+    if selected is None:
+        return None
+    selected = selected or DEFAULT_BRANCH
     for pf in select_platforms():
         try:
             resp = requests.get(
-                api_url(pf, f"branches/{BRANCH}"),
+                api_url(pf, f"branches/{selected}"),
                 headers=platform_headers(pf), verify=UPDATE_VERIFY_TLS, timeout=15,
             )
             if resp.status_code == 200:
@@ -625,27 +672,37 @@ def verify_update_integrity(src_dir: Path, platform: dict,
     logger.info("更新包完整性校验通过（提交 %s）", got[:7])
 
 
-def start_apply_update(target_sha: Optional[str] = None) -> dict:
+def start_apply_update(target_sha: Optional[str] = None,
+                       branch: Optional[str] = None) -> dict:
     """启动热更新后台任务（原 `POST /apply-update` 的逻辑）。
 
     :param target_sha: 目标提交；为空表示更新到分支最新提交。传入任意云端提交
         时用于「拉取指定 commit」（即使当前已是最新也允许回退/重拉）。
+    :param branch: 目标分支；空/None = ``DEFAULT_BRANCH``（v17）。非法分支名直接拒绝
+        （不回退默认，避免用户以为在测 dev 实际拉了 v17）。
     """
     raw = str(target_sha or "").strip()
     target = normalize_target_sha(raw) if raw else None
     if raw and target is None:
         return {"ok": False, "message": f"非法的提交 SHA：{raw[:40]}"}
+    raw_branch = str(branch or "").strip()
+    selected_branch = normalize_branch(raw_branch)
+    if selected_branch is None:
+        return {"ok": False, "message": f"非法的分支名：{raw_branch[:40]}"}
+    selected_branch = selected_branch or DEFAULT_BRANCH
     with STATUS_LOCK:
         if UPDATE_STATUS["running"]:
             logger.info("热更新请求被忽略：更新已在执行中")
             return {"ok": False, "message": "更新已在执行中"}
         UPDATE_STATUS.update({
-            "running": True, "mode": "update", "target_sha": target or "",
+            "running": True, "mode": "update", "branch": selected_branch,
+            "target_sha": target or "",
             "phase": "", "percent": 0,
             "message": "", "error": "", "output": None,
         })
-    threading.Thread(target=do_apply_update, args=(target,), daemon=True).start()
-    return {"ok": True, "message": "更新任务已启动"}
+    threading.Thread(target=do_apply_update, args=(target, selected_branch),
+                     daemon=True).start()
+    return {"ok": True, "message": "更新任务已启动", "branch": selected_branch}
 
 
 def start_apply_release_update() -> dict:
@@ -662,12 +719,14 @@ def start_apply_release_update() -> dict:
     return {"ok": True, "message": "大更新任务已启动"}
 
 
-def do_apply_update(target_sha: Optional[str] = None) -> None:
+def do_apply_update(target_sha: Optional[str] = None,
+                    branch: Optional[str] = None) -> None:
     """热更新线程体（原 `_do_apply_update`）：下载 zipball → 完整性绑定 → 备份 →
     替换文件 → **覆盖校验** → 写 version.json → 请求重启。
 
     :param target_sha: 目标提交；为空表示分支最新提交。指定后下载该 commit 的
         归档包（允许在当前已是最新时拉取任意历史 commit）。
+    :param branch: 目标分支；空/None = ``DEFAULT_BRANCH``（v17）。
     """
     target = normalize_target_sha(target_sha) if target_sha else None
     if target_sha and target is None:
@@ -675,7 +734,16 @@ def do_apply_update(target_sha: Optional[str] = None) -> None:
                           message=f"更新失败：非法的提交 SHA {str(target_sha)[:40]}",
                           error="invalid_sha")
         return
-    target_label = f"提交 {target[:7]}" if target else "云端最新版本"
+    raw_branch = str(branch or "").strip()
+    selected_branch = normalize_branch(raw_branch)
+    if selected_branch is None:
+        set_update_status(phase="error", percent=0, running=False,
+                          message=f"更新失败：非法的分支名 {raw_branch[:40]}",
+                          error="invalid_branch")
+        return
+    selected_branch = selected_branch or DEFAULT_BRANCH
+    target_label = (f"提交 {target[:7]}" if target
+                    else f"分支 {selected_branch} 的最新版本")
     try:
         project_root = Path(get_real_path(""))
         tmp_root = project_root / ".update_tmp"
@@ -695,7 +763,7 @@ def do_apply_update(target_sha: Optional[str] = None) -> None:
                     owner=pf["owner"], repo=pf["repo"], ref=target)
             else:
                 zip_url = pf["zip_url"].format(
-                    owner=pf["owner"], repo=pf["repo"], branch=BRANCH)
+                    owner=pf["owner"], repo=pf["repo"], branch=selected_branch)
             try:
                 with requests.get(zip_url, verify=UPDATE_VERIFY_TLS, timeout=60, stream=True) as r:
                     r.raise_for_status()
@@ -818,11 +886,11 @@ def do_apply_update(target_sha: Optional[str] = None) -> None:
 
         # ---- 4. 更新 version.json（仅在覆盖校验通过后）----
         set_update_status(phase="writing-version", percent=92, message="正在更新版本记录...")
-        final_sha = target or get_latest_sha()
+        final_sha = target or get_latest_sha(selected_branch)
         if not final_sha:
             raise RuntimeError("无法获取本次更新的提交 SHA，version.json 未更新")
-        write_version_json(final_sha)
-        refresh_build_info(final_sha)
+        write_version_json(final_sha, selected_branch)
+        refresh_build_info(final_sha, selected_branch)
 
         # ---- 4-1. 保留本次下载的更新包（离线回滚用）----
         # 失败只告警：更新本身已经成功，不能因为"留包失败"把它判成失败。
@@ -926,7 +994,8 @@ def do_apply_release_update() -> None:
 
 
 __all__ = [
-    "GITHUB_OWNER", "GITHUB_REPO", "BRANCH", "INSTALLER_ASSET_PREFIX",
+    "GITHUB_OWNER", "GITHUB_REPO", "BRANCH", "DEFAULT_BRANCH",
+    "INSTALLER_ASSET_PREFIX",
     "PLATFORM_GITHUB", "PLATFORM_GITEE", "PLATFORMS", "AUTO_PLATFORM_ORDER",
     "UPDATE_STATUS", "STATUS_LOCK", "UPDATE_VERIFY_TLS",
     "set_update_status", "update_status_snapshot", "get_update_source",
@@ -935,7 +1004,8 @@ __all__ = [
     "check_full_update", "check_update", "read_local_sha",
     "write_restart_request", "backup_for_hot_update",
     "UPDATE_EXCLUDE_DIRS", "UPDATE_EXCLUDE_FILES", "get_latest_sha",
-    "normalize_target_sha", "verify_replaced_files", "write_version_json",
+    "normalize_target_sha", "normalize_branch",
+    "verify_replaced_files", "write_version_json",
     "refresh_build_info",
     "verify_update_integrity", "start_apply_update", "start_apply_release_update",
     "do_apply_update", "do_apply_release_update",

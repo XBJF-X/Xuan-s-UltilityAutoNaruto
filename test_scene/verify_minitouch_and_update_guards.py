@@ -163,7 +163,8 @@ class UpdateGuardsTest(unittest.TestCase):
             us.UPDATE_STATUS.update({"running": False})
             result = us.start_apply_update("ABCDEF1")
             self.assertTrue(result["ok"])
-            self.assertEqual(captured["args"], ("abcdef1",))
+            # 参数顺序：目标提交 + 生效分支（未指定时回退 v17 稳定分支）
+            self.assertEqual(captured["args"], ("abcdef1", "v17"))
         finally:
             us.threading.Thread = saved
             us.UPDATE_STATUS.update(saved_status)

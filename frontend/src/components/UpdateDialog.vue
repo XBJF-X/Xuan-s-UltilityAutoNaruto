@@ -16,6 +16,23 @@
       <span class="vb-label">当前客户端版本</span>
       <span class="vb-value">v{{ localVersion }}</span>
     </div>
+
+    <!-- 拉取分支：默认 v17（稳定分支）；切到其它分支必须等待 10 秒确认（开发者测试用） -->
+    <div class="branch-row">
+      <span class="br-label">更新分支</span>
+      <n-select
+        class="br-select"
+        size="small"
+        :value="branch"
+        :options="branchOptions"
+        :disabled="isUpdating || loading"
+        filterable
+        tag
+        placeholder="选择或输入分支名"
+        @update:value="requestBranchChange"
+      />
+      <n-tag v-if="branch !== DEFAULT_BRANCH" type="warning" size="small">开发者测试</n-tag>
+    </div>
     <template v-if="loading">
       <div class="center-box">
         <n-spin size="large" />
@@ -52,7 +69,7 @@
         </div>
         <div class="vc-arrow">→</div>
         <div class="vc-item">
-          <div class="vc-label">云端最新</div>
+          <div class="vc-label">云端最新（{{ info.branch || branch }}）</div>
           <div class="vc-value">
             <template v-if="info.update_type === 'full'">
               <span class="sha">{{ info.full.tag }}</span>
@@ -112,7 +129,9 @@
 
       <!-- 提交历史（任何状态都展示；每条右侧可拉取该 commit，当前已是最新也允许） -->
       <div class="commit-section">
-        <div class="section-title">云端提交历史（右侧「拉取」可更新到任意提交）</div>
+        <div class="section-title">
+          云端提交历史（{{ info.branch || branch }} · 右侧「拉取」可更新到任意提交）
+        </div>
         <div class="commit-list">
           <div
             v-for="c in info.commits"
@@ -195,6 +214,38 @@
     </div>
     </div>
 
+    <!-- 非稳定分支切换确认：强制等待 10 秒（防误触；开发者测试用） -->
+    <n-modal
+      v-model:show="branchConfirm.show"
+      preset="card"
+      title="切换到开发者测试分支？"
+      style="width: min(460px, calc(100vw - 48px))"
+      :mask-closable="false"
+      :closable="true"
+      @after-leave="cancelBranchConfirm"
+    >
+      <n-alert type="warning" :show-icon="true" style="margin-bottom: 12px;">
+        开发者测试使用，普通用户使用v17稳定分支即可
+      </n-alert>
+      <n-text depth="3" style="font-size: 12px; line-height: 1.7;">
+        即将切换到分支 <b>{{ branchConfirm.target }}</b>。该分支可能包含未经验证的改动，
+        拉取后程序会自动重启；如需回到稳定版，重新选择 {{ DEFAULT_BRANCH }} 再拉取即可。
+      </n-text>
+      <template #footer>
+        <n-space justify="end">
+          <n-button size="small" @click="cancelBranchConfirm">取消</n-button>
+          <n-button
+            size="small"
+            type="warning"
+            :disabled="branchConfirm.countdown > 0"
+            @click="confirmBranchConfirm"
+          >
+            {{ branchConfirm.countdown > 0 ? `请等待 ${branchConfirm.countdown} 秒` : '确认切换' }}
+          </n-button>
+        </n-space>
+      </template>
+    </n-modal>
+
     <template #footer>
       <n-space justify="end">
         <n-button @click="close" :disabled="isUpdating">关闭</n-button>
@@ -229,6 +280,20 @@ const dialog = useDialog()
 const loading = ref(false)
 const error = ref('')
 const info = ref<any>(null)
+// 更新分支：默认 v17（稳定分支）。dev 等开发者测试分支切换前必须等待 10 秒确认；
+// 后端只接受单段简单分支名（字母/数字/点/下划线/短横线，不含 "/" 与 ".."）。
+const DEFAULT_BRANCH = 'v17'
+const BRANCH_CONFIRM_SECONDS = 10
+const BRANCH_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/
+const branch = ref(DEFAULT_BRANCH)
+const branchOptions = [
+  { label: 'v17（稳定分支，推荐）', value: 'v17' },
+  { label: 'dev（开发者测试）', value: 'dev' },
+  { label: 'master（旧版主线）', value: 'master' },
+]
+// 非稳定分支切换确认框：倒计时结束前「确认切换」按钮禁用
+const branchConfirm = ref({ show: false, target: '', countdown: 0 })
+let branchTimer: ReturnType<typeof setInterval> | null = null
 // 当前客户端版本（根目录 _version.py）：与更新源无关，弹窗打开即读取
 const localVersion = ref('')
 const isUpdating = ref(false)
@@ -354,7 +419,7 @@ async function check() {
   error.value = ''
   info.value = null
   try {
-    const res = await utilsApi.checkUpdate()
+    const res = await utilsApi.checkUpdate(branch.value)
     const data = res.data
     // check-update 顶层也带 local_version（含失败分支），拿到就同步显示
     if (data?.local_version) localVersion.value = data.local_version
@@ -362,12 +427,60 @@ async function check() {
       error.value = data?.message || '检查更新失败'
       return
     }
+    // 后端回显实际使用的分支（未指定时为默认 v17）
+    if (data?.branch) branch.value = data.branch
     info.value = data
   } catch (e: any) {
     error.value = e?.response?.data?.detail || '网络请求失败'
   } finally {
     loading.value = false
   }
+}
+
+function stopBranchTimer() {
+  if (branchTimer) { clearInterval(branchTimer); branchTimer = null }
+}
+
+function closeBranchConfirm() {
+  stopBranchTimer()
+  branchConfirm.value.show = false
+  branchConfirm.value.countdown = 0
+}
+
+// 选择分支：切回稳定分支直接生效；切到其它分支必须先等满 10 秒再确认
+function requestBranchChange(value: unknown) {
+  const next = String(value ?? '').trim()
+  if (!next || next === branch.value) return
+  if (!BRANCH_PATTERN.test(next) || next.includes('..') || next.endsWith('.lock')) {
+    message.warning('分支名只能包含字母、数字、点、下划线和短横线')
+    return
+  }
+  if (next === DEFAULT_BRANCH) {
+    closeBranchConfirm()
+    branch.value = next
+    void check()
+    return
+  }
+  stopBranchTimer()
+  branchConfirm.value = { show: true, target: next, countdown: BRANCH_CONFIRM_SECONDS }
+  branchTimer = setInterval(() => {
+    const left = branchConfirm.value.countdown - 1
+    branchConfirm.value.countdown = left > 0 ? left : 0
+    if (left <= 0) stopBranchTimer()
+  }, 1000)
+}
+
+function cancelBranchConfirm() {
+  closeBranchConfirm()
+}
+
+function confirmBranchConfirm() {
+  if (branchConfirm.value.countdown > 0) return
+  const next = branchConfirm.value.target
+  closeBranchConfirm()
+  if (!next) return
+  branch.value = next
+  void check()
 }
 
 function stopPolling() {
@@ -381,14 +494,14 @@ async function apply(targetSha?: string) {
   startingUpdate.value = true
   pullingSha.value = sha
   try {
-    // 指定 commit → 拉取该提交；大更新走 Release 安装包；其余走分支 zipball
+    // 指定 commit → 拉取该提交；大更新走 Release 安装包；其余走所选分支的 zipball
     let res
     if (sha) {
-      res = await utilsApi.applyUpdate(sha)
+      res = await utilsApi.applyUpdate(sha, branch.value)
     } else if (info.value?.update_type === 'full') {
       res = await utilsApi.applyReleaseUpdate()
     } else {
-      res = await utilsApi.applyUpdate()
+      res = await utilsApi.applyUpdate(undefined, branch.value)
     }
     if (!res.data?.ok) {
       message.error(res.data?.message || '启动更新失败')
@@ -489,6 +602,9 @@ async function doRollback(sha: string) {
 
 function reset() {
   stopPolling()
+  // 重新打开时回到默认稳定分支（开发者每次需重新显式选择测试分支）
+  closeBranchConfirm()
+  branch.value = DEFAULT_BRANCH
   loading.value = false
   error.value = ''
   info.value = null
@@ -515,7 +631,10 @@ watch(() => props.show, (v) => {
   }
 })
 
-onBeforeUnmount(stopPolling)
+onBeforeUnmount(() => {
+  stopPolling()
+  stopBranchTimer()
+})
 </script>
 
 <style scoped>
@@ -530,6 +649,21 @@ onBeforeUnmount(stopPolling)
   align-items: center;
   gap: 12px;
   padding: 32px 0;
+}
+.branch-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.branch-row .br-label {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: #888;
+}
+.branch-row .br-select {
+  flex: 1;
+  min-width: 0;
 }
 .version-badge {
   display: flex;
