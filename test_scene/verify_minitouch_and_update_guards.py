@@ -3,7 +3,9 @@
 
 1. MiniTouch：设备端 ``/data/local/tmp/minitouch`` 被误创建成目录时，初始化前
    自动删除；删除失败/状态异常时抛带「失败步骤」的 MiniTouchInitError。
-2. 更新：任意 commit 拉取参数校验与透传；文件覆盖校验不通过时不得写 version.json。
+2. 更新：任意 commit 拉取参数校验与透传；文件覆盖校验不通过时不得写 version.json；
+   下载循环拿到非 zip 响应时必须降级到下一个源（不能因漏 import 抛 NameError
+   后被 except 吞掉 —— 那会让双源全部失败、热更新整体不可用）。
 3. 横幅：commit 优先取实时来源（git / version.json），构建快照仅兜底。
 4. adb：统一解析到依赖库自带的 adbutils/binaries/adb.exe。
 
@@ -187,7 +189,59 @@ class UpdateGuardsTest(unittest.TestCase):
                                            expected_sha="def5678")
 
 
+class _FakeResponse:
+    """最小 requests 响应替身：`with requests.get(...) as r` 需要上下文管理协议。"""
+
+    def __init__(self, body: bytes, content_type: str = "application/octet-stream"):
+        self._body = body
+        self.headers = {"Content-Type": content_type,
+                        "Content-Length": str(len(body))}
+        self.status_code = 200
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc_info):
+        return False
+
+    def raise_for_status(self):
+        return None
+
+    def iter_content(self, chunk_size=8192):
+        yield self._body
+
+
+class UpdateDownloadLoopTest(unittest.TestCase):
+    """离线跑**真实**下载循环：非 zip 必须走「不是有效 zip」降级，而不是 NameError。
+
+    回归背景（2026-10）：update_service 下沉时漏了 `import zipfile`，
+    `zipfile.is_zipfile()` 在函数体里抛 NameError → 被 except 吞成
+    「下载更新包失败」→ 两个源都失败 → 热更新整体不可用。而 compileall、
+    模块导入冒烟、当时的全部回归脚本都是绿的（没有一处执行到这一行）。
+    """
+
+    def test_non_zip_response_falls_back_for_every_platform(self):
+        saved_status = dict(us.UPDATE_STATUS)
+        try:
+            with tempfile.TemporaryDirectory() as td:
+                fake = _FakeResponse(b"<html>robot check</html>")
+                platforms = [us.PLATFORMS["github"], us.PLATFORMS["gitee"]]
+                with mock.patch.object(us, "get_real_path", return_value=td), \
+                        mock.patch.object(us, "select_platforms", return_value=platforms), \
+                        mock.patch("requests.get", return_value=fake), \
+                        self.assertLogs("UpdateService", level="WARNING") as logs:
+                    us.do_apply_update()
+                text = "\n".join(logs.output)
+            # 两个源都识别出「不是有效 zip」并降级 = is_zipfile 真的执行了
+            self.assertEqual(text.count("不是有效 zip"), 2, text)
+            self.assertNotIn("is not defined", text)  # 兜底：绝不能是 NameError 文案
+            self.assertEqual(us.UPDATE_STATUS.get("error"), "download_failed")
+        finally:
+            us.UPDATE_STATUS.update(saved_status)
+
+
 class BundledAdbTest(unittest.TestCase):
+
     def test_bundled_adb_found(self):
         path = adb_env.find_bundled_adb()
         self.assertTrue(path, "未能定位 adbutils/binaries/adb.exe")
