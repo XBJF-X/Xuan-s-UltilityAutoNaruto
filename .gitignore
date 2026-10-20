@@ -32,7 +32,9 @@ NewRun.bat
 Todo.txt
 start_backend.bat
 start_frontend.bat
-scripts
+scripts/*
+# 离线回滚脚本必须随包分发（用户/热更新都要有），白名单放行
+!scripts/rollback.py
 docs/scheduler-architecture-review.md
 .cline/
 
@@ -76,6 +78,12 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+
+# ---------- 更新包 / 回滚（离线回滚用，体积大且与用户环境相关） ----------
+/update_packages/
+/.rollback_tmp/
+/.update_tmp/
+/.update_backup/
 
 # ---------- 日志 ----------
 *.log

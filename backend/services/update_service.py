@@ -36,6 +36,12 @@ from backend.core.version_info import (
     read_min_release_tag,
     version_gt,
 )
+from backend.services.update_packages import (
+    PACKAGE_DIR_NAME,
+    prune_packages,
+    save_package,
+    snapshot_overwritten_files,
+)
 from backend.utils import get_real_path
 
 logger = logging.getLogger("UpdateService")
@@ -85,6 +91,8 @@ AUTO_PLATFORM_ORDER = ("github", "gitee")
 # ===== 更新进度状态（前端轮询） =====
 UPDATE_STATUS: dict = {
     "running": False,
+    "mode": "",            # update / rollback（前端据此切换文案）
+    "target_sha": "",      # 本次操作的目标提交
     "phase": "",          # downloading / extracting / replacing / writing-version / done / error
     "percent": 0,
     "message": "",
@@ -453,7 +461,7 @@ def backup_for_hot_update(project_root: Path):
 UPDATE_EXCLUDE_DIRS = {
     ".git", "log", "config", "frontend_node_modules", ".venv", "__pycache__",
     "release", "test_scene", "image", ".idea", "node_modules",
-    "del", ".update_tmp", ".update_backup",
+    "del", ".update_tmp", ".update_backup", ".rollback_tmp", PACKAGE_DIR_NAME,
 }
 UPDATE_EXCLUDE_FILES = {".clineignore"}
 
@@ -632,7 +640,8 @@ def start_apply_update(target_sha: Optional[str] = None) -> dict:
             logger.info("热更新请求被忽略：更新已在执行中")
             return {"ok": False, "message": "更新已在执行中"}
         UPDATE_STATUS.update({
-            "running": True, "phase": "", "percent": 0,
+            "running": True, "mode": "update", "target_sha": target or "",
+            "phase": "", "percent": 0,
             "message": "", "error": "", "output": None,
         })
     threading.Thread(target=do_apply_update, args=(target,), daemon=True).start()
@@ -758,6 +767,20 @@ def do_apply_update(target_sha: Optional[str] = None) -> None:
                 continue
             planned.append((rel_path, src_file))
         total_files = len(planned)
+
+        # ---- 3-0. 更新前快照：把「即将被覆盖的当前文件」打包留档（离线回滚用）----
+        # 保证「上一版」永远有本地包可退：安装版基线从未下载过归档也能回滚。
+        # 快照失败不阻断更新（只在完成消息里标注本次没有回滚点）。
+        rollback_note = ""
+        if planned:
+            try:
+                if snapshot_overwritten_files(
+                        project_root, read_local_sha(),
+                        [rel.as_posix() for rel, _ in planned],
+                        message=f"更新前快照（{target_label}）"):
+                    rollback_note = "，已保留回滚点"
+            except Exception as e:
+                logger.warning("更新前快照失败（本次没有回滚点）：%s", e)
         copied = 0
         failed_files: list[str] = []
         expected_files: dict[str, str] = {}
@@ -801,6 +824,19 @@ def do_apply_update(target_sha: Optional[str] = None) -> None:
         write_version_json(final_sha)
         refresh_build_info(final_sha)
 
+        # ---- 4-1. 保留本次下载的更新包（离线回滚用）----
+        # 失败只告警：更新本身已经成功，不能因为"留包失败"把它判成失败。
+        try:
+            save_package(zip_path, final_sha, kind="download",
+                         source=(pf or {}).get("key", ""),
+                         message=f"更新到 {final_sha[:7]}")
+            removed = prune_packages(project_root, protect_sha=final_sha)
+            if removed:
+                logger.info("已清理超出保留数量的旧更新包: %s",
+                            ", ".join(sha[:7] for sha in removed))
+        except Exception as e:
+            logger.warning("保存/清理更新包失败（不影响本次更新）：%s", e)
+
         # ---- 5. 清理 ----
         shutil.rmtree(tmp_root, ignore_errors=True)
 
@@ -808,7 +844,7 @@ def do_apply_update(target_sha: Optional[str] = None) -> None:
         write_restart_request(mode="hot")
         set_update_status(
             phase="done", percent=100, running=False,
-            message=f"更新完成（{final_sha[:7]}），共更新 {copied} 个文件，程序即将自动重启生效。",
+            message=f"更新完成（{final_sha[:7]}），共更新 {copied} 个文件{rollback_note}，程序即将自动重启生效。",
             output=str(project_root),
         )
     except Exception as e:
