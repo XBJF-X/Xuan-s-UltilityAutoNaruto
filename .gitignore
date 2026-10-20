@@ -35,6 +35,9 @@ start_frontend.bat
 scripts/*
 # 离线回滚脚本必须随包分发（用户/热更新都要有），白名单放行
 !scripts/rollback.py
+# 分支工作流任务脚本（开发工具，由 .vscode/tasks.json 调用）
+!scripts/git_push_dev.py
+!scripts/git_merge_dev_into_v17.py
 docs/scheduler-architecture-review.md
 .cline/
 
