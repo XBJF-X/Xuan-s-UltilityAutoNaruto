@@ -121,7 +121,7 @@ class LD(Screen):
                 self._ready = False
                 return
             self._ready = True
-        except Exception as e:
+        except Exception:
             self._ready = False
 
     def __del__(self):

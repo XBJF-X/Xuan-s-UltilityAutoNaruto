@@ -4,10 +4,9 @@ import logging
 import os
 import threading
 import time
-import traceback
 import uuid
-from datetime import datetime, timedelta
-from typing import Optional, Callable, List, TypeVar, Generic, Dict
+from datetime import datetime
+from typing import Optional, Callable, List, TypeVar, Generic, Dict, TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
 import cv2
@@ -36,7 +35,6 @@ from backend.services.scheduler.screenshot_guard import ScreenshotGuard
 # 每日截图配额（内存索引 + 批量删最早，见 services/screenshot_quota.py）
 from backend.services.screenshot_quota import (
     ScreenshotQuota,
-    get_daily_limit,
     normalize_daily_limit,
 )
 # 说明：`STOP_REASON_STUCK` / `STOP_REASON_FROZEN` / `Stop` 的使用点已随卡死处理搬到
@@ -51,16 +49,18 @@ _SCREEN_MODE_NAMES = {0: "DroidCastRaw", 1: "WindowCapture", 2: "U2", 3: "MuMu",
 # ===== 账号配置模式“告一段落”判定 =====
 # 阈值常量的唯一实现已移至 services/scheduler/constants.py（阶段 4.3：避免
 # "协作者 ← 服务"的循环导入）；此处保留同名引用，既有调用点与文档不受影响
-from backend.services.scheduler.constants import IDLE_NOTIFY_THRESHOLD  # noqa: E402
 
 # ===== 立即执行的触发来源 =====
 # 常量唯一实现已移至 services/scheduler/constants.py（阶段 4.4b：ActivationManager 也要用）；
 # 此处保留同名引用，3 个测试脚本 `from backend.services.scheduler_service import SOURCE_*`
-# 与既有调用点不受影响
-from backend.services.scheduler.constants import (  # noqa: E402
+# 与既有调用点不受影响（SOURCE_ACTIVATION 本模块不直接用，故 F401 豁免）。
+from backend.services.scheduler.constants import (  # noqa: E402,F401
     SOURCE_ACTIVATION,
     SOURCE_MANUAL,
 )
+
+if TYPE_CHECKING:  # 仅用于 `state` property 的返回注解（运行时按需局部导入，避免循环导入）
+    from backend.core.scheduler import SchedulerState
 
 
 # ===== 全局共享 SceneGraph 单例 =====
@@ -162,7 +162,7 @@ class SchedulerService:
         self.watchdog = None
 
         # 中间派重构组件：状态快照 / 纯逻辑决策 / 执行层
-        from backend.core.scheduler import SchedulerState, TaskPlanner, TaskExecutor
+        from backend.core.scheduler import TaskPlanner, TaskExecutor
         # 内存状态快照自阶段 4.7 起由 TaskStateStore 持有（同名 property，含 setter）
         self.planner = TaskPlanner()
         self.executor = TaskExecutor(logger=self.logger)
@@ -230,7 +230,6 @@ class SchedulerService:
         启动前环境检测：截图路径文件 / 实例 / 分辨率16:9 / 后台保活。
         不通过时返回 (False, messages)，调度器提示并拒绝启动。
         """
-        import os  # 仅用于下方日志/路径拼接（探测命令与解析已下沉 emulator_env）
         messages = []
         mode = self.config.get_config("截图模式", 2)
         try:

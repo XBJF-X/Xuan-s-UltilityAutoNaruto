@@ -5,12 +5,8 @@
 既有测试的 assertLogs("backend.api.utils") 继续有效）。"""
 
 import logging
-import os
 import re
-import threading
-from datetime import datetime
 
-from backend.services.config_service import shared_config_service
 
 # 版本工具的唯一实现已下沉到 core/version_info（阶段 3.4：服务层不再反向依赖 api 层）。
 # 这里保留同名别名，`backend.api.utils._read_local_version` 等既有调用点与测试 patch 不变。
@@ -136,12 +132,9 @@ from backend.services.log_service import (  # noqa: F401
 # ============================================================
 # 2. 检查更新（增强：提交历史）
 # ============================================================
-_GITHUB_OWNER = "XBJF-X"
-_GITHUB_REPO = "Xuan-s-UltilityAutoNaruto"
-_BRANCH = "v17"
-
-# 大更新：GitHub Release 安装包资产名前缀
-_INSTALLER_ASSET_PREFIX = "XuanInstaller_V"
+# 仓库/分支/安装包前缀常量已在模块头部以 `_GITHUB_OWNER` / `_GITHUB_REPO` /
+# `_BRANCH` / `_INSTALLER_ASSET_PREFIX` 从 services/update_service 再导出（同一对象），
+# 此处不再重复赋值（F811 重复定义）。
 
 # 本 commit 需要的最旧依赖库 ReleaseTag（根目录 MIN_RELEASE_TAG 文件，随 commit 提交）
 # 依赖库（OCR 模型/DLL 等）随 Release 安装包分发、热更新不携带；本地 _version.py

@@ -1,7 +1,7 @@
 from datetime import timedelta
 import re
 
-from backend.core.legacy.Exceptions import TaskCompleted, StepFailedError, TaskCompleted
+from backend.core.legacy.Exceptions import TaskCompleted, StepFailedError
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
 
 

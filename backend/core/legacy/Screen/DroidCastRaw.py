@@ -185,17 +185,14 @@ class DroidCastRaw(Screen):
             self.logger.debug(">>> 等待服务线程结束...")
 
     def screencap(self):
-        time1 = time.perf_counter()
         image = self.session.get(f'http://127.0.0.1:{self.pc_port}/screenshot?width=1600&height=900', timeout=3).content
-        time2 = time.perf_counter()
         shape = (900, 1600)
         try:
             arr = np.frombuffer(image, dtype=np.uint16)
             arr = arr.reshape(shape)
-        except ValueError as e:
+        except ValueError:
             if len(image) < 500:
                 self.logger.warning(f'Unexpected screenshot: {image}')
-        time3 = time.perf_counter()
         r = cv2.bitwise_and(arr, 0b1111100000000000)
         r = cv2.convertScaleAbs(r, alpha=0.00390625)
         m = cv2.convertScaleAbs(r, alpha=0.03125)
@@ -210,12 +207,7 @@ class DroidCastRaw(Screen):
         b = cv2.convertScaleAbs(b, alpha=8)
         m = cv2.convertScaleAbs(b, alpha=0.03125, dst=m)
         cv2.add(b, m, dst=b)
-        time4 = time.perf_counter()
         image = cv2.merge([b, g, r])
-        # print(f"接受图像：{(time2 - time1) * 1000}ms")
-        # print(f"shape：{(time3 - time2) * 1000}ms")
-        # print(f"异或：{(time4 - time3) * 1000}ms")
-        # print(f"merge：{(time.perf_counter() - time4) * 1000}ms")
 
         return image
 
