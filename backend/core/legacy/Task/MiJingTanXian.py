@@ -13,7 +13,7 @@ class MiJingTanXian(BaseTask):
     def run(self):
         self.fighting = False
         self.first_fight=False
-        self.bool_sd=False
+        self.bool_sd=False # 是否已经扫荡过
         self.fight_time=self.config.get_task_exe_param(self.task_name, "秘境刷取次数", 0)
         self.operationer.clicker.update_coordinates([
             self.config.get_config("键位")[KEY_INDEX.BasicAttack],
@@ -116,6 +116,10 @@ class MiJingTanXian(BaseTask):
                                           temp_time + 1)
             time.sleep(1)
         self.logger.info("饰品翻牌已结束")
+
+        # 重置翻牌次数，确保下次获取奖励能正常翻牌
+        self.config.set_task_exe_prog(self.task_name, "忍具已翻牌次数", 0)
+        self.config.set_task_exe_prog(self.task_name, "饰品已翻牌次数", 0)
 
         self.operationer.click_and_wait("返回")
         self.bool_click = False
