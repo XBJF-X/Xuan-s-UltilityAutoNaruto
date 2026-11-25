@@ -201,6 +201,15 @@ class PanRenLaiXi(BaseTask):
                     self.find_direction *= -1
                 return False
         else:
+            # 自动参战由游戏侧自动匹配叛忍/开战，何时进入战斗不由任务决定，停在
+            # 「叛忍来袭-内部」几分钟是**正常等待**（实测 180s 就被判 [SCENE_STUCK] →
+            # 自救点 X 退出，把刚开启的自动参战打断）。这里显式声明等待：本场景改用
+            # 「超时检测-等待超时秒」（默认 1800s）；画面静止类判定与任务最长时长照旧，
+            # 真卡死仍能发现。声明随场景切换自动失效（进入战斗/结算后恢复普通判定）。
+            self.declare_waiting("自动参战叛忍")
+            self._log_once(
+                "panren-auto-wait",
+                "已开启自动参战，停在「叛忍来袭-内部」属正常等待，不计入场景停滞判定")
             self.logger.info("正在自动参战叛忍...")
             time.sleep(1)
         return False

@@ -438,6 +438,56 @@ class RealTaskWaitingTest(unittest.TestCase):
             PanRenLaiXi.transition_func["叛忍来袭-即将开始"](task)
         self.assertEqual(calls, ["叛忍来袭即将开启"])
 
+    def _panren_inner_task(self, auto, check=True):
+        """「叛忍来袭-内部」处理函数的最小替身（check=True 跳过开启自动参战那步）。"""
+        task = object.__new__(PanRenLaiXi)
+        task.task_name = "叛忍来袭"
+        task.auto = auto
+        task.check = check
+        task.config = SimpleNamespace(get_task_exe_param=lambda *a, **k: 0)
+        task.operationer = SimpleNamespace(
+            click_and_wait=lambda *a, **k: True,
+            detect_element=lambda *a, **k: True,
+            long_press=lambda *a, **k: None,
+        )
+        task.logger = logging.getLogger(LOG)
+        task.__dict__["_logged_once_keys"] = set()
+        task.__dict__["_current_scene_name"] = "叛忍来袭-内部"
+        return task
+
+    def test_panrenlaixi_auto_battle_declares_waiting(self):
+        """自动参战期间停在「叛忍来袭-内部」是正常等待（实测 180s 被判场景停滞 → 点 X 打断）。"""
+        calls = []
+        task = self._panren_inner_task(auto=True)
+        task.declare_waiting = lambda desc="": calls.append(desc)
+        with mock.patch("time.sleep"):
+            PanRenLaiXi.transition_func["叛忍来袭-内部"](task)
+        self.assertEqual(calls, ["自动参战叛忍"],
+                         "自动参战分支必须声明等待，否则 180s 后被判场景停滞并打断自动参战")
+
+    def test_panrenlaixi_manual_challenge_is_not_waiting(self):
+        """手动挑战（未开自动参战）不声明等待，真卡死仍按普通停滞阈值发现。"""
+        calls = []
+        task = self._panren_inner_task(auto=False)
+        task.declare_waiting = lambda desc="": calls.append(desc)
+        with mock.patch("time.sleep"):
+            PanRenLaiXi.transition_func["叛忍来袭-内部"](task)
+        self.assertEqual(calls, [])
+
+    def test_panrenlaixi_auto_battle_reports_waiting_to_watchdog(self):
+        """真实 declare_waiting 链路：自动参战分支把「我在等」上报给监视器。"""
+        watchdog = _RecordingWatchdog()
+        task = self._panren_inner_task(auto=True)
+        task.watchdog = watchdog
+        with mock.patch("time.sleep"):
+            PanRenLaiXi.transition_func["叛忍来袭-内部"](task)
+        self.assertEqual(watchdog.calls, [("叛忍来袭-内部", True, "自动参战叛忍")],
+                         "自动参战期间必须让监视器按「等待超时」判定")
+        # 声明仍属当前场景 → 下一轮 transition 的心跳继续带 waiting=True
+        self.assertEqual(task._waiting_state("叛忍来袭-内部"), (True, "自动参战叛忍"))
+        # 切换到战斗场景后声明失效（真卡死仍能按普通阈值发现）
+        self.assertEqual(task._waiting_state("叛忍来袭-战斗中"), (False, ""))
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

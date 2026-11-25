@@ -445,6 +445,15 @@ source, ignore_window)`：
   `PanRenLaiXi.scene_stuck_seconds = 350` 均删除（更多玩法靠"连点进行中"＋
   匹配中/匹配成功声明等待；叛忍来袭靠"即将开始"声明等待）。`scene_stuck_seconds`
   属性本身保留，供确有需要的任务整体放宽。
+- **叛忍来袭「自动参战」也是合法长等待（2026-11-25）**：开启自动参战后由游戏侧自动匹配叛忍，
+  停在「叛忍来袭-内部」数分钟属正常（实测 180s 被判 `[SCENE_STUCK]` → 任务自救点 X 退出，
+  把刚开启的自动参战打断）。`PanRenLaiXi` 的「叛忍来袭-内部」处理函数在 `self.auto` 分支调
+  `declare_waiting("自动参战叛忍")`（并用 `_log_once` 留一条 INFO 说明），手动挑战分支**不声明**
+  ——真卡死仍按普通停滞阈值发现。声明随场景切换失效，进入战斗/结算后恢复普通判定；
+  画面静止类判定与任务最长时长全程不受影响。回归：
+  `test_scene/verify_wait_and_progress.py` 的 `RealTaskWaitingTest`（自动参战声明等待 /
+  手动挑战不声明）。
+
 - 验证：`test_scene/verify_wait_and_progress.py`（等待阈值/可配性/非法值回退、
   非等待仍 180s、等待期间静止仍判 GAME_FROZEN、等待声明六种清除时机、
   连点进展信号、`wait_for` 四态、真实任务类声明）；
