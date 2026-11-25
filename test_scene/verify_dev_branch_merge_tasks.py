@@ -182,9 +182,52 @@ class MergeDevIntoV17ScriptTest(unittest.TestCase):
             self.assertEqual(sha(work, "v17"), v17_before)
 
 
+class ScriptContentTest(unittest.TestCase):
+    """只依赖受版本控制的文件：CI 干净检出里也必须执行。"""
+
+    def test_scripts_never_force_push(self):
+        for script in (PUSH_SCRIPT, MERGE_SCRIPT):
+            with self.subTest(script=script.name):
+                src = script.read_text(encoding="utf-8")
+                self.assertNotIn("--force", src)
+                self.assertNotIn('"-f"', src)
+
+    def test_merge_script_uses_ff_only(self):
+        src = MERGE_SCRIPT.read_text(encoding="utf-8")
+        self.assertIn('"merge", "--ff-only"', src)
+        self.assertIn('"push", "origin", "v17"', src)
+
+    def test_scripts_whitelisted_in_gitignore(self):
+        """两个脚本必须被 .gitignore 白名单放行。
+
+        ``/scripts/*`` 被整体忽略，脚本靠 ``!scripts/xxx.py`` 单独放行；
+        若白名单被删，干净克隆里就没有这两个脚本，VS Code 任务会直接失效。
+        """
+        ignore = (_PROJECT_ROOT / ".gitignore").read_text(encoding="utf-8")
+        for script in (PUSH_SCRIPT, MERGE_SCRIPT):
+            rel = script.relative_to(_PROJECT_ROOT).as_posix()
+            with self.subTest(script=rel):
+                self.assertIn(f"!{rel}", ignore)
+
+
 class WiringTest(unittest.TestCase):
+    """VS Code 任务 / Cline 规则的接线断言。
+
+    ⚠️ ``.vscode/`` 与 ``.clinerules/`` 都在 ``.gitignore`` 里（本地开发文件，
+    不随仓库分发）：CI 的干净检出中没有它们。因此必须先判存在再读文件——
+    旧实现在 ``setUpClass`` 里直接 ``read_text``，CI 上抛 ``FileNotFoundError``
+    把整条 CI 判成失败（2026-11-25 的报错邮件即由此而来）。
+    缺失时整类 SKIP，接线断言只在本地开发机执行。
+    """
+
     @classmethod
     def setUpClass(cls):
+        missing = [path.relative_to(_PROJECT_ROOT).as_posix()
+                   for path in (TASKS_JSON, RULE_FILE) if not path.is_file()]
+        if missing:
+            raise unittest.SkipTest(
+                "本地开发文件未纳入版本控制（CI 干净检出无此文件），跳过接线断言："
+                + "、".join(missing))
         cls.tasks_raw = TASKS_JSON.read_text(encoding="utf-8")
         cls.rule = RULE_FILE.read_text(encoding="utf-8")
 
@@ -199,18 +242,6 @@ class WiringTest(unittest.TestCase):
     def test_rule_requires_dev_branch(self):
         for text in ("开发修改一律在 `dev` 分支进行", "不动 `v17`", "`dev` 分支永远保留"):
             self.assertIn(text, self.rule)
-
-    def test_scripts_never_force_push(self):
-        for script in (PUSH_SCRIPT, MERGE_SCRIPT):
-            with self.subTest(script=script.name):
-                src = script.read_text(encoding="utf-8")
-                self.assertNotIn("--force", src)
-                self.assertNotIn('"-f"', src)
-
-    def test_merge_script_uses_ff_only(self):
-        src = MERGE_SCRIPT.read_text(encoding="utf-8")
-        self.assertIn('"merge", "--ff-only"', src)
-        self.assertIn('"push", "origin", "v17"', src)
 
 
 if __name__ == "__main__":
