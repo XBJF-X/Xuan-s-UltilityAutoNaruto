@@ -40,6 +40,8 @@ scripts/*
 !scripts/git_merge_dev_into_v17.py
 docs/scheduler-architecture-review.md
 .cline/
+# Cline 规则（本地开发约束，不共享仓库状态；文件保留在本地工作区）
+.clinerules/
 
 # ---------- 前端构建产物（dist 提交仓库供热更新拉取；electron 产物忽略） ----------
 frontend/dist-electron/

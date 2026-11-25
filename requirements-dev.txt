@@ -6,3 +6,6 @@
 # 安装方式（开发机 / CI）：
 #     .venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 ruff==0.17.1
+# 版本管理（VS Code 任务「更新小版本号 (patch)」= python -m commitizen bump）
+# 注意：CLI 入口是 `python -m commitizen`（不是 `python -m cz`）
+commitizen==4.8.3
