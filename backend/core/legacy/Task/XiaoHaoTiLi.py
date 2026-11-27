@@ -1,8 +1,10 @@
 from datetime import timedelta, datetime, time
 
+from backend.core.enums import ElementType
 from backend.core.legacy.Exceptions import TaskCompleted
 from backend.core.legacy.Task.BaseTask import BaseTask, TransitionOn
 from backend.core.legacy.Task.schedule import DAY_RESET
+from backend.tools.models import Element
 
 armor_coordinates = [
     "武器",
@@ -94,10 +96,31 @@ class XiaoHaoTiLi(BaseTask):
             self.logger.debug("点击[装备]")
         return False
 
+    def _click_material_sweep_by_ocr(self) -> bool:
+        """模板没匹配到「一键扫荡」时，按同一 ROI 用 OCR 找界面上的「扫荡」。"""
+        source = self.operationer.get_element("一键扫荡")
+        if source is None:
+            return False
+        fallback = Element(
+            name="一键扫荡_OCR",
+            scene_id=source.scene_id,
+            type=ElementType.OCR_AREA,
+            ratio_x=source.ratio_x,
+            ratio_y=source.ratio_y,
+            roi_x=source.roi_x,
+            roi_y=source.roi_y,
+            roi_width=source.roi_width,
+            roi_height=source.roi_height,
+            ocr_min_score=getattr(source, "ocr_min_score", None) or 0.6,
+        )
+        return self.operationer.click_and_wait(fallback, match_text="扫荡")
+
     @TransitionOn("装备-材料详情")
     def _(self):
         if self.operationer.click_and_wait("一键扫荡"):
             self.logger.debug("点击[一键扫荡]")
+        elif self._click_material_sweep_by_ocr():
+            self.logger.info("未匹配到[一键扫荡]模板，按同一区域识别并点击[扫荡]")
         elif self.operationer.click_and_wait("合成"):
             self.logger.debug("点击[合成]")
         elif self.operationer.click_and_wait("装备"):
